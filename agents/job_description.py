@@ -1,13 +1,16 @@
 from typing import Optional, Literal
+import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
 
+logger = logging.getLogger(__name__)
+
 
 JOB_DESCRIPTION_EXTRACTION_SYSTEM_PROMPT = (
     "You are a helpful assistant that extracts structured information from job descriptions. "
-    "Analyze the job description carefully and extract all relevant details about the company and position."
+    "Analyze the job description carefully and extract all relevant details about the company and position. Be terse and concise."
 )
 
 JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
@@ -16,7 +19,7 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
     "- Company website/web page\n"
     "- Location (city, state, country)\n"
     "- Industry\n"
-    "- Whether the job is remote, hybrid, or on-site\n"
+    "- Whether the job is remote, hybrid, or on-site. If not specified, return 'unknown'.\n"
     "- Candidate minimal requirements (qualifications, skills, experience, education, etc.)\n"
     "- Any other relevant company or position details\n\n"
     "Job Description:\n\n{job_description}"
@@ -153,7 +156,6 @@ class JobDescriptionAgent:
 **Job Title:** {extracted_info.job_title or 'Not specified'}
 **Candidate Minimal Requirements:** {extracted_info.candidate_minimal_requirements or 'Not specified'}
 """
-
         if extracted_info.additional_info:
             info_summary += f"\n**Additional Information:**\n{extracted_info.additional_info}"
         

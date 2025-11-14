@@ -1,7 +1,10 @@
 from typing import Optional
+import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 import os
+
+logger = logging.getLogger(__name__)
 
 
 COVER_LETTER_GENERATION_SYSTEM_PROMPT = (
@@ -162,7 +165,9 @@ class CoverLetterWriterAgent:
         """
         candidate_text = state.get("candidate_text", {})
         candidate_cv = candidate_text.get("cv") if candidate_text else None
-        candidate_cover_letter = candidate_text.get("cover_letter") if candidate_text else None
+        # Use generated cover letter if it exists (for modifications), otherwise use original
+        generated_cover_letter = state.get("generated_cover_letter")
+        candidate_cover_letter = generated_cover_letter if generated_cover_letter else (candidate_text.get("cover_letter") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")

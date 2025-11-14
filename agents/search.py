@@ -1,13 +1,12 @@
 from tavily import TavilyClient
 from typing import Optional, Literal
 import os
+import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-
-
-tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+logger = logging.getLogger(__name__)
 
 
 QUERY_TEMPLATE = (
@@ -51,10 +50,12 @@ class RemoteWorkResponse(BaseModel):
 class SearchAgent:
     def __init__(self):
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
+        # Initialize TavilyClient lazily to ensure environment variables are loaded
+        self.tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
     def search_tavily(self, query: str):
         """Search using Tavily API with the given query string."""
-        results = tavily_client.search(
+        results = self.tavily_client.search(
             query=query, 
             search_depth="advanced", 
             max_results=5, 

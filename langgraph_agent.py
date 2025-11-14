@@ -1,15 +1,21 @@
 from dotenv import load_dotenv
+
+# Load environment variables BEFORE importing agents
+load_dotenv()
+
+# Set up logging
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+
 from typing import Annotated, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
-from langchain.chat_models import init_chat_model
-from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
-import os
-
-from pypdf import PdfReader
 
 from agents.search import SearchAgent
 from agents.document_reader import DocumentReaderAgent
@@ -17,9 +23,6 @@ from agents.job_description import JobDescriptionAgent
 from agents.router import RouterAgent
 from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
-
-
-load_dotenv()
 
 
 class State(TypedDict, total=False):
@@ -31,6 +34,8 @@ class State(TypedDict, total=False):
     generated_cv: str | None  # Generated CV text
     generated_cover_letter: str | None  # Generated cover letter text
     user_feedback: str | None  # User feedback for modifications
+
+
 
 
 
@@ -80,16 +85,16 @@ def run_langgraph_agent():
     config = {"configurable": {"thread_id": thread_id}}
     
     # Initial state
-    initial_state = {
-        "messages": [],
-        "job_description_info": None,
-        "candidate_text": None,
-        "company_info": None,
-        "next": None,
-        "generated_cv": None,
-        "generated_cover_letter": None,
-        "user_feedback": None
-    }
+    initial_state = State(
+        messages=[],
+        job_description_info=None,
+        candidate_text=None,
+        company_info=None,
+        next=None,
+        generated_cv=None,
+        generated_cover_letter=None,
+        user_feedback=None
+    )
 
     while True:
         try:

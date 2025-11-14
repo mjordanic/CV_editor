@@ -1,7 +1,10 @@
 from typing import Optional
+import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 import os
+
+logger = logging.getLogger(__name__)
 
 
 CV_GENERATION_SYSTEM_PROMPT = (
@@ -152,7 +155,9 @@ class CVWriterAgent:
             dict: Updated state with generated CV
         """
         candidate_text = state.get("candidate_text", {})
-        candidate_cv = candidate_text.get("cv") if candidate_text else None
+        # Use generated CV if it exists (for modifications), otherwise use original
+        generated_cv = state.get("generated_cv")
+        candidate_cv = generated_cv if generated_cv else (candidate_text.get("cv") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")

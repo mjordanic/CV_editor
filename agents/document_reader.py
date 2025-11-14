@@ -1,6 +1,9 @@
 from pypdf import PdfReader
 import os
+import logging
 from typing import Optional, Dict
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentReaderAgent:
