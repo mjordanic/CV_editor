@@ -16,7 +16,9 @@ class DocumentReaderAgent:
         Args:
             cv_folder: Path to the folder containing CV and cover letter documents
         """
+        logger.info(f"Initializing DocumentReaderAgent with cv_folder: {cv_folder}")
         self.cv_folder = cv_folder
+        logger.debug("DocumentReaderAgent initialized")
     
     def read_pdf(self, file_path: str) -> str:
         """
@@ -28,11 +30,14 @@ class DocumentReaderAgent:
         Returns:
             str: Extracted text from all pages of the PDF
         """
+        logger.debug(f"Reading PDF file: {file_path}")
         reader = PdfReader(file_path)
         text_parts = []
         for page in reader.pages:
             text_parts.append(page.extract_text())
-        return "\n".join(text_parts)
+        text = "\n".join(text_parts)
+        logger.info(f"PDF read successfully - extracted {len(text)} characters from {len(text_parts)} pages")
+        return text
     
     def fetch_document_text(self, document_name: str) -> Optional[str]:
         """
@@ -44,19 +49,25 @@ class DocumentReaderAgent:
         Returns:
             str: The content of the document file (txt or pdf), or None if not found
         """
+        logger.debug(f"Fetching document: {document_name}")
         doc_txt_path = os.path.join(self.cv_folder, f"{document_name}.txt")
         doc_pdf_path = os.path.join(self.cv_folder, f"{document_name}.pdf")
         
         # Check if .txt file exists
         if os.path.exists(doc_txt_path):
+            logger.debug(f"Found .txt file: {doc_txt_path}")
             with open(doc_txt_path, "r", encoding="utf-8") as f:
-                return f.read()
+                content = f.read()
+                logger.info(f"Document {document_name} read from .txt - {len(content)} characters")
+                return content
         
         # Check if .pdf file exists
         if os.path.exists(doc_pdf_path):
+            logger.debug(f"Found .pdf file: {doc_pdf_path}")
             return self.read_pdf(doc_pdf_path)
         
         # If neither exists, return None
+        logger.warning(f"Document {document_name} not found in {self.cv_folder} (checked .txt and .pdf)")
         return None
     
     def read_cv(self) -> Optional[str]:
@@ -101,6 +112,14 @@ class DocumentReaderAgent:
             Dict with 'candidate_text' key containing a dict with keys 'cv' and 'cover_letter',
             containing the document content if found, or None if not found
         """
+        logger.info("DocumentReaderAgent.run() called - reading all documents")
         documents = self.read_all_documents()
+        cv_found = documents.get("cv") is not None
+        cover_letter_found = documents.get("cover_letter") is not None
+        logger.info(f"Documents read - CV found: {cv_found}, Cover letter found: {cover_letter_found}")
+        if cv_found:
+            logger.debug(f"CV length: {len(documents['cv'])} characters")
+        if cover_letter_found:
+            logger.debug(f"Cover letter length: {len(documents['cover_letter'])} characters")
         return {"candidate_text": documents}
 

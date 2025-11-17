@@ -71,7 +71,9 @@ class RouterAgent:
     """Agent for routing user requests and collecting feedback using LLM."""
     
     def __init__(self):
+        logger.info("Initializing RouterAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
+        logger.debug("RouterAgent LLM initialized")
     
     def _format_messages_history(self, messages: list) -> str:
         """Format message history for the prompt."""
@@ -164,6 +166,8 @@ class RouterAgent:
         Returns:
             dict: Updated state with next action
         """
+        logger.info("RouterAgent.run() called")
+        
         # Extract state information
         messages = state.get("messages", [])
         job_description_info = state.get("job_description_info")
@@ -171,6 +175,8 @@ class RouterAgent:
         candidate_text = state.get("candidate_text")
         generated_cv = state.get("generated_cv")
         generated_cover_letter = state.get("generated_cover_letter")
+        
+        logger.debug(f"State extracted - messages: {len(messages)}, cv_generated: {generated_cv is not None}, cover_letter_generated: {generated_cover_letter is not None}")
         
         # Format context for LLM
         messages_history = self._format_messages_history(messages)
@@ -188,37 +194,56 @@ class RouterAgent:
         structured_llm = self.llm.with_structured_output(RouterResponse)
         chain = prompt | structured_llm
         
-        # First, determine if we need user input and what message to show
-        initial_response = chain.invoke({
+        # Prepare LLM input
+        llm_input = {
             "messages_history": messages_history,
             "job_description_info": job_desc_formatted,
             "company_info": company_info_formatted,
             "candidate_text": candidate_text_formatted,
             "cv_generated": "Yes" if generated_cv is not None else "No",
             "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No"
-        })
+        }
+        
+        logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, job_desc length: {len(job_desc_formatted)}")
+        logger.info("Calling LLM for initial routing decision...")
+        
+        # First, determine if we need user input and what message to show
+        initial_response = chain.invoke(llm_input)
+        
+        logger.info(f"LLM initial response received - next_action: {initial_response.next_action}, needs_user_input: {initial_response.needs_user_input}")
+        logger.debug(f"LLM initial response - message_to_user: {initial_response.message_to_user[:200] if initial_response.message_to_user else 'None'}...")
         
         # If we need user input, interrupt and get it
         user_input = None
         if initial_response.needs_user_input and initial_response.message_to_user:
+            logger.info("Router needs user input - interrupting workflow")
+            logger.debug(f"Interrupt message: {initial_response.message_to_user}")
             user_input = interrupt({
                 "message": initial_response.message_to_user,
                 "required": True
             })
+            
+            logger.info(f"User input received via interrupt: {str(user_input)[:100]}..." if len(str(user_input)) > 100 else f"User input: {user_input}")
             
             # Add user input to messages for context
             messages = messages + [{"role": "user", "content": str(user_input)}]
             messages_history = self._format_messages_history(messages)
         
         # Now get final decision from LLM with updated context (including user input if provided)
-        final_response = chain.invoke({
+        final_llm_input = {
             "messages_history": messages_history,
             "job_description_info": job_desc_formatted,
             "company_info": company_info_formatted,
             "candidate_text": candidate_text_formatted,
             "cv_generated": "Yes" if generated_cv is not None else "No",
             "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No"
-        })
+        }
+        
+        logger.info("Calling LLM for final routing decision...")
+        final_response = chain.invoke(final_llm_input)
+        
+        logger.info(f"LLM final response received - next_action: {final_response.next_action}")
+        logger.debug(f"LLM final response - message_to_user: {final_response.message_to_user[:200] if final_response.message_to_user else 'None'}..., user_feedback: {final_response.user_feedback[:200] if final_response.user_feedback else 'None'}...")
         
         # Extract user feedback if this is a modification request
         user_feedback = ""
@@ -231,6 +256,8 @@ class RouterAgent:
                 user_feedback = final_response.user_feedback
         else:
             user_feedback = final_response.user_feedback
+        
+        logger.info(f"Router decision: next_action={final_response.next_action}, user_feedback_length={len(user_feedback)}")
         
         return {
             "next": final_response.next_action,

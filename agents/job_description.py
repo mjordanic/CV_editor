@@ -72,7 +72,9 @@ class JobDescriptionAgent:
     """Agent for extracting structured information from job descriptions."""
     
     def __init__(self):
+        logger.info("Initializing JobDescriptionAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
+        logger.debug("JobDescriptionAgent LLM initialized")
     
     def extract_info(self, job_description: str) -> JobDescriptionInfo:
         """
@@ -84,6 +86,9 @@ class JobDescriptionAgent:
         Returns:
             JobDescriptionInfo: Structured information extracted from the job description
         """
+        logger.info(f"Extracting job description info - input length: {len(job_description)} characters")
+        logger.debug(f"Job description preview: {job_description[:200]}...")
+        
         # Create prompt for extracting job description information
         prompt = ChatPromptTemplate.from_messages([
             ("system", JOB_DESCRIPTION_EXTRACTION_SYSTEM_PROMPT),
@@ -93,7 +98,15 @@ class JobDescriptionAgent:
         # Use structured output to ensure proper return type
         structured_llm = self.llm.with_structured_output(JobDescriptionInfo)
         chain = prompt | structured_llm
-        response = chain.invoke({"job_description": job_description})
+        
+        llm_input = {"job_description": job_description}
+        logger.info("Calling LLM to extract job description information...")
+        logger.debug(f"LLM input - job_description length: {len(job_description)}")
+        
+        response = chain.invoke(llm_input)
+        
+        logger.info(f"LLM response received - company: {response.company_name}, job_title: {response.job_title}, work_type: {response.work_type}")
+        logger.debug(f"LLM response - location: {response.location}, industry: {response.industry}, requirements_length: {len(response.candidate_minimal_requirements) if response.candidate_minimal_requirements else 0}")
         
         return response
     
@@ -111,8 +124,11 @@ class JobDescriptionAgent:
         Returns:
             dict: Updated state with extracted job description information
         """
+        logger.info("JobDescriptionAgent.run() called")
+        
         # Check if we've already processed a job description
         if state.get("job_description_info"):
+            logger.info("Job description already processed - skipping extraction")
             # Already have job description info, return it without reprocessing
             return {
                 "messages": [{
@@ -122,19 +138,25 @@ class JobDescriptionAgent:
             }
         
         # Pause execution and wait for user to provide job description
+        logger.info("Requesting job description from user via interrupt")
         # The interrupt() call will pause the graph and return the user's input when resumed
         job_description_text = interrupt({
             "message": "Please paste the job description you'd like me to analyze.",
             "required": True
         })
         
+        logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
+        logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
+        
         # Validate that we received substantial content
         if not job_description_text or len(str(job_description_text).strip()) < 50:
+            logger.warning("Job description too short - requesting more content")
             # If content is too short, interrupt again asking for more
             job_description_text = interrupt({
                 "message": "Please paste the complete job description. The description should be substantial (at least a few sentences).",
                 "required": True
             })
+            logger.info(f"Updated job description received - length: {len(str(job_description_text))} characters")
         
         # Ensure we have a string
         job_description_text = str(job_description_text).strip()
@@ -144,6 +166,8 @@ class JobDescriptionAgent:
         
         # Store the full job description text in the extracted info
         extracted_info.job_description = job_description_text
+        
+        logger.info("Job description extraction completed successfully")
         
         # Format the response
         info_summary = f"""I've extracted the following information from the job description:

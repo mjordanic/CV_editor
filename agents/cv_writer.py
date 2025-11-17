@@ -35,17 +35,20 @@ CV_GENERATION_HUMAN_PROMPT = (
 class CVWriterAgent:
     """Agent for generating tailored CVs based on job descriptions and company information."""
     
-    def __init__(self, output_folder: str = "CV"):
+    def __init__(self, output_folder: str = "generated_CVs"):
         """
         Initialize the CVWriterAgent.
         
         Args:
             output_folder: Folder where generated CVs will be saved
         """
+        logger.info(f"Initializing CVWriterAgent with output_folder: {output_folder}")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0.7)
+        logger.debug("CVWriterAgent LLM initialized")
         self.output_folder = output_folder
         # Ensure output folder exists
         os.makedirs(self.output_folder, exist_ok=True)
+        logger.debug(f"Output folder ensured: {output_folder}")
     
     def _format_company_info(self, company_info: Optional[dict]) -> str:
         """Format company information for the prompt."""
@@ -111,6 +114,9 @@ class CVWriterAgent:
         company_info_text = self._format_company_info(company_info)
         modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cv))
         
+        logger.info(f"Generating CV - candidate_cv_length: {len(candidate_cv_text) if candidate_cv_text else 0}, has_feedback: {bool(user_feedback)}")
+        logger.debug(f"Job description length: {len(job_desc_text)}, company info length: {len(company_info_text)}")
+        
         # Create prompt
         prompt = ChatPromptTemplate.from_messages([
             ("system", CV_GENERATION_SYSTEM_PROMPT),
@@ -119,14 +125,22 @@ class CVWriterAgent:
         
         # Generate CV
         chain = prompt | self.llm
-        response = chain.invoke({
+        llm_input = {
             "candidate_cv": candidate_cv_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
             "modification_instructions": modification_instructions
-        })
+        }
+        logger.info("Calling LLM to generate CV...")
+        logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions)}")
         
-        return response.content if hasattr(response, 'content') else str(response)
+        response = chain.invoke(llm_input)
+        
+        cv_content = response.content if hasattr(response, 'content') else str(response)
+        logger.info(f"LLM response received - CV generated, length: {len(cv_content)} characters")
+        logger.debug(f"CV preview: {cv_content[:200]}...")
+        
+        return cv_content
     
     def save_cv(self, cv_text: str, filename: str = "generated_CV.txt") -> str:
         """
@@ -140,8 +154,11 @@ class CVWriterAgent:
             str: Path to the saved file
         """
         file_path = os.path.join(self.output_folder, filename)
+        logger.info(f"Saving CV to file: {file_path}")
+        logger.debug(f"CV text length: {len(cv_text)} characters")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(cv_text)
+        logger.info(f"CV saved successfully to {file_path}")
         return file_path
     
     def run(self, state):
@@ -154,6 +171,8 @@ class CVWriterAgent:
         Returns:
             dict: Updated state with generated CV
         """
+        logger.info("CVWriterAgent.run() called")
+        
         candidate_text = state.get("candidate_text", {})
         # Use generated CV if it exists (for modifications), otherwise use original
         generated_cv = state.get("generated_cv")
@@ -161,6 +180,8 @@ class CVWriterAgent:
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")
+        
+        logger.debug(f"State extracted - has_candidate_cv: {candidate_cv is not None}, has_job_desc: {job_description_info is not None}, has_company_info: {company_info is not None}, has_feedback: {user_feedback is not None}")
         
         # Generate CV
         cv_text = self.generate_cv(
@@ -172,6 +193,8 @@ class CVWriterAgent:
         
         # Save CV
         file_path = self.save_cv(cv_text)
+        
+        logger.info("CV generation and saving completed successfully")
         
         return {
             "generated_cv": cv_text,
