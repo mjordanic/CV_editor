@@ -120,6 +120,26 @@ class MasterAgent:
         self.graph = graph_builder.compile(checkpointer=checkpointer)
         logger.info("MasterAgent initialized successfully - graph compiled and ready")
 
+        # Plot and save the graph to PNG
+        try:
+            logger.debug("Generating graph visualization...")
+            image_dir = "images"
+            os.makedirs(image_dir, exist_ok=True)
+            self.graph.get_graph().draw_png(os.path.join(image_dir, "graph_visualization.png"))
+            logger.info("Graph visualization saved to graph_visualization.png")
+        except ImportError as e:
+            logger.warning(f"Could not generate graph visualization: {e}")
+            logger.warning("Install Graphviz system library first: brew install graphviz")
+            logger.warning("Then install pygraphviz with:")
+            logger.warning("  export CFLAGS=\"-I$(brew --prefix graphviz)/include\"")
+            logger.warning("  export LDFLAGS=\"-L$(brew --prefix graphviz)/lib\"")
+            logger.warning("  uv add pygraphviz")
+        except Exception as e:
+            logger.warning(f"Could not generate graph visualization: {e}")
+
+
+
+
     def run(self):
         """Run the LangGraph agent workflow."""
         logger.info("MasterAgent.run() called - starting workflow execution")
@@ -143,64 +163,88 @@ class MasterAgent:
         logger.debug("Initial state created")
 
         iteration_count = 0
+        should_exit = False
         while True:
             try:
+                if should_exit:
+                    break
+                    
                 iteration_count += 1
-                logger.info(f"Graph invocation #{iteration_count} - invoking graph with current state")
+                logger.info(f"Graph invocation #{iteration_count} - streaming graph with current state")
                 logger.debug(f"State keys: {list(initial_state.keys())}")
                 
-                # Invoke the graph with the current state
-                result = self.graph.invoke(initial_state, config)
-                logger.debug(f"Graph invocation completed. Result keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
+                # Use stream() with stream_mode="values" to properly handle interrupts
+                # This is the correct way to handle interrupts in LangGraph
+                interrupt_occurred = False
+                interrupt_message = None
                 
-                # Check if there's an interrupt
-                if hasattr(result, "__interrupt__") and result.__interrupt__:
-                    logger.info("Graph execution interrupted - waiting for user input")
-                    # Graph is paused waiting for input
-                    interrupt_data = result.__interrupt__
-                    if isinstance(interrupt_data, list) and len(interrupt_data) > 0:
-                        interrupt_value = interrupt_data[0].get("value", {})
-                        if isinstance(interrupt_value, dict):
-                            message = interrupt_value.get("message", "Please provide input:")
+                for state in self.graph.stream(initial_state, config, stream_mode="values"):
+                    logger.debug(f"Stream state received. Keys: {list(state.keys()) if isinstance(state, dict) else 'N/A'}")
+                    
+                    # Update state as we stream
+                    initial_state = state
+                    
+                    # Check if this state contains an interrupt
+                    # Interrupts appear as "__interrupt__" key in the state when using interrupt()
+                    if isinstance(state, dict) and "__interrupt__" in state:
+                        interrupt_occurred = True
+                        interrupt_data = state["__interrupt__"]
+                        logger.info("Graph execution interrupted - waiting for user input")
+                        
+                        # Extract interrupt message
+                        if isinstance(interrupt_data, list) and len(interrupt_data) > 0:
+                            interrupt_value = interrupt_data[0].get("value", {})
+                            if isinstance(interrupt_value, dict):
+                                interrupt_message = interrupt_value.get("message", "Please provide input:")
+                            else:
+                                interrupt_message = str(interrupt_value)
                         else:
-                            message = str(interrupt_value)
-                    else:
-                        message = "Please provide input:"
-                    
-                    logger.debug(f"Interrupt message: {message}")
-                    print(f"Assistant: {message}")
-                    
-                    # Get user input
-                    logger.debug("Waiting for user input...")
-                    user_input = input("You: ")
-                    logger.info(f"User input received: {user_input[:100]}..." if len(user_input) > 100 else f"User input received: {user_input}")
-                    
-                    if user_input.lower() == "exit":
-                        logger.info("User requested exit - terminating workflow")
-                        print("Bye")
+                            interrupt_message = "Please provide input:"
+                        
+                        logger.debug(f"Interrupt message: {interrupt_message}")
+                        print(f"Assistant: {interrupt_message}")
+                        
+                        # Get user input
+                        logger.debug("Waiting for user input...")
+                        user_input = input("You: ")
+                        logger.info(f"User input received: {user_input[:100]}..." if len(user_input) > 100 else f"User input received: {user_input}")
+                        
+                        if user_input.lower() == "exit":
+                            logger.info("User requested exit - terminating workflow")
+                            print("Bye")
+                            should_exit = True
+                            break
+                        
+                        # Resume the graph with user input using Command
+                        logger.debug("Resuming graph execution with user input")
+                        # Stream the resume command
+                        for resumed_state in self.graph.stream(Command(resume=user_input), config, stream_mode="values"):
+                            initial_state = resumed_state
+                            logger.debug(f"Resume stream state received. Keys: {list(resumed_state.keys()) if isinstance(resumed_state, dict) else 'N/A'}")
+                        
+                        logger.debug("Graph resumed successfully")
+                        # Continue to next iteration to process the resumed state
                         break
-                    
-                    # Resume the graph with user input using Command
-                    logger.debug("Resuming graph execution with user input")
-                    result = self.graph.invoke(Command(resume=user_input), config)
-                    logger.debug("Graph resumed successfully")
                 
-                # Display the response if there are messages
-                if result.get("messages") and len(result["messages"]) > 0:
-                    last_message = result["messages"][-1]
-                    # Handle both dict and message object formats
-                    if isinstance(last_message, dict):
-                        content = last_message.get("content", "")
-                    else:
-                        content = getattr(last_message, "content", "")
-                    
-                    if content:
-                        logger.debug(f"Assistant message to display: {content[:200]}..." if len(content) > 200 else f"Assistant message: {content}")
-                        print(f"Assistant: {content}")
+                if should_exit:
+                    break
                 
-                # Update initial_state for next iteration (though with checkpointer, this may not be needed)
-                initial_state = result
-                logger.debug("State updated for next iteration")
+                # If no interrupt occurred, continue with normal flow
+                if not interrupt_occurred:
+                    # Display the response if there are messages
+                    if initial_state.get("messages") and len(initial_state["messages"]) > 0:
+                        last_message = initial_state["messages"][-1]
+                        # Handle both dict and message object formats
+                        if isinstance(last_message, dict):
+                            content = last_message.get("content", "")
+                        else:
+                            content = getattr(last_message, "content", "")
+                        
+                        if content:
+                            logger.debug(f"Assistant message to display: {content[:200]}..." if len(content) > 200 else f"Assistant message: {content}")
+                            print(f"Assistant: {content}")
+                    
+                    logger.debug("State updated for next iteration")
                 
             except KeyboardInterrupt:
                 logger.info("KeyboardInterrupt received - terminating workflow")
