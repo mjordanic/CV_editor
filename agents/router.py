@@ -18,9 +18,9 @@ ROUTER_SYSTEM_PROMPT = (
     "2. Decide what the next action should be\n"
     "3. Extract any user feedback for modifications\n\n"
     "Available actions:\n"
-    "- 'generate_cv': Generate a new CV or modify an existing one\n"
-    "- 'generate_cover_letter': Generate a new cover letter or modify an existing one\n"
-    "- 'user_input': Request user input (use this when you need to ask the user a question or get feedback)\n"
+    "- 'draft_cv': Generate a new CV or modify an existing one\n"
+    "- 'draft_cover_letter': Generate a new cover letter or modify an existing one\n"
+    "- 'collect_user_input': Request user input (use this when you need to ask the user a question or get feedback)\n"
     "- 'exit': End the conversation\n\n"
     "If documents have been generated, the user might want to:\n"
     "- Request modifications (provide feedback)\n"
@@ -50,9 +50,9 @@ ROUTER_HUMAN_PROMPT = (
 
 class RouterResponse(BaseModel):
     """Response model for router decisions."""
-    next_action: Literal["generate_cv", "generate_cover_letter", "user_input", "exit"] = Field(
+    next_action: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] = Field(
         ...,
-        description="The next action to take: generate_cv, generate_cover_letter, user_input, or exit"
+        description="The next action to take: draft_cv, draft_cover_letter, collect_user_input, or exit"
     )
     message_to_user: str = Field(
         ...,
@@ -264,13 +264,13 @@ class RouterAgent:
         logger.info(f"LLM response received - next_action: {response.next_action}, needs_user_input: {response.needs_user_input}")
         logger.debug(f"LLM response - message_to_user: {response.message_to_user[:200] if response.message_to_user else 'None'}...")
         
-        # If we need user input, route to user_input node
+        # If we need user input, route to collect_user_input node
         if response.needs_user_input and response.message_to_user:
-            logger.info("Router needs user input - routing to user_input node")
+            logger.info("Router needs user input - routing to collect_user_input node")
             logger.debug(f"User input message: {response.message_to_user}")
             
             return {
-                "next": "user_input",
+                "next": "collect_user_input",
                 "user_input_message": response.message_to_user,
                 "messages": messages + [{
                     "role": "assistant",
@@ -285,9 +285,9 @@ class RouterAgent:
         user_feedback = response.user_feedback
         
         # If we're generating and documents already exist, check if there's feedback in messages
-        if response.next_action in ["generate_cv", "generate_cover_letter"]:
-            if (response.next_action == "generate_cv" and generated_cv is not None) or \
-               (response.next_action == "generate_cover_letter" and generated_cover_letter is not None):
+        if response.next_action in ["draft_cv", "draft_cover_letter"]:
+            if (response.next_action == "draft_cv" and generated_cv is not None) or \
+               (response.next_action == "draft_cover_letter" and generated_cover_letter is not None):
                 # Check last user message for feedback
                 if messages:
                     last_user_msg = None

@@ -20,6 +20,8 @@ Table of Contents
 Features
 --------
 
+![LangGraph workflow](images/graph_visualization.png)
+
 - Reads existing CV/cover letter files (`CV/` folder, txt or pdf).
 - Uses a LangChain LLM to extract structured job information from pasted descriptions.
 - Calls Tavily search to gather company insights plus remote-work stance.

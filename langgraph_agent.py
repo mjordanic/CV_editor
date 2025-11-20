@@ -64,7 +64,7 @@ class State(TypedDict, total=False):
         job_description_info: Structured information extracted from the job description.
         candidate_text: Original CV and cover letter provided by the user.
         company_info: Research output that informs tailoring.
-        next: Router-selected next action.
+        next: Router-selected next action (draft_cv, draft_cover_letter, collect_user_input, exit).
         generated_cv: Most recent CV produced by the pipeline.
         generated_cover_letter: Most recent cover letter produced by the pipeline.
         user_feedback: Free-form feedback provided after reviewing documents.
@@ -74,7 +74,7 @@ class State(TypedDict, total=False):
     job_description_info: dict | None  # Extracted job description information
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
-    next: Literal["generate_cv", "generate_cover_letter", "user_input", "exit"] | None  # Next action to take
+    next: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] | None  # Next action to take
     generated_cv: str | None  # Generated CV text
     generated_cover_letter: str | None  # Generated cover letter text
     user_feedback: str | None  # User feedback for modifications
@@ -169,35 +169,35 @@ class MasterAgent:
 
         # Add nodes to the graph
         logger.debug("Adding nodes to graph...")
-        graph_builder.add_node("get_candidate_information", document_reader_agent.run)
-        graph_builder.add_node("get_job_description", job_description_agent.run)
-        graph_builder.add_node("get_company_information", search_agent.run)
+        graph_builder.add_node("load_candidate_documents", document_reader_agent.run)
+        graph_builder.add_node("analyze_job_description", job_description_agent.run)
+        graph_builder.add_node("research_company_context", search_agent.run)
         graph_builder.add_node("router", router_agent.run)
-        graph_builder.add_node("generate_cv", cv_writer_agent.run)
-        graph_builder.add_node("generate_cover_letter", cover_letter_writer_agent.run)
-        graph_builder.add_node("user_input", user_input_agent.run)
+        graph_builder.add_node("draft_cv", cv_writer_agent.run)
+        graph_builder.add_node("draft_cover_letter", cover_letter_writer_agent.run)
+        graph_builder.add_node("collect_user_input", user_input_agent.run)
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
         logger.debug("Adding edges to graph...")
-        graph_builder.add_edge(START, "get_candidate_information")
-        graph_builder.add_edge("get_candidate_information", "get_job_description")
-        graph_builder.add_edge("get_job_description", "get_company_information")
-        graph_builder.add_edge("get_company_information", "router")
+        graph_builder.add_edge(START, "load_candidate_documents")
+        graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
+        graph_builder.add_edge("analyze_job_description", "research_company_context")
+        graph_builder.add_edge("research_company_context", "router")
 
         graph_builder.add_conditional_edges(
             "router",
             lambda state: state.get("next"),
             {
-                "generate_cv": "generate_cv",
-                "generate_cover_letter": "generate_cover_letter",
-                "user_input": "user_input",
+                "draft_cv": "draft_cv",
+                "draft_cover_letter": "draft_cover_letter",
+                "collect_user_input": "collect_user_input",
                 "exit": END
             }
         )
-        graph_builder.add_edge("generate_cv", "router")
-        graph_builder.add_edge("generate_cover_letter", "router")
-        graph_builder.add_edge("user_input", "router")
+        graph_builder.add_edge("draft_cv", "router")
+        graph_builder.add_edge("draft_cover_letter", "router")
+        graph_builder.add_edge("collect_user_input", "router")
         logger.debug("All edges added to graph")
 
         # Create a checkpointer for persistence (required for interrupts)
