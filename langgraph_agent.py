@@ -56,6 +56,20 @@ from agents.user_input import UserInputAgent
 
 
 class State(TypedDict, total=False):
+    """
+    Shared LangGraph state tracking conversation context and generation artifacts.
+
+    Keys:
+        messages: Rolling chat history consumed by LangGraph nodes.
+        job_description_info: Structured information extracted from the job description.
+        candidate_text: Original CV and cover letter provided by the user.
+        company_info: Research output that informs tailoring.
+        next: Router-selected next action.
+        generated_cv: Most recent CV produced by the pipeline.
+        generated_cover_letter: Most recent cover letter produced by the pipeline.
+        user_feedback: Free-form feedback provided after reviewing documents.
+        user_input_message: Prompt shown when interrupting for user input.
+    """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
@@ -127,7 +141,15 @@ class MasterAgent:
     """Master agent that orchestrates the CV editing workflow using LangGraph."""
     
     def __init__(self):
-        """Initialize the MasterAgent and build the LangGraph workflow."""
+        """
+        Initialize the MasterAgent and compile the LangGraph workflow.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("Initializing MasterAgent...")
         
         # Build the graph
@@ -208,7 +230,15 @@ class MasterAgent:
 
 
     def run(self):
-        """Run the LangGraph agent workflow."""
+        """
+        Stream the LangGraph workflow until completion or user exit.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("MasterAgent.run() called - starting workflow execution")
         
         # Use a thread_id to maintain state across invocations

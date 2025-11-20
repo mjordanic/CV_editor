@@ -42,6 +42,9 @@ class CVWriterAgent:
         
         Args:
             output_folder: Folder where generated CVs will be saved
+
+        Returns:
+            None
         """
         logger.info(f"Initializing CVWriterAgent with output_folder: {output_folder}")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0.7)
@@ -52,7 +55,15 @@ class CVWriterAgent:
         logger.debug(f"Output folder ensured: {output_folder}")
     
     def _format_company_info(self, company_info: Optional[dict]) -> str:
-        """Format company information for the prompt."""
+        """
+        Format structured company details into a readable string for prompting.
+
+        Args:
+            company_info: Dictionary containing company description and remote policy keys.
+
+        Returns:
+            str: Human-readable description of the organization or default fallback text.
+        """
         if not company_info:
             return "No additional company information available."
         
@@ -65,7 +76,15 @@ class CVWriterAgent:
         return "\n".join(info_parts) if info_parts else "No additional company information available."
     
     def _format_job_description(self, job_description_info: Optional[dict]) -> str:
-        """Format job description information for the prompt."""
+        """
+        Compile the extracted job description fields into a prompt-ready string.
+
+        Args:
+            job_description_info: Dictionary produced by `JobDescriptionAgent`.
+
+        Returns:
+            str: Concise job overview highlighting title, company, requirements, and description.
+        """
         if not job_description_info:
             return "No job description information available."
         
@@ -82,7 +101,16 @@ class CVWriterAgent:
         return "\n".join(parts)
     
     def _get_modification_instructions(self, user_feedback: Optional[str], has_existing_cv: bool) -> str:
-        """Get modification instructions based on user feedback."""
+        """
+        Build instructions that describe how the LLM should modify an existing CV.
+
+        Args:
+            user_feedback: Raw feedback text provided by the user, if any.
+            has_existing_cv: Flag indicating whether a prior CV exists to be edited.
+
+        Returns:
+            str: Instructional text injected into the prompt or an empty string if none needed.
+        """
         if not user_feedback or not user_feedback.strip():
             if has_existing_cv:
                 return "Please review the existing CV and make improvements based on the job description and company information."

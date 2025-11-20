@@ -72,12 +72,29 @@ class RouterAgent:
     """Agent for routing user requests and collecting feedback using LLM."""
     
     def __init__(self):
+        """
+        Initialize the router agent and its backing LLM client.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("Initializing RouterAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
         logger.debug("RouterAgent LLM initialized")
     
     def _format_messages_history(self, messages: list) -> str:
-        """Format message history for the prompt."""
+        """
+        Format the recent conversation history for inclusion in the router prompt.
+
+        Args:
+            messages: Sequence of LangChain message objects or message dictionaries.
+
+        Returns:
+            str: Human-readable transcript limited to the most recent ten entries.
+        """
         if not messages:
             return "No conversation history yet."
         
@@ -96,7 +113,15 @@ class RouterAgent:
         return "\n".join(formatted) if formatted else "No conversation history yet."
     
     def _format_job_description_info(self, job_description_info: dict | None) -> str:
-        """Format job description information for the prompt."""
+        """
+        Format extracted job description information for the router prompt.
+
+        Args:
+            job_description_info: Dictionary produced by `JobDescriptionAgent`.
+
+        Returns:
+            str: Summary of the most relevant job description attributes.
+        """
         if not job_description_info:
             return "No job description information available."
         
@@ -115,7 +140,15 @@ class RouterAgent:
         return "\n".join(parts) if parts else "No job description information available."
     
     def _format_company_info(self, company_info: dict | None) -> str:
-        """Format company information for the prompt."""
+        """
+        Format derived company information for the router prompt.
+
+        Args:
+            company_info: Dictionary returned by `SearchAgent` containing description/remote policy.
+
+        Returns:
+            str: Condensed company description suitable for the LLM prompt.
+        """
         if not company_info:
             return "No company information available."
         
@@ -132,7 +165,15 @@ class RouterAgent:
         return "\n".join(parts) if parts else "No company information available."
     
     def _format_candidate_text(self, candidate_text: dict | None) -> str:
-        """Format candidate text (original documents) for the prompt."""
+        """
+        Summarize any user-provided documents for LLM conditioning.
+
+        Args:
+            candidate_text: Dictionary of `cv` and `cover_letter` strings from `DocumentReaderAgent`.
+
+        Returns:
+            str: Short preview of available candidate materials or fallback notice.
+        """
         if not candidate_text:
             return "No original documents uploaded by the user."
         
@@ -160,8 +201,7 @@ class RouterAgent:
     def run(self, state):
         """
         Main method to route user requests and collect feedback using LLM.
-        
-        
+
         Args:
             state: The state dictionary containing messages, job_description_info, company_info, candidate_text, and generation status
             

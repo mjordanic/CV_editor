@@ -75,6 +75,15 @@ class JobDescriptionAgent:
     """Agent for extracting structured information from job descriptions."""
     
     def __init__(self):
+        """
+        Initialize the job description agent and supporting LLM.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("Initializing JobDescriptionAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
         logger.debug("JobDescriptionAgent LLM initialized")

@@ -50,7 +50,17 @@ class RemoteWorkResponse(BaseModel):
 
 
 class SearchAgent:
+    """Agent responsible for performing company research via Tavily and summarizing results."""
     def __init__(self):
+        """
+        Initialize the search agent and supporting LLM/Tavily clients.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("Initializing SearchAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
         logger.debug("SearchAgent LLM initialized")
@@ -59,7 +69,15 @@ class SearchAgent:
         logger.debug("TavilyClient initialized")
 
     def search_tavily(self, query: str):
-        """Search using Tavily API with the given query string."""
+        """
+        Execute a Tavily search for company research.
+
+        Args:
+            query: Natural-language search string describing the target company.
+
+        Returns:
+            dict: Raw Tavily response containing search results payload.
+        """
         logger.info(f"Searching Tavily with query: {query}")
         results = self.tavily_client.search(
             query=query, 
@@ -74,7 +92,15 @@ class SearchAgent:
         return results
 
     def _extract_search_content(self, results: dict) -> str:
-        """Extract and combine content from search results."""
+        """
+        Combine textual snippets from Tavily results into a single string.
+
+        Args:
+            results: Tavily response dictionary returned by `search_tavily`.
+
+        Returns:
+            str: Concatenated textual content extracted from individual results.
+        """
         search_contents = []
         if results.get('results'):
             for result in results['results']:
@@ -84,7 +110,15 @@ class SearchAgent:
         return "\n\n".join(search_contents)
 
     def process_search_results(self, results: dict):
-        """Process the search results from Tavily API and generate a short company description."""
+        """
+        Summarize Tavily results into a concise company description.
+
+        Args:
+            results: Tavily response dictionary returned by `search_tavily`.
+
+        Returns:
+            Any: LangChain response object whose `content` holds the description text.
+        """
         logger.info("Processing search results to generate company description")
         combined_content = self._extract_search_content(results)
         
@@ -117,12 +151,12 @@ class SearchAgent:
     def is_remote(self, results: dict) -> Literal["yes", "no", "NA"]:
         """
         Determine if the company supports remote work based on search results.
-        
+
         Args:
-            results: Search results dictionary from Tavily API
-            
+            results: Tavily response dictionary returned by `search_tavily`.
+
         Returns:
-            'yes' if company supports remote work, 'no' if not, 'NA' if cannot be determined
+            Literal["yes", "no", "NA"]: Remote-work determination derived from LLM output.
         """
         logger.info("Determining remote work support from search results")
         combined_content = self._extract_search_content(results)
@@ -155,13 +189,13 @@ class SearchAgent:
 
     def run(self, state):
         """
-        Run search with company information from state and update state with company_info.
-        
+        Run search with company information from state and update state with company info.
+
         Args:
-            state: State dictionary containing job_description_info
-        
+            state: LangGraph state dictionary containing `job_description_info`.
+
         Returns:
-            dict: Updated state with company_info
+            dict: Partial state update with `company_info` and assistant message.
         """
         logger.info("SearchAgent.run() called")
         

@@ -42,17 +42,41 @@ def initialize_debug_file(debug_dir: str = "debug") -> str:
 
 
 def get_debug_file_path() -> Optional[str]:
-    """Get the current debug file path."""
+    """
+    Retrieve the active debug file path, if initialized.
+
+    Args:
+        None
+
+    Returns:
+        Optional[str]: Absolute path to the debug file or None if not initialized yet.
+    """
     return _debug_file_path
 
 
 def get_logged_message_count() -> int:
-    """Get the number of messages that have been logged."""
+    """
+    Return how many messages have been written to the debug log during this session.
+
+    Args:
+        None
+
+    Returns:
+        int: Count of logged messages.
+    """
     return _logged_message_count
 
 
 def reset_logged_message_count():
-    """Reset the logged message count (useful when starting a new session)."""
+    """
+    Reset the internal message counter.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     global _logged_message_count
     _logged_message_count = 0
 
@@ -62,8 +86,11 @@ def write_to_debug(content: str, section_title: str = ""):
     Write content to the debug file.
     
     Args:
-        content: Content to write
-        section_title: Optional title for the section
+        content: Free-form text that should be appended to the debug log.
+        section_title: Optional section header to prepend before the content.
+
+    Returns:
+        None
     """
     if _debug_file_path is None:
         # If not initialized, initialize with default settings

@@ -8,6 +8,15 @@ class UserInputAgent:
     """Agent for collecting user input. Uses interrupt() to pause and get user input."""
     
     def __init__(self):
+        """
+        Initialize the UserInputAgent.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         logger.info("Initializing UserInputAgent...")
     
     def run(self, state):
