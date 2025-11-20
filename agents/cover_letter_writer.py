@@ -184,7 +184,8 @@ class CoverLetterWriterAgent:
         logger.info("CoverLetterWriterAgent.run() called")
         
         candidate_text = state.get("candidate_text", {})
-        candidate_cv = candidate_text.get("cv") if candidate_text else None
+        generated_cv = state.get("generated_cv")
+        candidate_cv = generated_cv if generated_cv else (candidate_text.get("cv") if candidate_text else None)
         # Use generated cover letter if it exists (for modifications), otherwise use original
         generated_cover_letter = state.get("generated_cover_letter")
         candidate_cover_letter = generated_cover_letter if generated_cover_letter else (candidate_text.get("cover_letter") if candidate_text else None)
