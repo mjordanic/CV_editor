@@ -2,8 +2,8 @@ from typing import Literal
 import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
-from langgraph.types import interrupt
 from pydantic import BaseModel, Field
+from debug_utils import log_messages, get_logged_message_count
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,7 @@ ROUTER_SYSTEM_PROMPT = (
     "Available actions:\n"
     "- 'generate_cv': Generate a new CV or modify an existing one\n"
     "- 'generate_cover_letter': Generate a new cover letter or modify an existing one\n"
+    "- 'user_input': Request user input (use this when you need to ask the user a question or get feedback)\n"
     "- 'exit': End the conversation\n\n"
     "If documents have been generated, the user might want to:\n"
     "- Request modifications (provide feedback)\n"
@@ -49,9 +50,9 @@ ROUTER_HUMAN_PROMPT = (
 
 class RouterResponse(BaseModel):
     """Response model for router decisions."""
-    next_action: Literal["generate_cv", "generate_cover_letter", "exit"] = Field(
+    next_action: Literal["generate_cv", "generate_cover_letter", "user_input", "exit"] = Field(
         ...,
-        description="The next action to take: generate_cv, generate_cover_letter, or exit"
+        description="The next action to take: generate_cv, generate_cover_letter, user_input, or exit"
     )
     message_to_user: str = Field(
         ...,
@@ -160,6 +161,7 @@ class RouterAgent:
         """
         Main method to route user requests and collect feedback using LLM.
         
+        
         Args:
             state: The state dictionary containing messages, job_description_info, company_info, candidate_text, and generation status
             
@@ -177,6 +179,15 @@ class RouterAgent:
         generated_cover_letter = state.get("generated_cover_letter")
         
         logger.debug(f"State extracted - messages: {len(messages)}, cv_generated: {generated_cv is not None}, cover_letter_generated: {generated_cover_letter is not None}")
+        
+        # Log only new messages to debug file
+        if messages:
+            logged_count = get_logged_message_count()
+            if logged_count < len(messages):
+                # There are new messages to log
+                new_count = log_messages(messages, start_index=logged_count)
+                if new_count > 0:
+                    logger.debug(f"Logged {new_count} new message(s) to debug file")
         
         # Format context for LLM
         messages_history = self._format_messages_history(messages)
@@ -205,65 +216,59 @@ class RouterAgent:
         }
         
         logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, job_desc length: {len(job_desc_formatted)}")
-        logger.info("Calling LLM for initial routing decision...")
+        logger.info("Calling LLM for routing decision...")
         
-        # First, determine if we need user input and what message to show
-        initial_response = chain.invoke(llm_input)
+        # Make a single LLM call to determine routing
+        response = chain.invoke(llm_input)
         
-        logger.info(f"LLM initial response received - next_action: {initial_response.next_action}, needs_user_input: {initial_response.needs_user_input}")
-        logger.debug(f"LLM initial response - message_to_user: {initial_response.message_to_user[:200] if initial_response.message_to_user else 'None'}...")
+        logger.info(f"LLM response received - next_action: {response.next_action}, needs_user_input: {response.needs_user_input}")
+        logger.debug(f"LLM response - message_to_user: {response.message_to_user[:200] if response.message_to_user else 'None'}...")
         
-        # If we need user input, interrupt and get it
-        user_input = None
-        if initial_response.needs_user_input and initial_response.message_to_user:
-            logger.info("Router needs user input - interrupting workflow")
-            logger.debug(f"Interrupt message: {initial_response.message_to_user}")
-            user_input = interrupt({
-                "message": initial_response.message_to_user,
-                "required": True
-            })
+        # If we need user input, route to user_input node
+        if response.needs_user_input and response.message_to_user:
+            logger.info("Router needs user input - routing to user_input node")
+            logger.debug(f"User input message: {response.message_to_user}")
             
-            logger.info(f"User input received via interrupt: {str(user_input)[:100]}..." if len(str(user_input)) > 100 else f"User input: {user_input}")
-            
-            # Add user input to messages for context
-            messages = messages + [{"role": "user", "content": str(user_input)}]
-            messages_history = self._format_messages_history(messages)
+            return {
+                "next": "user_input",
+                "user_input_message": response.message_to_user,
+                "messages": messages + [{
+                    "role": "assistant",
+                    "content": response.message_to_user
+                }]
+            }
         
-        # Now get final decision from LLM with updated context (including user input if provided)
-        final_llm_input = {
-            "messages_history": messages_history,
-            "job_description_info": job_desc_formatted,
-            "company_info": company_info_formatted,
-            "candidate_text": candidate_text_formatted,
-            "cv_generated": "Yes" if generated_cv is not None else "No",
-            "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No"
-        }
-        
-        logger.info("Calling LLM for final routing decision...")
-        final_response = chain.invoke(final_llm_input)
-        
-        logger.info(f"LLM final response received - next_action: {final_response.next_action}")
-        logger.debug(f"LLM final response - message_to_user: {final_response.message_to_user[:200] if final_response.message_to_user else 'None'}..., user_feedback: {final_response.user_feedback[:200] if final_response.user_feedback else 'None'}...")
+        # If we don't need user input, use the response directly and return
+        logger.info("No user input needed - proceeding directly with routing decision")
         
         # Extract user feedback if this is a modification request
-        user_feedback = ""
-        if user_input and final_response.next_action in ["generate_cv", "generate_cover_letter"]:
-            # If we're generating and documents already exist, treat user input as feedback
-            if (final_response.next_action == "generate_cv" and generated_cv is not None) or \
-               (final_response.next_action == "generate_cover_letter" and generated_cover_letter is not None):
-                user_feedback = str(user_input)
-            else:
-                user_feedback = final_response.user_feedback
-        else:
-            user_feedback = final_response.user_feedback
+        user_feedback = response.user_feedback
         
-        logger.info(f"Router decision: next_action={final_response.next_action}, user_feedback_length={len(user_feedback)}")
+        # If we're generating and documents already exist, check if there's feedback in messages
+        if response.next_action in ["generate_cv", "generate_cover_letter"]:
+            if (response.next_action == "generate_cv" and generated_cv is not None) or \
+               (response.next_action == "generate_cover_letter" and generated_cover_letter is not None):
+                # Check last user message for feedback
+                if messages:
+                    last_user_msg = None
+                    for msg in reversed(messages):
+                        if isinstance(msg, dict):
+                            role = msg.get("role", "")
+                        else:
+                            role = getattr(msg, "role", "")
+                        if role == "user":
+                            last_user_msg = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
+                            break
+                    if last_user_msg and not user_feedback:
+                        user_feedback = last_user_msg
+        
+        logger.info(f"Router decision: next_action={response.next_action}, user_feedback_length={len(user_feedback)}")
         
         return {
-            "next": final_response.next_action,
+            "next": response.next_action,
             "user_feedback": user_feedback,
             "messages": messages + [{
                 "role": "assistant",
-                "content": final_response.message_to_user if final_response.message_to_user else f"Proceeding with: {final_response.next_action}"
+                "content": response.message_to_user if response.message_to_user else f"Proceeding with: {response.next_action}"
             }]
         }

@@ -3,6 +3,7 @@ import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 import os
+from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
@@ -194,6 +195,14 @@ class CVWriterAgent:
         # Save CV
         file_path = self.save_cv(cv_text)
         
+        # Write to debug file
+        debug_content = ""
+        debug_content += f"GENERATED CV (saved to: {file_path}):\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += cv_text
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "CV WRITER DEBUG INFO")
         logger.info("CV generation and saving completed successfully")
         
         return {

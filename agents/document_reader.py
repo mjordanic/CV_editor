@@ -2,6 +2,7 @@ from pypdf import PdfReader
 import os
 import logging
 from typing import Optional, Dict
+from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
@@ -121,5 +122,26 @@ class DocumentReaderAgent:
             logger.debug(f"CV length: {len(documents['cv'])} characters")
         if cover_letter_found:
             logger.debug(f"Cover letter length: {len(documents['cover_letter'])} characters")
+        
+        # Write to debug file
+        debug_content = ""
+        if cv_found:
+            debug_content += "CV CONTENT:\n"
+            debug_content += "-" * 80 + "\n"
+            debug_content += documents['cv']
+            debug_content += "\n\n"
+        else:
+            debug_content += "CV CONTENT: Not found\n\n"
+        
+        if cover_letter_found:
+            debug_content += "COVER LETTER CONTENT:\n"
+            debug_content += "-" * 80 + "\n"
+            debug_content += documents['cover_letter']
+            debug_content += "\n\n"
+        else:
+            debug_content += "COVER LETTER CONTENT: Not found\n\n"
+        
+        write_to_debug(debug_content, "DOCUMENT READER DEBUG INFO")
+        
         return {"candidate_text": documents}
 

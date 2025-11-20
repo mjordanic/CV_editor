@@ -1,10 +1,12 @@
 from tavily import TavilyClient
 from typing import Optional, Literal
 import os
+import json
 import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +60,7 @@ class SearchAgent:
 
     def search_tavily(self, query: str):
         """Search using Tavily API with the given query string."""
-        logger.info(f"Searching Tavily with query: {query[:100]}..." if len(query) > 100 else f"Searching Tavily with query: {query}")
+        logger.info(f"Searching Tavily with query: {query}")
         results = self.tavily_client.search(
             query=query, 
             search_depth="advanced", 
@@ -165,32 +167,29 @@ class SearchAgent:
         
         job_description_info = state.get("job_description_info")
         if not job_description_info:
-            logger.warning("No job_description_info in state - cannot perform search")
-            return {
-                "messages": [{
-                    "role": "assistant",
-                    "content": "Please provide job description information first before searching for company details."
-                }]
-            }
+            raise ValueError("No job_description_info in state - cannot perform search")
+
         
-        logger.debug(f"Job description info extracted - company: {job_description_info.get('company_name')}, location: {job_description_info.get('location')}")
+        logger.debug(f"Job description info extracted - company: {job_description_info.get('company_name')}, website: {job_description_info.get('company_website')}, location: {job_description_info.get('location')}, industry: {job_description_info.get('industry')}")
         
-        # Extract company name and location from job description info
+        # Extract company name, website, location, and industry from job description info
         company_info_dict = {
             "name": job_description_info.get("company_name"),
-            "location": job_description_info.get("location")
+            "website": job_description_info.get("company_website"),
+            "location": job_description_info.get("location"),
+            "industry": job_description_info.get("industry")
         }
         
         # Convert dict to string for query
         info_parts = []
-        for key in ["name", "location"]:
+        for key in ["name", "website", "location", "industry"]:
             if company_info_dict.get(key):
                 info_parts.append(f"{key.title()}: {company_info_dict[key]}")
         company_info_str = "; ".join(info_parts) if info_parts else "No additional information provided"
         
         # Format the query template
         formatted_query = QUERY_TEMPLATE.format(
-            company_information=company_info_str[:150]  # limit the length of the company information because Tavily API has a limit of 400 characters
+            company_information=company_info_str[:250]  # limit the length of the company information because Tavily API has a limit of 400 characters
         )
         logger.debug(f"Formatted query: {formatted_query}")
         
@@ -201,8 +200,31 @@ class SearchAgent:
         company_description = self.process_search_results(results)
         remote_work = self.is_remote(results)
         
+        # Extract search content for debug logging
+        extracted_search_content = self._extract_search_content(results)
+        company_description_str = (
+            company_description.content if hasattr(company_description, "content") else str(company_description)
+        )
+        
+        # Write debug info to file
+        debug_content = ""
+        debug_content += "EXTRACTED SEARCH CONTENT:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += extracted_search_content if extracted_search_content else "(no search content)"
+        debug_content += "\n\n"
+        debug_content += "COMPANY DESCRIPTION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += company_description_str if company_description_str else "(no description)"
+        debug_content += "\n\n"
+        debug_content += "REMOTE WORK DETERMINATION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += remote_work if remote_work else "NA"
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "SEARCH AGENT DEBUG INFO")
+        logger.info("Search debug info written to debug file")
+        
         # Format company info for state
-        company_description_str = company_description.content if hasattr(company_description, 'content') else str(company_description)
         company_info = {
             "company_description": company_description_str,
             "remote_work": remote_work,

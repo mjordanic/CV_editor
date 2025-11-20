@@ -1,9 +1,12 @@
 from typing import Optional, Literal
 import logging
+import os
+import json
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
+from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
@@ -140,23 +143,14 @@ class JobDescriptionAgent:
         # Pause execution and wait for user to provide job description
         logger.info("Requesting job description from user via interrupt")
         # The interrupt() call will pause the graph and return the user's input when resumed
-        job_description_text = interrupt({
-            "message": "Please paste the job description you'd like me to analyze.",
-            "required": True
-        })
+        # job_description_text = interrupt({
+        #     "message": "Please paste the job description you'd like me to analyze.",
+        #     "required": True
+        # })
+        job_description_text = interrupt("Please paste the job description you'd like me to analyze.")
         
         logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
         logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
-        
-        # Validate that we received substantial content
-        if not job_description_text or len(str(job_description_text).strip()) < 50:
-            logger.warning("Job description too short - requesting more content")
-            # If content is too short, interrupt again asking for more
-            job_description_text = interrupt({
-                "message": "Please paste the complete job description. The description should be substantial (at least a few sentences).",
-                "required": True
-            })
-            logger.info(f"Updated job description received - length: {len(str(job_description_text))} characters")
         
         # Ensure we have a string
         job_description_text = str(job_description_text).strip()
@@ -182,6 +176,21 @@ class JobDescriptionAgent:
 """
         if extracted_info.additional_info:
             info_summary += f"\n**Additional Information:**\n{extracted_info.additional_info}"
+        
+        # Write debug info to file
+        debug_content = ""
+        debug_content += "FULL JOB DESCRIPTION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += job_description_text
+        debug_content += "\n\n"
+        
+        debug_content += "EXTRACTED SUMMARY:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += info_summary
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "JOB DESCRIPTION DEBUG INFO")
+        logger.info("Debug info written to debug file")
         
         # Store extracted info in state for use by other nodes
         updated_state = {

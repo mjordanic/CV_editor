@@ -3,6 +3,7 @@ import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 import os
+from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
 class CoverLetterWriterAgent:
     """Agent for generating tailored cover letters based on job descriptions and company information."""
     
-    def __init__(self, output_folder: str = "CV"):
+    def __init__(self, output_folder: str = "generated_CVs"):
         """
         Initialize the CoverLetterWriterAgent.
         
@@ -205,6 +206,14 @@ class CoverLetterWriterAgent:
         # Save cover letter
         file_path = self.save_cover_letter(cover_letter_text)
         
+        # Write to debug file
+        debug_content = ""
+        debug_content += f"GENERATED COVER LETTER (saved to: {file_path}):\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += cover_letter_text
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "COVER LETTER WRITER DEBUG INFO")
         logger.info("Cover letter generation and saving completed successfully")
         
         return {
