@@ -1,13 +1,14 @@
 from tavily import TavilyClient
 from typing import Optional, Literal
 import os
+import json
+import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from debug_utils import write_to_debug
 
-
-
-tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+logger = logging.getLogger(__name__)
 
 
 QUERY_TEMPLATE = (
@@ -49,22 +50,57 @@ class RemoteWorkResponse(BaseModel):
 
 
 class SearchAgent:
+    """Agent responsible for performing company research via Tavily and summarizing results."""
     def __init__(self):
+        """
+        Initialize the search agent and supporting LLM/Tavily clients.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        logger.info("Initializing SearchAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
+        logger.debug("SearchAgent LLM initialized")
+        # Initialize TavilyClient lazily to ensure environment variables are loaded
+        self.tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+        logger.debug("TavilyClient initialized")
 
     def search_tavily(self, query: str):
-        """Search using Tavily API with the given query string."""
-        results = tavily_client.search(
+        """
+        Execute a Tavily search for company research.
+
+        Args:
+            query: Natural-language search string describing the target company.
+
+        Returns:
+            dict: Raw Tavily response containing search results payload.
+        """
+        logger.info(f"Searching Tavily with query: {query}")
+        results = self.tavily_client.search(
             query=query, 
             search_depth="advanced", 
             max_results=5, 
             include_images=False,
             include_raw_content="text"
         )
+        num_results = len(results.get('results', [])) if results else 0
+        logger.info(f"Tavily search completed - found {num_results} results")
+        logger.debug(f"Search results keys: {list(results.keys()) if results else 'None'}")
         return results
 
     def _extract_search_content(self, results: dict) -> str:
-        """Extract and combine content from search results."""
+        """
+        Combine textual snippets from Tavily results into a single string.
+
+        Args:
+            results: Tavily response dictionary returned by `search_tavily`.
+
+        Returns:
+            str: Concatenated textual content extracted from individual results.
+        """
         search_contents = []
         if results.get('results'):
             for result in results['results']:
@@ -74,11 +110,23 @@ class SearchAgent:
         return "\n\n".join(search_contents)
 
     def process_search_results(self, results: dict):
-        """Process the search results from Tavily API and generate a short company description."""
+        """
+        Summarize Tavily results into a concise company description.
+
+        Args:
+            results: Tavily response dictionary returned by `search_tavily`.
+
+        Returns:
+            Any: LangChain response object whose `content` holds the description text.
+        """
+        logger.info("Processing search results to generate company description")
         combined_content = self._extract_search_content(results)
         
         if not combined_content:
+            logger.warning("No search content extracted - returning default message")
             return "No information found about the company."
+        
+        logger.debug(f"Extracted search content length: {len(combined_content)} characters")
         
         # Create prompt for generating company description
         prompt = ChatPromptTemplate.from_messages([
@@ -88,24 +136,36 @@ class SearchAgent:
         
         # Generate description using OpenAI
         chain = prompt | self.llm
-        response = chain.invoke({"search_content": combined_content[:8000]})  # Limit content to avoid token limits
+        llm_input = {"search_content": combined_content[:8000]}  # Limit content to avoid token limits
+        logger.info("Calling LLM to generate company description...")
+        logger.debug(f"LLM input - search_content length: {len(llm_input['search_content'])} characters")
+        
+        response = chain.invoke(llm_input)
+        
+        response_content = response.content if hasattr(response, 'content') else str(response)
+        logger.info(f"LLM response received - company description length: {len(response_content)} characters")
+        logger.debug(f"Company description preview: {response_content[:200]}...")
         
         return response
 
     def is_remote(self, results: dict) -> Literal["yes", "no", "NA"]:
         """
         Determine if the company supports remote work based on search results.
-        
+
         Args:
-            results: Search results dictionary from Tavily API
-            
+            results: Tavily response dictionary returned by `search_tavily`.
+
         Returns:
-            'yes' if company supports remote work, 'no' if not, 'NA' if cannot be determined
+            Literal["yes", "no", "NA"]: Remote-work determination derived from LLM output.
         """
+        logger.info("Determining remote work support from search results")
         combined_content = self._extract_search_content(results)
         
         if not combined_content:
+            logger.warning("No search content for remote work detection - returning 'NA'")
             return "NA"
+        
+        logger.debug(f"Extracted search content length for remote work: {len(combined_content)} characters")
         
         # Create prompt for remote work detection
         prompt = ChatPromptTemplate.from_messages([
@@ -116,47 +176,56 @@ class SearchAgent:
         # Use structured output to ensure proper return type
         structured_llm = self.llm.with_structured_output(RemoteWorkResponse)
         chain = prompt | structured_llm
-        response = chain.invoke({"search_content": combined_content[:8000]})
+        
+        llm_input = {"search_content": combined_content[:8000]}
+        logger.info("Calling LLM to determine remote work support...")
+        logger.debug(f"LLM input - search_content length: {len(llm_input['search_content'])} characters")
+        
+        response = chain.invoke(llm_input)
+        
+        logger.info(f"LLM response received - supports_remote: {response.supports_remote}")
         
         return response.supports_remote
 
     def run(self, state):
         """
-        Run search with company information from state and update state with company_info.
-        
+        Run search with company information from state and update state with company info.
+
         Args:
-            state: State dictionary containing job_description_info
-        
+            state: LangGraph state dictionary containing `job_description_info`.
+
         Returns:
-            dict: Updated state with company_info
+            dict: Partial state update with `company_info` and assistant message.
         """
+        logger.info("SearchAgent.run() called")
+        
         job_description_info = state.get("job_description_info")
         if not job_description_info:
-            return {
-                "messages": [{
-                    "role": "assistant",
-                    "content": "Please provide job description information first before searching for company details."
-                }]
-            }
+            raise ValueError("No job_description_info in state - cannot perform search")
+
         
-        # Extract company name and location from job description info
+        logger.debug(f"Job description info extracted - company: {job_description_info.get('company_name')}, website: {job_description_info.get('company_website')}, location: {job_description_info.get('location')}, industry: {job_description_info.get('industry')}")
+        
+        # Extract company name, website, location, and industry from job description info
         company_info_dict = {
             "name": job_description_info.get("company_name"),
-            "location": job_description_info.get("location")
+            "website": job_description_info.get("company_website"),
+            "location": job_description_info.get("location"),
+            "industry": job_description_info.get("industry")
         }
         
         # Convert dict to string for query
         info_parts = []
-        for key in ["name", "location"]:
+        for key in ["name", "website", "location", "industry"]:
             if company_info_dict.get(key):
                 info_parts.append(f"{key.title()}: {company_info_dict[key]}")
         company_info_str = "; ".join(info_parts) if info_parts else "No additional information provided"
         
         # Format the query template
         formatted_query = QUERY_TEMPLATE.format(
-            company_information=company_info_str[:150]  # limit the length of the company information because Tavily API has a limit of 400 characters
+            company_information=company_info_str[:250]  # limit the length of the company information because Tavily API has a limit of 400 characters
         )
-        print("formatted_query: ", formatted_query)
+        logger.debug(f"Formatted query: {formatted_query}")
         
         # Execute search
         results = self.search_tavily(formatted_query)
@@ -165,12 +234,38 @@ class SearchAgent:
         company_description = self.process_search_results(results)
         remote_work = self.is_remote(results)
         
+        # Extract search content for debug logging
+        extracted_search_content = self._extract_search_content(results)
+        company_description_str = (
+            company_description.content if hasattr(company_description, "content") else str(company_description)
+        )
+        
+        # Write debug info to file
+        debug_content = ""
+        debug_content += "EXTRACTED SEARCH CONTENT:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += extracted_search_content if extracted_search_content else "(no search content)"
+        debug_content += "\n\n"
+        debug_content += "COMPANY DESCRIPTION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += company_description_str if company_description_str else "(no description)"
+        debug_content += "\n\n"
+        debug_content += "REMOTE WORK DETERMINATION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += remote_work if remote_work else "NA"
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "SEARCH AGENT DEBUG INFO")
+        logger.info("Search debug info written to debug file")
+        
         # Format company info for state
         company_info = {
-            "company_description": company_description.content if hasattr(company_description, 'content') else str(company_description),
+            "company_description": company_description_str,
             "remote_work": remote_work,
             "search_results": results  # Store raw search results if needed
         }
+        
+        logger.info(f"Company info prepared - remote_work: {remote_work}, description_length: {len(company_description_str)}")
         
         return {
             "company_info": company_info,

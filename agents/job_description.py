@@ -1,13 +1,19 @@
 from typing import Optional, Literal
+import logging
+import os
+import json
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
+from debug_utils import write_to_debug
+
+logger = logging.getLogger(__name__)
 
 
 JOB_DESCRIPTION_EXTRACTION_SYSTEM_PROMPT = (
     "You are a helpful assistant that extracts structured information from job descriptions. "
-    "Analyze the job description carefully and extract all relevant details about the company and position."
+    "Analyze the job description carefully and extract all relevant details about the company and position. Be terse and concise."
 )
 
 JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
@@ -16,7 +22,7 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
     "- Company website/web page\n"
     "- Location (city, state, country)\n"
     "- Industry\n"
-    "- Whether the job is remote, hybrid, or on-site\n"
+    "- Whether the job is remote, hybrid, or on-site. If not specified, return 'unknown'.\n"
     "- Candidate minimal requirements (qualifications, skills, experience, education, etc.)\n"
     "- Any other relevant company or position details\n\n"
     "Job Description:\n\n{job_description}"
@@ -69,7 +75,18 @@ class JobDescriptionAgent:
     """Agent for extracting structured information from job descriptions."""
     
     def __init__(self):
+        """
+        Initialize the job description agent and supporting LLM.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        logger.info("Initializing JobDescriptionAgent...")
         self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
+        logger.debug("JobDescriptionAgent LLM initialized")
     
     def extract_info(self, job_description: str) -> JobDescriptionInfo:
         """
@@ -81,6 +98,9 @@ class JobDescriptionAgent:
         Returns:
             JobDescriptionInfo: Structured information extracted from the job description
         """
+        logger.info(f"Extracting job description info - input length: {len(job_description)} characters")
+        logger.debug(f"Job description preview: {job_description[:200]}...")
+        
         # Create prompt for extracting job description information
         prompt = ChatPromptTemplate.from_messages([
             ("system", JOB_DESCRIPTION_EXTRACTION_SYSTEM_PROMPT),
@@ -90,7 +110,15 @@ class JobDescriptionAgent:
         # Use structured output to ensure proper return type
         structured_llm = self.llm.with_structured_output(JobDescriptionInfo)
         chain = prompt | structured_llm
-        response = chain.invoke({"job_description": job_description})
+        
+        llm_input = {"job_description": job_description}
+        logger.info("Calling LLM to extract job description information...")
+        logger.debug(f"LLM input - job_description length: {len(job_description)}")
+        
+        response = chain.invoke(llm_input)
+        
+        logger.info(f"LLM response received - company: {response.company_name}, job_title: {response.job_title}, work_type: {response.work_type}")
+        logger.debug(f"LLM response - location: {response.location}, industry: {response.industry}, requirements_length: {len(response.candidate_minimal_requirements) if response.candidate_minimal_requirements else 0}")
         
         return response
     
@@ -108,8 +136,11 @@ class JobDescriptionAgent:
         Returns:
             dict: Updated state with extracted job description information
         """
+        logger.info("JobDescriptionAgent.run() called")
+        
         # Check if we've already processed a job description
         if state.get("job_description_info"):
+            logger.info("Job description already processed - skipping extraction")
             # Already have job description info, return it without reprocessing
             return {
                 "messages": [{
@@ -119,19 +150,16 @@ class JobDescriptionAgent:
             }
         
         # Pause execution and wait for user to provide job description
+        logger.info("Requesting job description from user via interrupt")
         # The interrupt() call will pause the graph and return the user's input when resumed
-        job_description_text = interrupt({
-            "message": "Please paste the job description you'd like me to analyze.",
-            "required": True
-        })
+        # job_description_text = interrupt({
+        #     "message": "Please paste the job description you'd like me to analyze.",
+        #     "required": True
+        # })
+        job_description_text = interrupt("Please paste the job description you'd like me to analyze.")
         
-        # Validate that we received substantial content
-        if not job_description_text or len(str(job_description_text).strip()) < 50:
-            # If content is too short, interrupt again asking for more
-            job_description_text = interrupt({
-                "message": "Please paste the complete job description. The description should be substantial (at least a few sentences).",
-                "required": True
-            })
+        logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
+        logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
         
         # Ensure we have a string
         job_description_text = str(job_description_text).strip()
@@ -141,6 +169,8 @@ class JobDescriptionAgent:
         
         # Store the full job description text in the extracted info
         extracted_info.job_description = job_description_text
+        
+        logger.info("Job description extraction completed successfully")
         
         # Format the response
         info_summary = f"""I've extracted the following information from the job description:
@@ -153,9 +183,23 @@ class JobDescriptionAgent:
 **Job Title:** {extracted_info.job_title or 'Not specified'}
 **Candidate Minimal Requirements:** {extracted_info.candidate_minimal_requirements or 'Not specified'}
 """
-
         if extracted_info.additional_info:
             info_summary += f"\n**Additional Information:**\n{extracted_info.additional_info}"
+        
+        # Write debug info to file
+        debug_content = ""
+        debug_content += "FULL JOB DESCRIPTION:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += job_description_text
+        debug_content += "\n\n"
+        
+        debug_content += "EXTRACTED SUMMARY:\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += info_summary
+        debug_content += "\n\n"
+        
+        write_to_debug(debug_content, "JOB DESCRIPTION DEBUG INFO")
+        logger.info("Debug info written to debug file")
         
         # Store extracted info in state for use by other nodes
         updated_state = {
