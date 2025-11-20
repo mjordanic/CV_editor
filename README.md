@@ -1,7 +1,7 @@
-CV Editor Agent
-===============
+CV Editor Agentic System
+========================
 
-Create high‑quality, tailored CVs and cover letters with a LangGraph‑based workflow that reads your existing documents, analyzes a job description, researches the target company, and iteratively generates polished drafts with user feedback loops.
+Create high‑quality, tailored CVs and cover letters with an AI-first, LangGraph‑based agentic workflow that reads your existing documents, analyzes a job description, researches the target company, and iteratively generates polished drafts with LLM-guided user feedback loops.
 
 Table of Contents
 -----------------
@@ -26,6 +26,7 @@ Features
 - Routes between CV generation, cover letter generation, or additional user input using an LLM-driven router.
 - Saves generated artifacts to `generated_CVs/` and logs every step to both `logs/` and `debug/`.
 - Supports iterative editing: user feedback is captured and fed back into the writing agents.
+- Emphasizes human-in-the-loop control so you can steer the AI models at every decision point.
 
 High-Level Architecture
 -----------------------
@@ -38,7 +39,7 @@ High-Level Architecture
 - **CVWriterAgent / CoverLetterWriterAgent**: Generate tailored drafts using LangChain chat models.
 - **UserInputAgent**: Collects free-form responses when more clarity or feedback is required.
 
-All agents share a common `State` TypedDict managed by LangGraph, which keeps track of messages, extracted info, and generated artifacts.
+All agents share a common `State` TypedDict managed by LangGraph, which keeps track of messages, extracted info, and generated artifacts. The result is a cohesive AI agentic system where multiple specialized models collaborate.
 
 Prerequisites
 -------------
@@ -102,7 +103,7 @@ Workflow Walkthrough
 3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
 4. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 5. **Generation**:
-   - `CVWriterAgent` creates or updates a CV.
+   - `CVWriterAgent` creates or updates a CV using the selected LLM.
    - `CoverLetterWriterAgent` creates or updates a cover letter (often leveraging the freshly generated CV).
 6. **User feedback loop**: If the router needs clarification, `UserInputAgent` interrupts the graph so you can provide instructions, which are then fed back into the next generation step.
 
