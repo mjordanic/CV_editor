@@ -269,8 +269,9 @@ class SearchAgent:
         
         return {
             "company_info": company_info,
-            "messages": [{
+            "messages": state.get("messages", []) + [{
                 "role": "assistant",
                 "content": f"Company information retrieved. Remote work: {remote_work}"
-            }]
+            }],
+            "current_node": "search"
         }
