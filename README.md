@@ -133,3 +133,25 @@ Troubleshooting
 - **Imports failing in `langgraph_agent_example.py`**: This legacy sample references optional packages. Either install the missing dependencies or ignore the warnings; it is not used by the main workflow.
 
 Questions or ideas? Open an issue or drop a note in the repo discussions. Happy document crafting!
+
+
+TODO list
+---------
+- **PDF generation agent**: Add an agent that uses LaTeX to generate professional PDF versions of CVs and cover letters.
+- **Enhanced candidate information system**: Currently, only the candidate's CV and cover letter can be uploaded. This should be improved to:
+  - Accept any document type (portfolio, certificates, transcripts, etc.) and process them automatically
+  - Create a more complete representation of the candidate's skills, aspirations, and experience
+  - Allow candidates to input additional information via prompts
+  - Enable the agent to proactively ask for missing information to build a comprehensive candidate profile
+- **Quality assessment**: Add an agent that evaluates generated documents and provides feedback on content quality, ATS compatibility, and alignment with job requirements.
+- **Version control and history**: Implement document versioning to track changes, compare revisions, and revert to previous versions of generated CVs and cover letters.
+- **ATS optimization**: Add features to optimize documents for Applicant Tracking Systems (ATS), including keyword optimization, format validation, and ATS compatibility scoring.
+- **Multi-format export**: Support exporting generated documents to multiple formats (Word, HTML, Markdown) in addition to PDF and plain text.
+- **Template system**: Implement a template selection and customization system, allowing users to choose from different CV/cover letter styles and formats.
+- **Batch processing**: Enable processing multiple job applications simultaneously, generating tailored documents for multiple positions in a single run.
+- **Web interface**: Develop a web-based UI to replace or complement the CLI, making the system more accessible and user-friendly.
+- **Integration capabilities**: Add integrations with professional networks (LinkedIn), job boards, and document storage services (Google Drive, Dropbox).
+- **Configuration management**: Create a configuration file system for default settings, model preferences, and workflow customization without code changes.
+- **Testing and CI/CD**: Add comprehensive unit tests, integration tests, and set up a CI/CD pipeline for automated testing and deployment.
+- **Multi-language support**: Extend the system to support CV and cover letter generation in multiple languages.
+
