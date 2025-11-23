@@ -19,7 +19,8 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "**Candidate Information:**\n{candidate_cv}\n{candidate_cover_letter}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
-    "{modification_instructions}\n\n"
+    "Make sure to follow these modification instructions: {modification_instructions}\n\n"
+    "User requested the following modifications in the previous messages, make sure not to overwrite them or contradict them unless they are explicitly stated in the modification instructions: {previous_modification_instructions}\n\n"
     "Instructions:\n"
     "- Tailor the cover letter to the specific job and company\n"
     "- Address the hiring manager or use a professional greeting\n"
@@ -56,6 +57,8 @@ class CoverLetterWriterAgent:
         # Ensure output folder exists
         os.makedirs(self.output_folder, exist_ok=True)
         logger.debug(f"Output folder ensured: {output_folder}")
+
+        self.previous_modification_instructions = []
     
     def _format_company_info(self, company_info: Optional[dict]) -> str:
         """
@@ -116,12 +119,37 @@ class CoverLetterWriterAgent:
         Returns:
             str: Instructional text injected into the prompt or an empty string if none needed.
         """
-        if not user_feedback or not user_feedback.strip():
+        # Always prioritize user feedback when provided
+        if user_feedback and user_feedback.strip():
             if has_existing_cover_letter:
-                return "Please review the existing cover letter and make improvements based on the job description and company information."
-            return ""
+                return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease review the existing cover letter and incorporate these changes into it."
+            return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease incorporate these changes into the cover letter."
         
-        return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease incorporate these changes into the cover letter."
+        # Only use hardcoded message when there's no user feedback
+        if has_existing_cover_letter:
+            return "Please review the existing cover letter and make improvements based on the job description and company information."
+        
+        return ""
+    
+    def _format_previous_modification_instructions(self) -> str:
+        """
+        Format the list of previous modification instructions into a readable string.
+
+        Returns:
+            str: Formatted string of previous instructions, or empty string if none exist.
+        """
+        if not self.previous_modification_instructions:
+            return "No previous modification instructions."
+        
+        formatted = []
+        for idx, instruction in enumerate(self.previous_modification_instructions, 1):
+            if instruction and instruction.strip():
+                formatted.append(f"{idx}. {instruction.strip()}")
+        
+        if not formatted:
+            return "No previous modification instructions."
+        
+        return "\n".join(formatted)
     
     def generate_cover_letter(
         self,
@@ -129,7 +157,8 @@ class CoverLetterWriterAgent:
         candidate_cover_letter: Optional[str],
         job_description_info: Optional[dict],
         company_info: Optional[dict],
-        user_feedback: Optional[str] = None
+        modification_instructions: Optional[str] = None,
+        previous_modification_instructions_formatted: Optional[str] = None
     ) -> str:
         """
         Generate a tailored cover letter.
@@ -139,7 +168,8 @@ class CoverLetterWriterAgent:
             candidate_cover_letter: Existing cover letter text (if available)
             job_description_info: Extracted job description information
             company_info: Company information from search
-            user_feedback: Optional feedback for modifications
+            modification_instructions: Optional modification instructions
+            previous_modification_instructions_formatted: Optional formatted previous modification instructions
             
         Returns:
             str: Generated cover letter text
@@ -149,9 +179,8 @@ class CoverLetterWriterAgent:
         candidate_cover_letter_text = candidate_cover_letter or "No existing cover letter provided. Create a new cover letter."
         job_desc_text = self._format_job_description(job_description_info)
         company_info_text = self._format_company_info(company_info)
-        modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
         
-        logger.info(f"Generating cover letter - candidate_cv_length: {len(candidate_cv_text) if candidate_cv_text else 0}, candidate_cover_letter_length: {len(candidate_cover_letter_text) if candidate_cover_letter_text else 0}, has_feedback: {bool(user_feedback)}")
+        logger.info(f"Generating cover letter - candidate_cv_length: {len(candidate_cv_text) if candidate_cv_text else 0}, candidate_cover_letter_length: {len(candidate_cover_letter_text) if candidate_cover_letter_text else 0}, has_modification_instructions: {bool(modification_instructions)}")
         logger.debug(f"Job description length: {len(job_desc_text)}, company info length: {len(company_info_text)}")
         
         # Create prompt
@@ -167,7 +196,8 @@ class CoverLetterWriterAgent:
             "candidate_cover_letter": candidate_cover_letter_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
-            "modification_instructions": modification_instructions
+            "modification_instructions": modification_instructions,
+            "previous_modification_instructions": previous_modification_instructions_formatted
         }
         logger.info("Calling LLM to generate cover letter...")
         logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, candidate_cover_letter length: {len(candidate_cover_letter_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions)}")
@@ -223,14 +253,22 @@ class CoverLetterWriterAgent:
         
         logger.debug(f"State extracted - has_candidate_cv: {candidate_cv is not None}, has_candidate_cover_letter: {candidate_cover_letter is not None}, has_job_desc: {job_description_info is not None}, has_company_info: {company_info is not None}, has_feedback: {user_feedback is not None}")
         
+        modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
+        previous_modification_instructions_formatted = self._format_previous_modification_instructions()
+        
         # Generate cover letter
         cover_letter_text = self.generate_cover_letter(
             candidate_cv=candidate_cv,
             candidate_cover_letter=candidate_cover_letter,
             job_description_info=job_description_info,
             company_info=company_info,
-            user_feedback=user_feedback
+            modification_instructions=modification_instructions,
+            previous_modification_instructions_formatted=previous_modification_instructions_formatted
         )
+
+        # Store feedback for future iterations (only if non-empty)
+        if user_feedback and user_feedback.strip():
+            self.previous_modification_instructions.append(user_feedback.strip())
         
         # Save cover letter
         file_path = self.save_cover_letter(cover_letter_text)
@@ -238,6 +276,9 @@ class CoverLetterWriterAgent:
         # Write to debug file
         debug_content = ""
         debug_content += f"GENERATED COVER LETTER (saved to: {file_path}):\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += f"MODIFICATION INSTRUCTIONS:\n{modification_instructions}\n\n"
+        debug_content += f"PREVIOUS MODIFICATION INSTRUCTIONS:\n{previous_modification_instructions_formatted}\n\n"
         debug_content += "-" * 80 + "\n"
         debug_content += cover_letter_text
         debug_content += "\n\n"

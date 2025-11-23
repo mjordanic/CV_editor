@@ -151,12 +151,7 @@ class JobDescriptionAgent:
         
         # Pause execution and wait for user to provide job description
         logger.info("Requesting job description from user via interrupt")
-        # The interrupt() call will pause the graph and return the user's input when resumed
-        # job_description_text = interrupt({
-        #     "message": "Please paste the job description you'd like me to analyze.",
-        #     "required": True
-        # })
-        job_description_text = interrupt("Please paste the job description you'd like me to analyze.")
+        job_description_text = interrupt({"message": "Please paste the job description you'd like me to analyze.", "required": True})
         
         logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
         logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
@@ -203,8 +198,9 @@ class JobDescriptionAgent:
         
         # Store extracted info in state for use by other nodes
         updated_state = {
-            "messages": [{"role": "assistant", "content": info_summary}],
-            "job_description_info": extracted_info.model_dump()
+            "messages": state.get("messages", []) + [{"role": "assistant", "content": info_summary}],
+            "job_description_info": extracted_info.model_dump(),
+            "current_node": "job_description"
         }
         
         return updated_state

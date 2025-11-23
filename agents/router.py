@@ -10,13 +10,14 @@ logger = logging.getLogger(__name__)
 
 ROUTER_SYSTEM_PROMPT = (
     "You are a helpful assistant that routes user requests for CV and cover letter generation. "
-    "Your role is to interact with the user, understand what they want to generate, and collect feedback "
+    "Your role is to interact with other agents for CV and cover letter generation, and with the user, understand what the user wants to generate, summarize "
+    "their request to a short actionable message and collect feedback from the user"
     "after documents are created. You should be friendly and professional.\n\n"
     "Based on the conversation history, job description, company information, and the status of generated documents, "
     "you need to:\n"
     "1. Determine what message to show the user (if any)\n"
     "2. Decide what the next action should be\n"
-    "3. Extract any user feedback for modifications\n\n"
+    "3. Extract and summarize any user feedback for modifications. IMPORTANT: The user_feedback field should ONLY contain the actual feedback or requests from the user's messages. Do NOT include your own questions, clarifications, or suggestions in the user_feedback. It should be short, clear, and actionable. Leave empty if no actionable feedback provided or if last message was not from the user.\n\n"
     "Available actions:\n"
     "- 'draft_cv': Generate a new CV or modify an existing one\n"
     "- 'draft_cover_letter': Generate a new cover letter or modify an existing one\n"
@@ -41,7 +42,7 @@ ROUTER_HUMAN_PROMPT = (
     "Based on this context, determine:\n"
     "1. What message should be shown to the user (if the conversation needs user input)\n"
     "2. What the next action should be\n"
-    "3. Any feedback the user has provided (for modifications)\n\n"
+    "3. Summarize any feedback the user has provided for modification of documents. CRITICAL: Extract ONLY the user's actual feedback from their messages. Do NOT include your own questions, clarifications, or suggestions. It should be short, clear, and actionable. Leave empty if no actionable feedback provided.\n\n"
     "If this is the first interaction and no documents have been generated, ask the user what they'd like to generate.\n"
     "If documents have been generated, ask for feedback or if they want to generate the other document.\n"
     "If the user has provided feedback, route to the appropriate generation action with that feedback."
@@ -60,7 +61,7 @@ class RouterResponse(BaseModel):
     )
     user_feedback: str = Field(
         default="",
-        description="Any feedback or modification requests from the user. Empty if no feedback provided."
+        description="Any feedback or modification requests from the user's actual messages only. Do NOT include your own questions or clarifications. It should be summarized, clear, and actionable. Empty if no feedback provided or if last message was not from the user."
     )
     needs_user_input: bool = Field(
         ...,
@@ -263,52 +264,61 @@ class RouterAgent:
         
         logger.info(f"LLM response received - next_action: {response.next_action}, needs_user_input: {response.needs_user_input}")
         logger.debug(f"LLM response - message_to_user: {response.message_to_user[:200] if response.message_to_user else 'None'}...")
+        logger.debug(f"LLM response - user_feedback: {response.user_feedback[:200] if response.user_feedback else 'None'}...")
         
-        # If we need user input, route to collect_user_input node
-        if response.needs_user_input and response.message_to_user:
-            logger.info("Router needs user input - routing to collect_user_input node")
-            logger.debug(f"User input message: {response.message_to_user}")
+        # # If we need user input, route to collect_user_input node
+        # if response.needs_user_input and response.message_to_user:
+        #     logger.info("Router needs user input - routing to collect_user_input node")
+        #     logger.debug(f"User input message: {response.message_to_user}")
             
-            return {
-                "next": "collect_user_input",
-                "user_input_message": response.message_to_user,
-                "messages": messages + [{
-                    "role": "assistant",
-                    "content": response.message_to_user
-                }]
-            }
+        #     return {
+        #         "next": "collect_user_input",
+        #         "user_input_message": response.message_to_user,
+        #         "messages": messages + [{
+        #             "role": "assistant",
+        #             "content": response.message_to_user
+        #         }]
+        #     }
         
-        # If we don't need user input, use the response directly and return
-        logger.info("No user input needed - proceeding directly with routing decision")
+        # # If we don't need user input, use the response directly and return
+        # logger.info("No user input needed - proceeding directly with routing decision")
         
-        # Extract user feedback if this is a modification request
-        user_feedback = response.user_feedback
+        # # Extract user feedback if this is a modification request
+        # user_feedback = response.user_feedback
         
-        # If we're generating and documents already exist, check if there's feedback in messages
-        if response.next_action in ["draft_cv", "draft_cover_letter"]:
-            if (response.next_action == "draft_cv" and generated_cv is not None) or \
-               (response.next_action == "draft_cover_letter" and generated_cover_letter is not None):
-                # Check last user message for feedback
-                if messages:
-                    last_user_msg = None
-                    for msg in reversed(messages):
-                        if isinstance(msg, dict):
-                            role = msg.get("role", "")
-                        else:
-                            role = getattr(msg, "role", "")
-                        if role == "user":
-                            last_user_msg = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
-                            break
-                    if last_user_msg and not user_feedback:
-                        user_feedback = last_user_msg
+        # # If we're generating and documents already exist, check if there's feedback in messages
+        # if response.next_action in ["draft_cv", "draft_cover_letter"]:
+        #     if (response.next_action == "draft_cv" and generated_cv is not None) or \
+        #        (response.next_action == "draft_cover_letter" and generated_cover_letter is not None):
+        #         # Check last user message for feedback
+        #         if messages:
+        #             last_user_msg = None
+        #             for msg in reversed(messages):
+        #                 if isinstance(msg, dict):
+        #                     role = msg.get("role", "")
+        #                 else:
+        #                     role = getattr(msg, "role", "")
+        #                 if role == "user":
+        #                     last_user_msg = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
+        #                     break
+        #             if last_user_msg and not user_feedback:
+        #                 user_feedback = last_user_msg
         
-        logger.info(f"Router decision: next_action={response.next_action}, user_feedback_length={len(user_feedback)}")
+        # logger.info(f"Router decision: next_action={response.next_action}, user_feedback_length={len(user_feedback)}")
         
-        return {
+        # Prepare return state
+        return_state = {
             "next": response.next_action,
-            "user_feedback": user_feedback,
+            "user_feedback": response.user_feedback,
             "messages": messages + [{
                 "role": "assistant",
                 "content": response.message_to_user if response.message_to_user else f"Proceeding with: {response.next_action}"
             }]
         }
+        
+        # If routing to collect_user_input, set user_input_message for the UserInputAgent
+        if response.next_action == "collect_user_input" and response.message_to_user:
+            return_state["user_input_message"] = response.message_to_user
+            logger.debug(f"Setting user_input_message for collect_user_input: {response.message_to_user[:100]}...")
+        
+        return return_state
