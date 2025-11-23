@@ -16,33 +16,40 @@ CV_GENERATION_SYSTEM_PROMPT = (
     "CRITICAL: You MUST ONLY generate a CV document. You MUST NOT generate a cover letter or any other document, even if instructions mention it. "
     "If instructions mention moving content to a cover letter, ignore that part and focus only on improving the CV. "
     "IMPORTANT: You must provide two separate outputs: 1) A clean CV document with NO explanations or notes, "
-    "and 2) Separate notes and explanations for the user about what you did and why."
+    "and 2) Separate notes and explanations for the user about what you did and why. "
+    "CRITICAL PRESERVATION RULE: When modification instructions are provided and an existing CV is provided, "
+    "you MUST preserve ALL existing content, structure, and formatting that is NOT explicitly mentioned in the modification instructions. "
+    "Only make the specific changes requested - do NOT rewrite, restructure, or add content unless explicitly requested."
 )
 
 CV_GENERATION_HUMAN_PROMPT = (
     "Create a professional, tailored CV based on the following information:\n\n"
-    "**Candidate Information:**\n{candidate_cv}\n\n"
+    "**Existing CV (Base Document):**\n{candidate_cv}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
-    "Make sure to follow these modification instructions: {modification_instructions}\n\n"
-    "User requested the following modifications in the previous messages, make sure not to overwrite them or contradict them unless they are explicitly stated in the modification instructions: {previous_modification_instructions}\n\n"
-    "General guidelines:\n"
+    "**Modification Instructions:**\n{modification_instructions}\n\n"
+    "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
+    "CRITICAL: When modification instructions are provided, you MUST:\n"
+    "1. **PRESERVE the existing CV structure and content** - Keep all sections, formatting, and information that is NOT mentioned in the modification instructions\n"
+    "2. **ONLY make the specific changes requested** - Do NOT add, remove, or modify anything that is not explicitly mentioned in the modification instructions\n"
+    "3. **Do NOT rewrite or restructure** - Only apply the exact changes requested, preserving everything else as-is\n"
+    "4. **Do NOT hallucinate or add new content** unless explicitly requested in the modification instructions\n"
+    "5. **Maintain consistency** - Keep the same tone, style, and format as the existing CV\n\n"
+    "If NO modification instructions are provided (empty), then you can create or enhance the CV based on the job description and company information.\n\n"
+    "General guidelines (apply only when no specific modification instructions are provided):\n"
     "- Tailor the CV to match the job requirements and company culture\n"
     "- Highlight relevant skills, experiences, and achievements\n"
     "- Use clear, professional language\n"
     "- Structure the CV in a standard format (Contact Info, Professional Summary, Experience, Education, Skills)\n"
     "- Ensure the CV is ATS-friendly\n"
     "- Keep it concise (ideally 1-2 pages)\n"
-    "- Make sure all information is accurate and truthful\n"
-    "- If the candidate's CV is provided, use it as a base and enhance it for this specific role\n"
-    "- If no candidate CV is provided, create a professional CV based on the job requirements\n\n"
+    "- Make sure all information is accurate and truthful\n\n"
     "CRITICAL REQUIREMENTS:\n"
     "1. **ONLY generate a CV**: You must ONLY create or modify a CV document. Do NOT generate a cover letter or any other document, even if instructions mention it. "
     "If instructions mention cover letter changes, ignore those parts and focus solely on CV improvements.\n"
     "2. **CV Content**: The actual CV document - clean, professional, with NO explanations, notes, or meta-commentary. Just the CV itself.\n"
-    "3. **Notes**: Separate explanations for the user about what changes you made to the CV, why you made them, and any important considerations. "
-    "This should help the user understand your decisions and the tailoring approach. If you ignored any cover letter-related instructions, "
-    "you can mention that in the notes, but do NOT generate a cover letter."
+    "3. **Notes**: Separate explanations for the user about what specific changes you made to the CV based on the modification instructions. "
+    "If modification instructions were provided, list ONLY the changes you made. Do NOT explain general tailoring unless no modification instructions were provided."
 )
 
 
@@ -143,7 +150,7 @@ class CVWriterAgent:
         # Always prioritize user feedback when provided
         if user_feedback and user_feedback.strip():
             if has_existing_cv:
-                return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease review the existing CV and incorporate these changes into it."
+                return f"**CRITICAL: Apply ONLY these specific changes to the existing CV. Preserve everything else exactly as-is:**\n{user_feedback}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the CV unless explicitly requested"
             return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease incorporate these changes into the CV."
         
         # Only use hardcoded message when there's no user feedback
@@ -299,7 +306,10 @@ class CVWriterAgent:
         # If this is a refinement based on critique, use critique instructions
         # Otherwise, use user feedback as before
         if is_refinement and cv_critique_improvement_instructions:
-            modification_instructions = f"**Critique-based Improvement Instructions:**\n{cv_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the CV quality, ATS compatibility, and job alignment."
+            if candidate_cv:
+                modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing CV. Preserve everything else exactly as-is:**\n{cv_critique_improvement_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the CV unless explicitly requested"
+            else:
+                modification_instructions = f"**Critique-based Improvement Instructions:**\n{cv_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the CV quality, ATS compatibility, and job alignment."
             logger.info("Using critique improvement instructions for CV refinement")
         else:
             modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cv))

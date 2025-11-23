@@ -14,17 +14,28 @@ COVER_LETTER_GENERATION_SYSTEM_PROMPT = (
     "that match job descriptions and company cultures. Your cover letters are engaging, professional, and "
     "effectively communicate why the candidate is a perfect fit for the role. "
     "IMPORTANT: You must provide two separate outputs: 1) A clean cover letter document with NO explanations or notes, "
-    "and 2) Separate notes and explanations for the user about what you did and why."
+    "and 2) Separate notes and explanations for the user about what you did and why. "
+    "CRITICAL PRESERVATION RULE: When modification instructions are provided and an existing cover letter is provided, "
+    "you MUST preserve ALL existing content, structure, and formatting that is NOT explicitly mentioned in the modification instructions. "
+    "Only make the specific changes requested - do NOT rewrite, restructure, or add content unless explicitly requested."
 )
 
 COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "Create a professional, tailored cover letter based on the following information:\n\n"
-    "**Candidate Information:**\n{candidate_cv}\n{candidate_cover_letter}\n\n"
+    "**Existing Cover Letter (Base Document):**\n{candidate_cover_letter}\n\n"
+    "**Candidate CV (for context):**\n{candidate_cv}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
-    "Make sure to follow these modification instructions: {modification_instructions}\n\n"
-    "User requested the following modifications in the previous messages, make sure not to overwrite them or contradict them unless they are explicitly stated in the modification instructions: {previous_modification_instructions}\n\n"
-    "Instructions:\n"
+    "**Modification Instructions:**\n{modification_instructions}\n\n"
+    "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
+    "CRITICAL: When modification instructions are provided, you MUST:\n"
+    "1. **PRESERVE the existing cover letter structure and content** - Keep all paragraphs, formatting, and information that is NOT mentioned in the modification instructions\n"
+    "2. **ONLY make the specific changes requested** - Do NOT add, remove, or modify anything that is not explicitly mentioned in the modification instructions\n"
+    "3. **Do NOT rewrite or restructure** - Only apply the exact changes requested, preserving everything else as-is\n"
+    "4. **Do NOT hallucinate or add new content** unless explicitly requested in the modification instructions\n"
+    "5. **Maintain consistency** - Keep the same tone, style, and format as the existing cover letter\n\n"
+    "If NO modification instructions are provided (empty), then you can create or enhance the cover letter based on the job description and company information.\n\n"
+    "General guidelines (apply only when no specific modification instructions are provided):\n"
     "- Tailor the cover letter to the specific job and company\n"
     "- Address the hiring manager or use a professional greeting\n"
     "- Start with a strong opening that captures attention\n"
@@ -34,13 +45,11 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "- Explain why you're a good fit for the position\n"
     "- Keep it concise (ideally 3-4 paragraphs, one page)\n"
     "- Use professional, engaging language\n"
-    "- End with a strong closing and call to action\n"
-    "- If a previous cover letter is provided, use it as a base and enhance it\n"
-    "- If no cover letter is provided, create a new one from scratch\n\n"
+    "- End with a strong closing and call to action\n\n"
     "CRITICAL: Provide your response in two parts:\n"
     "1. **Cover Letter Content**: The actual cover letter document - clean, professional, with NO explanations, notes, or meta-commentary. Just the cover letter itself.\n"
-    "2. **Notes**: Separate explanations for the user about what changes you made, why you made them, and any important considerations. "
-    "This should help the user understand your decisions and the tailoring approach. It can be empty if no changes were made or if there is nothing specific to explain."
+    "2. **Notes**: Separate explanations for the user about what specific changes you made to the cover letter based on the modification instructions. "
+    "If modification instructions were provided, list ONLY the changes you made. Do NOT explain general tailoring unless no modification instructions were provided."
 )
 
 
@@ -143,7 +152,7 @@ class CoverLetterWriterAgent:
         # Always prioritize user feedback when provided
         if user_feedback and user_feedback.strip():
             if has_existing_cover_letter:
-                return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease review the existing cover letter and incorporate these changes into it."
+                return f"**CRITICAL: Apply ONLY these specific changes to the existing cover letter. Preserve everything else exactly as-is:**\n{user_feedback}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the cover letter unless explicitly requested"
             return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease incorporate these changes into the cover letter."
         
         # Only use hardcoded message when there's no user feedback
@@ -305,7 +314,10 @@ class CoverLetterWriterAgent:
         # If this is a refinement based on critique, use critique instructions
         # Otherwise, use user feedback as before
         if is_refinement and cover_letter_critique_improvement_instructions:
-            modification_instructions = f"**Critique-based Improvement Instructions:**\n{cover_letter_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the cover letter quality, ATS compatibility, and job alignment."
+            if candidate_cover_letter:
+                modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing cover letter. Preserve everything else exactly as-is:**\n{cover_letter_critique_improvement_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the cover letter unless explicitly requested"
+            else:
+                modification_instructions = f"**Critique-based Improvement Instructions:**\n{cover_letter_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the cover letter quality, ATS compatibility, and job alignment."
             logger.info("Using critique improvement instructions for cover letter refinement")
         else:
             modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
