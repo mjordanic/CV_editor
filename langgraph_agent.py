@@ -85,9 +85,9 @@ class State(TypedDict, total=False):
 
 
 def operations_on_state(state):
-    print(f"Current node: {state.get('current_node')}")
+    logger.info(f"Current node: {state.get('current_node')}")
     if 'messages' in state:
-        print(state.get('messages'))
+        logger.info(state.get('messages'))
 
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
