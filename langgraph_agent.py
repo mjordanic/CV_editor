@@ -271,27 +271,37 @@ class MasterAgent:
         logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
                 
                
-                
-                # Handle interrupt() calls that add __interrupt__ to state during streaming
-        # result = self.graph.invoke(stream_input, config)
-        # while result.get('__interrupt__')[0].value:
-        #     human_input = read_multiline_input()
-        #     result = self.graph.invoke(Command(resume=human_input), config=config)
-        #     print(result.get('__interrupt__')[0].value)
-
-        
-        for state in self.graph.stream(stream_input, config, stream_mode="values"):
-            operations_on_state(state)
+        # This is a simplified version of the streaming loop that handles interrupt() calls
+        # It uses the invoke() method to run the graph and handle interrupt() calls
+        result = self.graph.invoke(stream_input, config)
+        while result.get('__interrupt__')[0].value:
+            interrupt_data = result["__interrupt__"]    
+            interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+            logger.info(f"\n\n{interrupt_message}")
+            logger.info("(When done type 'END' on a new line or hit ENTER twice)")
             
-            while '__interrupt__' in state:
-                interrupt_data = state["__interrupt__"]
-                # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
-                interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
-                logger.info(f"\n\n{interrupt_message}")
-                logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-                human_input = read_multiline_input()
-                for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
-                    operations_on_state(state)
+            human_input = read_multiline_input()
+            
+            result = self.graph.invoke(Command(resume=human_input), config=config)
+
+        ##########################################################################################################
+        # This is another way to run the graph and handle interrupt() calls. It uses the stream() 
+        # method to stream the graph. It is more verbose as it streams the state object at each step. State
+        # can be accessed and inspected at each step. Currently there is a dummy function operations_on_state() 
+        # that prints the messages.
+        
+        # for state in self.graph.stream(stream_input, config, stream_mode="values"):
+        #     operations_on_state(state)
+            
+        #     while '__interrupt__' in state:
+        #         interrupt_data = state["__interrupt__"]
+        #         # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
+        #         interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+        #         logger.info(f"\n\n{interrupt_message}")
+        #         logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+        #         human_input = read_multiline_input()
+        #         for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
+        #             operations_on_state(state)
 
             
 
