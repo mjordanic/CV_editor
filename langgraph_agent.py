@@ -266,9 +266,6 @@ class MasterAgent:
         )
         logger.debug("Initial state created")
 
-        iteration_count = 0
-        should_exit = False
-        just_resumed = False  # Track if we just resumed from an interrupt
         
         stream_input = initial_state
         logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
@@ -288,7 +285,10 @@ class MasterAgent:
             
             while '__interrupt__' in state:
                 interrupt_data = state["__interrupt__"]
-                print(interrupt_data)
+                # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
+                interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+                logger.info(f"\n\n{interrupt_message}")
+                logger.info("(When done type 'END' on a new line or hit ENTER twice)")
                 human_input = read_multiline_input()
                 for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
                     operations_on_state(state)
