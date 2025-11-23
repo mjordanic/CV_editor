@@ -44,6 +44,8 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 from typing_extensions import TypedDict
+from langgraph.types import interrupt
+
 import sys
 
 from agents.search import SearchAgent
@@ -74,12 +76,18 @@ class State(TypedDict, total=False):
     job_description_info: dict | None  # Extracted job description information
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
+    current_node: str | None  # Current node in the graph
     next: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] | None  # Next action to take
     generated_cv: str | None  # Generated CV text
     generated_cover_letter: str | None  # Generated cover letter text
     user_feedback: str | None  # User feedback for modifications
     user_input_message: str | None  # Message to display when requesting user input
 
+
+def operations_on_state(state):
+    logger.info(f"Current node: {state.get('current_node')}")
+    if 'messages' in state:
+        logger.info(state.get('messages'))
 
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
@@ -134,9 +142,6 @@ def read_multiline_input(prompt: str = "You: ") -> str:
 
 
 
-
-
-
 class MasterAgent:
     """Master agent that orchestrates the CV editing workflow using LangGraph."""
     
@@ -166,6 +171,7 @@ class MasterAgent:
         cover_letter_writer_agent = CoverLetterWriterAgent()
         user_input_agent = UserInputAgent()
         logger.debug("All agents instantiated successfully")
+
 
         # Add nodes to the graph
         logger.debug("Adding nodes to graph...")
@@ -257,155 +263,49 @@ class MasterAgent:
             generated_cover_letter=None,
             user_feedback=None,
             user_input_message=None,
-            pending_user_input=None
         )
         logger.debug("Initial state created")
 
-        iteration_count = 0
-        should_exit = False
-        just_resumed = False  # Track if we just resumed from an interrupt
-        while True:
-            try:
-                if should_exit:
-                    break
-                    
-                iteration_count += 1
-                logger.info(f"Graph invocation #{iteration_count} - streaming graph")
-                
-                # Use stream() with stream_mode="values" to properly handle interrupts
-                # After a resume, don't pass initial_state - let LangGraph use the checkpoint from config
-                # This ensures we continue from where we left off, not restart from the beginning
-                if just_resumed:
-                    stream_input = None  # Use checkpoint, don't pass state
-                    logger.debug("Streaming without initial state - using checkpoint from config (just resumed)")
-                    just_resumed = False  # Reset flag
-                else:
-                    stream_input = initial_state
-                    logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
-                
-                interrupt_occurred = False
-                
-                # Handle interrupt() calls that add __interrupt__ to state during streaming
-                for state in self.graph.stream(stream_input, config, stream_mode="values"):
-                    logger.debug(f"Stream state received. Keys: {list(state.keys()) if isinstance(state, dict) else 'N/A'}")
-                    
-                    # Check for interrupt() calls during streaming (adds __interrupt__ to state)
-                    if isinstance(state, dict) and "__interrupt__" in state:
-                        interrupt_occurred = True
-                        interrupt_data = state["__interrupt__"]
-                        logger.info("Graph execution interrupted via interrupt() - waiting for user input")
-                        
-                        # Extract interrupt message - interrupt() stores the message in __interrupt__
-                        # The message is typically the first element if it's a tuple/list, or the value itself
-                        interrupt_message = "Please provide your input:"
-                        try:
-                            if isinstance(interrupt_data, (tuple, list)) and len(interrupt_data) > 0:
-                                interrupt_message = str(interrupt_data[0])
-                            elif interrupt_data:
-                                interrupt_message = str(interrupt_data)
-                        except Exception as e:
-                            logger.warning(f"Could not extract interrupt message: {e}. Using default message.")
-                        
-                        logger.debug(f"Interrupt message: {interrupt_message}")
-                        print(f"\n\nAssistant: {interrupt_message}")
-                        print("(Paste your text, then press Ctrl+D to finish, or press Enter twice, or type 'END' on a new line)")
-                        
-                        # Get user input
-                        logger.debug("Waiting for user input...")
-                        user_input = read_multiline_input("You: ")
-                        logger.info(f"User input received: {len(user_input)} characters" + (f" (preview: {user_input[:100]}...)" if len(user_input) > 100 else f": {user_input}"))
-                        
-                        if user_input.lower() == "exit":
-                            logger.info("User requested exit - terminating workflow")
-                            print("Bye")
-                            should_exit = True
-                            break
-                        
-                        # Resume the graph with user input using Command
-                        # Command(resume=value) passes the value to the interrupt() call, which returns it
-                        logger.debug("Resuming graph execution with user input")
-                        for resumed_state in self.graph.stream(Command(resume=user_input), config, stream_mode="values"):
-                            initial_state = resumed_state
-                            logger.debug(f"Resume stream state received. Keys: {list(resumed_state.keys()) if isinstance(resumed_state, dict) else 'N/A'}")
-                            
-                            # Check if there's another interrupt in the resumed stream
-                            if isinstance(resumed_state, dict) and "__interrupt__" in resumed_state:
-                                logger.debug("Another interrupt detected in resume stream")
-                                break
-                        
-                        logger.debug("Graph resumed successfully")
-                        just_resumed = True
-                        break
-                    
-                    # Update state as we stream
-                    initial_state = state
-                
-                if should_exit:
-                    break
-                
-                # Check if the graph has reached the END node (exit condition)
-                # When router sets next="exit", the graph routes to END and the stream completes
-                graph_state = self.graph.get_state(config)
-                logger.debug(f"Graph state after stream: next={graph_state.next if graph_state else 'None'}, has_values={bool(graph_state.values if graph_state else False)}")
-                
-                # Check if graph completed (reached END node)
-                # In our graph, the only way to reach END is through exit, so if graph_state.next is None,
-                # the graph has completed and we should exit
-                if graph_state and graph_state.next is None:
-                    # Graph has completed (reached END node)
-                    logger.debug("Graph state indicates completion (next is None)")
-                    # Check the state values to confirm it was an exit
-                    if graph_state.values:
-                        last_next = graph_state.values.get("next")
-                        logger.debug(f"Last next value in state: {last_next}")
-                        if last_next == "exit":
-                            logger.info("Graph reached END node (exit) - terminating workflow")
-                            should_exit = True
-                            break
-                    else:
-                        # Graph completed but no state values - still exit since END was reached
-                        # (In our graph design, END is only reached via exit)
-                        logger.info("Graph reached END node - terminating workflow")
-                        should_exit = True
-                        break
-                
-                # Also check if the final state indicates exit (before graph reaches END)
-                # This catches the case where router sets next="exit" but graph hasn't reached END yet
-                if initial_state.get("next") == "exit":
-                    logger.info("Exit detected in final state - terminating workflow")
-                    should_exit = True
-                    break
-                
-                if should_exit:
-                    break
-                
-                # If no interrupt occurred, continue with normal flow
-                if not interrupt_occurred:
-                    # Display the response if there are messages
-                    if initial_state.get("messages") and len(initial_state["messages"]) > 0:
-                        last_message = initial_state["messages"][-1]
-                        # Handle both dict and message object formats
-                        if isinstance(last_message, dict):
-                            content = last_message.get("content", "")
-                        else:
-                            content = getattr(last_message, "content", "")
-                        
-                        if content:
-                            logger.debug(f"Assistant message to display: {content[:200]}..." if len(content) > 200 else f"Assistant message: {content}")
-                            print(f"Assistant: {content}")
-                    
-                    logger.debug("State updated for next iteration")
-                
-            except KeyboardInterrupt:
-                logger.info("KeyboardInterrupt received - terminating workflow")
-                print("\nBye")
-                break
-            except Exception as e:
-                logger.error(f"Error during graph execution: {e}", exc_info=True)
-                print(f"Error: {e}")
-                break
         
-        logger.info("MasterAgent.run() completed - workflow execution ended")
+        stream_input = initial_state
+        logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
+                
+               
+        # This is a simplified version of the streaming loop that handles interrupt() calls
+        # It uses the invoke() method to run the graph and handle interrupt() calls
+        result = self.graph.invoke(stream_input, config)
+        while result.get('__interrupt__')[0].value:
+            interrupt_data = result["__interrupt__"]    
+            interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+            logger.info(f"\n\n{interrupt_message}")
+            logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+            
+            human_input = read_multiline_input()
+            
+            result = self.graph.invoke(Command(resume=human_input), config=config)
+
+        ##########################################################################################################
+        # This is another way to run the graph and handle interrupt() calls. It uses the stream() 
+        # method to stream the graph. It is more verbose as it streams the state object at each step. State
+        # can be accessed and inspected at each step. Currently there is a dummy function operations_on_state() 
+        # that prints the messages.
+        
+        # for state in self.graph.stream(stream_input, config, stream_mode="values"):
+        #     operations_on_state(state)
+            
+        #     while '__interrupt__' in state:
+        #         interrupt_data = state["__interrupt__"]
+        #         # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
+        #         interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+        #         logger.info(f"\n\n{interrupt_message}")
+        #         logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+        #         human_input = read_multiline_input()
+        #         for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
+        #             operations_on_state(state)
+
+            
+
+
 
 
 if __name__ == "__main__":
