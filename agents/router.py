@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
@@ -17,10 +17,13 @@ ROUTER_SYSTEM_PROMPT = (
     "you need to:\n"
     "1. Determine what message to show the user (if any)\n"
     "2. Decide what the next action should be\n"
-    "3. Extract and summarize any user feedback for modifications. IMPORTANT: The user_feedback field should ONLY contain the actual feedback or requests from the user's messages. Do NOT include your own questions, clarifications, or suggestions in the user_feedback. It should be short, clear, and actionable. Leave empty if no actionable feedback provided or if last message was not from the user.\n\n"
+    "3. Extract and summarize any feedback for modifications. CRITICAL: When routing to 'draft_cv', the feedback MUST ONLY contain CV-related instructions. "
+    "Filter out any cover letter-related instructions. When routing to 'draft_cover_letter', the feedback MUST ONLY contain cover letter-related instructions. "
+    "Filter out any CV-related instructions. The feedback should be short, clear, and actionable. "
+    "Do NOT include your own questions, clarifications, or suggestions. Leave empty if no actionable feedback provided.\n\n"
     "Available actions:\n"
-    "- 'draft_cv': Generate a new CV or modify an existing one\n"
-    "- 'draft_cover_letter': Generate a new cover letter or modify an existing one\n"
+    "- 'draft_cv': Generate a new CV or modify an existing one (ONLY CV-related feedback should be passed)\n"
+    "- 'draft_cover_letter': Generate a new cover letter or modify an existing one (ONLY cover letter-related feedback should be passed)\n"
     "- 'collect_user_input': Request user input (use this when you need to ask the user a question or get feedback)\n"
     "- 'exit': End the conversation\n\n"
     "If documents have been generated, the user might want to:\n"
@@ -39,13 +42,18 @@ ROUTER_HUMAN_PROMPT = (
     "**Document Generation Status:**\n"
     "- CV Generated: {cv_generated}\n"
     "- Cover Letter Generated: {cover_letter_generated}\n\n"
+    "**Available Feedback for Modifications (if any):**\n{feedback_context}\n\n"
     "Based on this context, determine:\n"
     "1. What message should be shown to the user (if the conversation needs user input)\n"
     "2. What the next action should be\n"
-    "3. Summarize any feedback the user has provided for modification of documents. CRITICAL: Extract ONLY the user's actual feedback from their messages. Do NOT include your own questions, clarifications, or suggestions. It should be short, clear, and actionable. Leave empty if no actionable feedback provided.\n\n"
+    "3. Summarize any feedback for modification of documents. CRITICAL RULES:\n"
+    "   - If routing to 'draft_cv': Extract ONLY CV-related feedback. Filter out and ignore any mentions of cover letter or other documents. Focus solely on CV improvements.\n"
+    "   - If routing to 'draft_cover_letter': Extract ONLY cover letter-related feedback. Filter out and ignore any mentions of CV or other documents. Focus solely on cover letter improvements.\n"
+    "   - Extract ONLY the actual feedback from the available feedback context. Do NOT include your own questions, clarifications, or suggestions.\n"
+    "   - It should be short, clear, and actionable. Leave empty if no actionable feedback provided.\n\n"
     "If this is the first interaction and no documents have been generated, ask the user what they'd like to generate.\n"
     "If documents have been generated, ask for feedback or if they want to generate the other document.\n"
-    "If the user has provided feedback, route to the appropriate generation action with that feedback."
+    "If feedback exists and indicates refinement is needed, route to the appropriate generation action with the summarized feedback."
 )
 
 
@@ -59,9 +67,13 @@ class RouterResponse(BaseModel):
         ...,
         description="The message to show to the user. If empty, no message is needed (e.g., when routing directly to an action)."
     )
-    user_feedback: str = Field(
+    feedback: str = Field(
         default="",
-        description="Any feedback or modification requests from the user's actual messages only. Do NOT include your own questions or clarifications. It should be summarized, clear, and actionable. Empty if no feedback provided or if last message was not from the user."
+        description="Summarized feedback for modifications, filtered to match the target document. "
+        "If routing to 'draft_cv', include ONLY CV-related feedback (filter out cover letter mentions). "
+        "If routing to 'draft_cover_letter', include ONLY cover letter-related feedback (filter out CV mentions). "
+        "Do NOT include your own questions or clarifications. It should be summarized, clear, and actionable. "
+        "Empty if no actionable feedback provided."
     )
     needs_user_input: bool = Field(
         ...,
@@ -72,19 +84,22 @@ class RouterResponse(BaseModel):
 class RouterAgent:
     """Agent for routing user requests and collecting feedback using LLM."""
     
-    def __init__(self):
+    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0, max_refinements: int = 1):
         """
         Initialize the router agent and its backing LLM client.
 
         Args:
-            None
+            model: The LLM model identifier to use
+            temperature: Temperature setting for the LLM
+            max_refinements: Maximum number of critique-based refinements allowed (default: 1)
 
         Returns:
             None
         """
         logger.info("Initializing RouterAgent...")
-        self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
-        logger.debug("RouterAgent LLM initialized")
+        self.llm = init_chat_model(model, temperature=temperature)
+        self.max_refinements = max_refinements
+        logger.debug(f"RouterAgent LLM initialized - model: {model}, temperature: {temperature}, max_refinements: {max_refinements}")
     
     def _format_messages_history(self, messages: list) -> str:
         """
@@ -100,7 +115,7 @@ class RouterAgent:
             return "No conversation history yet."
         
         formatted = []
-        for msg in messages[-10:]:  # Last 10 messages for context
+        for msg in messages[-15:]:  # Last 15 messages for context
             if isinstance(msg, dict):
                 role = msg.get("role", "unknown")
                 content = msg.get("content", "")
@@ -199,6 +214,83 @@ class RouterAgent:
         
         return "\n".join(parts) if parts else "No original documents uploaded by the user."
     
+    def _format_feedback_context(
+        self,
+        messages: list,
+        cv_critique_instructions: Optional[str],
+        cover_letter_critique_instructions: Optional[str],
+        cv_needs_refinement: bool,
+        cover_letter_needs_refinement: bool,
+        cv_refinement_allowed: bool,
+        cover_letter_refinement_allowed: bool
+    ) -> str:
+        """
+        Format all available feedback sources into a single context string.
+        Only includes critique instructions if refinement is allowed (counter check done before calling this).
+        
+        Args:
+            messages: Conversation messages (may contain user feedback)
+            cv_critique_instructions: Critique instructions for CV
+            cover_letter_critique_instructions: Critique instructions for cover letter
+            cv_needs_refinement: Whether CV needs refinement (from critique)
+            cover_letter_needs_refinement: Whether cover letter needs refinement (from critique)
+            cv_refinement_allowed: Whether CV refinement is allowed (counter < max)
+            cover_letter_refinement_allowed: Whether cover letter refinement is allowed (counter < max)
+            
+        Returns:
+            str: Combined feedback context (only includes critique if refinement allowed)
+        """
+        """
+        Format all available feedback sources into a single context string.
+        
+        Args:
+            messages: Conversation messages (may contain user feedback)
+            cv_critique_instructions: Critique instructions for CV
+            cover_letter_critique_instructions: Critique instructions for cover letter
+            cv_needs_refinement: Whether CV needs refinement
+            cover_letter_needs_refinement: Whether cover letter needs refinement
+            
+        Returns:
+            str: Combined feedback context
+        """
+        parts = []
+        
+        # Extract user feedback from messages (last user message)
+        user_feedback = None
+        if messages:
+            for msg in reversed(messages):
+                if isinstance(msg, dict):
+                    role = msg.get("role", "")
+                    content = msg.get("content", "")
+                else:
+                    role = getattr(msg, "role", "")
+                    content = getattr(msg, "content", "")
+                
+                if role == "user" and content and content.strip():
+                    user_feedback = content.strip()
+                    break
+        
+        if user_feedback:
+            parts.append("**User Feedback:**")
+            parts.append(user_feedback)
+            parts.append("")
+        
+        # Add critique instructions if they exist and refinement is allowed
+        if cv_critique_instructions and cv_refinement_allowed:
+            parts.append("**CV Critique Improvement Instructions:**")
+            parts.append(cv_critique_instructions)
+            parts.append("")
+        
+        if cover_letter_critique_instructions and cover_letter_refinement_allowed:
+            parts.append("**Cover Letter Critique Improvement Instructions:**")
+            parts.append(cover_letter_critique_instructions)
+            parts.append("")
+        
+        if not parts:
+            return "No feedback available."
+        
+        return "\n".join(parts)
+    
     def run(self, state):
         """
         Main method to route user requests and collect feedback using LLM.
@@ -218,8 +310,27 @@ class RouterAgent:
         candidate_text = state.get("candidate_text")
         generated_cv = state.get("generated_cv")
         generated_cover_letter = state.get("generated_cover_letter")
+        cv_critique_instructions = state.get("cv_critique_improvement_instructions")
+        cover_letter_critique_instructions = state.get("cover_letter_critique_improvement_instructions")
+        cv_needs_refinement = state.get("cv_needs_refinement", False)
+        cover_letter_needs_refinement = state.get("cover_letter_needs_refinement", False)
+        cv_refinement_count = state.get("cv_refinement_count", 0)
+        cover_letter_refinement_count = state.get("cover_letter_refinement_count", 0)
         
-        logger.debug(f"State extracted - messages: {len(messages)}, cv_generated: {generated_cv is not None}, cover_letter_generated: {generated_cover_letter is not None}")
+        # Check if refinement is allowed based on counter
+        # Router decides whether to allow refinement based on counter
+        cv_refinement_allowed = cv_needs_refinement and cv_critique_instructions and cv_refinement_count < self.max_refinements
+        cover_letter_refinement_allowed = cover_letter_needs_refinement and cover_letter_critique_instructions and cover_letter_refinement_count < self.max_refinements
+        
+        # If limit reached, explicitly set needs_refinement to False to prevent routing
+        if cv_needs_refinement and not cv_refinement_allowed:
+            logger.info(f"CV refinement limit reached ({cv_refinement_count}/{self.max_refinements}) - router will not route for refinement")
+            cv_needs_refinement = False  # Override to prevent routing
+        if cover_letter_needs_refinement and not cover_letter_refinement_allowed:
+            logger.info(f"Cover letter refinement limit reached ({cover_letter_refinement_count}/{self.max_refinements}) - router will not route for refinement")
+            cover_letter_needs_refinement = False  # Override to prevent routing
+        
+        logger.debug(f"State extracted - messages: {len(messages)}, cv_generated: {generated_cv is not None}, cover_letter_generated: {generated_cover_letter is not None}, cv_critique_instructions: {cv_critique_instructions is not None}, cover_letter_critique_instructions: {cover_letter_critique_instructions is not None}, cv_needs_refinement: {cv_needs_refinement} (allowed: {cv_refinement_allowed}), cover_letter_needs_refinement: {cover_letter_needs_refinement} (allowed: {cover_letter_refinement_allowed})")
         
         # Log only new messages to debug file
         if messages:
@@ -235,6 +346,15 @@ class RouterAgent:
         job_desc_formatted = self._format_job_description_info(job_description_info)
         company_info_formatted = self._format_company_info(company_info)
         candidate_text_formatted = self._format_candidate_text(candidate_text)
+        feedback_context = self._format_feedback_context(
+            messages,
+            cv_critique_instructions,
+            cover_letter_critique_instructions,
+            cv_needs_refinement,
+            cover_letter_needs_refinement,
+            cv_refinement_allowed,
+            cover_letter_refinement_allowed
+        )
         
         # Create prompt
         prompt = ChatPromptTemplate.from_messages([
@@ -246,17 +366,25 @@ class RouterAgent:
         structured_llm = self.llm.with_structured_output(RouterResponse)
         chain = prompt | structured_llm
         
-        # Prepare LLM input
+        # Prepare LLM input (simplified - no separate critique fields)
+        # Counter check already done - critique instructions only included if refinement allowed
         llm_input = {
             "messages_history": messages_history,
             "job_description_info": job_desc_formatted,
             "company_info": company_info_formatted,
             "candidate_text": candidate_text_formatted,
             "cv_generated": "Yes" if generated_cv is not None else "No",
-            "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No"
+            "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No",
+            "feedback_context": feedback_context
         }
         
-        logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, job_desc length: {len(job_desc_formatted)}")
+        # If critique indicates refinement is needed, guide the router to route appropriately
+        if cv_needs_refinement and cv_critique_instructions:
+            logger.info("CV needs refinement - router will summarize feedback and route to draft_cv")
+        if cover_letter_needs_refinement and cover_letter_critique_instructions:
+            logger.info("Cover letter needs refinement - router will summarize feedback and route to draft_cover_letter")
+        
+        logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, feedback_context length: {len(feedback_context)}")
         logger.info("Calling LLM for routing decision...")
         
         # Make a single LLM call to determine routing
@@ -264,57 +392,62 @@ class RouterAgent:
         
         logger.info(f"LLM response received - next_action: {response.next_action}, needs_user_input: {response.needs_user_input}")
         logger.debug(f"LLM response - message_to_user: {response.message_to_user[:200] if response.message_to_user else 'None'}...")
-        logger.debug(f"LLM response - user_feedback: {response.user_feedback[:200] if response.user_feedback else 'None'}...")
+        logger.debug(f"LLM response - feedback: {response.feedback[:200] if response.feedback else 'None'}...")
         
-        # # If we need user input, route to collect_user_input node
-        # if response.needs_user_input and response.message_to_user:
-        #     logger.info("Router needs user input - routing to collect_user_input node")
-        #     logger.debug(f"User input message: {response.message_to_user}")
-            
-        #     return {
-        #         "next": "collect_user_input",
-        #         "user_input_message": response.message_to_user,
-        #         "messages": messages + [{
-        #             "role": "assistant",
-        #             "content": response.message_to_user
-        #         }]
-        #     }
-        
-        # # If we don't need user input, use the response directly and return
-        # logger.info("No user input needed - proceeding directly with routing decision")
-        
-        # # Extract user feedback if this is a modification request
-        # user_feedback = response.user_feedback
-        
-        # # If we're generating and documents already exist, check if there's feedback in messages
-        # if response.next_action in ["draft_cv", "draft_cover_letter"]:
-        #     if (response.next_action == "draft_cv" and generated_cv is not None) or \
-        #        (response.next_action == "draft_cover_letter" and generated_cover_letter is not None):
-        #         # Check last user message for feedback
-        #         if messages:
-        #             last_user_msg = None
-        #             for msg in reversed(messages):
-        #                 if isinstance(msg, dict):
-        #                     role = msg.get("role", "")
-        #                 else:
-        #                     role = getattr(msg, "role", "")
-        #                 if role == "user":
-        #                     last_user_msg = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
-        #                     break
-        #             if last_user_msg and not user_feedback:
-        #                 user_feedback = last_user_msg
-        
-        # logger.info(f"Router decision: next_action={response.next_action}, user_feedback_length={len(user_feedback)}")
+        # Determine feedback source and populate appropriate state field
+        # After user input OR critique, we always go to router, so we know the source
+        # Counter check already done - if critique instructions are in feedback_context, refinement is allowed
+        # If critique instructions were omitted (limit reached), router LLM won't see them and won't route for refinement
+        next_action = response.next_action
         
         # Prepare return state
         return_state = {
-            "next": response.next_action,
-            "user_feedback": response.user_feedback,
+            "next": next_action,
             "messages": messages + [{
                 "role": "assistant",
-                "content": response.message_to_user if response.message_to_user else f"Proceeding with: {response.next_action}"
+                "content": response.message_to_user if response.message_to_user else f"Proceeding with: {next_action}"
             }]
         }
+        
+        # If limit reached, explicitly set needs_refinement to False in return state
+        if not cv_refinement_allowed and state.get("cv_needs_refinement"):
+            return_state["cv_needs_refinement"] = False
+            logger.debug("Setting cv_needs_refinement=False because limit reached")
+        if not cover_letter_refinement_allowed and state.get("cover_letter_needs_refinement"):
+            return_state["cover_letter_needs_refinement"] = False
+            logger.debug("Setting cover_letter_needs_refinement=False because limit reached")
+        
+        if response.feedback:
+            # Check if this is critique-based feedback (refinement needed and allowed) or user feedback
+            # If cv_refinement_allowed is True, critique instructions were included in feedback_context
+            if next_action == "draft_cv":
+                if cv_refinement_allowed:
+                    # Critique instructions were in feedback_context, so this is critique-based feedback
+                    return_state["cv_critique_improvement_instructions"] = response.feedback
+                    logger.debug("Storing summarized CV critique instructions (refinement allowed)")
+                else:
+                    # Critique instructions were NOT in feedback_context (limit reached or user feedback)
+                    # This is user feedback - populate user_feedback field and reset counter
+                    return_state["user_feedback"] = response.feedback
+                    return_state["cv_refinement_count"] = 0  # Reset counter for user-initiated changes
+                    logger.debug("Storing user feedback for CV and resetting refinement counter")
+            elif next_action == "draft_cover_letter":
+                if cover_letter_refinement_allowed:
+                    # Critique instructions were in feedback_context, so this is critique-based feedback
+                    return_state["cover_letter_critique_improvement_instructions"] = response.feedback
+                    logger.debug("Storing summarized cover letter critique instructions (refinement allowed)")
+                else:
+                    # Critique instructions were NOT in feedback_context (limit reached or user feedback)
+                    # This is user feedback - populate user_feedback field and reset counter
+                    return_state["user_feedback"] = response.feedback
+                    return_state["cover_letter_refinement_count"] = 0  # Reset counter for user-initiated changes
+                    logger.debug("Storing user feedback for cover letter and resetting refinement counter")
+            else:
+                # For other actions, treat as user feedback and reset both counters
+                return_state["user_feedback"] = response.feedback
+                return_state["cv_refinement_count"] = 0  # Reset counter for user-initiated changes
+                return_state["cover_letter_refinement_count"] = 0  # Reset counter for user-initiated changes
+                logger.debug("Storing user feedback and resetting refinement counters")
         
         # If routing to collect_user_input, set user_input_message for the UserInputAgent
         if response.next_action == "collect_user_input" and response.message_to_user:

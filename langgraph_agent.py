@@ -55,6 +55,7 @@ from agents.router import RouterAgent
 from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
+from agents.critique import CritiqueAgent
 
 
 class State(TypedDict, total=False):
@@ -67,10 +68,20 @@ class State(TypedDict, total=False):
         candidate_text: Original CV and cover letter provided by the user.
         company_info: Research output that informs tailoring.
         next: Router-selected next action (draft_cv, draft_cover_letter, collect_user_input, exit).
-        generated_cv: Most recent CV produced by the pipeline.
+        generated_cv: Most recent CV produced by the pipeline (clean CV without explanations).
         generated_cover_letter: Most recent cover letter produced by the pipeline.
         user_feedback: Free-form feedback provided after reviewing documents.
         user_input_message: Prompt shown when interrupting for user input.
+        cv_critique: Critique results for the CV (quality score, feedback, improvement instructions).
+        cover_letter_critique: Critique results for the cover letter (quality score, feedback, improvement instructions).
+        cv_needs_refinement: Whether the CV needs to be refined based on critique feedback.
+        cover_letter_needs_refinement: Whether the cover letter needs to be refined based on critique feedback.
+        cv_critique_improvement_instructions: Improvement instructions from critique for CV refinement.
+        cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
+        cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
+        cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
+        cv_refinement_count: Number of times CV has been refined based on critique (max 1).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (max 1).
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
@@ -78,10 +89,20 @@ class State(TypedDict, total=False):
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
     current_node: str | None  # Current node in the graph
     next: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] | None  # Next action to take
-    generated_cv: str | None  # Generated CV text
+    generated_cv: str | None  # Generated CV text (clean, without explanations)
     generated_cover_letter: str | None  # Generated cover letter text
     user_feedback: str | None  # User feedback for modifications
     user_input_message: str | None  # Message to display when requesting user input
+    cv_critique: dict | None  # Critique results for CV
+    cover_letter_critique: dict | None  # Critique results for cover letter
+    cv_needs_refinement: bool | None  # Whether CV needs refinement based on critique
+    cover_letter_needs_refinement: bool | None  # Whether cover letter needs refinement based on critique
+    cv_critique_improvement_instructions: str | None  # Improvement instructions for CV from critique
+    cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
+    cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
+    cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
+    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 1)
+    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 1)
 
 
 def operations_on_state(state):
@@ -170,6 +191,7 @@ class MasterAgent:
         cv_writer_agent = CVWriterAgent()
         cover_letter_writer_agent = CoverLetterWriterAgent()
         user_input_agent = UserInputAgent()
+        critique_agent = CritiqueAgent()
         logger.debug("All agents instantiated successfully")
 
 
@@ -181,6 +203,8 @@ class MasterAgent:
         graph_builder.add_node("router", router_agent.run)
         graph_builder.add_node("draft_cv", cv_writer_agent.run)
         graph_builder.add_node("draft_cover_letter", cover_letter_writer_agent.run)
+        graph_builder.add_node("critique_cv", critique_agent.run_cv)
+        graph_builder.add_node("critique_cover_letter", critique_agent.run_cover_letter)
         graph_builder.add_node("collect_user_input", user_input_agent.run)
         logger.debug("All nodes added to graph")
 
@@ -190,7 +214,7 @@ class MasterAgent:
         graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
         graph_builder.add_edge("analyze_job_description", "research_company_context")
         graph_builder.add_edge("research_company_context", "router")
-
+        
         graph_builder.add_conditional_edges(
             "router",
             lambda state: state.get("next"),
@@ -201,8 +225,10 @@ class MasterAgent:
                 "exit": END
             }
         )
-        graph_builder.add_edge("draft_cv", "router")
-        graph_builder.add_edge("draft_cover_letter", "router")
+        graph_builder.add_edge("draft_cv", "critique_cv")
+        graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
+        graph_builder.add_edge("critique_cv", "router")  # Critique always routes to router
+        graph_builder.add_edge("critique_cover_letter", "router")  # Critique always routes to router
         graph_builder.add_edge("collect_user_input", "router")
         logger.debug("All edges added to graph")
 
@@ -263,6 +289,16 @@ class MasterAgent:
             generated_cover_letter=None,
             user_feedback=None,
             user_input_message=None,
+            cv_critique=None,
+            cover_letter_critique=None,
+            cv_needs_refinement=None,
+            cover_letter_needs_refinement=None,
+            cv_critique_improvement_instructions=None,
+            cover_letter_critique_improvement_instructions=None,
+            cv_needs_critique=None,
+            cover_letter_needs_critique=None,
+            cv_refinement_count=0,
+            cover_letter_refinement_count=0,
         )
         logger.debug("Initial state created")
 
