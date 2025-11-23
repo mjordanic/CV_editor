@@ -2,6 +2,7 @@ from typing import Optional
 import logging
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
 import os
 from debug_utils import write_to_debug
 
@@ -11,7 +12,9 @@ logger = logging.getLogger(__name__)
 COVER_LETTER_GENERATION_SYSTEM_PROMPT = (
     "You are an expert cover letter writer specializing in creating compelling, personalized cover letters "
     "that match job descriptions and company cultures. Your cover letters are engaging, professional, and "
-    "effectively communicate why the candidate is a perfect fit for the role."
+    "effectively communicate why the candidate is a perfect fit for the role. "
+    "IMPORTANT: You must provide two separate outputs: 1) A clean cover letter document with NO explanations or notes, "
+    "and 2) Separate notes and explanations for the user about what you did and why."
 )
 
 COVER_LETTER_GENERATION_HUMAN_PROMPT = (
@@ -33,26 +36,44 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "- Use professional, engaging language\n"
     "- End with a strong closing and call to action\n"
     "- If a previous cover letter is provided, use it as a base and enhance it\n"
-    "- If no cover letter is provided, create a new one from scratch"
+    "- If no cover letter is provided, create a new one from scratch\n\n"
+    "CRITICAL: Provide your response in two parts:\n"
+    "1. **Cover Letter Content**: The actual cover letter document - clean, professional, with NO explanations, notes, or meta-commentary. Just the cover letter itself.\n"
+    "2. **Notes**: Separate explanations for the user about what changes you made, why you made them, and any important considerations. "
+    "This should help the user understand your decisions and the tailoring approach. It can be empty if no changes were made or if there is nothing specific to explain."
 )
+
+
+class CoverLetterGenerationResponse(BaseModel):
+    """Response model for cover letter generation with separate cover letter content and notes."""
+    cover_letter_content: str = Field(
+        ...,
+        description="The actual cover letter document - clean, professional, with NO explanations, notes, or meta-commentary. Just the cover letter itself."
+    )
+    notes: str = Field(
+        ...,
+        description="Explanations for the user about what changes were made, why they were made, and any important considerations. This helps the user understand the tailoring approach. It can be empty if no changes were made or if there is nothing specific to explain."
+    )
 
 
 class CoverLetterWriterAgent:
     """Agent for generating tailored cover letters based on job descriptions and company information."""
     
-    def __init__(self, output_folder: str = "generated_CVs"):
+    def __init__(self, output_folder: str = "generated_CVs", model: str = "openai:gpt-5-nano", temperature: float = 0.7):
         """
         Initialize the CoverLetterWriterAgent.
         
         Args:
             output_folder: Folder where generated cover letters will be saved
+            model: The LLM model identifier to use
+            temperature: Temperature setting for the LLM
 
         Returns:
             None
         """
         logger.info(f"Initializing CoverLetterWriterAgent with output_folder: {output_folder}")
-        self.llm = init_chat_model("openai:gpt-5-nano", temperature=0.7)
-        logger.debug("CoverLetterWriterAgent LLM initialized")
+        self.llm = init_chat_model(model, temperature=temperature)
+        logger.debug(f"CoverLetterWriterAgent LLM initialized - model: {model}, temperature: {temperature}")
         self.output_folder = output_folder
         # Ensure output folder exists
         os.makedirs(self.output_folder, exist_ok=True)
@@ -159,9 +180,9 @@ class CoverLetterWriterAgent:
         company_info: Optional[dict],
         modification_instructions: Optional[str] = None,
         previous_modification_instructions_formatted: Optional[str] = None
-    ) -> str:
+    ) -> tuple[str, str]:
         """
-        Generate a tailored cover letter.
+        Generate a tailored cover letter with separate content and notes.
         
         Args:
             candidate_cv: Existing CV text (if available)
@@ -172,7 +193,7 @@ class CoverLetterWriterAgent:
             previous_modification_instructions_formatted: Optional formatted previous modification instructions
             
         Returns:
-            str: Generated cover letter text
+            tuple[str, str]: Tuple of (cover letter content, notes)
         """
         # Format inputs
         candidate_cv_text = candidate_cv or "No CV provided."
@@ -189,26 +210,31 @@ class CoverLetterWriterAgent:
             ("human", COVER_LETTER_GENERATION_HUMAN_PROMPT)
         ])
         
-        # Generate cover letter
-        chain = prompt | self.llm
+        # Use structured output
+        structured_llm = self.llm.with_structured_output(CoverLetterGenerationResponse)
+        chain = prompt | structured_llm
+        
         llm_input = {
             "candidate_cv": candidate_cv_text,
             "candidate_cover_letter": candidate_cover_letter_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
-            "modification_instructions": modification_instructions,
-            "previous_modification_instructions": previous_modification_instructions_formatted
+            "modification_instructions": modification_instructions or "",
+            "previous_modification_instructions": previous_modification_instructions_formatted or ""
         }
-        logger.info("Calling LLM to generate cover letter...")
-        logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, candidate_cover_letter length: {len(candidate_cover_letter_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions)}")
+        logger.info("Calling LLM to generate cover letter with structured output...")
+        logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, candidate_cover_letter length: {len(candidate_cover_letter_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions) if modification_instructions else 0}")
         
         response = chain.invoke(llm_input)
         
-        cover_letter_content = response.content if hasattr(response, 'content') else str(response)
-        logger.info(f"LLM response received - cover letter generated, length: {len(cover_letter_content)} characters")
-        logger.debug(f"Cover letter preview: {cover_letter_content[:200]}...")
+        cover_letter_content = response.cover_letter_content
+        notes = response.notes
         
-        return cover_letter_content
+        logger.info(f"LLM response received - cover letter generated, length: {len(cover_letter_content)} characters, notes length: {len(notes)} characters")
+        logger.debug(f"Cover letter preview: {cover_letter_content[:200]}...")
+        logger.debug(f"Notes preview: {notes[:200]}...")
+        
+        return cover_letter_content, notes
     
     def save_cover_letter(self, cover_letter_text: str, filename: str = "generated_cover_letter.txt") -> str:
         """
@@ -227,6 +253,25 @@ class CoverLetterWriterAgent:
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(cover_letter_text)
         logger.info(f"Cover letter saved successfully to {file_path}")
+        return file_path
+    
+    def save_notes(self, notes: str, filename: str = "generated_cover_letter_notes.txt") -> str:
+        """
+        Save the cover letter generation notes to a file.
+        
+        Args:
+            notes: The notes text to save
+            filename: Name of the file to save
+            
+        Returns:
+            str: Path to the saved file
+        """
+        file_path = os.path.join(self.output_folder, filename)
+        logger.info(f"Saving cover letter notes to file: {file_path}")
+        logger.debug(f"Notes length: {len(notes)} characters")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(notes)
+        logger.info(f"Cover letter notes saved successfully to {file_path}")
         return file_path
     
     def run(self, state):
@@ -251,13 +296,24 @@ class CoverLetterWriterAgent:
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")
         
-        logger.debug(f"State extracted - has_candidate_cv: {candidate_cv is not None}, has_candidate_cover_letter: {candidate_cover_letter is not None}, has_job_desc: {job_description_info is not None}, has_company_info: {company_info is not None}, has_feedback: {user_feedback is not None}")
+        # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
+        cover_letter_critique_improvement_instructions = state.get("cover_letter_critique_improvement_instructions")
+        is_refinement = state.get("cover_letter_needs_refinement", False)
         
-        modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
+        logger.debug(f"State extracted - has_candidate_cv: {candidate_cv is not None}, has_candidate_cover_letter: {candidate_cover_letter is not None}, has_job_desc: {job_description_info is not None}, has_company_info: {company_info is not None}, has_feedback: {user_feedback is not None}, is_refinement: {is_refinement}")
+        
+        # If this is a refinement based on critique, use critique instructions
+        # Otherwise, use user feedback as before
+        if is_refinement and cover_letter_critique_improvement_instructions:
+            modification_instructions = f"**Critique-based Improvement Instructions:**\n{cover_letter_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the cover letter quality, ATS compatibility, and job alignment."
+            logger.info("Using critique improvement instructions for cover letter refinement")
+        else:
+            modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
+        
         previous_modification_instructions_formatted = self._format_previous_modification_instructions()
         
-        # Generate cover letter
-        cover_letter_text = self.generate_cover_letter(
+        # Generate cover letter and notes
+        cover_letter_text, cover_letter_notes = self.generate_cover_letter(
             candidate_cv=candidate_cv,
             candidate_cover_letter=candidate_cover_letter,
             job_description_info=job_description_info,
@@ -266,31 +322,64 @@ class CoverLetterWriterAgent:
             previous_modification_instructions_formatted=previous_modification_instructions_formatted
         )
 
-        # Store feedback for future iterations (only if non-empty)
-        if user_feedback and user_feedback.strip():
+        # Store feedback for future iterations (only if non-empty and not from critique)
+        if user_feedback and user_feedback.strip() and not is_refinement:
             self.previous_modification_instructions.append(user_feedback.strip())
         
-        # Save cover letter
-        file_path = self.save_cover_letter(cover_letter_text)
+        # Save cover letter and notes
+        cover_letter_file_path = self.save_cover_letter(cover_letter_text)
+        notes_file_path = self.save_notes(cover_letter_notes)
         
         # Write to debug file
         debug_content = ""
-        debug_content += f"GENERATED COVER LETTER (saved to: {file_path}):\n"
+        debug_content += f"GENERATED COVER LETTER (saved to: {cover_letter_file_path}):\n"
         debug_content += "-" * 80 + "\n"
+        if is_refinement:
+            debug_content += "REFINEMENT MODE: Applying critique-based improvements\n"
         debug_content += f"MODIFICATION INSTRUCTIONS:\n{modification_instructions}\n\n"
         debug_content += f"PREVIOUS MODIFICATION INSTRUCTIONS:\n{previous_modification_instructions_formatted}\n\n"
         debug_content += "-" * 80 + "\n"
         debug_content += cover_letter_text
         debug_content += "\n\n"
+        debug_content += f"COVER LETTER NOTES (saved to: {notes_file_path}):\n"
+        debug_content += "-" * 80 + "\n"
+        debug_content += cover_letter_notes
+        debug_content += "\n\n"
         
         write_to_debug(debug_content, "COVER LETTER WRITER DEBUG INFO")
         logger.info("Cover letter generation and saving completed successfully")
         
-        return {
+        # Mark cover letter as needing critique after generation/refinement
+        # Increment refinement count if this was a refinement
+        cover_letter_refinement_count = state.get("cover_letter_refinement_count", 0)
+        if is_refinement:
+            cover_letter_refinement_count += 1
+            logger.info(f"Cover letter refinement completed - refinement count: {cover_letter_refinement_count}")
+        
+        state_update = {
             "generated_cover_letter": cover_letter_text,
-            "messages": [{
-                "role": "assistant",
-                "content": f"Cover letter has been generated and saved to {file_path}. Please review it and let me know if you'd like any modifications."
-            }]
+            "cover_letter_needs_critique": True,  # Always critique after generation/refinement
+            "cover_letter_needs_refinement": False,  # Reset refinement flag
+            "cover_letter_refinement_count": cover_letter_refinement_count,  # Update refinement count
+            "current_node": "cover_letter_writer"
         }
+        
+        # Include notes in messages so router can process and present them to the user
+        # For both initial generation and refinements, add notes to messages
+        # The router will handle presenting them appropriately to the user
+        message_content = f"Cover letter has been generated and saved to {cover_letter_file_path}.\n\n"
+        message_content += f"**Notes and Explanations:**\n{cover_letter_notes}\n\n"
+        
+        if not is_refinement:
+            message_content += "Please review the cover letter and let me know if you'd like any modifications."
+        else:
+            message_content += "Cover letter has been refined based on critique feedback."
+            logger.info("Cover letter refinement completed - notes included in messages for router to process")
+        
+        state_update["messages"] = state.get("messages", []) + [{
+            "role": "assistant",
+            "content": message_content
+        }]
+        
+        return state_update
 
