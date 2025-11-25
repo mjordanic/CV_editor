@@ -74,7 +74,7 @@ class JobDescriptionInfo(BaseModel):
 class JobDescriptionAgent:
     """Agent for extracting structured information from job descriptions."""
     
-    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0):
+    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.0):
         """
         Initialize the job description agent and supporting LLM.
 
@@ -86,6 +86,7 @@ class JobDescriptionAgent:
             None
         """
         logger.info("Initializing JobDescriptionAgent...")
+        
         self.llm = init_chat_model(model, temperature=temperature)
         logger.debug(f"JobDescriptionAgent LLM initialized - model: {model}, temperature: {temperature}")
     

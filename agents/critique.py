@@ -83,7 +83,7 @@ class CritiqueResponse(BaseModel):
 class CritiqueAgent:
     """Agent for evaluating CV and cover letter quality and providing improvement instructions."""
     
-    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.3, quality_threshold: int = 85):
+    def __init__(self, model: str = "openai:gpt-5-mini", temperature: float = 0.3, quality_threshold: int = 85):
         """
         Initialize the CritiqueAgent.
 
@@ -96,6 +96,7 @@ class CritiqueAgent:
             None
         """
         logger.info("Initializing CritiqueAgent...")
+        
         self.llm = init_chat_model(model, temperature=temperature)
         self.quality_threshold = quality_threshold
         logger.debug(f"CritiqueAgent LLM initialized - model: {model}, temperature: {temperature}, quality_threshold: {quality_threshold}")

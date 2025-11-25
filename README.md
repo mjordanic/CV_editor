@@ -14,8 +14,9 @@ Table of Contents
 6. [Running the Agent](#running-the-agent)  
 7. [Workflow Walkthrough](#workflow-walkthrough)  
 8. [Logging and Debugging](#logging-and-debugging)  
-9. [Customization Tips](#customization-tips)  
-10. [Troubleshooting](#troubleshooting)
+9. [Configuration](#configuration)  
+10. [Customization Tips](#customization-tips)  
+11. [Troubleshooting](#troubleshooting)
 
 Features
 --------
@@ -51,7 +52,7 @@ Prerequisites
 -------------
 
 - Python 3.11+ (project tested with 3.12).
-- Access to OpenAI (for `openai:gpt-5-nano`) or whichever model you wire in via LangChain.
+- Access to OpenAI API with GPT-5 series models (`gpt-5-mini`, `gpt-5-nano`) or configure alternative models in `config/agent_models.yaml`.
 - Tavily API key for company research.
 - macOS/Linux (Windows works but paths/logging instructions assume POSIX).
 
@@ -127,6 +128,13 @@ Logging and Debugging
 - **Debug transcripts**: `debug/cv_editor_<timestamp>.log` captures prompts, state snapshots, and generated text segments for auditing.
 - **Graph visualization**: On startup the orchestrator attempts to render `images/graph_visualization.png`. Install Graphviz + `pygraphviz` if you want this artifact.
 
+Configuration
+-------------
+
+The system uses a centralized YAML configuration file (`config/agent_models.yaml`) to manage AI models and workflow settings. This approach provides a single source of truth for all configuration, making it easy to adjust behavior without code changes.
+
+All agents load configuration at startup from the YAML file. No code changes needed to adjust models or workflow parameters.
+
 Customization Tips
 ------------------
 
@@ -161,7 +169,7 @@ TODO list
 - **Batch processing**: Enable processing multiple job applications simultaneously, generating tailored documents for multiple positions in a single run.
 - **Web interface**: Develop a web-based UI to replace or complement the CLI, making the system more accessible and user-friendly.
 - **Integration capabilities**: Add integrations with professional networks (LinkedIn), job boards, and document storage services (Google Drive, Dropbox).
-- **Configuration management**: Create a configuration file system for default settings, model preferences, and workflow customization without code changes.
+- ~~**Configuration management**: Create a configuration file system for default settings, model preferences, and workflow customization without code changes.~~ ✅ **Completed**: YAML-based configuration system implemented for agent models and workflow settings.
 - **Testing and CI/CD**: Add comprehensive unit tests, integration tests, and set up a CI/CD pipeline for automated testing and deployment.
 - **Multi-language support**: Extend the system to support CV and cover letter generation in multiple languages.
 

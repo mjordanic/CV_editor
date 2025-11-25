@@ -84,7 +84,7 @@ class RouterAgent:
     def __init__(
         self, 
         model: str = "openai:gpt-5-nano", 
-        temperature: float = 0, 
+        temperature: float = 0.0, 
         max_history_messages: int = 10
     ):
         """
@@ -93,9 +93,10 @@ class RouterAgent:
         Args:
             model: The LLM model identifier to use
             temperature: Temperature setting for the LLM
-            max_history_messages: Number of recent messages to include in the prompt context (default: 20)
+            max_history_messages: Number of recent messages to include in the prompt context (default: 10)
         """
         logger.info("Initializing RouterAgent...")
+        
         self.llm = init_chat_model(model, temperature=temperature)
         self.max_history_messages = max_history_messages
         logger.debug(f"RouterAgent LLM initialized - model: {model}, temperature: {temperature}, max_history_messages: {max_history_messages}")

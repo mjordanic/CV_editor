@@ -1,0 +1,69 @@
+# Agent Model Configuration
+# This file defines which OpenAI model each agent should use.
+# Models are chosen based on task complexity and criticality while optimizing for cost.
+
+# Workflow Settings
+workflow:
+  max_refinements: 2
+  quality_improvement_threshold: 5
+
+agents:
+  # CRITICAL AGENTS - Use GPT-5 mini for best quality/cost balance
+  # These agents are the core of the CV/Cover Letter generation
+  
+  cv_writer:
+    model: "openai:gpt-5-mini"
+    temperature: 0.2
+    filter_model: "openai:gpt-5-nano"
+    filter_temperature: 0.0
+    description: "Generates tailored CVs - critical for quality output"
+    rationale: "CV writing requires creativity, precision, and quality. GPT-5 mini offers superior performance at $0.25/1M input tokens - better than GPT-4o-mini quality at similar cost. Uses gpt-5-nano for filtering operations (80% cost savings)."
+  
+  cover_letter_writer:
+    model: "openai:gpt-5-mini"
+    temperature: 0.2
+    filter_model: "openai:gpt-5-nano"
+    filter_temperature: 0.0
+    description: "Generates tailored cover letters - critical for quality output"
+    rationale: "Cover letter writing requires persuasive language and personalization. GPT-5 mini delivers excellent quality for well-defined creative tasks. Uses gpt-5-nano for filtering operations (80% cost savings)."
+  
+  critique:
+    model: "openai:gpt-5-mini"
+    temperature: 0.3
+    quality_threshold: 85
+    description: "Evaluates document quality and provides improvement instructions"
+    rationale: "Quality assessment is critical. GPT-5 mini provides nuanced understanding of professional standards at reasonable cost."
+  
+  # MODERATELY CRITICAL AGENTS - Use GPT-5 nano for ultra-low cost
+  
+  router:
+    model: "openai:gpt-5-nano"
+    temperature: 0.0
+    description: "Routes user requests and collects feedback"
+    rationale: "Routing requires understanding context and classification. GPT-5 nano at $0.05/1M input tokens is perfect for this - 83% cheaper than GPT-3.5-turbo with better performance."
+  
+  job_description:
+    model: "openai:gpt-5-nano"
+    temperature: 0.0
+    description: "Extracts structured information from job descriptions"
+    rationale: "Information extraction is ideal for GPT-5 nano. Designed specifically for classification and extraction tasks at minimal cost."
+  
+  search:
+    model: "openai:gpt-5-nano"
+    temperature: 0.0
+    description: "Summarizes search results into company descriptions"
+    rationale: "Summarization is a core strength of GPT-5 nano. Ultra-cost-efficient at $0.05/1M input, $0.40/1M output tokens."
+  
+  # SIMPLE AGENTS - These don't use LLMs or use minimal LLM functionality
+  
+  document_reader:
+    model: null
+    temperature: null
+    description: "Reads PDF and text files - no LLM required"
+    rationale: "Pure file I/O operation, no AI needed."
+  
+  user_input:
+    model: null
+    temperature: null
+    description: "Collects user input via interrupts - no LLM required"
+    rationale: "Simple user interaction handling, no AI needed."

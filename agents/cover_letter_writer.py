@@ -68,21 +68,37 @@ class CoverLetterGenerationResponse(BaseModel):
 class CoverLetterWriterAgent:
     """Agent for generating tailored cover letters based on job descriptions and company information."""
     
-    def __init__(self, output_folder: str = "generated_CVs", model: str = "openai:gpt-5-nano", temperature: float = 0.2):
+    def __init__(
+        self, 
+        output_folder: str = "generated_CVs", 
+        model: str = "openai:gpt-5-mini", 
+        temperature: float = 0.2,
+        filter_model: str = "openai:gpt-5-nano",
+        filter_temperature: float = 0.0
+    ):
         """
         Initialize the CoverLetterWriterAgent.
         
         Args:
             output_folder: Folder where generated cover letters will be saved
-            model: The LLM model identifier to use
-            temperature: Temperature setting for the LLM
+            model: The LLM model identifier to use for cover letter generation
+            temperature: Temperature setting for the main LLM
+            filter_model: The LLM model for filtering operations
+            filter_temperature: Temperature for filtering LLM
 
         Returns:
             None
         """
         logger.info(f"Initializing CoverLetterWriterAgent with output_folder: {output_folder}")
+        
+        # Main LLM for cover letter generation
         self.llm = init_chat_model(model, temperature=temperature)
         logger.debug(f"CoverLetterWriterAgent LLM initialized - model: {model}, temperature: {temperature}")
+        
+        # Separate LLM for filtering operations
+        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature)
+        logger.debug(f"CoverLetterWriterAgent filter LLM initialized - model: {filter_model}, temperature: {filter_temperature}")
+        
         self.output_folder = output_folder
         # Ensure output folder exists
         os.makedirs(self.output_folder, exist_ok=True)
@@ -234,7 +250,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
 
         try:
             logger.info("Filtering critique instructions against user preferences...")
-            response = self.llm.invoke(filter_prompt)
+            response = self.filter_llm.invoke(filter_prompt)
             filtered_instructions = response.content.strip() if hasattr(response, 'content') else str(response).strip()
             
             if filtered_instructions and filtered_instructions.lower() not in ["none", "no changes needed", ""]:
