@@ -32,9 +32,9 @@ CV_GENERATION_HUMAN_PROMPT = (
     "CRITICAL: When modification instructions are provided, you MUST:\n"
     "1. **PRESERVE the existing CV structure and content** - Keep all sections, formatting, and information that is NOT mentioned in the modification instructions\n"
     "2. **ONLY make the specific changes requested** - Do NOT add, remove, or modify anything that is not explicitly mentioned in the modification instructions\n"
-    "3. **Do NOT rewrite or restructure** - Only apply the exact changes requested, preserving everything else as-is\n"
+    "3. **Do NOT rewrite or restructure** - Only apply the exact changes requested, preserving everything else as-is (UNLESS creative liberty is explicitly granted in the instructions)\n"
     "4. **Do NOT hallucinate or add new content** unless explicitly requested in the modification instructions\n"
-    "5. **Maintain consistency** - Keep the same tone, style, and format as the existing CV\n\n"
+    "5. **Maintain consistency** - Keep the same tone, style, and format as the existing CV (UNLESS creative liberty is explicitly granted)\n\n"
     "If NO modification instructions are provided (empty), then you can create or enhance the CV based on the job description and company information.\n\n"
     "General guidelines (apply only when no specific modification instructions are provided):\n"
     "- Tailor the CV to match the job requirements and company culture\n"
@@ -168,16 +168,82 @@ class CVWriterAgent:
         """
         if not self.previous_modification_instructions:
             return "No previous modification instructions."
-        
+
         formatted = []
         for idx, instruction in enumerate(self.previous_modification_instructions, 1):
             if instruction and instruction.strip():
                 formatted.append(f"{idx}. {instruction.strip()}")
-        
+
         if not formatted:
             return "No previous modification instructions."
-        
+
         return "\n".join(formatted)
+    
+    def _filter_critique_instructions_by_user_preferences(
+        self, 
+        critique_instructions: str
+    ) -> str:
+        """
+        Filter critique instructions against user preferences from previous_modification_instructions.
+        If user previously stated preferences (e.g., "don't include education"), 
+        omit conflicting critique suggestions.
+
+        Args:
+            critique_instructions: Critique improvement instructions to filter
+
+        Returns:
+            str: Filtered critique instructions that respect user preferences
+        """
+        if not critique_instructions or not critique_instructions.strip():
+            return critique_instructions
+        
+        if not self.previous_modification_instructions:
+            return critique_instructions
+        
+        # Get formatted user preferences using existing method
+        user_preferences_text = self._format_previous_modification_instructions()
+        
+        if user_preferences_text == "No previous modification instructions.":
+            return critique_instructions
+        
+        # Use LLM to filter critique instructions based on user preferences
+        # This ensures we respect user's explicit preferences even if critique suggests otherwise
+        filter_prompt = f"""You are filtering critique improvement instructions based on user preferences.
+
+**User Preferences (from previous feedback):**
+{user_preferences_text}
+
+**Critique Improvement Instructions:**
+{critique_instructions}
+
+**Task:**
+Filter the critique instructions to respect user preferences. 
+- If critique suggests something that conflicts with user preferences, OMIT that suggestion
+- If critique suggests something that aligns with user preferences, KEEP it
+- If user explicitly stated they don't want something (e.g., "don't include education", "no education section"), 
+  remove any critique suggestions that would add or modify that element
+- Keep all other valid critique suggestions that don't conflict
+- If a critique instruction contains multiple parts and only some conflict, keep the non-conflicting parts and remove only the conflicting parts
+
+Return ONLY the filtered critique instructions. If all suggestions conflict, return empty string.
+Do NOT add explanations or notes - just return the filtered instructions. 
+CRITICAL: You MUST NOT add any new content, suggestions, or changes that are not explicitly requested in the critique instructions. 
+You can ONLY remove parts of the critique instructions that conflict with user preferences. Do not add, modify, or rephrase anything beyond removing conflicting parts."""
+
+        try:
+            logger.info("Filtering critique instructions against user preferences...")
+            response = self.llm.invoke(filter_prompt)
+            filtered_instructions = response.content.strip() if hasattr(response, 'content') else str(response).strip()
+            
+            if filtered_instructions and filtered_instructions.lower() not in ["none", "no changes needed", ""]:
+                logger.info(f"Filtered critique instructions - original length: {len(critique_instructions)}, filtered length: {len(filtered_instructions)}")
+                return filtered_instructions
+            else:
+                logger.info("All critique instructions were filtered out due to user preferences")
+                return ""
+        except Exception as e:
+            logger.warning(f"Error filtering critique instructions: {e}. Using original instructions.")
+            return critique_instructions
     
     def generate_cv(
         self,
@@ -306,13 +372,49 @@ class CVWriterAgent:
         # If this is a refinement based on critique, use critique instructions
         # Otherwise, use user feedback as before
         if is_refinement and cv_critique_improvement_instructions:
-            if candidate_cv:
-                modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing CV. Preserve everything else exactly as-is:**\n{cv_critique_improvement_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the CV unless explicitly requested"
+            # Filter critique instructions against user preferences
+            filtered_critique_instructions = self._filter_critique_instructions_by_user_preferences(
+                cv_critique_improvement_instructions
+            )
+            
+            if filtered_critique_instructions:
+                if candidate_cv:
+                    modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing CV. Preserve everything else exactly as-is:**\n{filtered_critique_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the CV unless explicitly requested"
+                else:
+                    modification_instructions = f"**Critique-based Improvement Instructions:**\n{filtered_critique_instructions}\n\nPlease apply these improvements to enhance the CV quality, ATS compatibility, and job alignment."
+                logger.info("Using filtered critique improvement instructions for CV refinement (respecting user preferences)")
             else:
-                modification_instructions = f"**Critique-based Improvement Instructions:**\n{cv_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the CV quality, ATS compatibility, and job alignment."
-            logger.info("Using critique improvement instructions for CV refinement")
+                # All critique instructions were filtered out due to user preferences
+                # Skip refinement and return early - no changes needed
+                logger.info("All critique instructions filtered out due to user preferences - skipping refinement")
+                return {
+                    "generated_cv": state.get("generated_cv"),  # Keep existing CV
+                    "cv_needs_critique": False,  # Don't critique again
+                    "cv_needs_refinement": False,  # Reset refinement flag
+                    "cv_refinement_count": state.get("cv_refinement_count", 0),  # Keep count
+                    "current_node": "cv_writer",
+                    "messages": state.get("messages", []) + [{
+                        "role": "assistant",
+                        "content": "CV refinement skipped: All critique suggestions were filtered out based on your previous preferences."
+                    }]
+                }
         else:
-            modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cv))
+            # Check if this is the first iteration (no generated CV yet, but we have a candidate CV)
+            is_first_iteration = candidate_cv is not None and generated_cv is None
+            
+            if is_first_iteration and not user_feedback:
+                # First iteration with existing CV: Grant creative liberty
+                modification_instructions = (
+                    "**CREATIVE LIBERTY GRANTED:**\n"
+                    "Use the provided 'Existing CV' primarily as a source of information about the candidate's history, skills, and experience. "
+                    "You are NOT bound to preserve its structure, formatting, or exact phrasing. "
+                    "Your goal is to create the BEST possible CV tailored to the Job Description. "
+                    "Feel free to reorder sections, rewrite bullet points for impact, and choose the most professional format. "
+                    "However, do NOT hallucinate facts - only use the factual information provided in the Existing CV."
+                )
+                logger.info("First iteration detected - granting creative liberty to CV Writer")
+            else:
+                modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cv))
         
         previous_modification_instructions_formatted = self._format_previous_modification_instructions()
         
@@ -329,9 +431,16 @@ class CVWriterAgent:
         if user_feedback and user_feedback.strip() and not is_refinement:
             self.previous_modification_instructions.append(user_feedback.strip())
         
-        # Save CV and notes
-        cv_file_path = self.save_cv(cv_text)
-        notes_file_path = self.save_notes(cv_notes)
+        # Determine iteration number for draft saving
+        cv_history = state.get("cv_history", [])
+        iteration = len(cv_history) + 1
+        
+        # Save CV and notes as drafts
+        draft_filename = f"generated_CV_draft_{iteration}.txt"
+        cv_file_path = self.save_cv(cv_text, filename=draft_filename)
+        
+        notes_draft_filename = f"generated_CV_notes_draft_{iteration}.txt"
+        notes_file_path = self.save_notes(cv_notes, filename=notes_draft_filename)
         
         # Write to debug file
         debug_content = ""
@@ -385,4 +494,43 @@ class CVWriterAgent:
         }]
         
         return state_update
+
+    def finalize_best_version(self, state):
+        """
+        Select the best version from history and save it as the final output.
+        
+        Args:
+            state: The state dictionary containing cv_history
+            
+        Returns:
+            dict: Updated state with final CV
+        """
+        logger.info("CVWriterAgent.finalize_best_version() called")
+        
+        cv_history = state.get("cv_history", [])
+        if not cv_history:
+            logger.warning("No CV history found. Cannot finalize best version.")
+            return {"current_node": "finalize_cv"}
+            
+        # Find the version with the highest score
+        # If scores are equal, prefer the later version (higher iteration number)
+        best_version = max(cv_history, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        
+        logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
+        
+        final_cv_text = best_version.get("content")
+        
+        # Save as the final generated_CV.txt
+        final_path = self.save_cv(final_cv_text, filename="generated_CV.txt")
+        
+        message = f"**Finalization Complete:**\nSelected version from iteration {best_version.get('iteration')} (Score: {best_version.get('score')}) as the best version.\nSaved to {final_path}"
+        
+        return {
+            "generated_cv": final_cv_text,
+            "current_node": "finalize_cv",
+            "messages": state.get("messages", []) + [{
+                "role": "assistant",
+                "content": message
+            }]
+        }
 

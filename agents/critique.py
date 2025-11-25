@@ -14,9 +14,12 @@ CRITIQUE_SYSTEM_PROMPT = (
     "Your role is to evaluate documents objectively and provide clear, actionable improvement instructions. "
     "You assess content quality, ATS compatibility, alignment with job requirements, and overall professionalism. "
     "CRITICAL: When evaluating a CV, provide improvement instructions ONLY for the CV. Do NOT suggest moving content to a cover letter or any other document "
-    "or generating a cover letter. Focus solely on improving the CV document itself."
+    "or generating a cover letter. Focus solely on improving the CV document itself. "
     "Likewise, when evaluating a cover letter, provide improvement instructions ONLY for the cover letter. Do NOT suggest moving content to a CV or any other document "
-    "or generating a CV. Focus solely on improving the cover letter document itself."
+    "or generating a CV. Focus solely on improving the cover letter document itself. "
+    "IMPORTANT: Be conservative in your assessment. Only suggest improvements for genuine issues. "
+    "If a document is already good (quality score 85+), only suggest critical issues or very minor enhancements. "
+    "Do NOT be overly perfectionist - focus on meaningful improvements that significantly impact quality, ATS compatibility, or job alignment."
 )
 
 CRITIQUE_HUMAN_PROMPT = (
@@ -31,9 +34,16 @@ CRITIQUE_HUMAN_PROMPT = (
     "2. **ATS Compatibility**: Formatting, keywords, structure, and parsing-friendliness\n"
     "3. **Job Alignment**: How well the document matches job requirements, company culture, and role expectations\n"
     "4. **Overall Assessment**: Overall quality score and critical issues\n\n"
-    "Provide specific, actionable improvement instructions that can be automatically applied. "
-    "Focus on concrete changes rather than vague suggestions. "
-    "If the document is already excellent, provide minimal or no improvements."
+    "CRITICAL REQUIREMENTS FOR IMPROVEMENT INSTRUCTIONS:\n"
+    "- Be VERY specific and actionable. Each instruction should clearly state WHAT to change, WHERE to change it, and HOW to change it.\n"
+    "- Use exact locations (e.g., 'In the Professional Summary section, change...' or 'In the Experience section under [Company Name], add...')\n"
+    "- Provide concrete examples when possible (e.g., 'Change \"managed team\" to \"led a cross-functional team of 5 members\"')\n"
+    "- Distinguish between CRITICAL issues (must fix) and MINOR improvements (nice to have)\n"
+    "- If quality score is 85 or above, only suggest critical issues or very minor enhancements\n"
+    "- If the document is already excellent (90+) or there are no meaningful improvements, return an EMPTY STRING (\"\") for improvement_instructions\n"
+    "- Do NOT suggest vague improvements like 'improve clarity' - be specific about what to change\n"
+    "- Focus on improvements that significantly impact quality, ATS compatibility, or job alignment\n"
+    "- CRITICAL: Return empty string \"\" if no improvements are needed - do NOT write 'No improvements needed' or similar text"
 )
 
 
@@ -58,8 +68,11 @@ class CritiqueResponse(BaseModel):
         description="Feedback on how well the document aligns with job requirements and company culture"
     )
     improvement_instructions: str = Field(
-        ...,
-        description="Clear, actionable instructions for improving the document. These should be specific and implementable. If document is excellent, state 'No improvements needed' or provide only minor enhancements."
+        default="",
+        description="Clear, actionable instructions for improving the document. These should be VERY specific and implementable. "
+        "Each instruction must clearly state WHAT to change, WHERE to change it, and HOW to change it. "
+        "Use exact locations (e.g., 'In the Professional Summary section, change...'). "
+        "CRITICAL: Return an EMPTY STRING (\"\") if no improvements are needed. Do NOT write 'No improvements needed' or any other text - just return empty string."
     )
     critical_issues: str = Field(
         default="",
@@ -70,20 +83,22 @@ class CritiqueResponse(BaseModel):
 class CritiqueAgent:
     """Agent for evaluating CV and cover letter quality and providing improvement instructions."""
     
-    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.3):
+    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.3, quality_threshold: int = 85):
         """
         Initialize the CritiqueAgent.
 
         Args:
             model: The LLM model identifier to use
             temperature: Temperature setting for the LLM
+            quality_threshold: Minimum quality score below which refinement is recommended (default: 85)
 
         Returns:
             None
         """
         logger.info("Initializing CritiqueAgent...")
         self.llm = init_chat_model(model, temperature=temperature)
-        logger.debug(f"CritiqueAgent LLM initialized - model: {model}, temperature: {temperature}")
+        self.quality_threshold = quality_threshold
+        logger.debug(f"CritiqueAgent LLM initialized - model: {model}, temperature: {temperature}, quality_threshold: {quality_threshold}")
     
     def _format_job_description(self, job_description_info: Optional[dict]) -> str:
         """
@@ -328,6 +343,22 @@ class CritiqueAgent:
             }
         }
         
+        # Update CV history
+        cv_history = state.get("cv_history", [])
+        # Determine iteration number (if not already set in state, infer from history length)
+        iteration = len(cv_history) + 1
+        
+        history_entry = {
+            "iteration": iteration,
+            "content": generated_cv,
+            "score": cv_critique_result.quality_score,
+            "critique": cv_critique_result.dict()
+        }
+        
+        # Append to history
+        state_updates["cv_history"] = cv_history + [history_entry]
+        logger.info(f"Added CV iteration {iteration} to history with score {cv_critique_result.quality_score}")
+        
         # Write to debug file
         debug_content = ""
         debug_content += "CV CRITIQUE RESULTS:\n"
@@ -343,17 +374,57 @@ class CritiqueAgent:
         
         write_to_debug(debug_content, "CV CRITIQUE DEBUG INFO")
         
-        # If there are improvement instructions, mark CV for refinement
-        if cv_critique_result.improvement_instructions and \
-           cv_critique_result.improvement_instructions.strip().lower() not in ["no improvements needed", "no improvements needed.", "none"]:
+        # Determine if refinement is needed based on quality threshold and critical issues
+        quality_score = cv_critique_result.quality_score
+        has_critical_issues = bool(cv_critique_result.critical_issues and cv_critique_result.critical_issues.strip())
+        # Check if improvement instructions exist (non-empty string)
+        has_improvement_instructions = bool(
+            cv_critique_result.improvement_instructions and 
+            cv_critique_result.improvement_instructions.strip()
+        )
+        
+        # Only refine if:
+        # 1. Quality score is below threshold, OR
+        # 2. There are critical issues that must be addressed
+        should_refine = (quality_score < self.quality_threshold or has_critical_issues) and has_improvement_instructions
+        
+        if should_refine:
             state_updates["cv_needs_refinement"] = True
             state_updates["cv_critique_improvement_instructions"] = cv_critique_result.improvement_instructions
             state_updates["cv_needs_critique"] = False  # Reset flag
-            logger.info("CV critique identified improvements - marking for refinement")
+            logger.info(f"CV critique identified improvements - quality_score: {quality_score}, has_critical_issues: {has_critical_issues}, marking for refinement")
         else:
             state_updates["cv_needs_refinement"] = False
             state_updates["cv_needs_critique"] = False  # Reset flag
-            logger.info("CV critique found no significant improvements needed")
+            state_updates["cv_critique_improvement_instructions"] = None # Clear instructions if no refinement needed
+            if quality_score >= self.quality_threshold and not has_critical_issues:
+                logger.info(f"CV critique: Quality score {quality_score} is above threshold {self.quality_threshold} and no critical issues - skipping refinement")
+            else:
+                logger.info("CV critique found no significant improvements needed")
+        
+        # Store previous quality score for comparison (to allow 2 iterations if quality improves)
+        state_updates["cv_previous_quality_score"] = quality_score
+        
+        # Always show critique feedback to user for transparency
+        critique_message = f"**CV Quality Assessment:**\n"
+        critique_message += f"Quality Score: {quality_score}/100\n\n"
+        critique_message += f"**Content Quality:**\n{cv_critique_result.content_quality_feedback}\n\n"
+        critique_message += f"**ATS Compatibility:**\n{cv_critique_result.ats_compatibility_feedback}\n\n"
+        critique_message += f"**Job Alignment:**\n{cv_critique_result.job_alignment_feedback}\n\n"
+        if has_critical_issues:
+            critique_message += f"**Critical Issues:**\n{cv_critique_result.critical_issues}\n\n"
+        if has_improvement_instructions:
+            critique_message += f"**Improvement Suggestions:**\n{cv_critique_result.improvement_instructions}\n\n"
+        if should_refine:
+            critique_message += "The CV will be automatically refined based on these suggestions."
+        else:
+            critique_message += "The CV quality is good. No automatic refinement needed."
+        
+        # Add critique feedback to messages for user visibility
+        state_updates["messages"] = state.get("messages", []) + [{
+            "role": "assistant",
+            "content": critique_message
+        }]
         
         logger.info("CritiqueAgent.run_cv() completed successfully")
         return state_updates
@@ -406,6 +477,23 @@ class CritiqueAgent:
             }
         }
         
+        # Update Cover Letter history
+        cover_letter_history = state.get("cover_letter_history", [])
+        # Determine iteration number (if not already set in state, infer from history length)
+        iteration = len(cover_letter_history) + 1
+        
+        history_entry = {
+            "iteration": iteration,
+            "content": generated_cover_letter,
+            "score": cover_letter_critique_result.quality_score,
+            "critique": cover_letter_critique_result.dict()
+        }
+        
+        # Append to history
+        state_updates["cover_letter_history"] = cover_letter_history + [history_entry]
+        logger.info(f"Added cover letter iteration {iteration} to history with score {cover_letter_critique_result.quality_score}")
+        
+        
         # Write to debug file
         debug_content = ""
         debug_content += "COVER LETTER CRITIQUE RESULTS:\n"
@@ -421,17 +509,57 @@ class CritiqueAgent:
         
         write_to_debug(debug_content, "COVER LETTER CRITIQUE DEBUG INFO")
         
-        # If there are improvement instructions, mark cover letter for refinement
-        if cover_letter_critique_result.improvement_instructions and \
-           cover_letter_critique_result.improvement_instructions.strip().lower() not in ["no improvements needed", "no improvements needed.", "none"]:
+        # Determine if refinement is needed based on quality threshold and critical issues
+        quality_score = cover_letter_critique_result.quality_score
+        has_critical_issues = bool(cover_letter_critique_result.critical_issues and cover_letter_critique_result.critical_issues.strip())
+        # Check if improvement instructions exist (non-empty string)
+        has_improvement_instructions = bool(
+            cover_letter_critique_result.improvement_instructions and 
+            cover_letter_critique_result.improvement_instructions.strip()
+        )
+        
+        # Only refine if:
+        # 1. Quality score is below threshold, OR
+        # 2. There are critical issues that must be addressed
+        should_refine = (quality_score < self.quality_threshold or has_critical_issues) and has_improvement_instructions
+        
+        if should_refine:
             state_updates["cover_letter_needs_refinement"] = True
             state_updates["cover_letter_critique_improvement_instructions"] = cover_letter_critique_result.improvement_instructions
             state_updates["cover_letter_needs_critique"] = False  # Reset flag
-            logger.info("Cover letter critique identified improvements - marking for refinement")
+            logger.info(f"Cover letter critique identified improvements - quality_score: {quality_score}, has_critical_issues: {has_critical_issues}, marking for refinement")
         else:
             state_updates["cover_letter_needs_refinement"] = False
             state_updates["cover_letter_needs_critique"] = False  # Reset flag
-            logger.info("Cover letter critique found no significant improvements needed")
+            state_updates["cover_letter_critique_improvement_instructions"] = None # Clear instructions if no refinement needed
+            if quality_score >= self.quality_threshold and not has_critical_issues:
+                logger.info(f"Cover letter critique: Quality score {quality_score} is above threshold {self.quality_threshold} and no critical issues - skipping refinement")
+            else:
+                logger.info("Cover letter critique found no significant improvements needed")
+        
+        # Store previous quality score for comparison (to allow 2 iterations if quality improves)
+        state_updates["cover_letter_previous_quality_score"] = quality_score
+        
+        # Always show critique feedback to user for transparency
+        critique_message = f"**Cover Letter Quality Assessment:**\n"
+        critique_message += f"Quality Score: {quality_score}/100\n\n"
+        critique_message += f"**Content Quality:**\n{cover_letter_critique_result.content_quality_feedback}\n\n"
+        critique_message += f"**ATS Compatibility:**\n{cover_letter_critique_result.ats_compatibility_feedback}\n\n"
+        critique_message += f"**Job Alignment:**\n{cover_letter_critique_result.job_alignment_feedback}\n\n"
+        if has_critical_issues:
+            critique_message += f"**Critical Issues:**\n{cover_letter_critique_result.critical_issues}\n\n"
+        if has_improvement_instructions:
+            critique_message += f"**Improvement Suggestions:**\n{cover_letter_critique_result.improvement_instructions}\n\n"
+        if should_refine:
+            critique_message += "The cover letter will be automatically refined based on these suggestions."
+        else:
+            critique_message += "The cover letter quality is good. No automatic refinement needed."
+        
+        # Add critique feedback to messages for user visibility
+        state_updates["messages"] = state.get("messages", []) + [{
+            "role": "assistant",
+            "content": critique_message
+        }]
         
         logger.info("CritiqueAgent.run_cover_letter() completed successfully")
         return state_updates

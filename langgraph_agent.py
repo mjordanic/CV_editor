@@ -28,6 +28,11 @@ logging.basicConfig(
     ]
 )
 
+# Silence noisy libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("openai").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 logger.info(f"Logging to file: {log_filename}")
 
@@ -56,6 +61,10 @@ from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
 from agents.critique import CritiqueAgent
+
+MAX_REFINEMENTS = 2
+QUALITY_IMPROVEMENT_THRESHOLD = 5
+
 
 
 class State(TypedDict, total=False):
@@ -101,8 +110,12 @@ class State(TypedDict, total=False):
     cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
     cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
     cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
-    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 1)
-    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 1)
+    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 2 if quality improves)
+    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 2 if quality improves)
+    cv_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
+    cover_letter_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
+    cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
+    cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
 
 
 def operations_on_state(state):
@@ -191,7 +204,7 @@ class MasterAgent:
         cv_writer_agent = CVWriterAgent()
         cover_letter_writer_agent = CoverLetterWriterAgent()
         user_input_agent = UserInputAgent()
-        critique_agent = CritiqueAgent()
+        critique_agent = CritiqueAgent(quality_threshold=85)
         logger.debug("All agents instantiated successfully")
 
 
@@ -206,6 +219,8 @@ class MasterAgent:
         graph_builder.add_node("critique_cv", critique_agent.run_cv)
         graph_builder.add_node("critique_cover_letter", critique_agent.run_cover_letter)
         graph_builder.add_node("collect_user_input", user_input_agent.run)
+        graph_builder.add_node("finalize_cv", cv_writer_agent.finalize_best_version)
+        graph_builder.add_node("finalize_cover_letter", cover_letter_writer_agent.finalize_best_version)
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
@@ -227,9 +242,79 @@ class MasterAgent:
         )
         graph_builder.add_edge("draft_cv", "critique_cv")
         graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
-        graph_builder.add_edge("critique_cv", "router")  # Critique always routes to router
-        graph_builder.add_edge("critique_cover_letter", "router")  # Critique always routes to router
+        
+        # Conditional routing for CV critique
+        def route_cv_critique(state):
+            # Check if refinement is needed AND allowed (count < max or quality improved)
+            needs_refinement = state.get("cv_needs_refinement", False)
+            refinement_count = state.get("cv_refinement_count", 0)
+            
+            # Check for quality improvement
+            cv_critique = state.get("cv_critique")
+            current_score = cv_critique.get("quality_score") if cv_critique else None
+            previous_score = state.get("cv_previous_quality_score")
+            
+            quality_improved = False
+            if current_score is not None and previous_score is not None:
+                improvement = current_score - previous_score
+                if improvement >= QUALITY_IMPROVEMENT_THRESHOLD:
+                    quality_improved = True
+                    logger.info(f"CV quality improved by {improvement} points - allowing refinement despite count")
+
+            # Allow refinement if needed AND (count < max OR quality improved significantly)
+            if needs_refinement and (refinement_count < MAX_REFINEMENTS or quality_improved):
+                logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
+                return "draft_cv"
+            else:
+                logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+                return "finalize_cv"
+
+        graph_builder.add_conditional_edges(
+            "critique_cv",
+            route_cv_critique,
+            {
+                "draft_cv": "draft_cv",
+                "finalize_cv": "finalize_cv"
+            }
+        )
+
+        # Conditional routing for Cover Letter critique
+        def route_cover_letter_critique(state):
+            needs_refinement = state.get("cover_letter_needs_refinement", False)
+            refinement_count = state.get("cover_letter_refinement_count", 0)
+            
+            # Check for quality improvement
+            cl_critique = state.get("cover_letter_critique")
+            current_score = cl_critique.get("quality_score") if cl_critique else None
+            previous_score = state.get("cover_letter_previous_quality_score")
+            
+            quality_improved = False
+            if current_score is not None and previous_score is not None:
+                improvement = current_score - previous_score
+                if improvement >= QUALITY_IMPROVEMENT_THRESHOLD:
+                    quality_improved = True
+                    logger.info(f"Cover letter quality improved by {improvement} points - allowing refinement despite count")
+            
+            # Allow refinement if needed AND (count < max OR quality improved significantly)
+            if needs_refinement and (refinement_count < MAX_REFINEMENTS or quality_improved):
+                logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
+                return "draft_cover_letter"
+            else:
+                logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+                return "finalize_cover_letter"
+
+        graph_builder.add_conditional_edges(
+            "critique_cover_letter",
+            route_cover_letter_critique,
+            {
+                "draft_cover_letter": "draft_cover_letter",
+                "finalize_cover_letter": "finalize_cover_letter"
+            }
+        )
+        
         graph_builder.add_edge("collect_user_input", "router")
+        graph_builder.add_edge("finalize_cv", "router")
+        graph_builder.add_edge("finalize_cover_letter", "router")
         logger.debug("All edges added to graph")
 
         # Create a checkpointer for persistence (required for interrupts)
@@ -299,6 +384,8 @@ class MasterAgent:
             cover_letter_needs_critique=None,
             cv_refinement_count=0,
             cover_letter_refinement_count=0,
+            cv_history=[],
+            cover_letter_history=[],
         )
         logger.debug("Initial state created")
 
