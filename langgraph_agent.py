@@ -62,8 +62,6 @@ from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
 from agents.critique import CritiqueAgent
 
-MAX_REFINEMENTS = 2
-QUALITY_IMPROVEMENT_THRESHOLD = 5
 
 
 
@@ -191,20 +189,63 @@ class MasterAgent:
         """
         logger.info("Initializing MasterAgent...")
         
+        # Load configuration once at startup
+        logger.debug("Loading agent configuration...")
+        from config.config_loader import load_config, get_agent_config
+        
+        # Load full config to get workflow settings
+        full_config = load_config()
+        workflow_config = full_config.get('workflow', {})
+        self.max_refinements = workflow_config.get('max_refinements', 2)
+        self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
+        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, quality_improvement_threshold: {self.quality_improvement_threshold}")
+        
+        # Load agent configurations
+        router_config = get_agent_config('router')
+        cv_writer_config = get_agent_config('cv_writer')
+        cover_letter_config = get_agent_config('cover_letter_writer')
+        critique_config = get_agent_config('critique')
+        job_desc_config = get_agent_config('job_description')
+        search_config = get_agent_config('search')
+        logger.debug("Configuration loaded for all agents")
+        
         # Build the graph
         logger.debug("Creating StateGraph")
         graph_builder = StateGraph(State)
 
-        # Instantiate agents
+        # Instantiate agents with configuration from YAML
         logger.debug("Instantiating agents...")
-        search_agent = SearchAgent()
+        search_agent = SearchAgent(
+            model=search_config['model'],
+            temperature=search_config['temperature']
+        )
         document_reader_agent = DocumentReaderAgent()
-        job_description_agent = JobDescriptionAgent()
-        router_agent = RouterAgent()
-        cv_writer_agent = CVWriterAgent()
-        cover_letter_writer_agent = CoverLetterWriterAgent()
+        job_description_agent = JobDescriptionAgent(
+            model=job_desc_config['model'],
+            temperature=job_desc_config['temperature']
+        )
+        router_agent = RouterAgent(
+            model=router_config['model'],
+            temperature=router_config['temperature']
+        )
+        cv_writer_agent = CVWriterAgent(
+            model=cv_writer_config['model'],
+            temperature=cv_writer_config['temperature'],
+            filter_model=cv_writer_config['filter_model'],
+            filter_temperature=cv_writer_config['filter_temperature']
+        )
+        cover_letter_writer_agent = CoverLetterWriterAgent(
+            model=cover_letter_config['model'],
+            temperature=cover_letter_config['temperature'],
+            filter_model=cover_letter_config['filter_model'],
+            filter_temperature=cover_letter_config['filter_temperature']
+        )
         user_input_agent = UserInputAgent()
-        critique_agent = CritiqueAgent(quality_threshold=85)
+        critique_agent = CritiqueAgent(
+            model=critique_config['model'],
+            temperature=critique_config['temperature'],
+            quality_threshold=critique_config['quality_threshold']
+        )
         logger.debug("All agents instantiated successfully")
 
 
@@ -257,12 +298,12 @@ class MasterAgent:
             quality_improved = False
             if current_score is not None and previous_score is not None:
                 improvement = current_score - previous_score
-                if improvement >= QUALITY_IMPROVEMENT_THRESHOLD:
+                if improvement >= self.quality_improvement_threshold:
                     quality_improved = True
                     logger.info(f"CV quality improved by {improvement} points - allowing refinement despite count")
 
             # Allow refinement if needed AND (count < max OR quality improved significantly)
-            if needs_refinement and (refinement_count < MAX_REFINEMENTS or quality_improved):
+            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
                 logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
                 return "draft_cv"
             else:
@@ -291,12 +332,12 @@ class MasterAgent:
             quality_improved = False
             if current_score is not None and previous_score is not None:
                 improvement = current_score - previous_score
-                if improvement >= QUALITY_IMPROVEMENT_THRESHOLD:
+                if improvement >= self.quality_improvement_threshold:
                     quality_improved = True
                     logger.info(f"Cover letter quality improved by {improvement} points - allowing refinement despite count")
             
             # Allow refinement if needed AND (count < max OR quality improved significantly)
-            if needs_refinement and (refinement_count < MAX_REFINEMENTS or quality_improved):
+            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
                 logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
                 return "draft_cover_letter"
             else:

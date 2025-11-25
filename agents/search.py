@@ -51,7 +51,7 @@ class RemoteWorkResponse(BaseModel):
 
 class SearchAgent:
     """Agent responsible for performing company research via Tavily and summarizing results."""
-    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0):
+    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.0):
         """
         Initialize the search agent and supporting LLM/Tavily clients.
 
@@ -63,6 +63,7 @@ class SearchAgent:
             None
         """
         logger.info("Initializing SearchAgent...")
+        
         self.llm = init_chat_model(model, temperature=temperature)
         logger.debug(f"SearchAgent LLM initialized - model: {model}, temperature: {temperature}")
         # Initialize TavilyClient lazily to ensure environment variables are loaded
