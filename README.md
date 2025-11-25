@@ -26,6 +26,9 @@ Features
 - Uses a LangChain LLM to extract structured job information from pasted descriptions.
 - Calls Tavily search to gather company insights plus remote-work stance.
 - Routes between CV generation, cover letter generation, or additional user input using an LLM-driven router.
+- Automatic quality assessment: CritiqueAgent evaluates generated documents for content quality, ATS compatibility, and job alignment, providing actionable improvement instructions.
+- Iterative refinement workflow: Documents are automatically refined based on critique feedback until quality thresholds are met or no further improvements are identified.
+- Version control and history: All document iterations are saved as draft versions with quality scores, enabling tracking of improvements and comparison between versions.
 - Saves generated artifacts to `generated_CVs/` and logs every step to both `logs/` and `debug/`.
 - Supports iterative editing: user feedback is captured and fed back into the writing agents.
 - Emphasizes human-in-the-loop control so you can steer the AI models at every decision point.
@@ -39,9 +42,10 @@ High-Level Architecture
 - **SearchAgent**: Queries Tavily, summarizes results, and determines remote-work stance.
 - **RouterAgent**: Uses conversation context to decide the next action (generate CV, cover letter, prompt user, exit).
 - **CVWriterAgent / CoverLetterWriterAgent**: Generate tailored drafts using LangChain chat models.
+- **CritiqueAgent**: Evaluates generated documents for quality, ATS compatibility, and job alignment. Provides actionable improvement instructions and determines whether automatic refinement is needed based on quality thresholds.
 - **UserInputAgent**: Collects free-form responses when more clarity or feedback is required.
 
-All agents share a common `State` TypedDict managed by LangGraph, which keeps track of messages, extracted info, and generated artifacts. The result is a cohesive AI agentic system where multiple specialized models collaborate.
+All agents share a common `State` TypedDict managed by LangGraph, which keeps track of messages, extracted info, generated artifacts, critique feedback, and version history. The result is a cohesive AI agentic system where multiple specialized models collaborate.
 
 Prerequisites
 -------------
@@ -107,7 +111,14 @@ Workflow Walkthrough
 5. **Generation**:
    - `CVWriterAgent` creates or updates a CV using the selected LLM.
    - `CoverLetterWriterAgent` creates or updates a cover letter (often leveraging the freshly generated CV).
-6. **User feedback loop**: If the router needs clarification, `UserInputAgent` interrupts the graph so you can provide instructions, which are then fed back into the next generation step.
+6. **Quality assessment and refinement**:
+   - `CritiqueAgent` evaluates generated documents on three dimensions: content quality, ATS compatibility, and job alignment.
+   - Provides a quality score (0-100) and actionable improvement instructions.
+   - All document iterations are saved to version history with their quality scores as draft files.
+   - If quality score is below threshold (default: 85) or critical issues are identified, the document is automatically refined based on the improvement instructions.
+   - Refinement loop continues until quality threshold is met or no further improvements are suggested.
+7. **Final selection**: The highest-scoring version from the iteration history is selected as the final output.
+8. **User feedback loop**: If the router needs clarification or the user requests changes, `UserInputAgent` interrupts the graph so you can provide instructions, which reset the version history and initiate a new refinement cycle.
 
 Logging and Debugging
 ---------------------
@@ -143,8 +154,7 @@ TODO list
   - Create a more complete representation of the candidate's skills, aspirations, and experience
   - Allow candidates to input additional information via prompts
   - Enable the agent to proactively ask for missing information to build a comprehensive candidate profile
-- **Quality assessment**: Add an agent that evaluates generated documents and provides feedback on content quality, ATS compatibility, and alignment with job requirements.
-- **Version control and history**: Implement document versioning to track changes, compare revisions, and revert to previous versions of generated CVs and cover letters.
+- ~~**Quality assessment**: Add an agent that evaluates generated documents and provides feedback on content quality, ATS compatibility, and alignment with job requirements.~~ ✅ **Completed**: CritiqueAgent implemented with quality scoring and automatic refinement.
 - **ATS optimization**: Add features to optimize documents for Applicant Tracking Systems (ATS), including keyword optimization, format validation, and ATS compatibility scoring.
 - **Multi-format export**: Support exporting generated documents to multiple formats (Word, HTML, Markdown) in addition to PDF and plain text.
 - **Template system**: Implement a template selection and customization system, allowing users to choose from different CV/cover letter styles and formats.
