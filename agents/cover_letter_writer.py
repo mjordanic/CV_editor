@@ -68,7 +68,7 @@ class CoverLetterGenerationResponse(BaseModel):
 class CoverLetterWriterAgent:
     """Agent for generating tailored cover letters based on job descriptions and company information."""
     
-    def __init__(self, output_folder: str = "generated_CVs", model: str = "openai:gpt-5-nano", temperature: float = 0.7):
+    def __init__(self, output_folder: str = "generated_CVs", model: str = "openai:gpt-5-nano", temperature: float = 0.2):
         """
         Initialize the CoverLetterWriterAgent.
         
@@ -170,16 +170,82 @@ class CoverLetterWriterAgent:
         """
         if not self.previous_modification_instructions:
             return "No previous modification instructions."
-        
+
         formatted = []
         for idx, instruction in enumerate(self.previous_modification_instructions, 1):
             if instruction and instruction.strip():
                 formatted.append(f"{idx}. {instruction.strip()}")
-        
+
         if not formatted:
             return "No previous modification instructions."
-        
+
         return "\n".join(formatted)
+    
+    def _filter_critique_instructions_by_user_preferences(
+        self, 
+        critique_instructions: str
+    ) -> str:
+        """
+        Filter critique instructions against user preferences from previous_modification_instructions.
+        If user previously stated preferences (e.g., "don't include education"), 
+        omit conflicting critique suggestions.
+
+        Args:
+            critique_instructions: Critique improvement instructions to filter
+
+        Returns:
+            str: Filtered critique instructions that respect user preferences
+        """
+        if not critique_instructions or not critique_instructions.strip():
+            return critique_instructions
+        
+        if not self.previous_modification_instructions:
+            return critique_instructions
+        
+        # Get formatted user preferences using existing method
+        user_preferences_text = self._format_previous_modification_instructions()
+        
+        if user_preferences_text == "No previous modification instructions.":
+            return critique_instructions
+        
+        # Use LLM to filter critique instructions based on user preferences
+        # This ensures we respect user's explicit preferences even if critique suggests otherwise
+        filter_prompt = f"""You are filtering critique improvement instructions based on user preferences.
+
+**User Preferences (from previous feedback):**
+{user_preferences_text}
+
+**Critique Improvement Instructions:**
+{critique_instructions}
+
+**Task:**
+Filter the critique instructions to respect user preferences. 
+- If critique suggests something that conflicts with user preferences, OMIT that suggestion
+- If critique suggests something that aligns with user preferences, KEEP it
+- If user explicitly stated they don't want something (e.g., "don't include education", "no education section"), 
+  remove any critique suggestions that would add or modify that element
+- Keep all other valid critique suggestions that don't conflict
+- If a critique instruction contains multiple parts and only some conflict, keep the non-conflicting parts and remove only the conflicting parts
+
+Return ONLY the filtered critique instructions. If all suggestions conflict, return empty string.
+Do NOT add explanations or notes - just return the filtered instructions. 
+CRITICAL: You MUST NOT add any new content, suggestions, or changes that are not explicitly requested in the critique instructions. 
+You can ONLY remove parts of the critique instructions that conflict with user preferences. Do not add, modify, or rephrase anything beyond removing conflicting parts."""
+
+        try:
+            logger.info("Filtering critique instructions against user preferences...")
+            response = self.llm.invoke(filter_prompt)
+            filtered_instructions = response.content.strip() if hasattr(response, 'content') else str(response).strip()
+            
+            if filtered_instructions and filtered_instructions.lower() not in ["none", "no changes needed", ""]:
+                logger.info(f"Filtered critique instructions - original length: {len(critique_instructions)}, filtered length: {len(filtered_instructions)}")
+                return filtered_instructions
+            else:
+                logger.info("All critique instructions were filtered out due to user preferences")
+                return ""
+        except Exception as e:
+            logger.warning(f"Error filtering critique instructions: {e}. Using original instructions.")
+            return critique_instructions
     
     def generate_cover_letter(
         self,
@@ -314,11 +380,32 @@ class CoverLetterWriterAgent:
         # If this is a refinement based on critique, use critique instructions
         # Otherwise, use user feedback as before
         if is_refinement and cover_letter_critique_improvement_instructions:
-            if candidate_cover_letter:
-                modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing cover letter. Preserve everything else exactly as-is:**\n{cover_letter_critique_improvement_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the cover letter unless explicitly requested"
+            # Filter critique instructions against user preferences
+            filtered_critique_instructions = self._filter_critique_instructions_by_user_preferences(
+                cover_letter_critique_improvement_instructions
+            )
+            
+            if filtered_critique_instructions:
+                if candidate_cover_letter:
+                    modification_instructions = f"**CRITICAL: Apply ONLY these specific improvements to the existing cover letter. Preserve everything else exactly as-is:**\n{filtered_critique_instructions}\n\nYou MUST:\n- Make ONLY the changes explicitly requested above\n- Preserve all other content, structure, and formatting\n- Do NOT add, remove, or modify anything not mentioned in the instructions\n- Do NOT rewrite or restructure the cover letter unless explicitly requested"
+                else:
+                    modification_instructions = f"**Critique-based Improvement Instructions:**\n{filtered_critique_instructions}\n\nPlease apply these improvements to enhance the cover letter quality, ATS compatibility, and job alignment."
+                logger.info("Using filtered critique improvement instructions for cover letter refinement (respecting user preferences)")
             else:
-                modification_instructions = f"**Critique-based Improvement Instructions:**\n{cover_letter_critique_improvement_instructions}\n\nPlease apply these improvements to enhance the cover letter quality, ATS compatibility, and job alignment."
-            logger.info("Using critique improvement instructions for cover letter refinement")
+                # All critique instructions were filtered out due to user preferences
+                # Skip refinement and return early - no changes needed
+                logger.info("All critique instructions filtered out due to user preferences - skipping refinement")
+                return {
+                    "generated_cover_letter": state.get("generated_cover_letter"),  # Keep existing cover letter
+                    "cover_letter_needs_critique": False,  # Don't critique again
+                    "cover_letter_needs_refinement": False,  # Reset refinement flag
+                    "cover_letter_refinement_count": state.get("cover_letter_refinement_count", 0),  # Keep count
+                    "current_node": "cover_letter_writer",
+                    "messages": state.get("messages", []) + [{
+                        "role": "assistant",
+                        "content": "Cover letter refinement skipped: All critique suggestions were filtered out based on your previous preferences."
+                    }]
+                }
         else:
             modification_instructions = self._get_modification_instructions(user_feedback, bool(candidate_cover_letter))
         
@@ -338,9 +425,16 @@ class CoverLetterWriterAgent:
         if user_feedback and user_feedback.strip() and not is_refinement:
             self.previous_modification_instructions.append(user_feedback.strip())
         
-        # Save cover letter and notes
-        cover_letter_file_path = self.save_cover_letter(cover_letter_text)
-        notes_file_path = self.save_notes(cover_letter_notes)
+        # Determine iteration number for draft saving
+        cover_letter_history = state.get("cover_letter_history", [])
+        iteration = len(cover_letter_history) + 1
+        
+        # Save cover letter and notes as drafts
+        draft_filename = f"generated_cover_letter_draft_{iteration}.txt"
+        cover_letter_file_path = self.save_cover_letter(cover_letter_text, filename=draft_filename)
+        
+        notes_draft_filename = f"generated_cover_letter_notes_draft_{iteration}.txt"
+        notes_file_path = self.save_notes(cover_letter_notes, filename=notes_draft_filename)
         
         # Write to debug file
         debug_content = ""
@@ -394,4 +488,43 @@ class CoverLetterWriterAgent:
         }]
         
         return state_update
+
+    def finalize_best_version(self, state):
+        """
+        Select the best version from history and save it as the final output.
+        
+        Args:
+            state: The state dictionary containing cover_letter_history
+            
+        Returns:
+            dict: Updated state with final cover letter
+        """
+        logger.info("CoverLetterWriterAgent.finalize_best_version() called")
+        
+        cover_letter_history = state.get("cover_letter_history", [])
+        if not cover_letter_history:
+            logger.warning("No cover letter history found. Cannot finalize best version.")
+            return {"current_node": "finalize_cover_letter"}
+            
+        # Find the version with the highest score
+        # If scores are equal, prefer the later version (higher iteration number)
+        best_version = max(cover_letter_history, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        
+        logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
+        
+        final_cover_letter_text = best_version.get("content")
+        
+        # Save as the final generated_cover_letter.txt
+        final_path = self.save_cover_letter(final_cover_letter_text, filename="generated_cover_letter.txt")
+        
+        message = f"**Finalization Complete:**\nSelected version from iteration {best_version.get('iteration')} (Score: {best_version.get('score')}) as the best version.\nSaved to {final_path}"
+        
+        return {
+            "generated_cover_letter": final_cover_letter_text,
+            "current_node": "finalize_cover_letter",
+            "messages": state.get("messages", []) + [{
+                "role": "assistant",
+                "content": message
+            }]
+        }
 
