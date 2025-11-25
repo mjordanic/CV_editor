@@ -397,7 +397,7 @@ class MasterAgent:
         # This is a simplified version of the streaming loop that handles interrupt() calls
         # It uses the invoke() method to run the graph and handle interrupt() calls
         result = self.graph.invoke(stream_input, config)
-        while result.get('__interrupt__')[0].value:
+        while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
             interrupt_data = result["__interrupt__"]    
             interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
             logger.info(f"\n\n{interrupt_message}")
