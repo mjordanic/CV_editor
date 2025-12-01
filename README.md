@@ -23,16 +23,13 @@ Features
 
 ![LangGraph workflow](images/graph_visualization.png)
 
-- Reads existing CV/cover letter files (`CV/` folder, txt or pdf).
-- Uses a LangChain LLM to extract structured job information from pasted descriptions.
-- Calls Tavily search to gather company insights plus remote-work stance.
-- Routes between CV generation, cover letter generation, or additional user input using an LLM-driven router.
-- Automatic quality assessment: CritiqueAgent evaluates generated documents for content quality, ATS compatibility, and job alignment, providing actionable improvement instructions.
-- Iterative refinement workflow: Documents are automatically refined based on critique feedback until quality thresholds are met or no further improvements are identified.
-- Version control and history: All document iterations are saved as draft versions with quality scores, enabling tracking of improvements and comparison between versions.
-- Saves generated artifacts to `generated_CVs/` and logs every step to both `logs/` and `debug/`.
-- Supports iterative editing: user feedback is captured and fed back into the writing agents.
-- Emphasizes human-in-the-loop control so you can steer the AI models at every decision point.
+- **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/`) based on the job description.
+- **Relevance Verification**: Uses a two-stage filtering process (Vector Similarity + LLM Verification) to ensure only truly relevant experience is included.
+- **Automatic Refinement**: Documents are automatically refined based on critique feedback until quality thresholds are met.
+- **Version Control**: All document iterations are saved as draft versions with quality scores.
+- **Structured Data**: Centralized data management in `data/` folder (`CV`, `portfolio`, `generated_CVs`).
+- **Flexible Input**: Supports reading job descriptions from text files (`job_description/`).
+- **Human-in-the-loop**: You steer the AI at every decision point.
 
 High-Level Architecture
 -----------------------
@@ -41,9 +38,10 @@ High-Level Architecture
 - **DocumentReaderAgent**: Loads user-provided documents from disk.
 - **JobDescriptionAgent**: Pauses execution to request a job description, then extracts structured data.
 - **SearchAgent**: Queries Tavily, summarizes results, and determines remote-work stance.
+- **ExperienceRetrievalAgent**: Retrieves relevant experience from your portfolio using RAG (Retrieval-Augmented Generation) with relevance verification.
 - **RouterAgent**: Uses conversation context to decide the next action (generate CV, cover letter, prompt user, exit).
 - **CVWriterAgent / CoverLetterWriterAgent**: Generate tailored drafts using LangChain chat models.
-- **CritiqueAgent**: Evaluates generated documents for quality, ATS compatibility, and job alignment. Provides actionable improvement instructions and determines whether automatic refinement is needed based on quality thresholds.
+- **CritiqueAgent**: Evaluates generated documents for quality, ATS compatibility, and job alignment. Provides actionable improvement instructions.
 - **UserInputAgent**: Collects free-form responses when more clarity or feedback is required.
 
 All agents share a common `State` TypedDict managed by LangGraph, which keeps track of messages, extracted info, generated artifacts, critique feedback, and version history. The result is a cohesive AI agentic system where multiple specialized models collaborate.
@@ -94,21 +92,26 @@ python langgraph_agent.py
 
 The program will:
 
-1. Load user CV/cover-letter data from `CV/`.
-2. Ask you to paste the target job description.
-3. Fetch company insights via Tavily.
-4. Chat with you about what to generate next.
-5. Produce tailored documents and save them to `generated_CVs/`.
+1. Load user CV/cover-letter data from `data/CV/`.
+2. Load portfolio data from `data/portfolio/`.
+3. Ask you to paste the target job description (or provide a file path).
+4. Fetch company insights via Tavily.
+5. Retrieve relevant experience from your portfolio.
+6. Chat with you about what to generate next.
+7. Produce tailored documents and save them to `data/generated_CVs/`.
 
 While streaming, the CLI may pause with prompts such as “Please paste the job description…” or “Please provide your input:”. Paste multiline text and press `Ctrl+D` (or Enter twice) to continue.
+
+**Tip:** For long job descriptions that might exceed terminal buffer limits, you can save the text to a file (e.g., `job_description/my_job.txt`) and simply paste the file path when prompted.
 
 Workflow Walkthrough
 --------------------
 
-1. **Document ingestion**: `DocumentReaderAgent` loads `CV/CV.(txt|pdf)` and `CV/cover_letter.(txt|pdf)` if available.
-2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text, extracts company name, work type, requirements, etc.
+1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`.
+2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/job.txt`), extracts company name, work type, requirements, etc.
 3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
-4. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
+4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
+5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 5. **Generation**:
    - `CVWriterAgent` creates or updates a CV using the selected LLM.
    - `CoverLetterWriterAgent` creates or updates a cover letter (often leveraging the freshly generated CV).

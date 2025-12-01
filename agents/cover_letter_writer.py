@@ -26,6 +26,7 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "**Candidate CV (for context):**\n{candidate_cv}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
+    "**Relevant Experience from Portfolio (RAG):**\n{relevant_experience_context}\n\n"
     "**Modification Instructions:**\n{modification_instructions}\n\n"
     "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
     "CRITICAL: When modification instructions are provided, you MUST:\n"
@@ -70,7 +71,7 @@ class CoverLetterWriterAgent:
     
     def __init__(
         self, 
-        output_folder: str = "generated_CVs", 
+        output_folder: str = "data/generated_CVs", 
         model: str = "openai:gpt-5-mini", 
         temperature: float = 0.2,
         filter_model: str = "openai:gpt-5-nano",
@@ -270,7 +271,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         job_description_info: Optional[dict],
         company_info: Optional[dict],
         modification_instructions: Optional[str] = None,
-        previous_modification_instructions_formatted: Optional[str] = None
+        previous_modification_instructions_formatted: Optional[str] = None,
+        relevant_experience_context: str = "No relevant experience retrieved."
     ) -> tuple[str, str]:
         """
         Generate a tailored cover letter with separate content and notes.
@@ -310,6 +312,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             "candidate_cover_letter": candidate_cover_letter_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
+            "relevant_experience_context": relevant_experience_context,
             "modification_instructions": modification_instructions or "",
             "previous_modification_instructions": previous_modification_instructions_formatted or ""
         }
@@ -386,6 +389,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")
+        relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
         cover_letter_critique_improvement_instructions = state.get("cover_letter_critique_improvement_instructions")
@@ -434,7 +438,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             job_description_info=job_description_info,
             company_info=company_info,
             modification_instructions=modification_instructions,
-            previous_modification_instructions_formatted=previous_modification_instructions_formatted
+            previous_modification_instructions_formatted=previous_modification_instructions_formatted,
+            relevant_experience_context=relevant_experience_context
         )
 
         # Store feedback for future iterations (only if non-empty and not from critique)
