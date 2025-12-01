@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 CRITIQUE_SYSTEM_PROMPT = (
     "You are an expert CV and cover letter reviewer specializing in quality assessment, "
     "ATS (Applicant Tracking System) optimization, and job alignment analysis. "
+    "Your PRIMARY GOAL is to ensure the document passes AI-based screening and is strictly aligned with the job advertisement. "
     "Your role is to evaluate documents objectively and provide clear, actionable improvement instructions. "
     "You assess content quality, ATS compatibility, alignment with job requirements, and overall professionalism. "
+    "Check specifically for keyword matching and semantic alignment with the job description. "
     "CRITICAL: When evaluating a CV, provide improvement instructions ONLY for the CV. Do NOT suggest moving content to a cover letter or any other document "
     "or generating a cover letter. Focus solely on improving the CV document itself. "
     "Likewise, when evaluating a cover letter, provide improvement instructions ONLY for the cover letter. Do NOT suggest moving content to a CV or any other document "
@@ -20,6 +22,11 @@ CRITIQUE_SYSTEM_PROMPT = (
     "IMPORTANT: Be conservative in your assessment. Only suggest improvements for genuine issues. "
     "If a document is already good (quality score 85+), only suggest critical issues or very minor enhancements. "
     "Do NOT be overly perfectionist - focus on meaningful improvements that significantly impact quality, ATS compatibility, or job alignment."
+    "\n\nTRUTHFULNESS VERIFICATION:\n"
+    "You MUST cross-reference the generated document with the 'Original Candidate Information'.\n"
+    "If you detect any potential hallucinations (skills or experiences in the generated doc that are NOT in the original info), "
+    "you MUST flag them as 'Critical Issues'.\n"
+    "Example: If generated CV says 'Expert in Kubernetes' but original CV only mentions 'Docker', flag this as a potential hallucination."
 )
 
 CRITIQUE_HUMAN_PROMPT = (
@@ -31,8 +38,8 @@ CRITIQUE_HUMAN_PROMPT = (
     "**Original Candidate Information:**\n{candidate_info}\n\n"
     "Please evaluate the document on:\n"
     "1. **Content Quality**: Structure, clarity, professionalism, impact, and completeness\n"
-    "2. **ATS Compatibility**: Formatting, keywords, structure, and parsing-friendliness\n"
-    "3. **Job Alignment**: How well the document matches job requirements, company culture, and role expectations\n"
+    "2. **ATS Compatibility**: Formatting, keywords, structure, parsing-friendliness, and **AI Screening Probability**\n"
+    "3. **Job Alignment**: How well the document matches job requirements, company culture, and role expectations (**Keyword Matching**)\n"
     "4. **Overall Assessment**: Overall quality score and critical issues\n\n"
     "CRITICAL REQUIREMENTS FOR IMPROVEMENT INSTRUCTIONS:\n"
     "- Be VERY specific and actionable. Each instruction should clearly state WHAT to change, WHERE to change it, and HOW to change it.\n"
