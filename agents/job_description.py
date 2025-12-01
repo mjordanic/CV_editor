@@ -153,13 +153,29 @@ class JobDescriptionAgent:
         
         # Pause execution and wait for user to provide job description
         logger.info("Requesting job description from user via interrupt")
-        job_description_text = interrupt({"message": "Please paste the job description you'd like me to analyze.", "required": True})
+        job_description_text = interrupt({"message": "Please paste the job description you'd like me to analyze. (filepath or text)", "required": True})
         
         logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
         logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
         
         # Ensure we have a string
         job_description_text = str(job_description_text).strip()
+
+        # Check if the input is a file path
+        if os.path.isfile(job_description_text):
+            try:
+                logger.info(f"Reading job description from file: {job_description_text}")
+                with open(job_description_text, "r", encoding="utf-8") as f:
+                    job_description_text = f.read().strip()
+                logger.info(f"Successfully read job description from file - length: {len(job_description_text)} characters")
+            except Exception as e:
+                logger.error(f"Failed to read job description from file: {e}")
+                return {
+                    "messages": state.get("messages", []) + [{
+                        "role": "assistant",
+                        "content": f"Error: Could not read file '{job_description_text}'. Please check the path and try again."
+                    }]
+                }
         
         # Extract information from job description
         extracted_info = self.extract_info(job_description_text)

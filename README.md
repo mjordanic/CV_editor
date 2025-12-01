@@ -102,6 +102,8 @@ The program will:
 
 While streaming, the CLI may pause with prompts such as “Please paste the job description…” or “Please provide your input:”. Paste multiline text and press `Ctrl+D` (or Enter twice) to continue.
 
+**Tip:** For long job descriptions that might exceed terminal buffer limits, you can save the text to a file (e.g., `job_description/my_job.txt`) and simply paste the file path when prompted.
+
 Workflow Walkthrough
 --------------------
 

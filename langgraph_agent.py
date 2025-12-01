@@ -61,6 +61,7 @@ from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
 from agents.critique import CritiqueAgent
+from agents.rag_agent import ExperienceRetrievalAgent
 
 
 
@@ -114,6 +115,7 @@ class State(TypedDict, total=False):
     cover_letter_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
+    relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
 
 
 def operations_on_state(state):
@@ -246,6 +248,7 @@ class MasterAgent:
             temperature=critique_config['temperature'],
             quality_threshold=critique_config['quality_threshold']
         )
+        experience_retrieval_agent = ExperienceRetrievalAgent()
         logger.debug("All agents instantiated successfully")
 
 
@@ -254,6 +257,7 @@ class MasterAgent:
         graph_builder.add_node("load_candidate_documents", document_reader_agent.run)
         graph_builder.add_node("analyze_job_description", job_description_agent.run)
         graph_builder.add_node("research_company_context", search_agent.run)
+        graph_builder.add_node("retrieve_experience", experience_retrieval_agent.run)
         graph_builder.add_node("router", router_agent.run)
         graph_builder.add_node("draft_cv", cv_writer_agent.run)
         graph_builder.add_node("draft_cover_letter", cover_letter_writer_agent.run)
@@ -269,7 +273,8 @@ class MasterAgent:
         graph_builder.add_edge(START, "load_candidate_documents")
         graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
         graph_builder.add_edge("analyze_job_description", "research_company_context")
-        graph_builder.add_edge("research_company_context", "router")
+        graph_builder.add_edge("research_company_context", "retrieve_experience")
+        graph_builder.add_edge("retrieve_experience", "router")
         
         graph_builder.add_conditional_edges(
             "router",
@@ -427,6 +432,7 @@ class MasterAgent:
             cover_letter_refinement_count=0,
             cv_history=[],
             cover_letter_history=[],
+            relevant_experience=None,
         )
         logger.debug("Initial state created")
 
