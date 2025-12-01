@@ -70,7 +70,7 @@ class CoverLetterWriterAgent:
     
     def __init__(
         self, 
-        output_folder: str = "generated_CVs", 
+        output_folder: str = "data/generated_CVs", 
         model: str = "openai:gpt-5-mini", 
         temperature: float = 0.2,
         filter_model: str = "openai:gpt-5-nano",

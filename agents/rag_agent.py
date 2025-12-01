@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class ExperienceRetrievalAgent:
     """Agent for retrieving relevant experience from a portfolio using RAG."""
     
-    def __init__(self, portfolio_path: str = "data/portfolio.txt"):
+    def __init__(self, portfolio_path: str = "data/portfolio/portfolio.txt"):
         """
         Initialize the ExperienceRetrievalAgent.
         
