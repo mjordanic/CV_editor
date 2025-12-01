@@ -12,7 +12,8 @@ agents:
   # These agents are the core of the CV/Cover Letter generation
   
   cv_writer:
-    model: "openai:gpt-5-mini"
+    # model: "openai:gpt-5-mini"
+    model: "openai:gpt-5-nano"
     temperature: 0.2
     filter_model: "openai:gpt-5-nano"
     filter_temperature: 0.0
@@ -20,7 +21,8 @@ agents:
     rationale: "CV writing requires creativity, precision, and quality. GPT-5 mini offers superior performance at $0.25/1M input tokens - better than GPT-4o-mini quality at similar cost. Uses gpt-5-nano for filtering operations (80% cost savings)."
   
   cover_letter_writer:
-    model: "openai:gpt-5-mini"
+    # model: "openai:gpt-5-mini"
+    model: "openai:gpt-5-nano"
     temperature: 0.2
     filter_model: "openai:gpt-5-nano"
     filter_temperature: 0.0
@@ -28,7 +30,8 @@ agents:
     rationale: "Cover letter writing requires persuasive language and personalization. GPT-5 mini delivers excellent quality for well-defined creative tasks. Uses gpt-5-nano for filtering operations (80% cost savings)."
   
   critique:
-    model: "openai:gpt-5-mini"
+    # model: "openai:gpt-5-mini"
+    model: "openai:gpt-5-nano"
     temperature: 0.3
     quality_threshold: 85
     description: "Evaluates document quality and provides improvement instructions"

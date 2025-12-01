@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class DocumentReaderAgent:
     """Agent for reading CV and cover letter documents from the CV folder."""
     
-    def __init__(self, cv_folder: str = "CV"):
+    def __init__(self, cv_folder: str = "data/CV"):
         """
         Initialize the DocumentReaderAgent.
         
