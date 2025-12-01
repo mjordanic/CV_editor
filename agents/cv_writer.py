@@ -277,7 +277,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         job_description_info: Optional[dict],
         company_info: Optional[dict],
         modification_instructions: Optional[str] = None,
-        previous_modification_instructions_formatted: Optional[str] = None
+        previous_modification_instructions_formatted: Optional[str] = None,
+        relevant_experience_context: Optional[str] = "No relevant experience retrieved."
     ) -> tuple[str, str]:
         """
         Generate a tailored CV with separate content and notes.
@@ -314,7 +315,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             "candidate_cv": candidate_cv_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
-            "relevant_experience_context": state.get("relevant_experience", "No relevant experience retrieved."),
+            "relevant_experience_context": relevant_experience_context,
             "modification_instructions": modification_instructions or "",
             "previous_modification_instructions": previous_modification_instructions_formatted or ""
         }
@@ -389,6 +390,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
         user_feedback = state.get("user_feedback")
+        relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
         cv_critique_improvement_instructions = state.get("cv_critique_improvement_instructions")
@@ -451,7 +453,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             job_description_info=job_description_info,
             company_info=company_info,
             modification_instructions=modification_instructions,
-            previous_modification_instructions_formatted=previous_modification_instructions_formatted
+            previous_modification_instructions_formatted=previous_modification_instructions_formatted,
+            relevant_experience_context=relevant_experience_context
         )
 
         # Store feedback for future iterations (only if non-empty and not from critique)

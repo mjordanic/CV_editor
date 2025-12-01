@@ -209,6 +209,7 @@ class MasterAgent:
         critique_config = get_agent_config('critique')
         job_desc_config = get_agent_config('job_description')
         search_config = get_agent_config('search')
+        rag_config = get_agent_config('rag')
         logger.debug("Configuration loaded for all agents")
         
         # Build the graph
@@ -248,7 +249,11 @@ class MasterAgent:
             temperature=critique_config['temperature'],
             quality_threshold=critique_config['quality_threshold']
         )
-        experience_retrieval_agent = ExperienceRetrievalAgent()
+        experience_retrieval_agent = ExperienceRetrievalAgent(
+            model=rag_config['model'],
+            temperature=rag_config['temperature'],
+            similarity_threshold=rag_config['similarity_threshold']
+        )
         logger.debug("All agents instantiated successfully")
 
 

@@ -70,3 +70,10 @@ agents:
     temperature: null
     description: "Collects user input via interrupts - no LLM required"
     rationale: "Simple user interaction handling, no AI needed."
+
+  rag:
+    model: "openai:gpt-5-nano"
+    temperature: 0.0
+    similarity_threshold: 1.5
+    description: "Retrieves and verifies relevant experience"
+    rationale: "Verification is a classification task. GPT-5 nano is perfect for this. Threshold 0.5 (L2 distance) ensures high similarity."
