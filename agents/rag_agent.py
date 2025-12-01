@@ -1,25 +1,52 @@
 import logging
 import os
+from typing import List
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain.chat_models import init_chat_model
 from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
 
+RELEVANCE_VERIFICATION_PROMPT = (
+    "You are an expert recruiter verifying the relevance of a candidate's experience to a specific job description.\n\n"
+    "**Job Description:**\n"
+    "{job_description}\n\n"
+    "**Candidate Experience Chunk:**\n"
+    "{chunk_content}\n\n"
+    "**Task:**\n"
+    "Determine if this specific experience chunk is RELEVANT to the job description.\n"
+    "Relevant means it demonstrates skills, experience, or qualifications that would help the candidate get this job.\n"
+    "Irrelevant means it is unrelated (e.g., a hobby, a different field, or generic fluff).\n\n"
+    "Answer ONLY with 'YES' or 'NO'."
+)
+
 class ExperienceRetrievalAgent:
     """Agent for retrieving relevant experience from a portfolio using RAG."""
     
-    def __init__(self, portfolio_path: str = "data/portfolio/portfolio.txt"):
+    def __init__(
+        self, 
+        portfolio_path: str = "data/portfolio/portfolio.txt",
+        model: str = "openai:gpt-5-nano",
+        temperature: float = 0.0,
+        similarity_threshold: float = 0.5
+    ):
         """
         Initialize the ExperienceRetrievalAgent.
         
         Args:
             portfolio_path: Path to the portfolio text file
+            model: LLM model for relevance verification
+            temperature: Temperature for verification LLM
+            similarity_threshold: L2 distance threshold (lower is better)
         """
-        logger.info("Initializing ExperienceRetrievalAgent...")
+        logger.info(f"Initializing ExperienceRetrievalAgent - model: {model}, threshold: {similarity_threshold}")
         self.portfolio_path = portfolio_path
+        self.similarity_threshold = similarity_threshold
+        
         self.embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        self.llm = init_chat_model(model, temperature=temperature)
         self.vectorstore = None
         
         # Load and index the portfolio on initialization
@@ -51,13 +78,40 @@ class ExperienceRetrievalAgent:
         except Exception as e:
             logger.error(f"Error indexing portfolio: {e}")
 
-    def retrieve_relevant_experience(self, job_description: str, k: int = 3) -> str:
+    def _verify_relevance(self, chunk_content: str, job_description: str) -> bool:
+        """
+        Verify if the retrieved chunk is actually relevant to the job description using an LLM.
+        
+        Args:
+            chunk_content: The content of the retrieved chunk
+            job_description: The job description text
+            
+        Returns:
+            bool: True if relevant, False otherwise
+        """
+        prompt = RELEVANCE_VERIFICATION_PROMPT.format(
+            job_description=job_description[:2000] + "... (truncated)",
+            chunk_content=chunk_content
+        )
+        try:
+            response = self.llm.invoke(prompt)
+            answer = response.content.strip().upper() if hasattr(response, 'content') else str(response).strip().upper()
+            
+            is_relevant = "YES" in answer
+            logger.debug(f"Relevance verification: {answer} (Relevant: {is_relevant})")
+            return is_relevant
+        except Exception as e:
+            logger.warning(f"Error verifying relevance: {e}. Assuming relevant.")
+            return True
+
+    def retrieve_relevant_experience(self, job_description: str, k: int = 5) -> str:
         """
         Retrieve the top-k most relevant experience chunks for a given job description.
+        Applies vector similarity threshold and LLM verification.
         
         Args:
             job_description: The job description text
-            k: Number of chunks to retrieve
+            k: Number of chunks to retrieve (initial pool)
             
         Returns:
             str: Concatenated relevant experience text
@@ -66,15 +120,37 @@ class ExperienceRetrievalAgent:
             logger.warning("Vectorstore not initialized. Cannot retrieve experience.")
             return ""
             
-        logger.info(f"Retrieving top {k} relevant experiences...")
+        logger.info(f"Retrieving top {k} candidates for relevance filtering...")
         try:
-            # Search for relevant documents
-            docs = self.vectorstore.similarity_search(job_description, k=k)
+            # Search for relevant documents with scores (L2 distance: lower is better)
+            docs_and_scores = self.vectorstore.similarity_search_with_score(job_description, k=k)
             
+            valid_docs = []
+            for doc, score in docs_and_scores:
+                logger.debug(f"Candidate chunk score: {score} (Threshold: {self.similarity_threshold})")
+                
+                # Filter by similarity threshold
+                if score > self.similarity_threshold:
+                    logger.debug(f"Chunk rejected by threshold ({score} > {self.similarity_threshold})")
+                    continue
+                
+                # Verify with LLM
+                if self._verify_relevance(doc.page_content, job_description):
+                    valid_docs.append(doc)
+                else:
+                    logger.debug("Chunk rejected by LLM verification")
+            
+            if not valid_docs:
+                logger.info("No relevant experience found after filtering.")
+                return "No highly relevant experience found in portfolio."
+
             # Format the results
-            retrieved_text = "\n\n".join([f"RELEVANT EXPERIENCE {i+1}:\n{doc.page_content}" for i, doc in enumerate(docs)])
+            retrieved_text = ""
+            for i, doc in enumerate(valid_docs):
+                source = os.path.basename(doc.metadata.get("source", "unknown"))
+                retrieved_text += f"RELEVANT EXPERIENCE {i+1} (Source: {source}):\n{doc.page_content}\n\n"
             
-            logger.info(f"Retrieved {len(docs)} relevant items.")
+            logger.info(f"Retrieved {len(valid_docs)} verified relevant items.")
             return retrieved_text
             
         except Exception as e:
