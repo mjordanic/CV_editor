@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 CV_GENERATION_SYSTEM_PROMPT = (
     "You are an expert CV writer specializing in creating tailored, professional CVs that match job descriptions. "
+    "Your PRIMARY GOAL is to ensure the CV passes AI-based screening (ATS) and aligns perfectly with the job description keywords. "
     "Your CVs are well-structured, highlight relevant skills and experiences, and are optimized for ATS (Applicant Tracking Systems). "
     "You create compelling CVs that stand out while remaining truthful and accurate. "
     "CRITICAL: You MUST ONLY generate a CV document. You MUST NOT generate a cover letter or any other document, even if instructions mention it. "
@@ -20,6 +21,13 @@ CV_GENERATION_SYSTEM_PROMPT = (
     "CRITICAL PRESERVATION RULE: When modification instructions are provided and an existing CV is provided, "
     "you MUST preserve ALL existing content, structure, and formatting that is NOT explicitly mentioned in the modification instructions. "
     "Only make the specific changes requested - do NOT rewrite, restructure, or add content unless explicitly requested."
+    "\n\nTRUTHFULNESS PROTOCOL (STRICT ENFORCEMENT):\n"
+    "1. **NO HALLUCINATIONS**: You MUST NOT invent skills, certifications, qualifications, or experiences that are not present in the candidate's provided information.\n"
+    "2. **REFRAMING VS LYING**:\n"
+    "   - **ALLOWED (Reframing)**: Changing 'Coded in Python' to 'Developed robust backend solutions using Python' (if true).\n"
+    "   - **ALLOWED (Inference)**: If candidate says 'Built React app', you can add 'JavaScript' and 'Frontend Development' as skills.\n"
+    "   - **FORBIDDEN (Lying)**: If job requires 'Pilot License' and candidate doesn't have it, do NOT add it. Do NOT add 'AWS' if candidate never mentioned cloud experience.\n"
+    "3. **MISSING REQUIREMENTS**: If the candidate lacks a hard requirement (e.g., specific degree, license, years of experience), do NOT fake it. Focus on highlighting their closest relevant transferable skills instead."
 )
 
 CV_GENERATION_HUMAN_PROMPT = (
@@ -27,6 +35,7 @@ CV_GENERATION_HUMAN_PROMPT = (
     "**Existing CV (Base Document):**\n{candidate_cv}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
+    "**Relevant Experience from Portfolio (RAG):**\n{relevant_experience_context}\n\n"
     "**Modification Instructions:**\n{modification_instructions}\n\n"
     "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
     "CRITICAL: When modification instructions are provided, you MUST:\n"
@@ -38,6 +47,7 @@ CV_GENERATION_HUMAN_PROMPT = (
     "If NO modification instructions are provided (empty), then you can create or enhance the CV based on the job description and company information.\n\n"
     "General guidelines (apply only when no specific modification instructions are provided):\n"
     "- Tailor the CV to match the job requirements and company culture\n"
+    "- **AI Screening Optimization**: Ensure the CV contains relevant keywords from the job description to pass ATS filters.\n"
     "- Highlight relevant skills, experiences, and achievements\n"
     "- Use clear, professional language\n"
     "- Structure the CV in a standard format (Contact Info, Professional Summary, Experience, Education, Skills)\n"
@@ -304,6 +314,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             "candidate_cv": candidate_cv_text,
             "job_description": job_desc_text,
             "company_info": company_info_text,
+            "relevant_experience_context": state.get("relevant_experience", "No relevant experience retrieved."),
             "modification_instructions": modification_instructions or "",
             "previous_modification_instructions": previous_modification_instructions_formatted or ""
         }
