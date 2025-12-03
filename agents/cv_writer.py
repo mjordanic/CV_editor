@@ -376,7 +376,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         Main method to generate and save a CV.
         
         Args:
-            state: The state dictionary containing candidate_text, job_description_info, company_info, and user_feedback
+            state: The state dictionary containing candidate_text, job_description_info, company_info, and cv_content_feedback
             
         Returns:
             dict: Updated state with generated CV
@@ -389,7 +389,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         candidate_cv = generated_cv if generated_cv else (candidate_text.get("cv") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
-        user_feedback = state.get("user_feedback")
+        user_feedback = state.get("cv_content_feedback")
         relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
@@ -558,6 +558,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         return {
             "generated_cv": final_cv_text,
             "current_node": "finalize_cv",
+            # Clear cv_content_feedback after finalization to prevent infinite loops
+            "cv_content_feedback": None,
             "messages": state.get("messages", []) + [{
                 "role": "assistant",
                 "content": message

@@ -7,7 +7,6 @@ load_dotenv()
 import logging
 from datetime import datetime
 import os
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 
@@ -17,6 +16,8 @@ os.makedirs(logs_dir, exist_ok=True)
 
 # Create log filename with timestamp
 log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Configure logging with both file and console handlers
 logging.basicConfig(
@@ -47,9 +48,8 @@ from typing import Annotated, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.types import Command
 from typing_extensions import TypedDict
-from langgraph.types import interrupt
+from langgraph.types import interrupt, Command
 
 import sys
 
@@ -62,6 +62,8 @@ from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
 from agents.critique import CritiqueAgent
 from agents.rag_agent import ExperienceRetrievalAgent
+from agents.cv_pdf_generator import CVPDFGenerator
+from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
 
 
 
@@ -78,7 +80,8 @@ class State(TypedDict, total=False):
         next: Router-selected next action (draft_cv, draft_cover_letter, collect_user_input, exit).
         generated_cv: Most recent CV produced by the pipeline (clean CV without explanations).
         generated_cover_letter: Most recent cover letter produced by the pipeline.
-        user_feedback: Free-form feedback provided after reviewing documents.
+        cv_content_feedback: User feedback for CV content modifications.
+        cover_letter_content_feedback: User feedback for cover letter content modifications.
         user_input_message: Prompt shown when interrupting for user input.
         cv_critique: Critique results for the CV (quality score, feedback, improvement instructions).
         cover_letter_critique: Critique results for the cover letter (quality score, feedback, improvement instructions).
@@ -96,10 +99,18 @@ class State(TypedDict, total=False):
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
     current_node: str | None  # Current node in the graph
-    next: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] | None  # Next action to take
+    next: Literal[
+        "draft_cv",
+        "draft_cover_letter",
+        "collect_user_input",
+        "update_cv_pdf_style",
+        "update_cover_letter_pdf_style",
+        "exit",
+    ] | None  # Next action to take
     generated_cv: str | None  # Generated CV text (clean, without explanations)
     generated_cover_letter: str | None  # Generated cover letter text
-    user_feedback: str | None  # User feedback for modifications
+    cv_content_feedback: str | None  # User feedback for CV content modifications
+    cover_letter_content_feedback: str | None  # User feedback for cover letter content modifications (used when both CV and cover letter feedback exist)
     user_input_message: str | None  # Message to display when requesting user input
     cv_critique: dict | None  # Critique results for CV
     cover_letter_critique: dict | None  # Critique results for cover letter
@@ -116,6 +127,14 @@ class State(TypedDict, total=False):
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
+    cv_pdf_path: str | None  # Path to generated CV PDF file
+    cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
+    cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
+    cover_letter_pdf_style: str | None  # User description for cover letter PDF appearance (style only)
+    cv_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for CV in the current PDF generation
+    cv_latex_last_error: str | None  # Last LaTeX error log for CV PDF compilation
+    cover_letter_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for cover letter
+    cover_letter_latex_last_error: str | None  # Last LaTeX error log for cover letter PDF compilation
 
 
 def operations_on_state(state):
@@ -200,6 +219,7 @@ class MasterAgent:
         workflow_config = full_config.get('workflow', {})
         self.max_refinements = workflow_config.get('max_refinements', 2)
         self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
+        self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
         logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, quality_improvement_threshold: {self.quality_improvement_threshold}")
         
         # Load agent configurations
@@ -254,6 +274,11 @@ class MasterAgent:
             temperature=rag_config['temperature'],
             similarity_threshold=rag_config['similarity_threshold']
         )
+        
+        # Initialize PDF generators
+        cv_pdf_generator = CVPDFGenerator()
+        cover_letter_pdf_generator = CoverLetterPDFGenerator()
+        
         logger.debug("All agents instantiated successfully")
 
 
@@ -271,6 +296,8 @@ class MasterAgent:
         graph_builder.add_node("collect_user_input", user_input_agent.run)
         graph_builder.add_node("finalize_cv", cv_writer_agent.finalize_best_version)
         graph_builder.add_node("finalize_cover_letter", cover_letter_writer_agent.finalize_best_version)
+        graph_builder.add_node("generate_cv_pdf", cv_pdf_generator.run)
+        graph_builder.add_node("generate_cover_letter_pdf", cover_letter_pdf_generator.run)
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
@@ -288,8 +315,10 @@ class MasterAgent:
                 "draft_cv": "draft_cv",
                 "draft_cover_letter": "draft_cover_letter",
                 "collect_user_input": "collect_user_input",
-                "exit": END
-            }
+                "update_cv_pdf_style": "generate_cv_pdf",
+                "update_cover_letter_pdf_style": "generate_cover_letter_pdf",
+                "exit": END,
+            },
         )
         graph_builder.add_edge("draft_cv", "critique_cv")
         graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
@@ -364,8 +393,10 @@ class MasterAgent:
         )
         
         graph_builder.add_edge("collect_user_input", "router")
-        graph_builder.add_edge("finalize_cv", "router")
-        graph_builder.add_edge("finalize_cover_letter", "router")
+        graph_builder.add_edge("finalize_cv", "generate_cv_pdf")
+        graph_builder.add_edge("finalize_cover_letter", "generate_cover_letter_pdf")
+        graph_builder.add_edge("generate_cv_pdf", "router")
+        graph_builder.add_edge("generate_cover_letter_pdf", "router")
         logger.debug("All edges added to graph")
 
         # Create a checkpointer for persistence (required for interrupts)
@@ -423,7 +454,8 @@ class MasterAgent:
             next=None,
             generated_cv=None,
             generated_cover_letter=None,
-            user_feedback=None,
+            cv_content_feedback=None,
+            cover_letter_content_feedback=None,
             user_input_message=None,
             cv_critique=None,
             cover_letter_critique=None,
@@ -438,6 +470,10 @@ class MasterAgent:
             cv_history=[],
             cover_letter_history=[],
             relevant_experience=None,
+            cv_pdf_path=None,
+            cover_letter_pdf_path=None,
+            cv_pdf_style=None,
+            cover_letter_pdf_style=None,
         )
         logger.debug("Initial state created")
 

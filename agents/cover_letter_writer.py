@@ -373,7 +373,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         Main method to generate and save a cover letter.
         
         Args:
-            state: The state dictionary containing candidate_text, job_description_info, company_info, and user_feedback
+            state: The state dictionary containing candidate_text, job_description_info, company_info, and cover_letter_content_feedback (or cv_content_feedback)
             
         Returns:
             dict: Updated state with generated cover letter
@@ -388,7 +388,9 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         candidate_cover_letter = generated_cover_letter if generated_cover_letter else (candidate_text.get("cover_letter") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
-        user_feedback = state.get("user_feedback")
+        # Use cover_letter_content_feedback if it exists (when both CV and cover letter feedback are provided),
+        # otherwise fall back to cv_content_feedback
+        user_feedback = state.get("cover_letter_content_feedback") or state.get("cv_content_feedback")
         relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
@@ -543,6 +545,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         return {
             "generated_cover_letter": final_cover_letter_text,
             "current_node": "finalize_cover_letter",
+            # Clear cover_letter_content_feedback after finalization to prevent infinite loops
+            "cover_letter_content_feedback": None,
             "messages": state.get("messages", []) + [{
                 "role": "assistant",
                 "content": message
