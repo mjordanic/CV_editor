@@ -11,20 +11,36 @@ logger = logging.getLogger(__name__)
 ROUTER_SYSTEM_PROMPT = (
     "You are a helpful assistant that routes user requests for CV and cover letter generation. "
     "Your role is to interact with other agents for CV and cover letter generation, and with the user, understand what the user wants to generate, summarize "
-    "their request to a short actionable message and collect feedback from the user"
+    "their request to a short actionable message and collect feedback from the user "
     "after documents are created. You should be friendly and professional.\n\n"
     "Based on the conversation history, job description, company information, and the status of generated documents, "
     "you need to:\n"
     "1. Determine what message to show the user (if any)\n"
     "2. Decide what the next action should be (from the available actions listed below)\n"
-    "3. Extract and summarize any feedback for modifications. CRITICAL: When routing to 'draft_cv', the feedback MUST ONLY contain CV-related instructions. "
-    "Filter out any cover letter-related instructions. When routing to 'draft_cover_letter', the feedback MUST ONLY contain cover letter-related instructions. "
-    "Filter out any CV-related instructions. The feedback should be short, clear, and actionable. "
+    "3. Extract and summarize feedback for modifications, SEPARATING content feedback from style feedback:\n"
+    "   - CONTENT MODIFICATIONS (CV / Cover Letter text):\n"
+    "       * Extract instructions about WHAT to include/exclude/change in the text content.\n"
+    "       * Examples: 'add research stay at Berkeley in 2021', 'add MATLAB to skills', 'remove section X', 'emphasize Y'.\n"
+    "       * Store in 'cv_content_feedback' or 'cover_letter_content_feedback' fields (separate fields for CV and cover letter).\n"
+    "   - PDF APPEARANCE MODIFICATIONS (style/layout/colors/fonts ONLY):\n"
+    "       * Extract instructions about HOW the PDF should LOOK (visual appearance only).\n"
+    "       * Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing', 'change font to Arial'.\n"
+    "       * Store in 'cv_pdf_style' or 'cover_letter_pdf_style' fields.\n"
+    "   CRITICAL: A single user message can contain feedback for BOTH CV and cover letter (content + style for each). Extract them separately.\n"
+    "   - If content feedback exists for a document, route to the appropriate 'draft_*' action for that document.\n"
+    "   - If content feedback exists for BOTH documents, check the conversation history to determine which one the user wants to generate first, or route to the one that makes most sense based on context.\n"
+    "   - IMPORTANT: Check the conversation history to see if the user requested both documents. If one document has been generated but the other hasn't, and the user previously requested both, route to generate the missing document.\n"
+    "   - If ONLY style feedback exists (and document already exists), route to 'update_*_pdf_style'.\n"
+    "   - If ONLY style feedback exists (and document does NOT exist yet), route to 'draft_cv' or 'draft_cover_letter' first.\n"
+    "   - Style feedback will be automatically applied when the PDF is generated (after content is finalized).\n"
+    "The feedback should be short, clear, and actionable. "
     "Do NOT include your own questions, clarifications, or suggestions. Leave empty if no actionable feedback provided.\n\n"
     "Available actions (you can ONLY choose from actions listed in the context below):\n"
     "{available_actions}\n\n"
     "If documents have been generated, the user might want to:\n"
-    "- Request modifications (provide feedback)\n"
+    "- Request content modifications (provide feedback about the text)\n"
+    "- Request PDF appearance changes (style/layout/colors/fonts only)\n"
+    "- Both content and style changes in a single message\n"
     "- Generate the other document\n"
     "- Exit if satisfied\n\n"
     "If no documents have been generated yet, ask the user what they'd like to generate first."
@@ -39,15 +55,24 @@ ROUTER_HUMAN_PROMPT = (
     "**Document Generation Status:**\n"
     "- CV Generated: {cv_generated}\n"
     "- Cover Letter Generated: {cover_letter_generated}\n\n"
+    "IMPORTANT: Check the conversation history to see if the user requested both documents. If one document has been generated but the other hasn't, and the user previously requested both, route to generate the missing document.\n\n"
     "**Available Feedback for Modifications (if any):**\n{feedback_context}\n\n"
     "Based on this context, determine:\n"
     "1. What message should be shown to the user (if the conversation needs user input)\n"
     "2. What the next action should be (you can ONLY choose from the available actions listed in the system prompt)\n"
-    "3. Summarize any feedback for modification of documents. CRITICAL RULES:\n"
-    "   - If routing to 'draft_cv': Extract ONLY CV-related feedback. Filter out and ignore any mentions of cover letter or other documents. Focus solely on CV improvements.\n"
-    "   - If routing to 'draft_cover_letter': Extract ONLY cover letter-related feedback. Filter out and ignore any mentions of CV or other documents. Focus solely on cover letter improvements.\n"
+    "3. Extract feedback for modification of documents, SEPARATING content from style AND CV from cover letter:\n"
+    "   - CONTENT FEEDBACK (what to include/exclude/change in text):\n"
+    "       * Extract instructions about WHAT to add/remove/modify in the CV or cover letter content.\n"
+    "       * Store CV content feedback in 'cv_content_feedback' field.\n"
+    "       * Store cover letter content feedback in 'cover_letter_content_feedback' field.\n"
+    "       * CRITICAL: A single user message can contain feedback for BOTH CV and cover letter. Extract them separately.\n"
+    "   - STYLE FEEDBACK (how the PDF should look):\n"
+    "       * Extract instructions about visual appearance (colors, fonts, spacing, layout).\n"
+    "       * Store CV PDF style in 'cv_pdf_style' field.\n"
+    "       * Store cover letter PDF style in 'cover_letter_pdf_style' field.\n"
+    "       * CRITICAL: A single user message can contain BOTH content and style feedback for BOTH documents. Extract them separately.\n"
     "   - Extract ONLY the actual feedback from the available feedback context. Do NOT include your own questions, clarifications, or suggestions.\n"
-    "   - It should be short, clear, and actionable. Leave empty if no actionable feedback provided.\n\n"
+    "   - All feedback should be short, clear, and actionable. Leave empty if no actionable feedback provided.\n\n"
     "If this is the first interaction and no documents have been generated, ask the user what they'd like to generate.\n"
     "If documents have been generated, ask for feedback or if they want to generate the other document.\n"
     "If feedback exists and indicates refinement is needed, route to the appropriate generation action with the summarized feedback (if that action is available)."
@@ -56,25 +81,76 @@ ROUTER_HUMAN_PROMPT = (
 
 class RouterResponse(BaseModel):
     """Response model for router decisions."""
-    next_action: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] = Field(
+
+    next_action: Literal[
+        "draft_cv",
+        "draft_cover_letter",
+        "collect_user_input",
+        "update_cv_pdf_style",
+        "update_cover_letter_pdf_style",
+        "exit",
+    ] = Field(
         ...,
-        description="The next action to take: draft_cv, draft_cover_letter, collect_user_input, or exit"
+        description=(
+            "The next action to take: draft_cv, draft_cover_letter, collect_user_input, "
+            "update_cv_pdf_style, update_cover_letter_pdf_style, or exit. "
+            "If both content and style feedback exist, route to 'draft_cv' or 'draft_cover_letter' "
+            "(style will be applied automatically when PDF is generated)."
+        ),
     )
     message_to_user: str = Field(
         ...,
-        description="The message to show to the user. If empty, no message is needed (e.g., when routing directly to an action)."
+        description=(
+            "The message to show to the user. If empty, no message is needed "
+            "(e.g., when routing directly to an action)."
+        ),
     )
-    feedback: str = Field(
+    cv_content_feedback: str = Field(
         default="",
-        description="Summarized feedback for modifications, filtered to match the target document. "
-        "If routing to 'draft_cv', include ONLY CV-related feedback (filter out cover letter mentions). "
-        "If routing to 'draft_cover_letter', include ONLY cover letter-related feedback (filter out CV mentions). "
-        "Do NOT include your own questions or clarifications. It should be summarized, clear, and actionable. "
-        "Empty if no actionable feedback provided."
+        description=(
+            "Content-related feedback for CV text modifications. "
+            "Extract instructions about WHAT to include/exclude/change in the CV content. "
+            "Examples: 'add research stay at Berkeley in 2021', 'add MATLAB to skills', 'remove section X'. "
+            "Do NOT include cover letter content or style/appearance instructions here. "
+            "Short, clear, actionable. Empty if no CV content feedback provided."
+        ),
+    )
+    cover_letter_content_feedback: str = Field(
+        default="",
+        description=(
+            "Content-related feedback for cover letter text modifications. "
+            "Extract instructions about WHAT to include/exclude/change in the cover letter content. "
+            "Examples: 'emphasize my research experience', 'add paragraph about motivation', 'remove mention of X'. "
+            "Do NOT include CV content or style/appearance instructions here. "
+            "Short, clear, actionable. Empty if no cover letter content feedback provided."
+        ),
+    )
+    cv_pdf_style: str = Field(
+        default="",
+        description=(
+            "PDF appearance/style feedback for CV (visual appearance ONLY, no content changes). "
+            "Extract instructions about HOW the CV PDF should LOOK. "
+            "Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing'. "
+            "Do NOT include content modification instructions here. "
+            "Empty if no CV PDF style feedback provided."
+        ),
+    )
+    cover_letter_pdf_style: str = Field(
+        default="",
+        description=(
+            "PDF appearance/style feedback for cover letter (visual appearance ONLY, no content changes). "
+            "Extract instructions about HOW the cover letter PDF should LOOK. "
+            "Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing'. "
+            "Do NOT include content modification instructions here. "
+            "Empty if no cover letter PDF style feedback provided."
+        ),
     )
     needs_user_input: bool = Field(
         ...,
-        description="Whether the router needs to wait for user input before proceeding. If True, show message_to_user and wait for response."
+        description=(
+            "Whether the router needs to wait for user input before proceeding. "
+            "If True, show message_to_user and wait for response."
+        ),
     )
 
 
@@ -216,7 +292,7 @@ class RouterAgent:
     
     def _has_user_feedback(self, messages: list) -> bool:
         """
-        Check if the most recent interaction is from the user (not from critique/assistant).
+        Check if the most recent non-empty message is from the user.
         This determines if we should allow draft actions for user-initiated modifications.
         
         Args:
@@ -229,7 +305,7 @@ class RouterAgent:
             return False
         
         # Check messages in reverse order (most recent first)
-        # Find the first non-empty message to determine the source of the current interaction
+        # Find the first non-empty message and check its role
         for msg in reversed(messages):
             if isinstance(msg, dict):
                 role = msg.get("role", "")
@@ -238,17 +314,15 @@ class RouterAgent:
                 role = getattr(msg, "role", "")
                 content = getattr(msg, "content", "")
             
-            # Skip empty messages
+            # Skip empty messages - continue to find the last non-empty message
             if not content or not content.strip():
                 continue
             
-            # If we find a user message, that's the most recent interaction
-            if role == "user":
-                return True
-            # If we find an assistant/system message first, the most recent interaction is not from user
-            elif role in ("assistant", "system"):
-                return False
+            # Found the last non-empty message - check if it's from user
+            # Return immediately regardless of role (don't continue checking earlier messages)
+            return role == "user"
         
+        # No non-empty messages found
         return False
     
     def _build_available_actions(
@@ -257,7 +331,9 @@ class RouterAgent:
         cover_letter_refinement_allowed: bool,
         cv_critique_instructions: Optional[str],
         cover_letter_critique_instructions: Optional[str],
-        messages: list
+        messages: list,
+        cv_pdf_available: bool,
+        cover_letter_pdf_available: bool,
     ) -> str:
         """
         Build the list of available actions dynamically based on refinement status and user feedback.
@@ -300,6 +376,18 @@ class RouterAgent:
         if cover_letter_available:
             actions.append("- 'draft_cover_letter': Generate a new cover letter or modify an existing one (ONLY cover letter-related feedback should be passed)")
         
+        # PDF appearance-only style update actions (available only if corresponding PDF exists)
+        if cv_pdf_available:
+            actions.append(
+                "- 'update_cv_pdf_style': Regenerate the CV PDF using the SAME CV text but with updated visual style "
+                "(layout/colors/fonts/spacing ONLY, NO content changes)."
+            )
+        if cover_letter_pdf_available:
+            actions.append(
+                "- 'update_cover_letter_pdf_style': Regenerate the cover letter PDF using the SAME cover letter text but "
+                "with updated visual style (layout/colors/fonts/spacing ONLY, NO content changes)."
+            )
+        
         # Always available actions
         actions.append("- 'collect_user_input': Request user input (use this when you need to ask the user a question or get feedback)")
         actions.append("- 'exit': End the conversation")
@@ -335,19 +423,32 @@ class RouterAgent:
         parts = []
         
         # Extract user feedback from messages (last user message)
+        # Find the last non-empty message, and if it's from user, extract its content
         user_feedback = None
         if messages:
+            # First, find the last non-empty message
+            last_non_empty_msg = None
             for msg in reversed(messages):
                 if isinstance(msg, dict):
-                    role = msg.get("role", "")
                     content = msg.get("content", "")
                 else:
-                    role = getattr(msg, "role", "")
                     content = getattr(msg, "content", "")
+                
+                if content and content.strip():
+                    last_non_empty_msg = msg
+                    break
+            
+            # If the last non-empty message is from user, extract its content
+            if last_non_empty_msg:
+                if isinstance(last_non_empty_msg, dict):
+                    role = last_non_empty_msg.get("role", "")
+                    content = last_non_empty_msg.get("content", "")
+                else:
+                    role = getattr(last_non_empty_msg, "role", "")
+                    content = getattr(last_non_empty_msg, "content", "")
                 
                 if role == "user" and content and content.strip():
                     user_feedback = content.strip()
-                    break
         
         if user_feedback:
             parts.append("**User Feedback:**")
@@ -426,6 +527,10 @@ class RouterAgent:
         job_desc_formatted = self._format_job_description_info(job_description_info)
         company_info_formatted = self._format_company_info(company_info)
         candidate_text_formatted = self._format_candidate_text(candidate_text)
+        # Determine if PDFs exist (for appearance-only style updates)
+        cv_pdf_available = bool(state.get("cv_pdf_path"))
+        cover_letter_pdf_available = bool(state.get("cover_letter_pdf_path"))
+
         feedback_context = self._format_feedback_context(
             messages,
             cv_critique_instructions,
@@ -442,7 +547,9 @@ class RouterAgent:
             cover_letter_refinement_allowed,
             cv_critique_instructions,
             cover_letter_critique_instructions,
-            messages
+            messages,
+            cv_pdf_available,
+            cover_letter_pdf_available,
         )
         
         # Create prompt
@@ -477,6 +584,43 @@ class RouterAgent:
             logger.info("Cover letter needs refinement but auto-refinement skipped (limit reached) - router will ask user")
         
         logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, feedback_context length: {len(feedback_context)}")
+        
+        # Only bypass LLM if explicit content feedback exists for a document that hasn't been generated yet
+        # This handles the case where user provided feedback for both documents in one message
+        # Check for cover letter feedback when CV is done, or CV feedback when cover letter is done
+        cover_letter_content_feedback = state.get("cover_letter_content_feedback")
+        cv_content_feedback = state.get("cv_content_feedback")
+        cv_pdf_path = state.get("cv_pdf_path")
+        cover_letter_pdf_path = state.get("cover_letter_pdf_path")
+        
+        # If cover letter feedback exists and CV is finalized (PDF generated), route to cover letter
+        # Only route if cover letter hasn't been generated yet (to prevent loops)
+        if cover_letter_content_feedback and cv_pdf_path and not generated_cover_letter:
+            logger.info("Cover letter content feedback exists and CV is finalized - routing to draft_cover_letter")
+            return {
+                "next": "draft_cover_letter",
+                "messages": messages + [
+                    {
+                        "role": "assistant",
+                        "content": "Proceeding with cover letter generation using your previous feedback."
+                    }
+                ],
+            }
+        
+        # If CV feedback exists and cover letter is finalized (PDF generated), route to CV
+        # Only route if CV hasn't been generated yet (to prevent loops)
+        if cv_content_feedback and cover_letter_pdf_path and not generated_cv:
+            logger.info("CV content feedback exists and cover letter is finalized - routing to draft_cv")
+            return {
+                "next": "draft_cv",
+                "messages": messages + [
+                    {
+                        "role": "assistant",
+                        "content": "Proceeding with CV generation using your previous feedback."
+                    }
+                ],
+            }
+        
         logger.info("Calling LLM for routing decision...")
         
         # Make a single LLM call to determine routing
@@ -484,7 +628,10 @@ class RouterAgent:
         
         logger.info(f"LLM response received - next_action: {response.next_action}, needs_user_input: {response.needs_user_input}")
         logger.debug(f"LLM response - message_to_user: {response.message_to_user[:200] if response.message_to_user else 'None'}...")
-        logger.debug(f"LLM response - feedback: {response.feedback[:200] if response.feedback else 'None'}...")
+        logger.debug(f"LLM response - cv_content_feedback: {response.cv_content_feedback[:200] if response.cv_content_feedback else 'None'}...")
+        logger.debug(f"LLM response - cover_letter_content_feedback: {response.cover_letter_content_feedback[:200] if response.cover_letter_content_feedback else 'None'}...")
+        logger.debug(f"LLM response - cv_pdf_style: {response.cv_pdf_style[:200] if response.cv_pdf_style else 'None'}...")
+        logger.debug(f"LLM response - cover_letter_pdf_style: {response.cover_letter_pdf_style[:200] if response.cover_letter_pdf_style else 'None'}...")
         logger.debug(f"Available actions were: {available_actions}")
         
         # Use the LLM's routing decision directly (available actions were constrained based on refinement status)
@@ -498,10 +645,16 @@ class RouterAgent:
         # Prepare return state
         return_state = {
             "next": next_action,
-            "messages": messages + [{
-                "role": "assistant",
-                "content": response.message_to_user if response.message_to_user else f"Proceeding with: {next_action}"
-            }]
+            "messages": messages + [
+                {
+                    "role": "assistant",
+                    "content": (
+                        response.message_to_user
+                        if response.message_to_user
+                        else f"Proceeding with: {next_action}"
+                    ),
+                }
+            ],
         }
         
         # If limit reached, explicitly set needs_refinement to False in return state
@@ -515,38 +668,44 @@ class RouterAgent:
             return_state["cover_letter_critique_improvement_instructions"] = None  # Clear to prevent loops
             logger.debug("Setting cover_letter_needs_refinement=False and clearing critique instructions because limit reached")
         
-        if response.feedback:
-            # Check if this is critique-based feedback (refinement needed and allowed) or user feedback
-            # If cv_refinement_allowed is True, critique instructions were included in feedback_context
-            # Note: next_action may have been overridden, so check the original response.next_action for feedback routing
-            if response.next_action == "draft_cv":
-                # Always reset refinement count when routing to draft_cv (new generation cycle)
-                return_state["cv_refinement_count"] = 0
-                # Reset CV history for fresh loop
-                return_state["cv_history"] = []
-                logger.debug("Resetting CV refinement counter and cv_history for new draft")
-                
-                # Critique instructions were NOT in feedback_context (limit reached or user feedback)
-                # This is user feedback - populate user_feedback field
-                return_state["user_feedback"] = response.feedback
-                logger.debug("Storing user feedback for CV")
-            elif response.next_action == "draft_cover_letter":
-                # Always reset refinement count when routing to draft_cover_letter (new generation cycle)
-                return_state["cover_letter_refinement_count"] = 0
-                # Reset Cover Letter history for fresh loop
-                return_state["cover_letter_history"] = []
-                logger.debug("Resetting cover letter refinement counter and cover_letter_history for new draft")
-                
-                # Critique instructions were NOT in feedback_context (limit reached or user feedback)
-                # This is user feedback - populate user_feedback field
-                return_state["user_feedback"] = response.feedback
-                logger.debug("Storing user feedback for cover letter")
+        # Store CV content feedback (for CV writer)
+        # Only store if CV hasn't been generated yet (to prevent loops)
+        if response.cv_content_feedback and not generated_cv:
+            return_state["cv_refinement_count"] = 0
+            return_state["cv_history"] = []
+            return_state["cv_content_feedback"] = response.cv_content_feedback
+            logger.info(f"Storing CV content feedback: {response.cv_content_feedback[:100]}..." if len(response.cv_content_feedback) > 100 else f"Storing CV content feedback: {response.cv_content_feedback}")
+        elif response.cv_content_feedback and generated_cv:
+            # CV already generated - don't store feedback to prevent loops
+            logger.info("CV already generated - ignoring cv_content_feedback to prevent infinite loops")
+        
+        # Store cover letter content feedback (for cover letter writer)
+        # Only store if cover letter hasn't been generated yet (to prevent loops)
+        if response.cover_letter_content_feedback and not generated_cover_letter:
+            return_state["cover_letter_refinement_count"] = 0
+            return_state["cover_letter_history"] = []
+            # Store in a separate field so we can use it later
+            return_state["cover_letter_content_feedback"] = response.cover_letter_content_feedback
+            logger.info(f"Storing cover letter content feedback (will be used after CV is finalized): {response.cover_letter_content_feedback[:100]}..." if len(response.cover_letter_content_feedback) > 100 else f"Storing cover letter content feedback (will be used after CV is finalized): {response.cover_letter_content_feedback}")
+        elif response.cover_letter_content_feedback and generated_cover_letter:
+            # Cover letter already generated - don't store feedback to prevent loops
+            logger.info("Cover letter already generated - ignoring cover_letter_content_feedback to prevent infinite loops")
+        
+        # Store style feedback (for PDF generator) - can be stored regardless of next_action
+        # Style will be applied when PDF is generated (after content is finalized)
+        if response.cv_pdf_style:
+            return_state["cv_pdf_style"] = response.cv_pdf_style
+            if response.next_action == "update_cv_pdf_style":
+                logger.info(f"Routing to update_cv_pdf_style with style: {response.cv_pdf_style[:100]}..." if len(response.cv_pdf_style) > 100 else f"Routing to update_cv_pdf_style with style: {response.cv_pdf_style}")
             else:
-                # For other actions, treat as user feedback and reset both counters
-                return_state["user_feedback"] = response.feedback
-                return_state["cv_refinement_count"] = 0  # Reset counter for user-initiated changes
-                return_state["cover_letter_refinement_count"] = 0  # Reset counter for user-initiated changes
-                logger.debug("Storing user feedback and resetting refinement counters")
+                logger.info(f"Storing CV PDF style feedback (will be applied when PDF is generated): {response.cv_pdf_style[:100]}..." if len(response.cv_pdf_style) > 100 else f"Storing CV PDF style feedback (will be applied when PDF is generated): {response.cv_pdf_style}")
+        
+        if response.cover_letter_pdf_style:
+            return_state["cover_letter_pdf_style"] = response.cover_letter_pdf_style
+            if response.next_action == "update_cover_letter_pdf_style":
+                logger.info(f"Routing to update_cover_letter_pdf_style with style: {response.cover_letter_pdf_style[:100]}..." if len(response.cover_letter_pdf_style) > 100 else f"Routing to update_cover_letter_pdf_style with style: {response.cover_letter_pdf_style}")
+            else:
+                logger.info(f"Storing cover letter PDF style feedback (will be applied when PDF is generated): {response.cover_letter_pdf_style[:100]}..." if len(response.cover_letter_pdf_style) > 100 else f"Storing cover letter PDF style feedback (will be applied when PDF is generated): {response.cover_letter_pdf_style}")
         
         # If routing to collect_user_input, set user_input_message for the UserInputAgent
         if next_action == "collect_user_input" and response.message_to_user:

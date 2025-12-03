@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Color scheme - professional blue
+\definecolor{primarycolor}{RGB}{33, 37, 41}
+\definecolor{secondarycolor}{RGB}{0, 102, 204}
+\definecolor{accentcolor}{RGB}{108, 117, 125}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=secondarycolor,
+    urlcolor=secondarycolor,
+    citecolor=secondarycolor
+}
+
+% Section formatting (simple, robust)
+\titleformat{\section}
+    {\Large\bfseries\color{primarycolor}}
+    {}
+    {0em}
+    {}
+
+\titlespacing*{\section}{0pt}{1.5em}{0.75em}
+
+% Custom commands for consistent formatting
+\newcommand{\cvheader}[4]{
+    \begin{center}
+        {\Huge\bfseries\color{primarycolor} #1}\\[0.5em]
+        {\large\color{accentcolor} #2}\\[0.3em]
+        {\small
+            \ifx\empty#3\else
+                #3 \quad
+            \fi
+            \ifx\empty#4\else
+                #4
+            \fi
+        }
+    \end{center}
+    \vspace{1em}
+}
+
+\newcommand{\cvsection}[1]{
+    \section*{#1}
+}
+
+\newcommand{\cvitem}[2]{
+    \textbf{#1} \hfill \textit{#2}
+}
+
+\newcommand{\cvsubitem}[1]{
+    \begin{itemize}[leftmargin=*,itemsep=0.1em]
+        #1
+    \end{itemize}
+}
+
+% Remove page numbers
+\pagestyle{empty}
+
+% Customize itemize
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em}
+
+\begin{document}
+
+% Header section (if provided)
+{{CV_HEADER}}
+
+% CV CONTENT WILL BE INSERTED HERE
+{{CV_CONTENT}}
+
+\end{document}
+
