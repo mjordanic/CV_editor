@@ -7,7 +7,6 @@ load_dotenv()
 import logging
 from datetime import datetime
 import os
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 
@@ -18,6 +17,8 @@ os.makedirs(logs_dir, exist_ok=True)
 # Create log filename with timestamp
 log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
 
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Configure logging with both file and console handlers
 logging.basicConfig(
     level=logging.DEBUG,  # Change to logging.DEBUG for more verbose output
@@ -27,6 +28,11 @@ logging.basicConfig(
         logging.StreamHandler()  # Console output
     ]
 )
+
+# Silence noisy libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("openai").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 logger.info(f"Logging to file: {log_filename}")
@@ -42,8 +48,9 @@ from typing import Annotated, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.types import Command
 from typing_extensions import TypedDict
+from langgraph.types import interrupt, Command
+
 import sys
 
 from agents.search import SearchAgent
@@ -53,6 +60,12 @@ from agents.router import RouterAgent
 from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.user_input import UserInputAgent
+from agents.critique import CritiqueAgent
+from agents.rag_agent import ExperienceRetrievalAgent
+from agents.cv_pdf_generator import CVPDFGenerator
+from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
+
+
 
 
 class State(TypedDict, total=False):
@@ -65,21 +78,69 @@ class State(TypedDict, total=False):
         candidate_text: Original CV and cover letter provided by the user.
         company_info: Research output that informs tailoring.
         next: Router-selected next action (draft_cv, draft_cover_letter, collect_user_input, exit).
-        generated_cv: Most recent CV produced by the pipeline.
+        generated_cv: Most recent CV produced by the pipeline (clean CV without explanations).
         generated_cover_letter: Most recent cover letter produced by the pipeline.
-        user_feedback: Free-form feedback provided after reviewing documents.
+        cv_content_feedback: User feedback for CV content modifications.
+        cover_letter_content_feedback: User feedback for cover letter content modifications.
         user_input_message: Prompt shown when interrupting for user input.
+        cv_critique: Critique results for the CV (quality score, feedback, improvement instructions).
+        cover_letter_critique: Critique results for the cover letter (quality score, feedback, improvement instructions).
+        cv_needs_refinement: Whether the CV needs to be refined based on critique feedback.
+        cover_letter_needs_refinement: Whether the cover letter needs to be refined based on critique feedback.
+        cv_critique_improvement_instructions: Improvement instructions from critique for CV refinement.
+        cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
+        cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
+        cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
+        cv_refinement_count: Number of times CV has been refined based on critique (max 1).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (max 1).
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
-    next: Literal["draft_cv", "draft_cover_letter", "collect_user_input", "exit"] | None  # Next action to take
-    generated_cv: str | None  # Generated CV text
+    current_node: str | None  # Current node in the graph
+    next: Literal[
+        "draft_cv",
+        "draft_cover_letter",
+        "collect_user_input",
+        "update_cv_pdf_style",
+        "update_cover_letter_pdf_style",
+        "exit",
+    ] | None  # Next action to take
+    generated_cv: str | None  # Generated CV text (clean, without explanations)
     generated_cover_letter: str | None  # Generated cover letter text
-    user_feedback: str | None  # User feedback for modifications
+    cv_content_feedback: str | None  # User feedback for CV content modifications
+    cover_letter_content_feedback: str | None  # User feedback for cover letter content modifications (used when both CV and cover letter feedback exist)
     user_input_message: str | None  # Message to display when requesting user input
+    cv_critique: dict | None  # Critique results for CV
+    cover_letter_critique: dict | None  # Critique results for cover letter
+    cv_needs_refinement: bool | None  # Whether CV needs refinement based on critique
+    cover_letter_needs_refinement: bool | None  # Whether cover letter needs refinement based on critique
+    cv_critique_improvement_instructions: str | None  # Improvement instructions for CV from critique
+    cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
+    cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
+    cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
+    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 2 if quality improves)
+    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 2 if quality improves)
+    cv_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
+    cover_letter_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
+    cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
+    cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
+    relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
+    cv_pdf_path: str | None  # Path to generated CV PDF file
+    cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
+    cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
+    cover_letter_pdf_style: str | None  # User description for cover letter PDF appearance (style only)
+    cv_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for CV in the current PDF generation
+    cv_latex_last_error: str | None  # Last LaTeX error log for CV PDF compilation
+    cover_letter_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for cover letter
+    cover_letter_latex_last_error: str | None  # Last LaTeX error log for cover letter PDF compilation
 
+
+def operations_on_state(state):
+    logger.info(f"Current node: {state.get('current_node')}")
+    if 'messages' in state:
+        logger.info(state.get('messages'))
 
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
@@ -134,9 +195,6 @@ def read_multiline_input(prompt: str = "You: ") -> str:
 
 
 
-
-
-
 class MasterAgent:
     """Master agent that orchestrates the CV editing workflow using LangGraph."""
     
@@ -152,30 +210,94 @@ class MasterAgent:
         """
         logger.info("Initializing MasterAgent...")
         
+        # Load configuration once at startup
+        logger.debug("Loading agent configuration...")
+        from config.config_loader import load_config, get_agent_config
+        
+        # Load full config to get workflow settings
+        full_config = load_config()
+        workflow_config = full_config.get('workflow', {})
+        self.max_refinements = workflow_config.get('max_refinements', 2)
+        self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
+        self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
+        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, quality_improvement_threshold: {self.quality_improvement_threshold}")
+        
+        # Load agent configurations
+        router_config = get_agent_config('router')
+        cv_writer_config = get_agent_config('cv_writer')
+        cover_letter_config = get_agent_config('cover_letter_writer')
+        critique_config = get_agent_config('critique')
+        job_desc_config = get_agent_config('job_description')
+        search_config = get_agent_config('search')
+        rag_config = get_agent_config('rag')
+        logger.debug("Configuration loaded for all agents")
+        
         # Build the graph
         logger.debug("Creating StateGraph")
         graph_builder = StateGraph(State)
 
-        # Instantiate agents
+        # Instantiate agents with configuration from YAML
         logger.debug("Instantiating agents...")
-        search_agent = SearchAgent()
+        search_agent = SearchAgent(
+            model=search_config['model'],
+            temperature=search_config['temperature']
+        )
         document_reader_agent = DocumentReaderAgent()
-        job_description_agent = JobDescriptionAgent()
-        router_agent = RouterAgent()
-        cv_writer_agent = CVWriterAgent()
-        cover_letter_writer_agent = CoverLetterWriterAgent()
+        job_description_agent = JobDescriptionAgent(
+            model=job_desc_config['model'],
+            temperature=job_desc_config['temperature']
+        )
+        router_agent = RouterAgent(
+            model=router_config['model'],
+            temperature=router_config['temperature']
+        )
+        cv_writer_agent = CVWriterAgent(
+            model=cv_writer_config['model'],
+            temperature=cv_writer_config['temperature'],
+            filter_model=cv_writer_config['filter_model'],
+            filter_temperature=cv_writer_config['filter_temperature']
+        )
+        cover_letter_writer_agent = CoverLetterWriterAgent(
+            model=cover_letter_config['model'],
+            temperature=cover_letter_config['temperature'],
+            filter_model=cover_letter_config['filter_model'],
+            filter_temperature=cover_letter_config['filter_temperature']
+        )
         user_input_agent = UserInputAgent()
+        critique_agent = CritiqueAgent(
+            model=critique_config['model'],
+            temperature=critique_config['temperature'],
+            quality_threshold=critique_config['quality_threshold']
+        )
+        experience_retrieval_agent = ExperienceRetrievalAgent(
+            model=rag_config['model'],
+            temperature=rag_config['temperature'],
+            similarity_threshold=rag_config['similarity_threshold']
+        )
+        
+        # Initialize PDF generators
+        cv_pdf_generator = CVPDFGenerator()
+        cover_letter_pdf_generator = CoverLetterPDFGenerator()
+        
         logger.debug("All agents instantiated successfully")
+
 
         # Add nodes to the graph
         logger.debug("Adding nodes to graph...")
         graph_builder.add_node("load_candidate_documents", document_reader_agent.run)
         graph_builder.add_node("analyze_job_description", job_description_agent.run)
         graph_builder.add_node("research_company_context", search_agent.run)
+        graph_builder.add_node("retrieve_experience", experience_retrieval_agent.run)
         graph_builder.add_node("router", router_agent.run)
         graph_builder.add_node("draft_cv", cv_writer_agent.run)
         graph_builder.add_node("draft_cover_letter", cover_letter_writer_agent.run)
+        graph_builder.add_node("critique_cv", critique_agent.run_cv)
+        graph_builder.add_node("critique_cover_letter", critique_agent.run_cover_letter)
         graph_builder.add_node("collect_user_input", user_input_agent.run)
+        graph_builder.add_node("finalize_cv", cv_writer_agent.finalize_best_version)
+        graph_builder.add_node("finalize_cover_letter", cover_letter_writer_agent.finalize_best_version)
+        graph_builder.add_node("generate_cv_pdf", cv_pdf_generator.run)
+        graph_builder.add_node("generate_cover_letter_pdf", cover_letter_pdf_generator.run)
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
@@ -183,8 +305,9 @@ class MasterAgent:
         graph_builder.add_edge(START, "load_candidate_documents")
         graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
         graph_builder.add_edge("analyze_job_description", "research_company_context")
-        graph_builder.add_edge("research_company_context", "router")
-
+        graph_builder.add_edge("research_company_context", "retrieve_experience")
+        graph_builder.add_edge("retrieve_experience", "router")
+        
         graph_builder.add_conditional_edges(
             "router",
             lambda state: state.get("next"),
@@ -192,12 +315,88 @@ class MasterAgent:
                 "draft_cv": "draft_cv",
                 "draft_cover_letter": "draft_cover_letter",
                 "collect_user_input": "collect_user_input",
-                "exit": END
+                "update_cv_pdf_style": "generate_cv_pdf",
+                "update_cover_letter_pdf_style": "generate_cover_letter_pdf",
+                "exit": END,
+            },
+        )
+        graph_builder.add_edge("draft_cv", "critique_cv")
+        graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
+        
+        # Conditional routing for CV critique
+        def route_cv_critique(state):
+            # Check if refinement is needed AND allowed (count < max or quality improved)
+            needs_refinement = state.get("cv_needs_refinement", False)
+            refinement_count = state.get("cv_refinement_count", 0)
+            
+            # Check for quality improvement
+            cv_critique = state.get("cv_critique")
+            current_score = cv_critique.get("quality_score") if cv_critique else None
+            previous_score = state.get("cv_previous_quality_score")
+            
+            quality_improved = False
+            if current_score is not None and previous_score is not None:
+                improvement = current_score - previous_score
+                if improvement >= self.quality_improvement_threshold:
+                    quality_improved = True
+                    logger.info(f"CV quality improved by {improvement} points - allowing refinement despite count")
+
+            # Allow refinement if needed AND (count < max OR quality improved significantly)
+            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
+                logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
+                return "draft_cv"
+            else:
+                logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+                return "finalize_cv"
+
+        graph_builder.add_conditional_edges(
+            "critique_cv",
+            route_cv_critique,
+            {
+                "draft_cv": "draft_cv",
+                "finalize_cv": "finalize_cv"
             }
         )
-        graph_builder.add_edge("draft_cv", "router")
-        graph_builder.add_edge("draft_cover_letter", "router")
+
+        # Conditional routing for Cover Letter critique
+        def route_cover_letter_critique(state):
+            needs_refinement = state.get("cover_letter_needs_refinement", False)
+            refinement_count = state.get("cover_letter_refinement_count", 0)
+            
+            # Check for quality improvement
+            cl_critique = state.get("cover_letter_critique")
+            current_score = cl_critique.get("quality_score") if cl_critique else None
+            previous_score = state.get("cover_letter_previous_quality_score")
+            
+            quality_improved = False
+            if current_score is not None and previous_score is not None:
+                improvement = current_score - previous_score
+                if improvement >= self.quality_improvement_threshold:
+                    quality_improved = True
+                    logger.info(f"Cover letter quality improved by {improvement} points - allowing refinement despite count")
+            
+            # Allow refinement if needed AND (count < max OR quality improved significantly)
+            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
+                logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
+                return "draft_cover_letter"
+            else:
+                logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+                return "finalize_cover_letter"
+
+        graph_builder.add_conditional_edges(
+            "critique_cover_letter",
+            route_cover_letter_critique,
+            {
+                "draft_cover_letter": "draft_cover_letter",
+                "finalize_cover_letter": "finalize_cover_letter"
+            }
+        )
+        
         graph_builder.add_edge("collect_user_input", "router")
+        graph_builder.add_edge("finalize_cv", "generate_cv_pdf")
+        graph_builder.add_edge("finalize_cover_letter", "generate_cover_letter_pdf")
+        graph_builder.add_edge("generate_cv_pdf", "router")
+        graph_builder.add_edge("generate_cover_letter_pdf", "router")
         logger.debug("All edges added to graph")
 
         # Create a checkpointer for persistence (required for interrupts)
@@ -255,157 +454,69 @@ class MasterAgent:
             next=None,
             generated_cv=None,
             generated_cover_letter=None,
-            user_feedback=None,
+            cv_content_feedback=None,
+            cover_letter_content_feedback=None,
             user_input_message=None,
-            pending_user_input=None
+            cv_critique=None,
+            cover_letter_critique=None,
+            cv_needs_refinement=None,
+            cover_letter_needs_refinement=None,
+            cv_critique_improvement_instructions=None,
+            cover_letter_critique_improvement_instructions=None,
+            cv_needs_critique=None,
+            cover_letter_needs_critique=None,
+            cv_refinement_count=0,
+            cover_letter_refinement_count=0,
+            cv_history=[],
+            cover_letter_history=[],
+            relevant_experience=None,
+            cv_pdf_path=None,
+            cover_letter_pdf_path=None,
+            cv_pdf_style=None,
+            cover_letter_pdf_style=None,
         )
         logger.debug("Initial state created")
 
-        iteration_count = 0
-        should_exit = False
-        just_resumed = False  # Track if we just resumed from an interrupt
-        while True:
-            try:
-                if should_exit:
-                    break
-                    
-                iteration_count += 1
-                logger.info(f"Graph invocation #{iteration_count} - streaming graph")
-                
-                # Use stream() with stream_mode="values" to properly handle interrupts
-                # After a resume, don't pass initial_state - let LangGraph use the checkpoint from config
-                # This ensures we continue from where we left off, not restart from the beginning
-                if just_resumed:
-                    stream_input = None  # Use checkpoint, don't pass state
-                    logger.debug("Streaming without initial state - using checkpoint from config (just resumed)")
-                    just_resumed = False  # Reset flag
-                else:
-                    stream_input = initial_state
-                    logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
-                
-                interrupt_occurred = False
-                
-                # Handle interrupt() calls that add __interrupt__ to state during streaming
-                for state in self.graph.stream(stream_input, config, stream_mode="values"):
-                    logger.debug(f"Stream state received. Keys: {list(state.keys()) if isinstance(state, dict) else 'N/A'}")
-                    
-                    # Check for interrupt() calls during streaming (adds __interrupt__ to state)
-                    if isinstance(state, dict) and "__interrupt__" in state:
-                        interrupt_occurred = True
-                        interrupt_data = state["__interrupt__"]
-                        logger.info("Graph execution interrupted via interrupt() - waiting for user input")
-                        
-                        # Extract interrupt message - interrupt() stores the message in __interrupt__
-                        # The message is typically the first element if it's a tuple/list, or the value itself
-                        interrupt_message = "Please provide your input:"
-                        try:
-                            if isinstance(interrupt_data, (tuple, list)) and len(interrupt_data) > 0:
-                                interrupt_message = str(interrupt_data[0])
-                            elif interrupt_data:
-                                interrupt_message = str(interrupt_data)
-                        except Exception as e:
-                            logger.warning(f"Could not extract interrupt message: {e}. Using default message.")
-                        
-                        logger.debug(f"Interrupt message: {interrupt_message}")
-                        print(f"\n\nAssistant: {interrupt_message}")
-                        print("(Paste your text, then press Ctrl+D to finish, or press Enter twice, or type 'END' on a new line)")
-                        
-                        # Get user input
-                        logger.debug("Waiting for user input...")
-                        user_input = read_multiline_input("You: ")
-                        logger.info(f"User input received: {len(user_input)} characters" + (f" (preview: {user_input[:100]}...)" if len(user_input) > 100 else f": {user_input}"))
-                        
-                        if user_input.lower() == "exit":
-                            logger.info("User requested exit - terminating workflow")
-                            print("Bye")
-                            should_exit = True
-                            break
-                        
-                        # Resume the graph with user input using Command
-                        # Command(resume=value) passes the value to the interrupt() call, which returns it
-                        logger.debug("Resuming graph execution with user input")
-                        for resumed_state in self.graph.stream(Command(resume=user_input), config, stream_mode="values"):
-                            initial_state = resumed_state
-                            logger.debug(f"Resume stream state received. Keys: {list(resumed_state.keys()) if isinstance(resumed_state, dict) else 'N/A'}")
-                            
-                            # Check if there's another interrupt in the resumed stream
-                            if isinstance(resumed_state, dict) and "__interrupt__" in resumed_state:
-                                logger.debug("Another interrupt detected in resume stream")
-                                break
-                        
-                        logger.debug("Graph resumed successfully")
-                        just_resumed = True
-                        break
-                    
-                    # Update state as we stream
-                    initial_state = state
-                
-                if should_exit:
-                    break
-                
-                # Check if the graph has reached the END node (exit condition)
-                # When router sets next="exit", the graph routes to END and the stream completes
-                graph_state = self.graph.get_state(config)
-                logger.debug(f"Graph state after stream: next={graph_state.next if graph_state else 'None'}, has_values={bool(graph_state.values if graph_state else False)}")
-                
-                # Check if graph completed (reached END node)
-                # In our graph, the only way to reach END is through exit, so if graph_state.next is None,
-                # the graph has completed and we should exit
-                if graph_state and graph_state.next is None:
-                    # Graph has completed (reached END node)
-                    logger.debug("Graph state indicates completion (next is None)")
-                    # Check the state values to confirm it was an exit
-                    if graph_state.values:
-                        last_next = graph_state.values.get("next")
-                        logger.debug(f"Last next value in state: {last_next}")
-                        if last_next == "exit":
-                            logger.info("Graph reached END node (exit) - terminating workflow")
-                            should_exit = True
-                            break
-                    else:
-                        # Graph completed but no state values - still exit since END was reached
-                        # (In our graph design, END is only reached via exit)
-                        logger.info("Graph reached END node - terminating workflow")
-                        should_exit = True
-                        break
-                
-                # Also check if the final state indicates exit (before graph reaches END)
-                # This catches the case where router sets next="exit" but graph hasn't reached END yet
-                if initial_state.get("next") == "exit":
-                    logger.info("Exit detected in final state - terminating workflow")
-                    should_exit = True
-                    break
-                
-                if should_exit:
-                    break
-                
-                # If no interrupt occurred, continue with normal flow
-                if not interrupt_occurred:
-                    # Display the response if there are messages
-                    if initial_state.get("messages") and len(initial_state["messages"]) > 0:
-                        last_message = initial_state["messages"][-1]
-                        # Handle both dict and message object formats
-                        if isinstance(last_message, dict):
-                            content = last_message.get("content", "")
-                        else:
-                            content = getattr(last_message, "content", "")
-                        
-                        if content:
-                            logger.debug(f"Assistant message to display: {content[:200]}..." if len(content) > 200 else f"Assistant message: {content}")
-                            print(f"Assistant: {content}")
-                    
-                    logger.debug("State updated for next iteration")
-                
-            except KeyboardInterrupt:
-                logger.info("KeyboardInterrupt received - terminating workflow")
-                print("\nBye")
-                break
-            except Exception as e:
-                logger.error(f"Error during graph execution: {e}", exc_info=True)
-                print(f"Error: {e}")
-                break
         
-        logger.info("MasterAgent.run() completed - workflow execution ended")
+        stream_input = initial_state
+        logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
+                
+               
+        # This is a simplified version of the streaming loop that handles interrupt() calls
+        # It uses the invoke() method to run the graph and handle interrupt() calls
+        result = self.graph.invoke(stream_input, config)
+        while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
+            interrupt_data = result["__interrupt__"]    
+            interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+            logger.info(f"\n\n{interrupt_message}")
+            logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+            
+            human_input = read_multiline_input()
+            
+            result = self.graph.invoke(Command(resume=human_input), config=config)
+
+        ##########################################################################################################
+        # This is another way to run the graph and handle interrupt() calls. It uses the stream() 
+        # method to stream the graph. It is more verbose as it streams the state object at each step. State
+        # can be accessed and inspected at each step. Currently there is a dummy function operations_on_state() 
+        # that prints the messages.
+        
+        # for state in self.graph.stream(stream_input, config, stream_mode="values"):
+        #     operations_on_state(state)
+            
+        #     while '__interrupt__' in state:
+        #         interrupt_data = state["__interrupt__"]
+        #         # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
+        #         interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
+        #         logger.info(f"\n\n{interrupt_message}")
+        #         logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+        #         human_input = read_multiline_input()
+        #         for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
+        #             operations_on_state(state)
+
+            
+
+
 
 
 if __name__ == "__main__":

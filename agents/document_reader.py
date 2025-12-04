@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class DocumentReaderAgent:
     """Agent for reading CV and cover letter documents from the CV folder."""
     
-    def __init__(self, cv_folder: str = "CV"):
+    def __init__(self, cv_folder: str = "data/CV"):
         """
         Initialize the DocumentReaderAgent.
         
@@ -143,5 +143,15 @@ class DocumentReaderAgent:
         
         write_to_debug(debug_content, "DOCUMENT READER DEBUG INFO")
         
-        return {"candidate_text": documents}
+        
+        state_update = {
+            "messages": state.get('messages', []) + [{
+                "role": "assistant",
+                "content": "Documents read successfully."
+            }],
+            "candidate_text": documents,
+            "current_node": "document_reader"
+        }
+        
+        return state_update
 
