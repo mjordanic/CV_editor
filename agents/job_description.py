@@ -74,19 +74,21 @@ class JobDescriptionInfo(BaseModel):
 class JobDescriptionAgent:
     """Agent for extracting structured information from job descriptions."""
     
-    def __init__(self):
+    def __init__(self, model: str = "openai:gpt-5-nano", temperature: float = 0.0):
         """
         Initialize the job description agent and supporting LLM.
 
         Args:
-            None
+            model: The LLM model identifier to use
+            temperature: Temperature setting for the LLM
 
         Returns:
             None
         """
         logger.info("Initializing JobDescriptionAgent...")
-        self.llm = init_chat_model("openai:gpt-5-nano", temperature=0)
-        logger.debug("JobDescriptionAgent LLM initialized")
+        
+        self.llm = init_chat_model(model, temperature=temperature)
+        logger.debug(f"JobDescriptionAgent LLM initialized - model: {model}, temperature: {temperature}")
     
     def extract_info(self, job_description: str) -> JobDescriptionInfo:
         """
@@ -151,18 +153,29 @@ class JobDescriptionAgent:
         
         # Pause execution and wait for user to provide job description
         logger.info("Requesting job description from user via interrupt")
-        # The interrupt() call will pause the graph and return the user's input when resumed
-        # job_description_text = interrupt({
-        #     "message": "Please paste the job description you'd like me to analyze.",
-        #     "required": True
-        # })
-        job_description_text = interrupt("Please paste the job description you'd like me to analyze.")
+        job_description_text = interrupt({"message": "Please paste the job description you'd like me to analyze. (filepath or text)", "required": True})
         
         logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
         logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
         
         # Ensure we have a string
         job_description_text = str(job_description_text).strip()
+
+        # Check if the input is a file path
+        if os.path.isfile(job_description_text):
+            try:
+                logger.info(f"Reading job description from file: {job_description_text}")
+                with open(job_description_text, "r", encoding="utf-8") as f:
+                    job_description_text = f.read().strip()
+                logger.info(f"Successfully read job description from file - length: {len(job_description_text)} characters")
+            except Exception as e:
+                logger.error(f"Failed to read job description from file: {e}")
+                return {
+                    "messages": state.get("messages", []) + [{
+                        "role": "assistant",
+                        "content": f"Error: Could not read file '{job_description_text}'. Please check the path and try again."
+                    }]
+                }
         
         # Extract information from job description
         extracted_info = self.extract_info(job_description_text)
@@ -203,8 +216,9 @@ class JobDescriptionAgent:
         
         # Store extracted info in state for use by other nodes
         updated_state = {
-            "messages": [{"role": "assistant", "content": info_summary}],
-            "job_description_info": extracted_info.model_dump()
+            "messages": state.get("messages", []) + [{"role": "assistant", "content": info_summary}],
+            "job_description_info": extracted_info.model_dump(),
+            "current_node": "job_description"
         }
         
         return updated_state

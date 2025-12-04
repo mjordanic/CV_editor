@@ -43,7 +43,7 @@ class UserInputAgent:
         # Use interrupt() to pause execution and get user input
         # The interrupt() call will pause the graph and return the user's input when resumed
         logger.info("Requesting user input via interrupt()")
-        user_input = interrupt(user_input_message)
+        user_input = interrupt({"message": user_input_message, "required": True})
         
         # Ensure we have a string
         user_input = str(user_input).strip()
@@ -61,6 +61,7 @@ class UserInputAgent:
         # Clear the user_input_message from state
         return {
             "messages": updated_messages,
-            "user_input_message": None  # Clear it
+            "user_input_message": None,  # Clear it
+            "current_node": "user_input"
         }
 
