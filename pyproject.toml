@@ -1,7 +1,7 @@
 [project]
 name = "cv-editor"
 version = "0.1.0"
-description = "Add your description here"
+description = "Command-line assistant that tailors your CV and cover letter to a job ad and renders them as PDFs"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -14,5 +14,11 @@ dependencies = [
     "pypdf>=6.2.0",
     "pdfplumber>=0.11.8",
     "tavily>=1.1.0",
+]
+
+[project.optional-dependencies]
+# Only needed to redraw images/graph_visualization.png (python langgraph_agent.py --draw-graph).
+# Requires the Graphviz system library; see README.md.
+graph = [
     "pygraphviz>=1.14",
 ]
