@@ -198,12 +198,13 @@ def read_multiline_input(prompt: str = "You: ") -> str:
 class MasterAgent:
     """Master agent that orchestrates the CV editing workflow using LangGraph."""
     
-    def __init__(self):
+    def __init__(self, draw_graph: bool = False):
         """
         Initialize the MasterAgent and compile the LangGraph workflow.
 
         Args:
-            None
+            draw_graph: If True, also render the workflow graph to
+                images/graph_visualization.png (needs the optional Graphviz extra).
 
         Returns:
             None
@@ -408,25 +409,31 @@ class MasterAgent:
         self.graph = graph_builder.compile(checkpointer=checkpointer)
         logger.info("MasterAgent initialized successfully - graph compiled and ready")
 
-        # Plot and save the graph to PNG
+        if draw_graph:
+            self.draw_graph()
+
+    def draw_graph(self, output_path: str = os.path.join("images", "graph_visualization.png")):
+        """
+        Render the compiled workflow graph to a PNG file.
+
+        Needs the optional Graphviz extra (`uv sync --extra graph`).
+
+        Args:
+            output_path: Where to write the PNG.
+
+        Returns:
+            None
+        """
         try:
             logger.debug("Generating graph visualization...")
-            image_dir = "images"
-            os.makedirs(image_dir, exist_ok=True)
-            self.graph.get_graph().draw_png(os.path.join(image_dir, "graph_visualization.png"))
-            logger.info("Graph visualization saved to graph_visualization.png")
+            os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+            self.graph.get_graph().draw_png(output_path)
+            logger.info(f"Graph visualization saved to {output_path}")
         except ImportError as e:
             logger.warning(f"Could not generate graph visualization: {e}")
-            logger.warning("Install Graphviz system library first: brew install graphviz")
-            logger.warning("Then install pygraphviz with:")
-            logger.warning("  export CFLAGS=\"-I$(brew --prefix graphviz)/include\"")
-            logger.warning("  export LDFLAGS=\"-L$(brew --prefix graphviz)/lib\"")
-            logger.warning("  uv add pygraphviz")
+            logger.warning("Install the optional Graphviz extra; see 'Drawing the workflow graph' in README.md")
         except Exception as e:
             logger.warning(f"Could not generate graph visualization: {e}")
-
-
-
 
     def run(self):
         """
@@ -520,5 +527,7 @@ class MasterAgent:
 
 
 if __name__ == "__main__":
-    agent = MasterAgent()
+    import sys
+
+    agent = MasterAgent(draw_graph="--draw-graph" in sys.argv[1:])
     agent.run()
