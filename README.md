@@ -50,7 +50,7 @@ Features
 
 - **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/portfolio.txt`) based on the job description.
 - **Relevance Verification**: Uses a two-stage filtering process (Vector Similarity + LLM Verification) to ensure only truly relevant experience is included.
-- **Automatic Refinement**: Documents can be refined automatically based on critique feedback, up to `max_refinements` rounds (off by default in the shipped config; see [Configuration](#configuration)).
+- **Automatic Refinement**: Documents can be refined automatically based on critique feedback, with a small budget: one redraft by default, and at most one more if that redraft raised the critique score (see [Configuration](#configuration)).
 - **Version Control**: All document iterations are saved as draft versions with quality scores.
 - **Structured Data**: Centralized data management in `data/` folder (`CV`, `portfolio`, `generated_CVs`).
 - **Flexible Input**: Supports reading job descriptions from text files (`job_description/`).
@@ -174,7 +174,7 @@ Workflow Walkthrough
    - `CritiqueAgent` evaluates generated documents on three dimensions: content quality, ATS compatibility, and job alignment.
    - Provides a quality score (0-100) and actionable improvement instructions.
    - All document iterations are saved to version history with their quality scores as draft files.
-   - If the quality score is below the threshold (default: 85) or critical issues are found, the document can be refined automatically, up to `workflow.max_refinements` times. **The shipped config sets `max_refinements: 0`, so automatic refinement is off by default** and the first draft goes straight to finalization; raise the value to turn it on.
+   - If the quality score is below the threshold (default: 85) or critical issues are found, the document is refined automatically, up to `workflow.max_refinements` times (1 in the shipped config). After that it gets another pass only while each redraft raises the score by at least `workflow.quality_improvement_threshold` (5), and never more than `workflow.max_refinements_hard_cap` (2) times in total. Set `max_refinements: 0` to turn automatic refinement off.
 8. **Final selection**: The highest-scoring version from the iteration history is selected as the final output.
 9. **PDF Generation**: 
    - `CVPDFGenerator` and `CoverLetterPDFGenerator` convert the final text documents to professional PDFs.
@@ -202,7 +202,7 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 
 **Key Configuration Options:**
 - **Agent Models**: Each agent (CV writer, cover letter writer, router, critique, etc.) can be configured with specific models and temperatures.
-- **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds are allowed. The shipped value is `0` (automatic refinement off).
+- **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds are allowed regardless of score (shipped: `1`; `0` turns refinement off). `workflow.max_refinements_hard_cap` (shipped: `2`) allows extra rounds only while the critique score keeps rising by at least `workflow.quality_improvement_threshold`, and is never exceeded.
 - **LaTeX Fixer**: Configure `max_latex_fix_iterations` in the `workflow` section to control how many times the system attempts to fix LaTeX compilation errors automatically (shipped value: 2; the code falls back to 1 if the key is missing).
 - **Quality Thresholds**: Set quality score thresholds for automatic refinement in the critique agent configuration.
 - **RAG Settings**: Configure vector similarity thresholds and relevance verification settings for experience retrieval.

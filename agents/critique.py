@@ -410,8 +410,9 @@ class CritiqueAgent:
             else:
                 logger.info("CV critique found no significant improvements needed")
         
-        # Store previous quality score for comparison (to allow 2 iterations if quality improves)
-        state_updates["cv_previous_quality_score"] = quality_score
+        # Keep the previous draft's score next to the new one (in cv_critique) so the
+        # router can tell whether the last redraft raised the score.
+        state_updates["cv_previous_quality_score"] = cv_history[-1]["score"] if cv_history else None
         
         # Always show critique feedback to user for transparency
         critique_message = f"**CV Quality Assessment:**\n"
@@ -545,8 +546,9 @@ class CritiqueAgent:
             else:
                 logger.info("Cover letter critique found no significant improvements needed")
         
-        # Store previous quality score for comparison (to allow 2 iterations if quality improves)
-        state_updates["cover_letter_previous_quality_score"] = quality_score
+        # Keep the previous draft's score next to the new one (in cover_letter_critique) so the
+        # router can tell whether the last redraft raised the score.
+        state_updates["cover_letter_previous_quality_score"] = cover_letter_history[-1]["score"] if cover_letter_history else None
         
         # Always show critique feedback to user for transparency
         critique_message = f"**Cover Letter Quality Assessment:**\n"
