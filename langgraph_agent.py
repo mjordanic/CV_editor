@@ -91,8 +91,8 @@ class State(TypedDict, total=False):
         cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
         cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
         cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
-        cv_refinement_count: Number of times CV has been refined based on critique (max 1).
-        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (max 1).
+        cv_refinement_count: Number of times CV has been refined based on critique (capped by workflow.max_refinements in config/agent_models.yaml).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (capped by workflow.max_refinements in config/agent_models.yaml).
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
@@ -120,8 +120,8 @@ class State(TypedDict, total=False):
     cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
     cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
     cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
-    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 2 if quality improves)
-    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 2 if quality improves)
+    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (capped by workflow.max_refinements)
+    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (capped by workflow.max_refinements)
     cv_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
     cover_letter_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
@@ -527,7 +527,18 @@ class MasterAgent:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    agent = MasterAgent(draw_graph="--draw-graph" in sys.argv[1:])
+    parser = argparse.ArgumentParser(
+        description="Tailor your CV and cover letter to a job ad and render them as PDFs. "
+        "Starting a run makes paid OpenAI and Tavily calls."
+    )
+    parser.add_argument(
+        "--draw-graph",
+        action="store_true",
+        help="also redraw images/graph_visualization.png (needs the optional 'graph' extra)",
+    )
+    args = parser.parse_args()
+
+    agent = MasterAgent(draw_graph=args.draw_graph)
     agent.run()

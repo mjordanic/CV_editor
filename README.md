@@ -40,7 +40,7 @@ uv run python langgraph_agent.py
 ```
 
 - **Your CV** goes in `data/CV/` as `CV.txt` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program.
-- **Your projects and past jobs** go in `data/portfolio/` as text files. `data/portfolio/portfolio.txt` is a made-up example; replace it with your own.
+- **Your projects and past jobs** go in `data/portfolio/portfolio.txt`, one item per paragraph (separated by a blank line). Only that file is read. The one in the repository is a made-up example; replace it with your own.
 - **The job ad**: when asked, paste the ad text or a path to a file. `job_description/sample_job_ad.txt` is a made-up ad for trying it out.
 - **Costs**: right after startup the program makes paid OpenAI calls (it indexes your portfolio before you type anything), and every step after that makes paid OpenAI and Tavily calls.
 - The `data/` and `job_description/` folders are in `.gitignore`, so your own CV and ads are not committed by accident.
@@ -48,7 +48,7 @@ uv run python langgraph_agent.py
 Features
 --------
 
-- **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/`) based on the job description.
+- **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/portfolio.txt`) based on the job description.
 - **Relevance Verification**: Uses a two-stage filtering process (Vector Similarity + LLM Verification) to ensure only truly relevant experience is included.
 - **Automatic Refinement**: Documents can be refined automatically based on critique feedback, up to `max_refinements` rounds (off by default in the shipped config; see [Configuration](#configuration)).
 - **Version Control**: All document iterations are saved as draft versions with quality scores.
@@ -132,10 +132,12 @@ uv run python langgraph_agent.py
 
 (or `source .venv/bin/activate` and then `python langgraph_agent.py`)
 
+`uv run python langgraph_agent.py --help` lists the options without starting a run. `uv run pytest` runs the offline tests (no API keys needed).
+
 The program will:
 
 1. Load user CV/cover-letter data from `data/CV/`.
-2. Load portfolio data from `data/portfolio/`.
+2. Load portfolio data from `data/portfolio/portfolio.txt`.
 3. Ask you to paste the target job description (or provide a file path).
 4. Fetch company insights via Tavily.
 5. Retrieve relevant experience from your portfolio.
@@ -163,7 +165,7 @@ Workflow Walkthrough
 1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`.
 2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc.
 3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
-4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
+4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 6. **Generation**:
    - `CVWriterAgent` creates or updates a CV using the selected LLM.
