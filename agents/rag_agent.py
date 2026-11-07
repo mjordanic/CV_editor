@@ -76,7 +76,11 @@ class ExperienceRetrievalAgent:
                 logger.warning("No documents found in portfolio file.")
                 
         except Exception as e:
-            logger.error(f"Error indexing portfolio: {e}")
+            logger.warning(
+                f"Could not build the portfolio vector index from {self.portfolio_path} "
+                f"({type(e).__name__}: {e}). RAG is disabled for this run: documents will be "
+                f"written without retrieved portfolio experience."
+            )
 
     def _verify_relevance(self, chunk_content: str, job_description: str) -> bool:
         """

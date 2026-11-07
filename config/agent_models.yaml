@@ -4,7 +4,8 @@
 
 # Workflow Settings
 workflow:
-  max_refinements: 0
+  max_refinements: 1  # critique-driven redrafts per document before finalizing; keep small, each one costs LLM calls and time
+  max_refinements_hard_cap: 2  # absolute limit: one extra redraft only if the last one raised the score by >= quality_improvement_threshold
   quality_improvement_threshold: 5
   max_latex_fix_iterations: 2
 

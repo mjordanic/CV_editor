@@ -54,6 +54,7 @@ from langgraph.types import interrupt, Command
 import sys
 
 from agents.search import SearchAgent
+from agents.refinement import should_refine
 from agents.document_reader import DocumentReaderAgent
 from agents.job_description import JobDescriptionAgent
 from agents.router import RouterAgent
@@ -91,8 +92,8 @@ class State(TypedDict, total=False):
         cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
         cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
         cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
-        cv_refinement_count: Number of times CV has been refined based on critique (max 1).
-        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (max 1).
+        cv_refinement_count: Number of times CV has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
@@ -120,10 +121,10 @@ class State(TypedDict, total=False):
     cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
     cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
     cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
-    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (max 2 if quality improves)
-    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (max 2 if quality improves)
-    cv_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
-    cover_letter_previous_quality_score: int | None  # Previous quality score from critique (for comparison)
+    cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)
+    cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (see workflow settings in config/agent_models.yaml)
+    cv_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
+    cover_letter_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
@@ -219,9 +220,10 @@ class MasterAgent:
         full_config = load_config()
         workflow_config = full_config.get('workflow', {})
         self.max_refinements = workflow_config.get('max_refinements', 2)
+        self.max_refinements_hard_cap = workflow_config.get('max_refinements_hard_cap', self.max_refinements)
         self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
         self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
-        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, quality_improvement_threshold: {self.quality_improvement_threshold}")
+        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}, quality_improvement_threshold: {self.quality_improvement_threshold}")
         
         # Load agent configurations
         router_config = get_agent_config('router')
@@ -326,29 +328,30 @@ class MasterAgent:
         
         # Conditional routing for CV critique
         def route_cv_critique(state):
-            # Check if refinement is needed AND allowed (count < max or quality improved)
+            # Redraft while within max_refinements, or past it while the score keeps rising
+            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
             needs_refinement = state.get("cv_needs_refinement", False)
             refinement_count = state.get("cv_refinement_count", 0)
-            
-            # Check for quality improvement
-            cv_critique = state.get("cv_critique")
-            current_score = cv_critique.get("quality_score") if cv_critique else None
+            critique = state.get("cv_critique")
+            current_score = critique.get("quality_score") if critique else None
             previous_score = state.get("cv_previous_quality_score")
-            
-            quality_improved = False
-            if current_score is not None and previous_score is not None:
-                improvement = current_score - previous_score
-                if improvement >= self.quality_improvement_threshold:
-                    quality_improved = True
-                    logger.info(f"CV quality improved by {improvement} points - allowing refinement despite count")
 
-            # Allow refinement if needed AND (count < max OR quality improved significantly)
-            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
+            refine, quality_improved = should_refine(
+                needs_refinement,
+                refinement_count,
+                current_score,
+                previous_score,
+                self.max_refinements,
+                self.max_refinements_hard_cap,
+                self.quality_improvement_threshold,
+            )
+            if quality_improved:
+                logger.info(f"CV quality improved from {previous_score} to {current_score}")
+            if refine:
                 logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
                 return "draft_cv"
-            else:
-                logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-                return "finalize_cv"
+            logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+            return "finalize_cv"
 
         graph_builder.add_conditional_edges(
             "critique_cv",
@@ -361,28 +364,30 @@ class MasterAgent:
 
         # Conditional routing for Cover Letter critique
         def route_cover_letter_critique(state):
+            # Redraft while within max_refinements, or past it while the score keeps rising
+            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
             needs_refinement = state.get("cover_letter_needs_refinement", False)
             refinement_count = state.get("cover_letter_refinement_count", 0)
-            
-            # Check for quality improvement
-            cl_critique = state.get("cover_letter_critique")
-            current_score = cl_critique.get("quality_score") if cl_critique else None
+            critique = state.get("cover_letter_critique")
+            current_score = critique.get("quality_score") if critique else None
             previous_score = state.get("cover_letter_previous_quality_score")
-            
-            quality_improved = False
-            if current_score is not None and previous_score is not None:
-                improvement = current_score - previous_score
-                if improvement >= self.quality_improvement_threshold:
-                    quality_improved = True
-                    logger.info(f"Cover letter quality improved by {improvement} points - allowing refinement despite count")
-            
-            # Allow refinement if needed AND (count < max OR quality improved significantly)
-            if needs_refinement and (refinement_count < self.max_refinements or quality_improved):
+
+            refine, quality_improved = should_refine(
+                needs_refinement,
+                refinement_count,
+                current_score,
+                previous_score,
+                self.max_refinements,
+                self.max_refinements_hard_cap,
+                self.quality_improvement_threshold,
+            )
+            if quality_improved:
+                logger.info(f"Cover letter quality improved from {previous_score} to {current_score}")
+            if refine:
                 logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
                 return "draft_cover_letter"
-            else:
-                logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-                return "finalize_cover_letter"
+            logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
+            return "finalize_cover_letter"
 
         graph_builder.add_conditional_edges(
             "critique_cover_letter",
@@ -527,7 +532,18 @@ class MasterAgent:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    agent = MasterAgent(draw_graph="--draw-graph" in sys.argv[1:])
+    parser = argparse.ArgumentParser(
+        description="Tailor your CV and cover letter to a job ad and render them as PDFs. "
+        "Starting a run makes paid OpenAI and Tavily calls."
+    )
+    parser.add_argument(
+        "--draw-graph",
+        action="store_true",
+        help="also redraw images/graph_visualization.png (needs the optional 'graph' extra)",
+    )
+    args = parser.parse_args()
+
+    agent = MasterAgent(draw_graph=args.draw_graph)
     agent.run()

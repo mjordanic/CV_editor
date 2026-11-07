@@ -1,3 +1,4 @@
+import re
 from typing import Literal, Optional
 import logging
 from langchain.chat_models import init_chat_model
@@ -77,6 +78,22 @@ ROUTER_HUMAN_PROMPT = (
     "If documents have been generated, ask for feedback or if they want to generate the other document.\n"
     "If feedback exists and indicates refinement is needed, route to the appropriate generation action with the summarized feedback (if that action is available)."
 )
+
+
+_LANGCHAIN_TYPE_TO_ROLE = {"human": "user", "ai": "assistant", "system": "system", "tool": "tool"}
+
+
+def _message_role(msg) -> str:
+    """Role of a message dict ('role' key) or LangChain message (whose role is its .type)."""
+    if isinstance(msg, dict):
+        return msg.get("role", "unknown")
+    msg_type = getattr(msg, "type", None)
+    return _LANGCHAIN_TYPE_TO_ROLE.get(msg_type, getattr(msg, "role", msg_type or "unknown"))
+
+
+def _offered_actions(available_actions: str) -> set[str]:
+    """Action names listed in the router prompt's available-actions block (lines "- 'name': ...")."""
+    return set(re.findall(r"^- '([a-z_]+)'", available_actions, re.M))
 
 
 class RouterResponse(BaseModel):
@@ -192,12 +209,8 @@ class RouterAgent:
         
         formatted = []
         for msg in messages[-self.max_history_messages:]:  # Last N messages for context
-            if isinstance(msg, dict):
-                role = msg.get("role", "unknown")
-                content = msg.get("content", "")
-            else:
-                role = getattr(msg, "role", "unknown")
-                content = getattr(msg, "content", "")
+            role = _message_role(msg)
+            content = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
             
             if content:
                 formatted.append(f"{role.title()}: {content}")
@@ -307,12 +320,8 @@ class RouterAgent:
         # Check messages in reverse order (most recent first)
         # Find the first non-empty message and check its role
         for msg in reversed(messages):
-            if isinstance(msg, dict):
-                role = msg.get("role", "")
-                content = msg.get("content", "")
-            else:
-                role = getattr(msg, "role", "")
-                content = getattr(msg, "content", "")
+            role = _message_role(msg)
+            content = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
             
             # Skip empty messages - continue to find the last non-empty message
             if not content or not content.strip():
@@ -440,11 +449,10 @@ class RouterAgent:
             
             # If the last non-empty message is from user, extract its content
             if last_non_empty_msg:
+                role = _message_role(last_non_empty_msg)
                 if isinstance(last_non_empty_msg, dict):
-                    role = last_non_empty_msg.get("role", "")
                     content = last_non_empty_msg.get("content", "")
                 else:
-                    role = getattr(last_non_empty_msg, "role", "")
                     content = getattr(last_non_empty_msg, "content", "")
                 
                 if role == "user" and content and content.strip():
@@ -634,8 +642,18 @@ class RouterAgent:
         logger.debug(f"LLM response - cover_letter_pdf_style: {response.cover_letter_pdf_style[:200] if response.cover_letter_pdf_style else 'None'}...")
         logger.debug(f"Available actions were: {available_actions}")
         
-        # Use the LLM's routing decision directly (available actions were constrained based on refinement status)
+        # Use the LLM's routing decision, but only if it is one of the actions offered. The model can
+        # return any value of the RouterResponse literal; without this check it could pick 'draft_cv'
+        # after the refinement limit was reached and keep redrafting without the user.
         next_action = response.next_action
+        offered = _offered_actions(available_actions)
+        if next_action not in offered:
+            logger.warning(f"Router LLM chose '{next_action}', which was not offered ({sorted(offered)}) - asking the user instead")
+            next_action = "collect_user_input"
+            response.message_to_user = (
+                "The automatic refinement passes are done. Tell me what you would like to change "
+                "in the CV or cover letter, or type 'exit' to finish."
+            )
         
         # Determine feedback source and populate appropriate state field
         # After user input OR critique, we always go to router, so we know the source
