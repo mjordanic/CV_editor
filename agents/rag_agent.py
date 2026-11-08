@@ -43,6 +43,7 @@ class ExperienceRetrievalAgent:
         """
         logger.info(f"Initializing ExperienceRetrievalAgent - model: {model}, threshold: {similarity_threshold}")
         self.portfolio_path = portfolio_path
+        self.portfolio_text = ""  # full portfolio, kept as evidence for the invented-skills check
         self.similarity_threshold = similarity_threshold
         
         self.embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -62,6 +63,7 @@ class ExperienceRetrievalAgent:
         try:
             with open(self.portfolio_path, "r", encoding="utf-8") as f:
                 content = f.read()
+            self.portfolio_text = content
             
             # Split content into chunks (assuming chunks are separated by double newlines)
             # In a real app, we'd use a smarter splitter, but this works for our format
@@ -176,7 +178,7 @@ class ExperienceRetrievalAgent:
         job_description_info = state.get("job_description_info")
         if not job_description_info:
             logger.warning("No job description info found in state. Skipping retrieval.")
-            return {"relevant_experience": ""}
+            return {"relevant_experience": "", "portfolio_text": self.portfolio_text}
             
         # Use the full job description text for retrieval
         job_description_text = job_description_info.get("job_description", "")
@@ -195,5 +197,6 @@ class ExperienceRetrievalAgent:
         
         return {
             "relevant_experience": relevant_experience,
+            "portfolio_text": self.portfolio_text,
             "current_node": "retrieve_experience"
         }

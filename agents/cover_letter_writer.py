@@ -532,10 +532,13 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             
         # Pick the best draft of the current cycle only (drafts since the router last sent a
         # request here). An older draft from an earlier request must not win on score, or the
-        # user's latest change would be thrown away. If scores are equal, prefer the later draft.
+        # user's latest change would be thrown away. A draft that mentions fewer tools the candidate
+        # never listed wins over a higher score; then the score decides, then the later draft.
         cycle_start = state.get("cover_letter_cycle_start") or 0
         candidates = cover_letter_history[cycle_start:] or cover_letter_history
-        best_version = max(candidates, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        best_version = max(candidates, key=lambda x: (
+            -len(x.get("unsupported_terms") or []), x.get("score", 0), x.get("iteration", 0)
+        ))
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         
@@ -545,6 +548,15 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         final_path = self.save_cover_letter(final_cover_letter_text, filename="generated_cover_letter.txt")
         
         message = f"**Finalization Complete:**\nSelected version from iteration {best_version.get('iteration')} (Score: {best_version.get('score')}) as the best version.\nSaved to {final_path}"
+        unsupported = best_version.get("unsupported_terms") or []
+        if unsupported:
+            # The redrafts did not remove them: ask instead of shipping them silently.
+            message += (
+                f"\n\n**Please check:** this version mentions {', '.join(unsupported)}, which I could not find "
+                f"in your CV, portfolio or messages. If you have this experience, tell me and it stays; "
+                f"otherwise ask me to remove it."
+            )
+            logger.warning(f"Final version still mentions unsupported tools/skills: {unsupported}")
         
         return {
             "generated_cover_letter": final_cover_letter_text,

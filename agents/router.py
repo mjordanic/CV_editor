@@ -83,6 +83,16 @@ ROUTER_HUMAN_PROMPT = (
 _LANGCHAIN_TYPE_TO_ROLE = {"human": "user", "ai": "assistant", "system": "system", "tool": "tool"}
 
 
+# What the user has just been given when the router tries to repeat an action that is no longer
+# offered (it was offered only until it ran), used to open the fallback question.
+_FINISHED_ACTION_NOTE = {
+    "draft_cv": "The CV draft is ready.",
+    "draft_cover_letter": "The cover letter draft is ready.",
+    "update_cv_pdf_style": "The CV PDF has been updated.",
+    "update_cover_letter_pdf_style": "The cover letter PDF has been updated.",
+}
+
+
 def _message_role(msg) -> str:
     """Role of a message dict ('role' key) or LangChain message (whose role is its .type)."""
     if isinstance(msg, dict):
@@ -679,11 +689,11 @@ class RouterAgent:
         offered = _offered_actions(available_actions)
         if next_action not in offered:
             logger.warning(f"Router LLM chose '{next_action}', which was not offered ({sorted(offered)}) - asking the user instead")
-            next_action = "collect_user_input"
             response.message_to_user = (
-                "The automatic refinement passes are done. Tell me what you would like to change "
+                f"{_FINISHED_ACTION_NOTE.get(next_action, 'Done.')} Tell me what you would like to change "
                 "in the CV or cover letter, or type 'exit' to finish."
             )
+            next_action = "collect_user_input"
         
         # Determine feedback source and populate appropriate state field
         # After user input OR critique, we always go to router, so we know the source

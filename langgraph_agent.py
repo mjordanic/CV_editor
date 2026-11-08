@@ -132,6 +132,7 @@ class State(TypedDict, total=False):
     cv_final_iteration: int | None  # Draft number finalize_cv selected (names the CV PDF)
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
+    portfolio_text: str | None  # Full portfolio text (evidence for the invented-skills check in agents/skill_check.py)
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
     cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
@@ -486,6 +487,7 @@ class MasterAgent:
             cv_history=[],
             cover_letter_history=[],
             relevant_experience=None,
+            portfolio_text=None,
             cv_pdf_path=None,
             cover_letter_pdf_path=None,
             cv_pdf_style=None,
