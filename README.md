@@ -175,7 +175,7 @@ Workflow Walkthrough
    - Provides a quality score (0-100) and actionable improvement instructions.
    - All document iterations are saved to version history with their quality scores as draft files.
    - If the quality score is below the threshold (default: 85) or critical issues are found, the document is refined automatically, up to `workflow.max_refinements` times (1 in the shipped config). After that it gets another pass only while each redraft raises the score by at least `workflow.quality_improvement_threshold` (5), and never more than `workflow.max_refinements_hard_cap` (2) times in total. Set `max_refinements: 0` to turn automatic refinement off.
-8. **Final selection**: The highest-scoring version from the iteration history is selected as the final output.
+8. **Final selection**: The highest-scoring draft written for the current request is selected as the final output (drafts from earlier requests are not considered).
 9. **PDF Generation**: 
    - `CVPDFGenerator` and `CoverLetterPDFGenerator` convert the final text documents to professional PDFs.
    - The LLM generates complete LaTeX documents based on the text content and any style preferences.
@@ -186,7 +186,7 @@ Workflow Walkthrough
    - You can provide feedback for both CV and cover letter in a single message.
    - Content feedback modifies the text, while style feedback modifies PDF appearance.
    - If both documents are requested, the system generates them sequentially without additional prompts.
-   - `UserInputAgent` interrupts the graph when clarification is needed, allowing you to provide instructions that reset version history and initiate new refinement cycles.
+   - `UserInputAgent` interrupts the graph when clarification is needed, allowing you to provide instructions that start a new draft and refinement cycle (earlier drafts stay on disk).
 
 Logging and Debugging
 ---------------------
