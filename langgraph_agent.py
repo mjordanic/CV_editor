@@ -127,6 +127,10 @@ class State(TypedDict, total=False):
     cover_letter_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
+    cv_cycle_start: int | None  # Index in cv_history where the current request's drafts start (set by the router)
+    cover_letter_cycle_start: int | None  # Index in cover_letter_history where the current request's drafts start
+    cv_final_iteration: int | None  # Draft number finalize_cv selected (names the CV PDF)
+    cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file

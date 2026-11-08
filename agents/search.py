@@ -229,12 +229,18 @@ class SearchAgent:
         )
         logger.debug(f"Formatted query: {formatted_query}")
         
-        # Execute search
-        results = self.search_tavily(formatted_query)
-        
-        # Process results
-        company_description = self.process_search_results(results)
-        remote_work = self.is_remote(results)
+        # Execute search. Company research is optional context: if the web search or its summary
+        # fails (network, rate limit, quota), carry on without it instead of ending the session
+        # after the user has already pasted the job ad.
+        try:
+            results = self.search_tavily(formatted_query) or {}
+            company_description = self.process_search_results(results)
+            remote_work = self.is_remote(results)
+        except Exception as e:
+            logger.warning(f"Company research failed ({type(e).__name__}: {e}) - continuing without company information")
+            results = {}
+            company_description = "No information found about the company."
+            remote_work = "NA"
         
         # Extract search content for debug logging
         extracted_search_content = self._extract_search_content(results)

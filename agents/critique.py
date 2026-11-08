@@ -173,7 +173,9 @@ class CritiqueAgent:
         if candidate_text.get("cv"):
             cv_text = candidate_text["cv"]
             if cv_text:
-                parts.append(f"Original CV: {cv_text[:500]}...")  # Truncate for context
+                # Full text: the critique checks the draft against it for invented skills, so a
+                # truncated CV makes real skills look invented.
+                parts.append(f"Original CV:\n{cv_text}")
             else:
                 parts.append("Original CV: Not provided")
         else:
@@ -182,7 +184,7 @@ class CritiqueAgent:
         if candidate_text.get("cover_letter"):
             cl_text = candidate_text["cover_letter"]
             if cl_text:
-                parts.append(f"Original Cover Letter: {cl_text[:500]}...")  # Truncate for context
+                parts.append(f"Original Cover Letter:\n{cl_text}")
             else:
                 parts.append("Original Cover Letter: Not provided")
         else:
@@ -360,7 +362,7 @@ class CritiqueAgent:
             "iteration": iteration,
             "content": generated_cv,
             "score": cv_critique_result.quality_score,
-            "critique": cv_critique_result.dict()
+            "critique": cv_critique_result.model_dump()
         }
         
         # Append to history
@@ -412,7 +414,9 @@ class CritiqueAgent:
         
         # Keep the previous draft's score next to the new one (in cv_critique) so the
         # router can tell whether the last redraft raised the score.
-        state_updates["cv_previous_quality_score"] = cv_history[-1]["score"] if cv_history else None
+        # The first draft of a new cycle has no previous draft to compare with.
+        cycle_start = state.get("cv_cycle_start") or 0
+        state_updates["cv_previous_quality_score"] = cv_history[-1]["score"] if len(cv_history) > cycle_start else None
         
         # Always show critique feedback to user for transparency
         critique_message = f"**CV Quality Assessment:**\n"
@@ -495,7 +499,7 @@ class CritiqueAgent:
             "iteration": iteration,
             "content": generated_cover_letter,
             "score": cover_letter_critique_result.quality_score,
-            "critique": cover_letter_critique_result.dict()
+            "critique": cover_letter_critique_result.model_dump()
         }
         
         # Append to history
@@ -548,7 +552,9 @@ class CritiqueAgent:
         
         # Keep the previous draft's score next to the new one (in cover_letter_critique) so the
         # router can tell whether the last redraft raised the score.
-        state_updates["cover_letter_previous_quality_score"] = cover_letter_history[-1]["score"] if cover_letter_history else None
+        # The first draft of a new cycle has no previous draft to compare with.
+        cycle_start = state.get("cover_letter_cycle_start") or 0
+        state_updates["cover_letter_previous_quality_score"] = cover_letter_history[-1]["score"] if len(cover_letter_history) > cycle_start else None
         
         # Always show critique feedback to user for transparency
         critique_message = f"**Cover Letter Quality Assessment:**\n"

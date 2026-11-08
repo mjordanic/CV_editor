@@ -420,7 +420,9 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                     "generated_cv": state.get("generated_cv"),  # Keep existing CV
                     "cv_needs_critique": False,  # Don't critique again
                     "cv_needs_refinement": False,  # Reset refinement flag
-                    "cv_refinement_count": state.get("cv_refinement_count", 0),  # Keep count
+                    # Count the skipped pass: the graph still goes on to critique the unchanged
+                    # draft, and without this the critique -> redraft loop would never use up its budget.
+                    "cv_refinement_count": (state.get("cv_refinement_count") or 0) + 1,
                     "current_node": "cv_writer",
                     "messages": state.get("messages", []) + [{
                         "role": "assistant",
@@ -542,9 +544,12 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             logger.warning("No CV history found. Cannot finalize best version.")
             return {"current_node": "finalize_cv"}
             
-        # Find the version with the highest score
-        # If scores are equal, prefer the later version (higher iteration number)
-        best_version = max(cv_history, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        # Pick the best draft of the current cycle only (drafts since the router last sent a
+        # request here). An older draft from an earlier request must not win on score, or the
+        # user's latest change would be thrown away. If scores are equal, prefer the later draft.
+        cycle_start = state.get("cv_cycle_start") or 0
+        candidates = cv_history[cycle_start:] or cv_history
+        best_version = max(candidates, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         
@@ -557,6 +562,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         
         return {
             "generated_cv": final_cv_text,
+            "cv_final_iteration": best_version.get("iteration"),
             "current_node": "finalize_cv",
             # Clear cv_content_feedback after finalization to prevent infinite loops
             "cv_content_feedback": None,

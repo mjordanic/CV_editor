@@ -388,9 +388,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         candidate_cover_letter = generated_cover_letter if generated_cover_letter else (candidate_text.get("cover_letter") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
-        # Use cover_letter_content_feedback if it exists (when both CV and cover letter feedback are provided),
-        # otherwise fall back to cv_content_feedback
-        user_feedback = state.get("cover_letter_content_feedback") or state.get("cv_content_feedback")
+        # Only cover letter feedback applies here; CV feedback is for the CV writer.
+        user_feedback = state.get("cover_letter_content_feedback")
         relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
@@ -421,7 +420,9 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                     "generated_cover_letter": state.get("generated_cover_letter"),  # Keep existing cover letter
                     "cover_letter_needs_critique": False,  # Don't critique again
                     "cover_letter_needs_refinement": False,  # Reset refinement flag
-                    "cover_letter_refinement_count": state.get("cover_letter_refinement_count", 0),  # Keep count
+                    # Count the skipped pass: the graph still goes on to critique the unchanged
+                    # draft, and without this the critique -> redraft loop would never use up its budget.
+                    "cover_letter_refinement_count": (state.get("cover_letter_refinement_count") or 0) + 1,
                     "current_node": "cover_letter_writer",
                     "messages": state.get("messages", []) + [{
                         "role": "assistant",
@@ -529,9 +530,12 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             logger.warning("No cover letter history found. Cannot finalize best version.")
             return {"current_node": "finalize_cover_letter"}
             
-        # Find the version with the highest score
-        # If scores are equal, prefer the later version (higher iteration number)
-        best_version = max(cover_letter_history, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        # Pick the best draft of the current cycle only (drafts since the router last sent a
+        # request here). An older draft from an earlier request must not win on score, or the
+        # user's latest change would be thrown away. If scores are equal, prefer the later draft.
+        cycle_start = state.get("cover_letter_cycle_start") or 0
+        candidates = cover_letter_history[cycle_start:] or cover_letter_history
+        best_version = max(candidates, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         
@@ -544,6 +548,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         
         return {
             "generated_cover_letter": final_cover_letter_text,
+            "cover_letter_final_iteration": best_version.get("iteration"),
             "current_node": "finalize_cover_letter",
             # Clear cover_letter_content_feedback after finalization to prevent infinite loops
             "cover_letter_content_feedback": None,
