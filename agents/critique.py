@@ -194,6 +194,10 @@ class CritiqueAgent:
         else:
             parts.append("Original Cover Letter: Not provided")
         
+        if candidate_text.get("portfolio"):
+            # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
+            parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
+
         return "\n".join(parts) if parts else "No original candidate information available."
     
     def critique_cv(
@@ -375,12 +379,13 @@ class CritiqueAgent:
                 }],
             }
 
+        candidate_text = {**(state.get("candidate_text") or {}), "portfolio": state.get("portfolio_text")}
         if kind == "cv":
             result = self.critique_cv(
                 cv_content=document,
                 job_description_info=state.get("job_description_info"),
                 company_info=state.get("company_info"),
-                candidate_text=state.get("candidate_text")
+                candidate_text=candidate_text
             )
         else:
             result = self.critique_cover_letter(
@@ -388,7 +393,7 @@ class CritiqueAgent:
                 cv_content=state.get("generated_cv"),  # Include CV for context
                 job_description_info=state.get("job_description_info"),
                 company_info=state.get("company_info"),
-                candidate_text=state.get("candidate_text")
+                candidate_text=candidate_text
             )
 
         instructions = _clean_text(result.improvement_instructions)

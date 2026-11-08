@@ -219,3 +219,13 @@ def test_router_fallback_message_matches_what_just_ran(monkeypatch, repeated, ex
     message = out["messages"][-1]["content"]
     assert message.startswith(expected)
     assert "refinement passes" not in message
+
+
+def test_critic_sees_the_portfolio(monkeypatch):
+    """The paid re-run's critic called the portfolio's RabbitMQ project a hallucination: it never saw it."""
+    agent = _critique_agent(monkeypatch)
+    seen = {}
+    agent.critique_cv = lambda **kw: (seen.update(kw), critique.CritiqueResponse(
+        quality_score=90, content_quality_feedback="ok", ats_compatibility_feedback="ok", job_alignment_feedback="ok"))[1]
+    agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
+    assert "RabbitMQ" in agent._format_candidate_info(seen["candidate_text"])
