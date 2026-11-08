@@ -25,8 +25,8 @@ def test_offered_actions_parses_available_actions_block():
     block = agent._build_available_actions(
         cv_refinement_allowed=False,
         cover_letter_refinement_allowed=False,
-        cv_critique_instructions="Tighten the summary.",
-        cover_letter_critique_instructions=None,
+        cv_generated=True,
+        cover_letter_generated=False,
         messages=no_user_feedback,
         cv_pdf_available=True,
         cover_letter_pdf_available=False,
@@ -34,4 +34,4 @@ def test_offered_actions_parses_available_actions_block():
     offered = _offered_actions(block)
     # Refinement limit reached and no new user message: redrafting the CV must not be offered.
     assert "draft_cv" not in offered
-    assert {"collect_user_input", "exit", "update_cv_pdf_style"} <= offered
+    assert {"collect_user_input", "exit", "draft_cover_letter"} <= offered

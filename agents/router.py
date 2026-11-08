@@ -96,6 +96,30 @@ def _offered_actions(available_actions: str) -> set[str]:
     return set(re.findall(r"^- '([a-z_]+)'", available_actions, re.M))
 
 
+def _latest_user_message(messages: list) -> str:
+    """Text of the latest non-empty message if it is the user's, otherwise an empty string."""
+    for msg in reversed(messages or []):
+        content = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
+        if isinstance(content, str) and content.strip():
+            return content.strip() if _message_role(msg) == "user" else ""
+    return ""
+
+
+def _new_draft_cycle(kind: str, state) -> dict:
+    """
+    State update that starts a new draft cycle for 'cv' or 'cover_letter'.
+
+    Every router -> draft_* step is a new request (the critique loop redrafts without the router),
+    so the critique-driven redraft budget starts again and finalize picks the best draft of this
+    cycle only. Without this, an older draft with a higher score would replace the one that
+    carries the user's change.
+    """
+    return {
+        f"{kind}_refinement_count": 0,
+        f"{kind}_cycle_start": len(state.get(f"{kind}_history") or []),
+    }
+
+
 class RouterResponse(BaseModel):
     """Response model for router decisions."""
 
@@ -338,22 +362,28 @@ class RouterAgent:
         self,
         cv_refinement_allowed: bool,
         cover_letter_refinement_allowed: bool,
-        cv_critique_instructions: Optional[str],
-        cover_letter_critique_instructions: Optional[str],
+        cv_generated: bool,
+        cover_letter_generated: bool,
         messages: list,
         cv_pdf_available: bool,
         cover_letter_pdf_available: bool,
     ) -> str:
         """
         Build the list of available actions dynamically based on refinement status and user feedback.
-        
+
+        Redrafting an existing document and re-rendering an existing PDF are offered only when the
+        latest message is the user's, so the router cannot repeat an action on its own: once the
+        action has run, the latest message is the assistant's and the action is no longer offered.
+
         Args:
             cv_refinement_allowed: Whether CV critique-based refinement is allowed
             cover_letter_refinement_allowed: Whether cover letter critique-based refinement is allowed
-            cv_critique_instructions: Critique instructions for CV (if any)
-            cover_letter_critique_instructions: Critique instructions for cover letter (if any)
+            cv_generated: Whether a CV has been generated already
+            cover_letter_generated: Whether a cover letter has been generated already
             messages: Conversation messages (to check for user feedback)
-            
+            cv_pdf_available: Whether a CV PDF exists
+            cover_letter_pdf_available: Whether a cover letter PDF exists
+
         Returns:
             str: Formatted list of available actions
         """
@@ -362,20 +392,18 @@ class RouterAgent:
         # Check if there's user feedback (last user message)
         has_user_feedback = self._has_user_feedback(messages)
         
-        # Determine if draft_cv should be available
-        # Available if: refinement allowed OR user feedback exists OR no critique instructions (first generation)
+        # draft_cv is available for the first generation, or to modify the CV after a new user message
         cv_available = (
             cv_refinement_allowed or 
             has_user_feedback or 
-            not cv_critique_instructions
+            not cv_generated
         )
         
-        # Determine if draft_cover_letter should be available
-        # Available if: refinement allowed OR user feedback exists OR no critique instructions (first generation)
+        # draft_cover_letter: same rule as draft_cv
         cover_letter_available = (
             cover_letter_refinement_allowed or 
             has_user_feedback or 
-            not cover_letter_critique_instructions
+            not cover_letter_generated
         )
         
         # Build actions list
@@ -386,12 +414,12 @@ class RouterAgent:
             actions.append("- 'draft_cover_letter': Generate a new cover letter or modify an existing one (ONLY cover letter-related feedback should be passed)")
         
         # PDF appearance-only style update actions (available only if corresponding PDF exists)
-        if cv_pdf_available:
+        if cv_pdf_available and has_user_feedback:
             actions.append(
                 "- 'update_cv_pdf_style': Regenerate the CV PDF using the SAME CV text but with updated visual style "
                 "(layout/colors/fonts/spacing ONLY, NO content changes)."
             )
-        if cover_letter_pdf_available:
+        if cover_letter_pdf_available and has_user_feedback:
             actions.append(
                 "- 'update_cover_letter_pdf_style': Regenerate the cover letter PDF using the SAME cover letter text but "
                 "with updated visual style (layout/colors/fonts/spacing ONLY, NO content changes)."
@@ -553,8 +581,8 @@ class RouterAgent:
         available_actions = self._build_available_actions(
             cv_refinement_allowed,
             cover_letter_refinement_allowed,
-            cv_critique_instructions,
-            cover_letter_critique_instructions,
+            generated_cv is not None,
+            generated_cover_letter is not None,
             messages,
             cv_pdf_available,
             cover_letter_pdf_available,
@@ -607,6 +635,7 @@ class RouterAgent:
             logger.info("Cover letter content feedback exists and CV is finalized - routing to draft_cover_letter")
             return {
                 "next": "draft_cover_letter",
+                **_new_draft_cycle("cover_letter", state),
                 "messages": messages + [
                     {
                         "role": "assistant",
@@ -621,6 +650,7 @@ class RouterAgent:
             logger.info("CV content feedback exists and cover letter is finalized - routing to draft_cv")
             return {
                 "next": "draft_cv",
+                **_new_draft_cycle("cv", state),
                 "messages": messages + [
                     {
                         "role": "assistant",
@@ -686,28 +716,43 @@ class RouterAgent:
             return_state["cover_letter_critique_improvement_instructions"] = None  # Clear to prevent loops
             logger.debug("Setting cover_letter_needs_refinement=False and clearing critique instructions because limit reached")
         
-        # Store CV content feedback (for CV writer)
-        # Only store if CV hasn't been generated yet (to prevent loops)
-        if response.cv_content_feedback and not generated_cv:
-            return_state["cv_refinement_count"] = 0
-            return_state["cv_history"] = []
-            return_state["cv_content_feedback"] = response.cv_content_feedback
-            logger.info(f"Storing CV content feedback: {response.cv_content_feedback[:100]}..." if len(response.cv_content_feedback) > 100 else f"Storing CV content feedback: {response.cv_content_feedback}")
-        elif response.cv_content_feedback and generated_cv:
-            # CV already generated - don't store feedback to prevent loops
-            logger.info("CV already generated - ignoring cv_content_feedback to prevent infinite loops")
-        
-        # Store cover letter content feedback (for cover letter writer)
-        # Only store if cover letter hasn't been generated yet (to prevent loops)
-        if response.cover_letter_content_feedback and not generated_cover_letter:
-            return_state["cover_letter_refinement_count"] = 0
-            return_state["cover_letter_history"] = []
-            # Store in a separate field so we can use it later
-            return_state["cover_letter_content_feedback"] = response.cover_letter_content_feedback
-            logger.info(f"Storing cover letter content feedback (will be used after CV is finalized): {response.cover_letter_content_feedback[:100]}..." if len(response.cover_letter_content_feedback) > 100 else f"Storing cover letter content feedback (will be used after CV is finalized): {response.cover_letter_content_feedback}")
-        elif response.cover_letter_content_feedback and generated_cover_letter:
-            # Cover letter already generated - don't store feedback to prevent loops
-            logger.info("Cover letter already generated - ignoring cover_letter_content_feedback to prevent infinite loops")
+        # Store content feedback for the writers. Feedback for a document that does not exist yet
+        # is kept for later (the user may want the other document first). Feedback for an existing
+        # document is stored only on the turn that redrafts it; finalize clears it afterwards, so a
+        # request is applied once and cannot loop.
+        cv_feedback = (response.cv_content_feedback or "").strip()
+        cover_letter_feedback = (response.cover_letter_content_feedback or "").strip()
+        latest_user_message = _latest_user_message(messages)
+
+        if next_action == "draft_cv":
+            return_state.update(_new_draft_cycle("cv", state))
+            if not cv_feedback and generated_cv and latest_user_message:
+                # A cheap model sometimes routes to draft_cv but leaves the feedback field empty;
+                # without this the writer would get no instruction and the request would be lost.
+                cv_feedback = latest_user_message
+                logger.info("Router left cv_content_feedback empty - using the user's latest message as the CV request")
+            if cv_feedback:
+                return_state["cv_content_feedback"] = cv_feedback
+                logger.info(f"Storing CV content feedback: {cv_feedback[:100]}")
+        elif cv_feedback and not generated_cv:
+            return_state["cv_content_feedback"] = cv_feedback
+            logger.info(f"Storing CV content feedback (will be used when the CV is drafted): {cv_feedback[:100]}")
+        elif cv_feedback:
+            logger.info("CV feedback extracted but the router did not choose draft_cv - not storing it")
+
+        if next_action == "draft_cover_letter":
+            return_state.update(_new_draft_cycle("cover_letter", state))
+            if not cover_letter_feedback and generated_cover_letter and latest_user_message:
+                cover_letter_feedback = latest_user_message
+                logger.info("Router left cover_letter_content_feedback empty - using the user's latest message as the cover letter request")
+            if cover_letter_feedback:
+                return_state["cover_letter_content_feedback"] = cover_letter_feedback
+                logger.info(f"Storing cover letter content feedback: {cover_letter_feedback[:100]}")
+        elif cover_letter_feedback and not generated_cover_letter:
+            return_state["cover_letter_content_feedback"] = cover_letter_feedback
+            logger.info(f"Storing cover letter content feedback (will be used when the cover letter is drafted): {cover_letter_feedback[:100]}")
+        elif cover_letter_feedback:
+            logger.info("Cover letter feedback extracted but the router did not choose draft_cover_letter - not storing it")
         
         # Store style feedback (for PDF generator) - can be stored regardless of next_action
         # Style will be applied when PDF is generated (after content is finalized)

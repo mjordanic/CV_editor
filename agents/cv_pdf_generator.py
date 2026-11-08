@@ -428,12 +428,9 @@ class CVPDFGenerator:
             # Then copy to generated_CV.pdf so it always has the latest version
             cv_history = state.get("cv_history", [])
             
-            if cv_history:
-                # This is a draft version during refinement
-                iteration = len(cv_history)
-            else:
-                # No history, first generation (treat as draft_1)
-                iteration = 1
+            # Name the PDF after the draft it renders: finalize may pick an earlier draft than
+            # the latest one, and the file name must say which.
+            iteration = state.get("cv_final_iteration") or len(cv_history) or 1
             
             draft_filename = f"generated_CV_draft_{iteration}.pdf"
             logger.info(f"Generating draft CV PDF (iteration {iteration})")
@@ -457,12 +454,10 @@ class CVPDFGenerator:
             # - Subsequent iterations (drafts or final): use the previously generated .tex file as template
             template_content: Optional[str] = None
             if cv_history:
-                # Last iteration index
-                last_iteration = len(cv_history)
-                # Try to find the last draft's .tex file
+                # Reuse this draft's .tex if it was rendered before (a style-only update)
                 last_tex_path = os.path.join(
                     self.temp_folder,
-                    f"generated_CV_draft_{last_iteration}.tex",
+                    f"generated_CV_draft_{iteration}.tex",
                 )
                 if os.path.exists(last_tex_path):
                     logger.info(

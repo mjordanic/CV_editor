@@ -428,12 +428,9 @@ class CoverLetterPDFGenerator:
             # Then copy to generated_cover_letter.pdf so it always has the latest version
             cover_letter_history = state.get("cover_letter_history", [])
             
-            if cover_letter_history:
-                # This is a draft version during refinement
-                iteration = len(cover_letter_history)
-            else:
-                # No history, first generation (treat as draft_1)
-                iteration = 1
+            # Name the PDF after the draft it renders: finalize may pick an earlier draft than
+            # the latest one, and the file name must say which.
+            iteration = state.get("cover_letter_final_iteration") or len(cover_letter_history) or 1
             
             draft_filename = f"generated_cover_letter_draft_{iteration}.pdf"
             logger.info(f"Generating draft cover letter PDF (iteration {iteration})")
@@ -457,10 +454,10 @@ class CoverLetterPDFGenerator:
             # - Subsequent iterations: use the previously generated .tex file as template
             template_content: Optional[str] = None
             if cover_letter_history:
-                last_iteration = len(cover_letter_history)
+                # Reuse this draft's .tex if it was rendered before (a style-only update)
                 last_tex_path = os.path.join(
                     self.temp_folder,
-                    f"generated_cover_letter_draft_{last_iteration}.tex",
+                    f"generated_cover_letter_draft_{iteration}.tex",
                 )
                 if os.path.exists(last_tex_path):
                     logger.info(
