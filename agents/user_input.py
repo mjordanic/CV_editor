@@ -40,17 +40,17 @@ class UserInputAgent:
         
         logger.debug(f"UserInputAgent - messages: {len(messages)}, user_input_message: {user_input_message[:100] if user_input_message else 'None'}...")
         
-        # Use interrupt() to pause execution and get user input
-        # The interrupt() call will pause the graph and return the user's input when resumed
+        # Use interrupt() to pause execution and get user input. An empty reply is asked again
+        # here: sending it on to the router would cost a model call only to repeat the question.
         logger.info("Requesting user input via interrupt()")
-        user_input = interrupt({"message": user_input_message, "required": True})
-        
-        # Ensure we have a string
-        user_input = str(user_input).strip()
-        
-        if not user_input:
-            logger.warning("UserInputAgent: No user input received. This might be an error.")
-            return {}
+        prompt = user_input_message or "Please provide your input:"
+        user_input = str(interrupt({"message": prompt, "required": True}) or "").strip()
+        while not user_input:
+            logger.info("UserInputAgent: empty reply - asking again")
+            user_input = str(interrupt({
+                "message": f"I did not receive a message. {prompt}",
+                "required": True,
+            }) or "").strip()
         
         logger.info(f"UserInputAgent: Processing user input - length: {len(user_input)} characters")
         logger.debug(f"UserInputAgent: User input preview: {user_input[:100]}..." if len(user_input) > 100 else f"UserInputAgent: User input: {user_input}")
