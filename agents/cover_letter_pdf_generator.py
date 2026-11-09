@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
@@ -107,7 +108,7 @@ class CoverLetterPDFGenerator:
         
         # Initialize LLM for LaTeX content
         logger.info(f"Initializing cover letter content LLM - model: {model}")
-        self._content_llm = init_chat_model(model, temperature=temperature)
+        self._content_llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self._prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", COVER_LETTER_LATEX_SYSTEM_PROMPT),

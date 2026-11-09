@@ -5,7 +5,7 @@ from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-from config.config_loader import get_agent_config
+from config.config_loader import get_agent_config, local_model_kwargs
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class LatexFixer:
             temperature = temperature if temperature is not None else cfg.get("temperature", 0.1)
 
         logger.info(f"Initializing LatexFixer with model: {model}")
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", LATEX_FIX_SYSTEM_PROMPT),

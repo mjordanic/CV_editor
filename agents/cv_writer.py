@@ -1,6 +1,7 @@
 from typing import Optional
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
@@ -102,11 +103,11 @@ class CVWriterAgent:
         logger.info(f"Initializing CVWriterAgent with output_folder: {output_folder}")
         
         # Main LLM for CV generation
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"CVWriterAgent LLM initialized - model: {model}, temperature: {temperature}")
         
         # Separate LLM for filtering operations
-        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature)
+        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature, **local_model_kwargs(filter_model))
         logger.debug(f"CVWriterAgent filter LLM initialized - model: {filter_model}, temperature: {filter_temperature}")
         
         self.output_folder = output_folder
@@ -546,13 +547,10 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             
         # Pick the best draft of the current cycle only (drafts since the router last sent a
         # request here). An older draft from an earlier request must not win on score, or the
-        # user's latest change would be thrown away. A draft that mentions fewer tools the candidate
-        # never listed wins over a higher score; then the score decides, then the later draft.
+        # user's latest change would be thrown away. If scores are equal, prefer the later draft.
         cycle_start = state.get("cv_cycle_start") or 0
         candidates = cv_history[cycle_start:] or cv_history
-        best_version = max(candidates, key=lambda x: (
-            -len(x.get("unsupported_terms") or []), x.get("score", 0), x.get("iteration", 0)
-        ))
+        best_version = max(candidates, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         
@@ -562,15 +560,6 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         final_path = self.save_cv(final_cv_text, filename="generated_CV.txt")
         
         message = f"**Finalization Complete:**\nSelected version from iteration {best_version.get('iteration')} (Score: {best_version.get('score')}) as the best version.\nSaved to {final_path}"
-        unsupported = best_version.get("unsupported_terms") or []
-        if unsupported:
-            # The redrafts did not remove them: ask instead of shipping them silently.
-            message += (
-                f"\n\n**Please check:** this version mentions {', '.join(unsupported)}, which I could not find "
-                f"in your CV, portfolio or messages. If you have this experience, tell me and it stays; "
-                f"otherwise ask me to remove it."
-            )
-            logger.warning(f"Final version still mentions unsupported tools/skills: {unsupported}")
         
         return {
             "generated_cv": final_cv_text,

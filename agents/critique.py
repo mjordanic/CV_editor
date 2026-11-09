@@ -1,10 +1,10 @@
 from typing import Optional, Literal
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
-from agents.skill_check import unsupported_job_terms, unsupported_terms
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +91,34 @@ class CritiqueResponse(BaseModel):
     )
 
 
+GROUNDING_PROMPT = (
+    "You check a {document_type} for claims about the candidate that the candidate's own material does not support.\n\n"
+    "**Candidate's own material** (the only evidence):\n{candidate_info}\n\n"
+    "**{document_type} to check:**\n{document_content}\n\n"
+    "List every skill, tool, platform, qualification, certification, job, project, achievement, figure or level of "
+    "experience that the {document_type} claims for the candidate but that the candidate's material does not support. "
+    "Rephrasing, summarising and obvious inference are supported (e.g. 'built a React app' supports 'JavaScript'). "
+    "Statements about the employer, the role or the job's requirements are not claims about the candidate; do not list them. "
+    "Quote each unsupported claim briefly, as it appears in the document. Return an empty list if everything is supported."
+)
+
+
+class GroundingResponse(BaseModel):
+    """Claims in a draft that the candidate's own material does not support."""
+    unsupported_claims: list[str] = Field(
+        default_factory=list,
+        description="Each unsupported claim, quoted briefly from the document. Empty if everything is supported."
+    )
+
+
+# Appended to every critique-driven redraft instruction: a light critic sometimes proposes adding
+# what the job asks for even when the candidate does not have it.
+NO_NEW_CLAIMS_RULE = (
+    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, "
+    "portfolio or the user's own requests, even if the job asks for it."
+)
+
+
 class CritiqueAgent:
     """Agent for evaluating CV and cover letter quality and providing improvement instructions."""
     
@@ -108,7 +136,7 @@ class CritiqueAgent:
         """
         logger.info("Initializing CritiqueAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self.quality_threshold = quality_threshold
         logger.debug(f"CritiqueAgent LLM initialized - model: {model}, temperature: {temperature}, quality_threshold: {quality_threshold}")
     
@@ -197,6 +225,10 @@ class CritiqueAgent:
         if candidate_text.get("portfolio"):
             # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
             parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
+
+        if candidate_text.get("user_requests"):
+            # What the user asked for in this session is the user's own statement, not an invention.
+            parts.append(f"User's Own Requests in This Session:\n{candidate_text['user_requests']}")
 
         return "\n".join(parts) if parts else "No original candidate information available."
     
@@ -315,6 +347,28 @@ class CritiqueAgent:
         
         return response
     
+    def check_grounding(self, document_type: str, document_content: str, candidate_text: dict) -> list[str]:
+        """
+        Ask the model, as a separate small task, which claims in the draft the candidate's material
+        does not support. Works for any profession: nothing here knows what a skill looks like.
+
+        Returns:
+            list[str]: Unsupported claims (empty when all are supported or the check fails).
+        """
+        try:
+            chain = ChatPromptTemplate.from_messages([("human", GROUNDING_PROMPT)]) | self.llm.with_structured_output(GroundingResponse)
+            response = chain.invoke({
+                "document_type": document_type,
+                "document_content": document_content,
+                "candidate_info": self._format_candidate_info(candidate_text),
+            })
+        except Exception as e:  # a failed check must not end the session
+            logger.warning(f"Grounding check failed ({type(e).__name__}: {e}) - continuing without it")
+            return []
+        claims = [c.strip() for c in (response.unsupported_claims or []) if _clean_text(c)]
+        logger.info(f"Grounding check: {len(claims)} unsupported claim(s) in the {document_type}")
+        return claims
+
     def run_cv(self, state):
         """
         Critique CV document.
@@ -344,9 +398,9 @@ class CritiqueAgent:
         Critique the latest draft of 'cv' or 'cover_letter' and decide whether it goes back for a redraft.
 
         Besides the LLM critique, two deterministic guards run here because a light critic model
-        misses them: tools and skills the candidate never mentioned are flagged and turned into
-        removal instructions (see agents/skill_check.py), and a draft identical to the last one of
-        this cycle is not critiqued or stored again.
+        misses them: a separate grounding check lists claims the candidate's own material does not
+        support, which become removal instructions, and a draft identical to the last one of this
+        cycle is not critiqued or stored again.
         """
         label = "CV" if kind == "cv" else "Cover letter"
         node = f"critique_{kind}"
@@ -379,7 +433,11 @@ class CritiqueAgent:
                 }],
             }
 
-        candidate_text = {**(state.get("candidate_text") or {}), "portfolio": state.get("portfolio_text")}
+        candidate_text = {
+            **(state.get("candidate_text") or {}),
+            "portfolio": state.get("portfolio_text"),
+            "user_requests": _user_requests(state.get("messages")),
+        }
         if kind == "cv":
             result = self.critique_cv(
                 cv_content=document,
@@ -403,24 +461,16 @@ class CritiqueAgent:
             # A critical issue with no instruction left the writer nothing to do, so the problem stayed.
             instructions = f"Fix these critical issues:\n{critical_issues}"
 
-        invented = unsupported_terms(document, state)
-        if invented:
-            names = ", ".join(invented)
-            logger.warning(f"{label} mentions tools/skills not found in the candidate's material: {names}")
-            critical_issues = _join(critical_issues, (
-                f"Mentions tools or skills not found in the candidate's CV, portfolio or messages: {names}."
-            ))
+        unsupported = self.check_grounding(label if kind == "cv" else "cover letter", document, candidate_text)
+        if unsupported:
+            listed = "\n".join(f"- {claim}" for claim in unsupported)
+            critical_issues = _join(critical_issues, f"Claims the candidate's CV, portfolio and requests do not support:\n{listed}")
             instructions = _join(instructions, (
-                f"Remove every mention of {names}, wherever it appears. The candidate's CV and "
-                f"portfolio do not mention them. Do not replace them with other tools the candidate does not list."
+                f"Remove these claims, which the candidate's CV, portfolio and requests do not support "
+                f"(do not replace them with other claims the candidate cannot back):\n{listed}"
             ))
         if instructions:
-            forbidden = unsupported_job_terms(state, instructions)
-            if forbidden:
-                instructions = _join(instructions, (
-                    f"Do NOT add or keep these tools or skills: {', '.join(forbidden)}. "
-                    f"The candidate's CV and portfolio do not mention them, even if the job asks for them."
-                ))
+            instructions = _join(instructions, NO_NEW_CLAIMS_RULE)
 
         quality_score = result.quality_score
         critique_dict = {
@@ -430,7 +480,7 @@ class CritiqueAgent:
             "job_alignment_feedback": result.job_alignment_feedback,
             "improvement_instructions": instructions,
             "critical_issues": critical_issues,
-            "unsupported_terms": invented,
+            "unsupported_claims": unsupported,
         }
         state_updates = {
             "messages": state.get("messages", []),
@@ -444,7 +494,7 @@ class CritiqueAgent:
             "content": document,
             "score": quality_score,
             "critique": critique_dict,
-            "unsupported_terms": invented,
+            "unsupported_claims": unsupported,
         }]
         logger.info(f"Added {label.lower()} iteration {iteration} to history with score {quality_score}")
 
@@ -513,6 +563,19 @@ def _clean_text(text: str | None) -> str:
     stripped = (text or "").strip()
     unquoted = stripped.strip("\"'`“”‘’ ").rstrip(".").strip().lower()
     return "" if unquoted in _EMPTY_ANSWERS else stripped
+
+
+def _user_requests(messages) -> str:
+    """The user's own messages in this session (dicts or LangChain messages), one per line."""
+    lines = []
+    for msg in messages or []:
+        if isinstance(msg, dict):
+            role, content = msg.get("role"), msg.get("content")
+        else:
+            role, content = {"human": "user"}.get(getattr(msg, "type", ""), ""), getattr(msg, "content", "")
+        if role == "user" and isinstance(content, str) and content.strip():
+            lines.append(f"- {content.strip()}")
+    return "\n".join(lines)
 
 
 def _join(first: str, second: str) -> str:

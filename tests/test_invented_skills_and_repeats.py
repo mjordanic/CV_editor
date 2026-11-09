@@ -1,8 +1,9 @@
 """Offline tests for the defects seen in a gpt-5-nano re-run (no API calls, fictional data only).
 
-1. Tools the candidate never mentioned (Azure, GCP, Airflow, Prefect) reached the final CV and the
-   cover letter: the critic proposed them, and a critical "unverified claim" issue came with no
-   instructions, so nothing removed them.
+1. Skills the candidate never mentioned (Azure, GCP, Airflow, Prefect) reached the final CV and the
+   cover letter: the critic proposed them, a critical "unverified claim" issue came with no
+   instructions, and nothing checked the cover letter. The fix is an LLM grounding check (no fixed
+   skill list, so it works for any profession); here the model is a scripted fake.
 2. The critic answered improvement_instructions='""' (the two quote characters); that counted as an
    instruction, and the unchanged draft was critiqued again and stored as a new iteration.
 3. The router's fallback message talked about "automatic refinement passes" after a PDF re-render.
@@ -15,17 +16,13 @@ import pytest
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph.message import add_messages
 
-import agents.cover_letter_writer as cover_letter_writer
 import agents.critique as critique
-import agents.cv_writer as cv_writer
 import agents.router as router
 from agents.router import RouterAgent, RouterResponse
-from agents.skill_check import terms_in, unsupported_terms
 
 REPO = Path(__file__).resolve().parent.parent
 SAMPLE_CV = (REPO / "examples" / "sample_CV.txt").read_text(encoding="utf-8")
 PORTFOLIO = (REPO / "data" / "portfolio" / "portfolio.txt").read_text(encoding="utf-8")
-JOB_AD = (REPO / "job_description" / "sample_job_ad.txt").read_text(encoding="utf-8")
 
 # The SKILLS lines gpt-5-nano wrote into draft 5 of the recorded run.
 INVENTED_SKILLS = (
@@ -38,24 +35,37 @@ LETTER_WITH_INVENTED_SKILLS = (
     "and I am familiar with workflow orchestration systems such as Airflow or Prefect.\n\nSincerely,\nAlex Example"
 )
 LETTER_CLEAN = "Dear Hiring Manager,\n\nI build Python services in Docker and dashboards in Tableau.\n\nSincerely,\nAlex Example"
+CLAIMS = ["Cloud platforms: AWS, Azure, GCP", "Workflow orchestration: Airflow or Prefect (familiar)"]
 
 
 def _state(**extra):
     return {
         "candidate_text": {"cv": SAMPLE_CV, "cover_letter": None},
         "portfolio_text": PORTFOLIO,
-        "job_description_info": {"job_description": JOB_AD},
         "messages": [],
         **extra,
     }
 
 
-def _critique_agent(monkeypatch, *, score=78, instructions="", critical_issues=""):
-    """CritiqueAgent whose LLM answers with a fixed critique; counts the LLM calls."""
+class GroundingLLM:
+    """Fake model for the grounding check: returns fixed claims and keeps the prompts it was given."""
+
+    def __init__(self, claims=()):
+        self.claims = list(claims)
+        self.prompts = []
+
+    def with_structured_output(self, schema):
+        assert schema.__name__ == "GroundingResponse"
+        return RunnableLambda(lambda prompt: (self.prompts.append(prompt.to_string()), schema(unsupported_claims=self.claims))[1])
+
+
+def _critique_agent(monkeypatch, *, score=78, instructions="", critical_issues="", claims=()):
+    """CritiqueAgent whose critic answers with a fixed critique; counts the critic calls."""
     monkeypatch.setattr(critique, "write_to_debug", lambda *_, **__: None)
     agent = critique.CritiqueAgent.__new__(critique.CritiqueAgent)
     agent.quality_threshold = 85
     agent.calls = 0
+    agent.llm = GroundingLLM(claims)
 
     def answer(**_):
         agent.calls += 1
@@ -69,90 +79,80 @@ def _critique_agent(monkeypatch, *, score=78, instructions="", critical_issues="
     return agent
 
 
-# --- 1. invented skills -------------------------------------------------------------------------
+# --- 1. unsupported claims -----------------------------------------------------------------------
 
-def test_skill_check_finds_only_tools_missing_from_cv_and_portfolio():
-    # AWS is in the portfolio (Healthcare Patient Portal: "AWS (S3, EC2)"), so it is not invented.
-    assert unsupported_terms(CV_WITH_INVENTED_SKILLS, _state()) == ["Airflow", "Azure", "GCP", "Prefect"]
-    assert unsupported_terms(SAMPLE_CV, _state()) == []
-    # Ordinary words that contain or equal a tool name are not tools.
-    assert terms_in("I react quickly, sparked a redesign and excel at scalable work.") == set()
-
-
-def test_skill_the_user_asked_for_is_not_flagged():
-    state = _state(messages=add_messages([], [{"role": "user", "content": "Add Airflow to my skills, I used it in 2023."}]))
-    assert "Airflow" not in unsupported_terms(CV_WITH_INVENTED_SKILLS, state)
-
-
-def test_critical_issue_without_instructions_still_removes_invented_tools(monkeypatch):
+def test_critical_issue_without_instructions_becomes_an_instruction(monkeypatch):
     """The recorded draft-5 critique: a critical 'unverified claim' issue but no instructions."""
     agent = _critique_agent(monkeypatch, score=78, instructions="",
                             critical_issues="Cloud platform claims are not verified by the original CV.")
     out = agent.run_cv(_state(generated_cv=CV_WITH_INVENTED_SKILLS, cv_history=[]))
 
     assert out["cv_needs_refinement"] is True
-    instructions = out["cv_critique_improvement_instructions"]
-    assert "Remove every mention of Airflow, Azure, GCP, Prefect" in instructions
-    assert "Cloud platform claims are not verified" in instructions  # the critic's own issue is passed on
-    assert out["cv_history"][-1]["unsupported_terms"] == ["Airflow", "Azure", "GCP", "Prefect"]
+    assert "Cloud platform claims are not verified" in out["cv_critique_improvement_instructions"]
 
 
-def test_invented_tools_trigger_a_redraft_even_with_a_good_score(monkeypatch):
-    agent = _critique_agent(monkeypatch, score=92, instructions="", critical_issues="")
+def test_grounding_check_claims_become_removal_instructions(monkeypatch):
+    agent = _critique_agent(monkeypatch, score=92, claims=CLAIMS)  # good score: would not refine alone
     out = agent.run_cv(_state(generated_cv=CV_WITH_INVENTED_SKILLS, cv_history=[]))
+
     assert out["cv_needs_refinement"] is True
-    assert "Azure" in out["cv_critique"]["critical_issues"]
+    instructions = out["cv_critique_improvement_instructions"]
+    assert "Remove these claims" in instructions
+    for claim in CLAIMS:
+        assert claim in instructions
+        assert claim in out["cv_critique"]["critical_issues"]
+    assert out["cv_history"][-1]["unsupported_claims"] == CLAIMS
 
 
-def test_critic_suggestion_to_add_job_tools_is_overridden(monkeypatch):
+def test_grounding_check_sees_only_the_candidates_material(monkeypatch):
+    """Evidence is the original CV, portfolio and the user's own messages; never the job ad."""
+    agent = _critique_agent(monkeypatch)
+    messages = add_messages([], [
+        {"role": "assistant", "content": "What should I write?"},
+        {"role": "user", "content": "Add my forklift licence (2019) to the CV."},
+    ])
+    agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[], messages=messages,
+                        job_description_info={"job_description": "Must know Airflow."}))
+    prompt = agent.llm.prompts[0]
+    assert "Kubernetes" in prompt  # original CV
+    assert "RabbitMQ" in prompt  # portfolio (the paid re-run's critic called it invented without it)
+    assert "forklift licence" in prompt  # the user's own request counts as evidence
+    assert "What should I write?" not in prompt
+    assert "Must know Airflow" not in prompt
+
+
+def test_clean_draft_passes_and_a_failed_check_does_not_stop_the_session(monkeypatch):
+    agent = _critique_agent(monkeypatch, score=90)
+    out = agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
+    assert out["cv_needs_refinement"] is False
+
+    agent.llm = None  # check raises: logged, session continues
+    out = agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
+    assert out["cv_needs_refinement"] is False
+
+
+def test_redraft_instructions_forbid_adding_what_the_candidate_lacks(monkeypatch):
     """The recorded draft-6 critique asked for an 'Airflow DAGs' bullet the candidate never had."""
     agent = _critique_agent(monkeypatch, score=72,
                             instructions="In the Experience section under TechCorp, add a bullet about building Airflow DAGs.")
     out = agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
-
-    instructions = out["cv_critique_improvement_instructions"]
-    assert "Do NOT add or keep these tools or skills" in instructions
-    forbidden = instructions.split("Do NOT add or keep these tools or skills", 1)[1]
-    for tool in ("Airflow", "Azure", "GCP", "Prefect"):
-        assert tool in forbidden
-    assert "AWS" not in forbidden.split("\n")[0]  # in the portfolio, so allowed
+    assert out["cv_critique_improvement_instructions"].endswith(critique.NO_NEW_CLAIMS_RULE)
 
 
 def test_critic_prompt_forbids_proposing_absent_content():
     assert "NEVER suggest adding" in critique.CRITIQUE_SYSTEM_PROMPT
 
 
-def test_cover_letter_critique_flags_tools_copied_from_the_cv(monkeypatch):
+def test_cover_letter_claims_are_checked_too(monkeypatch):
     """The recorded letter scored 86 and its critic said nothing about Azure/GCP/Airflow/Prefect."""
-    agent = _critique_agent(monkeypatch, score=86)
+    agent = _critique_agent(monkeypatch, score=86, claims=["cloud platforms (AWS, Azure, and GCP)"])
     out = agent.run_cover_letter(_state(
         generated_cover_letter=LETTER_WITH_INVENTED_SKILLS, generated_cv=CV_WITH_INVENTED_SKILLS,
         cover_letter_history=[],
     ))
     assert out["cover_letter_needs_refinement"] is True
-    assert "Remove every mention of Airflow, Azure, GCP, Prefect" in out["cover_letter_critique_improvement_instructions"]
-
-
-@pytest.mark.parametrize("module, cls, kind", [
-    (cv_writer, cv_writer.CVWriterAgent, "cv"),
-    (cover_letter_writer, cover_letter_writer.CoverLetterWriterAgent, "cover_letter"),
-])
-def test_finalize_prefers_a_draft_without_invented_tools_and_says_so(module, cls, kind):
-    agent = cls.__new__(cls)
-    agent.save_cv = agent.save_cover_letter = lambda text, filename: filename
-    history = [
-        {"iteration": 1, "score": 76, "content": "draft 1", "unsupported_terms": []},
-        {"iteration": 2, "score": 80, "content": "draft 2", "unsupported_terms": ["Azure", "GCP"]},
-    ]
-    out = agent.finalize_best_version({f"{kind}_history": history, "messages": []})
-    assert out[f"{kind}_final_iteration"] == 1
-
-    # When every draft has them, keep the best one but tell the user which ones to check.
-    history[0]["unsupported_terms"] = ["Azure"]
-    out = agent.finalize_best_version({f"{kind}_history": history, "messages": []})
-    assert out[f"{kind}_final_iteration"] == 1  # fewer unsupported tools beats a higher score
-    assert "Azure" in out["messages"][-1]["content"]
-    assert "could not find" in out["messages"][-1]["content"]
+    assert "cloud platforms (AWS, Azure, and GCP)" in out["cover_letter_critique_improvement_instructions"]
+    assert "cover letter to check" in agent.llm.prompts[0]
 
 
 # --- 2. quote-only instructions and unchanged drafts ----------------------------------------------
@@ -221,11 +221,36 @@ def test_router_fallback_message_matches_what_just_ran(monkeypatch, repeated, ex
     assert "refinement passes" not in message
 
 
-def test_critic_sees_the_portfolio(monkeypatch):
-    """The paid re-run's critic called the portfolio's RabbitMQ project a hallucination: it never saw it."""
-    agent = _critique_agent(monkeypatch)
-    seen = {}
-    agent.critique_cv = lambda **kw: (seen.update(kw), critique.CritiqueResponse(
-        quality_score=90, content_quality_feedback="ok", ats_compatibility_feedback="ok", job_alignment_feedback="ok"))[1]
-    agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
-    assert "RabbitMQ" in agent._format_candidate_info(seen["candidate_text"])
+
+# --- running against another model (e.g. a local Ollama model) -------------------------------------
+
+def test_model_override_replaces_every_configured_model(monkeypatch):
+    from config.config_loader import get_agent_config
+
+    monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:gemma4:e4b")
+    writer = get_agent_config("cv_writer")
+    assert writer["model"] == writer["filter_model"] == "ollama:gemma4:e4b"
+    assert get_agent_config("template_customizer")["model"] == "ollama:gemma4:e4b"
+    assert get_agent_config("document_reader")["model"] is None  # agents without a model stay without one
+
+    monkeypatch.delenv("CV_EDITOR_MODEL")
+    assert get_agent_config("cv_writer")["model"].startswith("openai:")
+
+
+def test_ollama_model_gets_local_embeddings():
+    from agents.rag_agent import _embeddings_for
+
+    assert type(_embeddings_for("ollama:gemma4:e4b")).__name__ == "OllamaEmbeddings"
+    assert _embeddings_for("ollama:gemma4:e4b").model == "nomic-embed-text"  # gemma4 cannot embed in Ollama
+
+
+def test_session_runs_without_a_tavily_key(monkeypatch):
+    """A local run has no web-search key: company research is skipped instead of failing at startup."""
+    import agents.search as search
+
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: None)
+    monkeypatch.setattr(search, "write_to_debug", lambda *_, **__: None)
+    agent = search.SearchAgent(model="ollama:gemma4:e4b")
+    out = agent.run({"job_description_info": {"company_name": "Northwind Analytics"}, "messages": []})
+    assert out["company_info"]["remote_work"] == "NA"

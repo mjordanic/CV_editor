@@ -37,6 +37,8 @@ class ScriptedLLM:
         text = prompt.to_string()
         if name == "JobDescriptionInfo":
             return schema(company_name="Northwind Analytics", job_title="Data Engineer", work_type="remote")
+        if name == "GroundingResponse":
+            return schema(unsupported_claims=[])
         if name == "RouterResponse":
             return self.router_script.pop(0)
         if name == "CVGenerationResponse":

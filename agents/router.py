@@ -2,6 +2,7 @@ import re
 from typing import Literal, Optional
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import log_messages, get_logged_message_count
@@ -224,7 +225,7 @@ class RouterAgent:
         """
         logger.info("Initializing RouterAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self.max_history_messages = max_history_messages
         logger.debug(f"RouterAgent LLM initialized - model: {model}, temperature: {temperature}, max_history_messages: {max_history_messages}")
     
