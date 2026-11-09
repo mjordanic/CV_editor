@@ -13,6 +13,7 @@ if __file__ and Path(__file__).parent.name == "agents":
         sys.path.insert(0, str(project_root))
 
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
@@ -104,7 +105,7 @@ class CVPDFGenerator:
 
         # Initialize LLM for LaTeX content
         logger.info(f"Initializing CV content LLM - model: {model}")
-        self._content_llm = init_chat_model(model, temperature=temperature)
+        self._content_llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self._prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", CV_LATEX_SYSTEM_PROMPT),

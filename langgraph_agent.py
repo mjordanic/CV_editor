@@ -132,6 +132,7 @@ class State(TypedDict, total=False):
     cv_final_iteration: int | None  # Draft number finalize_cv selected (names the CV PDF)
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
+    portfolio_text: str | None  # Full portfolio text (the critique checks drafts against it for unsupported claims)
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
     cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
@@ -237,6 +238,7 @@ class MasterAgent:
         job_desc_config = get_agent_config('job_description')
         search_config = get_agent_config('search')
         rag_config = get_agent_config('rag')
+        pdf_config = get_agent_config('template_customizer', default_model='openai:gpt-5-nano', default_temperature=0.1)
         logger.debug("Configuration loaded for all agents")
         
         # Build the graph
@@ -283,8 +285,8 @@ class MasterAgent:
         )
         
         # Initialize PDF generators
-        cv_pdf_generator = CVPDFGenerator()
-        cover_letter_pdf_generator = CoverLetterPDFGenerator()
+        cv_pdf_generator = CVPDFGenerator(model=pdf_config['model'], temperature=pdf_config['temperature'])
+        cover_letter_pdf_generator = CoverLetterPDFGenerator(model=pdf_config['model'], temperature=pdf_config['temperature'])
         
         logger.debug("All agents instantiated successfully")
 
@@ -486,6 +488,7 @@ class MasterAgent:
             cv_history=[],
             cover_letter_history=[],
             relevant_experience=None,
+            portfolio_text=None,
             cv_pdf_path=None,
             cover_letter_pdf_path=None,
             cv_pdf_style=None,

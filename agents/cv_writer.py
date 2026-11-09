@@ -1,6 +1,7 @@
 from typing import Optional
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
@@ -102,11 +103,11 @@ class CVWriterAgent:
         logger.info(f"Initializing CVWriterAgent with output_folder: {output_folder}")
         
         # Main LLM for CV generation
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"CVWriterAgent LLM initialized - model: {model}, temperature: {temperature}")
         
         # Separate LLM for filtering operations
-        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature)
+        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature, **local_model_kwargs(filter_model))
         logger.debug(f"CVWriterAgent filter LLM initialized - model: {filter_model}, temperature: {filter_temperature}")
         
         self.output_folder = output_folder

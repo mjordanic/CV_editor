@@ -4,6 +4,7 @@ import os
 import json
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
@@ -64,11 +65,14 @@ class SearchAgent:
         """
         logger.info("Initializing SearchAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"SearchAgent LLM initialized - model: {model}, temperature: {temperature}")
         # Initialize TavilyClient lazily to ensure environment variables are loaded
-        self.tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-        logger.debug("TavilyClient initialized")
+        # Without a key (e.g. a local run with Ollama) company research is skipped, not fatal.
+        api_key = os.getenv("TAVILY_API_KEY")
+        self.tavily_client = TavilyClient(api_key=api_key) if api_key else None
+        if self.tavily_client is None:
+            logger.warning("TAVILY_API_KEY is not set - company research will be skipped")
 
     def search_tavily(self, query: str):
         """
@@ -80,6 +84,8 @@ class SearchAgent:
         Returns:
             dict: Raw Tavily response containing search results payload.
         """
+        if self.tavily_client is None:
+            raise RuntimeError("TAVILY_API_KEY is not set")
         logger.info(f"Searching Tavily with query: {query}")
         results = self.tavily_client.search(
             query=query, 

@@ -3,6 +3,7 @@ import logging
 import os
 import json
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
@@ -87,7 +88,7 @@ class JobDescriptionAgent:
         """
         logger.info("Initializing JobDescriptionAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"JobDescriptionAgent LLM initialized - model: {model}, temperature: {temperature}")
     
     def extract_info(self, job_description: str) -> JobDescriptionInfo:

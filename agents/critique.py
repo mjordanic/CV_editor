@@ -1,6 +1,7 @@
 from typing import Optional, Literal
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
@@ -26,7 +27,10 @@ CRITIQUE_SYSTEM_PROMPT = (
     "You MUST cross-reference the generated document with the 'Original Candidate Information'.\n"
     "If you detect any potential hallucinations (skills or experiences in the generated doc that are NOT in the original info), "
     "you MUST flag them as 'Critical Issues'.\n"
-    "Example: If generated CV says 'Expert in Kubernetes' but original CV only mentions 'Docker', flag this as a potential hallucination."
+    "Example: If generated CV says 'Expert in Kubernetes' but original CV only mentions 'Docker', flag this as a potential hallucination.\n"
+    "NEVER suggest adding skills, tools, platforms, certifications or experience that are not in the 'Original Candidate Information', "
+    "even when the job description asks for them. For a missing requirement, suggest highlighting the closest experience the candidate does have.\n"
+    "Every critical issue MUST have a matching fix in improvement_instructions (e.g. 'In the Skills section, remove \"Azure\"')."
 )
 
 CRITIQUE_HUMAN_PROMPT = (
@@ -87,6 +91,34 @@ class CritiqueResponse(BaseModel):
     )
 
 
+GROUNDING_PROMPT = (
+    "You check a {document_type} for claims about the candidate that the candidate's own material does not support.\n\n"
+    "**Candidate's own material** (the only evidence):\n{candidate_info}\n\n"
+    "**{document_type} to check:**\n{document_content}\n\n"
+    "List every skill, tool, platform, qualification, certification, job, project, achievement, figure or level of "
+    "experience that the {document_type} claims for the candidate but that the candidate's material does not support. "
+    "Rephrasing, summarising and obvious inference are supported (e.g. 'built a React app' supports 'JavaScript'). "
+    "Statements about the employer, the role or the job's requirements are not claims about the candidate; do not list them. "
+    "Quote each unsupported claim briefly, as it appears in the document. Return an empty list if everything is supported."
+)
+
+
+class GroundingResponse(BaseModel):
+    """Claims in a draft that the candidate's own material does not support."""
+    unsupported_claims: list[str] = Field(
+        default_factory=list,
+        description="Each unsupported claim, quoted briefly from the document. Empty if everything is supported."
+    )
+
+
+# Appended to every critique-driven redraft instruction: a light critic sometimes proposes adding
+# what the job asks for even when the candidate does not have it.
+NO_NEW_CLAIMS_RULE = (
+    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, "
+    "portfolio or the user's own requests, even if the job asks for it."
+)
+
+
 class CritiqueAgent:
     """Agent for evaluating CV and cover letter quality and providing improvement instructions."""
     
@@ -104,7 +136,7 @@ class CritiqueAgent:
         """
         logger.info("Initializing CritiqueAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self.quality_threshold = quality_threshold
         logger.debug(f"CritiqueAgent LLM initialized - model: {model}, temperature: {temperature}, quality_threshold: {quality_threshold}")
     
@@ -190,6 +222,14 @@ class CritiqueAgent:
         else:
             parts.append("Original Cover Letter: Not provided")
         
+        if candidate_text.get("portfolio"):
+            # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
+            parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
+
+        if candidate_text.get("user_requests"):
+            # What the user asked for in this session is the user's own statement, not an invention.
+            parts.append(f"User's Own Requests in This Session:\n{candidate_text['user_requests']}")
+
         return "\n".join(parts) if parts else "No original candidate information available."
     
     def critique_cv(
@@ -307,6 +347,28 @@ class CritiqueAgent:
         
         return response
     
+    def check_grounding(self, document_type: str, document_content: str, candidate_text: dict) -> list[str]:
+        """
+        Ask the model, as a separate small task, which claims in the draft the candidate's material
+        does not support. Works for any profession: nothing here knows what a skill looks like.
+
+        Returns:
+            list[str]: Unsupported claims (empty when all are supported or the check fails).
+        """
+        try:
+            chain = ChatPromptTemplate.from_messages([("human", GROUNDING_PROMPT)]) | self.llm.with_structured_output(GroundingResponse)
+            response = chain.invoke({
+                "document_type": document_type,
+                "document_content": document_content,
+                "candidate_info": self._format_candidate_info(candidate_text),
+            })
+        except Exception as e:  # a failed check must not end the session
+            logger.warning(f"Grounding check failed ({type(e).__name__}: {e}) - continuing without it")
+            return []
+        claims = [c.strip() for c in (response.unsupported_claims or []) if _clean_text(c)]
+        logger.info(f"Grounding check: {len(claims)} unsupported claim(s) in the {document_type}")
+        return claims
+
     def run_cv(self, state):
         """
         Critique CV document.
@@ -317,131 +379,8 @@ class CritiqueAgent:
         Returns:
             dict: Updated state with CV critique feedback and improvement instructions
         """
-        logger.info("CritiqueAgent.run_cv() called")
-        
-        generated_cv = state.get("generated_cv")
-        if not generated_cv:
-            logger.warning("No CV to critique - skipping")
-            return {
-                "messages": state.get("messages", []),
-                "current_node": "critique_cv",
-                "cv_needs_refinement": False
-            }
-        
-        job_description_info = state.get("job_description_info")
-        company_info = state.get("company_info")
-        candidate_text = state.get("candidate_text")
-        
-        logger.info("Critiquing generated CV...")
-        cv_critique_result = self.critique_cv(
-            cv_content=generated_cv,
-            job_description_info=job_description_info,
-            company_info=company_info,
-            candidate_text=candidate_text
-        )
-        
-        state_updates = {
-            "messages": state.get("messages", []),
-            "current_node": "critique_cv",
-            "cv_critique": {
-                "quality_score": cv_critique_result.quality_score,
-                "content_quality_feedback": cv_critique_result.content_quality_feedback,
-                "ats_compatibility_feedback": cv_critique_result.ats_compatibility_feedback,
-                "job_alignment_feedback": cv_critique_result.job_alignment_feedback,
-                "improvement_instructions": cv_critique_result.improvement_instructions,
-                "critical_issues": cv_critique_result.critical_issues
-            }
-        }
-        
-        # Update CV history
-        cv_history = state.get("cv_history", [])
-        # Determine iteration number (if not already set in state, infer from history length)
-        iteration = len(cv_history) + 1
-        
-        history_entry = {
-            "iteration": iteration,
-            "content": generated_cv,
-            "score": cv_critique_result.quality_score,
-            "critique": cv_critique_result.model_dump()
-        }
-        
-        # Append to history
-        state_updates["cv_history"] = cv_history + [history_entry]
-        logger.info(f"Added CV iteration {iteration} to history with score {cv_critique_result.quality_score}")
-        
-        # Write to debug file
-        debug_content = ""
-        debug_content += "CV CRITIQUE RESULTS:\n"
-        debug_content += "-" * 80 + "\n"
-        debug_content += f"Quality Score: {cv_critique_result.quality_score}/100\n\n"
-        debug_content += f"Content Quality Feedback:\n{cv_critique_result.content_quality_feedback}\n\n"
-        debug_content += f"ATS Compatibility Feedback:\n{cv_critique_result.ats_compatibility_feedback}\n\n"
-        debug_content += f"Job Alignment Feedback:\n{cv_critique_result.job_alignment_feedback}\n\n"
-        if cv_critique_result.critical_issues:
-            debug_content += f"Critical Issues:\n{cv_critique_result.critical_issues}\n\n"
-        debug_content += f"Improvement Instructions:\n{cv_critique_result.improvement_instructions}\n\n"
-        debug_content += "-" * 80 + "\n"
-        
-        write_to_debug(debug_content, "CV CRITIQUE DEBUG INFO")
-        
-        # Determine if refinement is needed based on quality threshold and critical issues
-        quality_score = cv_critique_result.quality_score
-        has_critical_issues = bool(cv_critique_result.critical_issues and cv_critique_result.critical_issues.strip())
-        # Check if improvement instructions exist (non-empty string)
-        has_improvement_instructions = bool(
-            cv_critique_result.improvement_instructions and 
-            cv_critique_result.improvement_instructions.strip()
-        )
-        
-        # Only refine if:
-        # 1. Quality score is below threshold, OR
-        # 2. There are critical issues that must be addressed
-        should_refine = (quality_score < self.quality_threshold or has_critical_issues) and has_improvement_instructions
-        
-        if should_refine:
-            state_updates["cv_needs_refinement"] = True
-            state_updates["cv_critique_improvement_instructions"] = cv_critique_result.improvement_instructions
-            state_updates["cv_needs_critique"] = False  # Reset flag
-            logger.info(f"CV critique identified improvements - quality_score: {quality_score}, has_critical_issues: {has_critical_issues}, marking for refinement")
-        else:
-            state_updates["cv_needs_refinement"] = False
-            state_updates["cv_needs_critique"] = False  # Reset flag
-            state_updates["cv_critique_improvement_instructions"] = None # Clear instructions if no refinement needed
-            if quality_score >= self.quality_threshold and not has_critical_issues:
-                logger.info(f"CV critique: Quality score {quality_score} is above threshold {self.quality_threshold} and no critical issues - skipping refinement")
-            else:
-                logger.info("CV critique found no significant improvements needed")
-        
-        # Keep the previous draft's score next to the new one (in cv_critique) so the
-        # router can tell whether the last redraft raised the score.
-        # The first draft of a new cycle has no previous draft to compare with.
-        cycle_start = state.get("cv_cycle_start") or 0
-        state_updates["cv_previous_quality_score"] = cv_history[-1]["score"] if len(cv_history) > cycle_start else None
-        
-        # Always show critique feedback to user for transparency
-        critique_message = f"**CV Quality Assessment:**\n"
-        critique_message += f"Quality Score: {quality_score}/100\n\n"
-        critique_message += f"**Content Quality:**\n{cv_critique_result.content_quality_feedback}\n\n"
-        critique_message += f"**ATS Compatibility:**\n{cv_critique_result.ats_compatibility_feedback}\n\n"
-        critique_message += f"**Job Alignment:**\n{cv_critique_result.job_alignment_feedback}\n\n"
-        if has_critical_issues:
-            critique_message += f"**Critical Issues:**\n{cv_critique_result.critical_issues}\n\n"
-        if has_improvement_instructions:
-            critique_message += f"**Improvement Suggestions:**\n{cv_critique_result.improvement_instructions}\n\n"
-        if should_refine:
-            critique_message += "The CV will be automatically refined based on these suggestions."
-        else:
-            critique_message += "The CV quality is good. No automatic refinement needed."
-        
-        # Add critique feedback to messages for user visibility
-        state_updates["messages"] = state.get("messages", []) + [{
-            "role": "assistant",
-            "content": critique_message
-        }]
-        
-        logger.info("CritiqueAgent.run_cv() completed successfully")
-        return state_updates
-    
+        return self._run("cv", state)
+
     def run_cover_letter(self, state):
         """
         Critique cover letter document.
@@ -452,133 +391,192 @@ class CritiqueAgent:
         Returns:
             dict: Updated state with cover letter critique feedback and improvement instructions
         """
-        logger.info("CritiqueAgent.run_cover_letter() called")
-        
-        generated_cover_letter = state.get("generated_cover_letter")
-        if not generated_cover_letter:
-            logger.warning("No cover letter to critique - skipping")
+        return self._run("cover_letter", state)
+
+    def _run(self, kind: str, state):
+        """
+        Critique the latest draft of 'cv' or 'cover_letter' and decide whether it goes back for a redraft.
+
+        Besides the LLM critique, two deterministic guards run here because a light critic model
+        misses them: a separate grounding check lists claims the candidate's own material does not
+        support, which become removal instructions, and a draft identical to the last one of this
+        cycle is not critiqued or stored again.
+        """
+        label = "CV" if kind == "cv" else "Cover letter"
+        node = f"critique_{kind}"
+        logger.info(f"CritiqueAgent._run({kind}) called")
+
+        document = state.get(f"generated_{kind}")
+        if not document:
+            logger.warning(f"No {label.lower()} to critique - skipping")
             return {
                 "messages": state.get("messages", []),
-                "current_node": "critique_cover_letter",
-                "cover_letter_needs_refinement": False
+                "current_node": node,
+                f"{kind}_needs_refinement": False
             }
-        
-        generated_cv = state.get("generated_cv")
-        job_description_info = state.get("job_description_info")
-        company_info = state.get("company_info")
-        candidate_text = state.get("candidate_text")
-        
-        logger.info("Critiquing generated cover letter...")
-        cover_letter_critique_result = self.critique_cover_letter(
-            cover_letter_content=generated_cover_letter,
-            cv_content=generated_cv,  # Include CV for context
-            job_description_info=job_description_info,
-            company_info=company_info,
-            candidate_text=candidate_text
-        )
-        
+
+        history = state.get(f"{kind}_history", []) or []
+        cycle_start = state.get(f"{kind}_cycle_start") or 0
+        if len(history) > cycle_start and history[-1].get("content") == document:
+            # The writer returned the draft unchanged (e.g. every critique suggestion was filtered
+            # out). It was critiqued already: storing it again would make a new "iteration" (and a
+            # draft PDF) holding the previous draft's text.
+            logger.info(f"{label} is unchanged since iteration {history[-1].get('iteration')} - not critiquing it again")
+            return {
+                "current_node": node,
+                f"{kind}_needs_refinement": False,
+                f"{kind}_needs_critique": False,
+                f"{kind}_critique_improvement_instructions": None,
+                "messages": state.get("messages", []) + [{
+                    "role": "assistant",
+                    "content": f"The {label.lower()} did not change in the last pass, so iteration {history[-1].get('iteration')} stands.",
+                }],
+            }
+
+        candidate_text = {
+            **(state.get("candidate_text") or {}),
+            "portfolio": state.get("portfolio_text"),
+            "user_requests": _user_requests(state.get("messages")),
+        }
+        if kind == "cv":
+            result = self.critique_cv(
+                cv_content=document,
+                job_description_info=state.get("job_description_info"),
+                company_info=state.get("company_info"),
+                candidate_text=candidate_text
+            )
+        else:
+            result = self.critique_cover_letter(
+                cover_letter_content=document,
+                cv_content=state.get("generated_cv"),  # Include CV for context
+                job_description_info=state.get("job_description_info"),
+                company_info=state.get("company_info"),
+                candidate_text=candidate_text
+            )
+
+        instructions = _clean_text(result.improvement_instructions)
+        critical_issues = _clean_text(result.critical_issues)
+
+        if critical_issues and not instructions:
+            # A critical issue with no instruction left the writer nothing to do, so the problem stayed.
+            instructions = f"Fix these critical issues:\n{critical_issues}"
+
+        unsupported = self.check_grounding(label if kind == "cv" else "cover letter", document, candidate_text)
+        if unsupported:
+            listed = "\n".join(f"- {claim}" for claim in unsupported)
+            critical_issues = _join(critical_issues, f"Claims the candidate's CV, portfolio and requests do not support:\n{listed}")
+            instructions = _join(instructions, (
+                f"Remove these claims, which the candidate's CV, portfolio and requests do not support "
+                f"(do not replace them with other claims the candidate cannot back):\n{listed}"
+            ))
+        if instructions:
+            instructions = _join(instructions, NO_NEW_CLAIMS_RULE)
+
+        quality_score = result.quality_score
+        critique_dict = {
+            "quality_score": quality_score,
+            "content_quality_feedback": result.content_quality_feedback,
+            "ats_compatibility_feedback": result.ats_compatibility_feedback,
+            "job_alignment_feedback": result.job_alignment_feedback,
+            "improvement_instructions": instructions,
+            "critical_issues": critical_issues,
+            "unsupported_claims": unsupported,
+        }
         state_updates = {
             "messages": state.get("messages", []),
-            "current_node": "critique_cover_letter",
-            "cover_letter_critique": {
-                "quality_score": cover_letter_critique_result.quality_score,
-                "content_quality_feedback": cover_letter_critique_result.content_quality_feedback,
-                "ats_compatibility_feedback": cover_letter_critique_result.ats_compatibility_feedback,
-                "job_alignment_feedback": cover_letter_critique_result.job_alignment_feedback,
-                "improvement_instructions": cover_letter_critique_result.improvement_instructions,
-                "critical_issues": cover_letter_critique_result.critical_issues
-            }
+            "current_node": node,
+            f"{kind}_critique": critique_dict,
         }
-        
-        # Update Cover Letter history
-        cover_letter_history = state.get("cover_letter_history", [])
-        # Determine iteration number (if not already set in state, infer from history length)
-        iteration = len(cover_letter_history) + 1
-        
-        history_entry = {
+
+        iteration = len(history) + 1
+        state_updates[f"{kind}_history"] = history + [{
             "iteration": iteration,
-            "content": generated_cover_letter,
-            "score": cover_letter_critique_result.quality_score,
-            "critique": cover_letter_critique_result.model_dump()
-        }
-        
-        # Append to history
-        state_updates["cover_letter_history"] = cover_letter_history + [history_entry]
-        logger.info(f"Added cover letter iteration {iteration} to history with score {cover_letter_critique_result.quality_score}")
-        
-        
-        # Write to debug file
-        debug_content = ""
-        debug_content += "COVER LETTER CRITIQUE RESULTS:\n"
+            "content": document,
+            "score": quality_score,
+            "critique": critique_dict,
+            "unsupported_claims": unsupported,
+        }]
+        logger.info(f"Added {label.lower()} iteration {iteration} to history with score {quality_score}")
+
+        debug_content = f"{label.upper()} CRITIQUE RESULTS:\n"
         debug_content += "-" * 80 + "\n"
-        debug_content += f"Quality Score: {cover_letter_critique_result.quality_score}/100\n\n"
-        debug_content += f"Content Quality Feedback:\n{cover_letter_critique_result.content_quality_feedback}\n\n"
-        debug_content += f"ATS Compatibility Feedback:\n{cover_letter_critique_result.ats_compatibility_feedback}\n\n"
-        debug_content += f"Job Alignment Feedback:\n{cover_letter_critique_result.job_alignment_feedback}\n\n"
-        if cover_letter_critique_result.critical_issues:
-            debug_content += f"Critical Issues:\n{cover_letter_critique_result.critical_issues}\n\n"
-        debug_content += f"Improvement Instructions:\n{cover_letter_critique_result.improvement_instructions}\n\n"
+        debug_content += f"Quality Score: {quality_score}/100\n\n"
+        debug_content += f"Content Quality Feedback:\n{result.content_quality_feedback}\n\n"
+        debug_content += f"ATS Compatibility Feedback:\n{result.ats_compatibility_feedback}\n\n"
+        debug_content += f"Job Alignment Feedback:\n{result.job_alignment_feedback}\n\n"
+        if critical_issues:
+            debug_content += f"Critical Issues:\n{critical_issues}\n\n"
+        debug_content += f"Improvement Instructions:\n{instructions}\n\n"
         debug_content += "-" * 80 + "\n"
-        
-        write_to_debug(debug_content, "COVER LETTER CRITIQUE DEBUG INFO")
-        
-        # Determine if refinement is needed based on quality threshold and critical issues
-        quality_score = cover_letter_critique_result.quality_score
-        has_critical_issues = bool(cover_letter_critique_result.critical_issues and cover_letter_critique_result.critical_issues.strip())
-        # Check if improvement instructions exist (non-empty string)
-        has_improvement_instructions = bool(
-            cover_letter_critique_result.improvement_instructions and 
-            cover_letter_critique_result.improvement_instructions.strip()
-        )
-        
-        # Only refine if:
-        # 1. Quality score is below threshold, OR
-        # 2. There are critical issues that must be addressed
-        should_refine = (quality_score < self.quality_threshold or has_critical_issues) and has_improvement_instructions
-        
+        write_to_debug(debug_content, f"{label.upper()} CRITIQUE DEBUG INFO")
+
+        # Refine only if the score is below threshold or there are critical issues, and there is
+        # something for the writer to do.
+        has_critical_issues = bool(critical_issues)
+        should_refine = (quality_score < self.quality_threshold or has_critical_issues) and bool(instructions)
+
+        state_updates[f"{kind}_needs_refinement"] = should_refine
+        state_updates[f"{kind}_needs_critique"] = False
+        state_updates[f"{kind}_critique_improvement_instructions"] = instructions if should_refine else None
         if should_refine:
-            state_updates["cover_letter_needs_refinement"] = True
-            state_updates["cover_letter_critique_improvement_instructions"] = cover_letter_critique_result.improvement_instructions
-            state_updates["cover_letter_needs_critique"] = False  # Reset flag
-            logger.info(f"Cover letter critique identified improvements - quality_score: {quality_score}, has_critical_issues: {has_critical_issues}, marking for refinement")
+            logger.info(f"{label} critique identified improvements - quality_score: {quality_score}, has_critical_issues: {has_critical_issues}, marking for refinement")
+        elif quality_score >= self.quality_threshold and not has_critical_issues:
+            logger.info(f"{label} critique: Quality score {quality_score} is above threshold {self.quality_threshold} and no critical issues - skipping refinement")
         else:
-            state_updates["cover_letter_needs_refinement"] = False
-            state_updates["cover_letter_needs_critique"] = False  # Reset flag
-            state_updates["cover_letter_critique_improvement_instructions"] = None # Clear instructions if no refinement needed
-            if quality_score >= self.quality_threshold and not has_critical_issues:
-                logger.info(f"Cover letter critique: Quality score {quality_score} is above threshold {self.quality_threshold} and no critical issues - skipping refinement")
-            else:
-                logger.info("Cover letter critique found no significant improvements needed")
-        
-        # Keep the previous draft's score next to the new one (in cover_letter_critique) so the
-        # router can tell whether the last redraft raised the score.
-        # The first draft of a new cycle has no previous draft to compare with.
-        cycle_start = state.get("cover_letter_cycle_start") or 0
-        state_updates["cover_letter_previous_quality_score"] = cover_letter_history[-1]["score"] if len(cover_letter_history) > cycle_start else None
-        
+            logger.info(f"{label} critique found no significant improvements needed")
+
+        # Keep the previous draft's score next to the new one so the router can tell whether the
+        # last redraft raised the score. The first draft of a new cycle has no previous draft.
+        state_updates[f"{kind}_previous_quality_score"] = history[-1]["score"] if len(history) > cycle_start else None
+
         # Always show critique feedback to user for transparency
-        critique_message = f"**Cover Letter Quality Assessment:**\n"
+        critique_message = f"**{'CV' if kind == 'cv' else 'Cover Letter'} Quality Assessment:**\n"
         critique_message += f"Quality Score: {quality_score}/100\n\n"
-        critique_message += f"**Content Quality:**\n{cover_letter_critique_result.content_quality_feedback}\n\n"
-        critique_message += f"**ATS Compatibility:**\n{cover_letter_critique_result.ats_compatibility_feedback}\n\n"
-        critique_message += f"**Job Alignment:**\n{cover_letter_critique_result.job_alignment_feedback}\n\n"
+        critique_message += f"**Content Quality:**\n{result.content_quality_feedback}\n\n"
+        critique_message += f"**ATS Compatibility:**\n{result.ats_compatibility_feedback}\n\n"
+        critique_message += f"**Job Alignment:**\n{result.job_alignment_feedback}\n\n"
         if has_critical_issues:
-            critique_message += f"**Critical Issues:**\n{cover_letter_critique_result.critical_issues}\n\n"
-        if has_improvement_instructions:
-            critique_message += f"**Improvement Suggestions:**\n{cover_letter_critique_result.improvement_instructions}\n\n"
+            critique_message += f"**Critical Issues:**\n{critical_issues}\n\n"
+        if instructions:
+            critique_message += f"**Improvement Suggestions:**\n{instructions}\n\n"
         if should_refine:
-            critique_message += "The cover letter will be automatically refined based on these suggestions."
+            critique_message += f"The {label.lower()} will be automatically refined based on these suggestions."
         else:
-            critique_message += "The cover letter quality is good. No automatic refinement needed."
-        
-        # Add critique feedback to messages for user visibility
+            critique_message += f"The {label.lower()} quality is good. No automatic refinement needed."
         state_updates["messages"] = state.get("messages", []) + [{
             "role": "assistant",
             "content": critique_message
         }]
-        
-        logger.info("CritiqueAgent.run_cover_letter() completed successfully")
+
+        logger.info(f"CritiqueAgent._run({kind}) completed successfully")
         return state_updates
-    
 
 
+# Answers a light model gives when it means "nothing": the prompt asks for an empty string, and it
+# sometimes returns the two quote characters themselves or a phrase.
+_EMPTY_ANSWERS = {"", "none", "n/a", "na", "null", "nothing", "no improvements needed", "no changes needed",
+                  "no critical issues", "no issues"}
+
+
+def _clean_text(text: str | None) -> str:
+    """Critique text with quote-only and 'none'-style answers turned into an empty string."""
+    stripped = (text or "").strip()
+    unquoted = stripped.strip("\"'`“”‘’ ").rstrip(".").strip().lower()
+    return "" if unquoted in _EMPTY_ANSWERS else stripped
+
+
+def _user_requests(messages) -> str:
+    """The user's own messages in this session (dicts or LangChain messages), one per line."""
+    lines = []
+    for msg in messages or []:
+        if isinstance(msg, dict):
+            role, content = msg.get("role"), msg.get("content")
+        else:
+            role, content = {"human": "user"}.get(getattr(msg, "type", ""), ""), getattr(msg, "content", "")
+        if role == "user" and isinstance(content, str) and content.strip():
+            lines.append(f"- {content.strip()}")
+    return "\n".join(lines)
+
+
+def _join(first: str, second: str) -> str:
+    return f"{first}\n{second}" if first else second
