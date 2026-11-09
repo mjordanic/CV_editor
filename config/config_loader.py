@@ -104,10 +104,11 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
         
         agent_config = agents[agent_name].copy()  # Make a copy to avoid modifying cached config
         
-        # Apply defaults for model and temperature if not specified in config
+        # Apply defaults for model and temperature if not specified in config. An explicit
+        # `temperature: null` means "the model's default" (some models accept no other value).
         if agent_config.get('model') is None:
             agent_config['model'] = default_model
-        if agent_config.get('temperature') is None:
+        if 'temperature' not in agent_config:
             agent_config['temperature'] = default_temperature
         
         _apply_model_override(agent_config)

@@ -89,8 +89,8 @@ Prerequisites
 
 - Python 3.12 or newer (`pyproject.toml` requires `>=3.12`; `.python-version` pins 3.12).
 - [uv](https://docs.astral.sh/uv/) to install the dependencies from `uv.lock`.
-- An OpenAI API key (paid, pay-per-use). The shipped `config/agent_models.yaml` uses `gpt-5-nano` for every agent; you can switch agents to `gpt-5-mini` or other models there.
-- A Tavily API key for company research (paid, with a limited free tier).
+- An OpenAI API key (paid, pay-per-use). The shipped `config/agent_models.yaml` uses `gpt-6-luna` for every agent (a session on the sample files costs about 2 US cents); you can switch agents to other models there. To try the program without paid keys, see [Running with a local model (Ollama)](#running-with-a-local-model-ollama).
+- A Tavily API key for company research (paid, with a limited free tier). Without one, company research is skipped.
 - A LaTeX distribution for PDF generation, with the `pdflatex` command available: MacTeX or BasicTeX on macOS (`brew install --cask basictex`), TeX Live on Linux (`sudo apt install texlive-latex-extra`), or MiKTeX on Windows.
 - macOS/Linux (Windows works but paths/logging instructions assume POSIX).
 
@@ -209,10 +209,25 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 
 All agents load configuration at startup from the YAML file. No code changes needed to adjust models or workflow parameters.
 
+### Running with a local model (Ollama)
+
+For testing without paid API calls you can run every agent on a local [Ollama](https://ollama.com) model:
+
+```bash
+ollama pull gemma4:e4b            # or another model, see below
+ollama pull nomic-embed-text      # optional: portfolio retrieval (RAG); without it RAG is skipped
+CV_EDITOR_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
+```
+
+- No OpenAI or Tavily key is needed. Company research is skipped without a Tavily key.
+- Local models get a 16k-token context (`CV_EDITOR_OLLAMA_NUM_CTX` to change it) and run with thinking off.
+- Expect it to be slow and rougher than the hosted model. On an M1 with 16 GB, a full session on the sample files took about 30 minutes with `gemma4:e4b`. That model also kept invented skills that the critique had flagged, and wrote LaTeX that did not compile, so no PDFs were produced. Use local runs to test the workflow, not to judge the output.
+- On 16 GB of memory, models up to about 8 GB on disk fit next to the operating system: `gemma4:e4b-it-qat` (6.1 GB), `qwen3:8b` (5.2 GB) or `gemma4:12b-it-qat` (7.2 GB, best quality of these but slowest).
+
 Customization Tips
 ------------------
 
-- **Models**: Change model IDs or temperatures in `config/agent_models.yaml` (e.g., `cv_writer` uses `temperature: 0.2`). Ensure the chosen model is available in your OpenAI organization.
+- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces every model for one run without editing the file.
 - **Prompt tone**: Update the system/human prompt strings in each agent to reflect a different writing style or formatting rules.
 - **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences.
 - **PDF Style Customization**: Provide style preferences in natural language when generating PDFs. Examples:
