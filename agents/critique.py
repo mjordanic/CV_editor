@@ -31,6 +31,12 @@ CRITIQUE_SYSTEM_PROMPT = (
     "NEVER suggest adding skills, tools, platforms, certifications or experience that are not in the 'Original Candidate Information', "
     "even when the job description asks for them. For a missing requirement, suggest highlighting the closest experience the candidate does have.\n"
     "Every critical issue MUST have a matching fix in improvement_instructions (e.g. 'In the Skills section, remove \"Azure\"')."
+    "\n\nGAPS ARE NOT DOCUMENT DEFECTS:\n"
+    "A job requirement the candidate does not meet (a missing licence, certificate, qualification, years of experience "
+    "or skill level) cannot be fixed by rewriting the document. Mention such gaps only in job_alignment_feedback, so the "
+    "user sees them. Do NOT list them as critical issues, do NOT lower the score for them as if the writing were at fault, "
+    "and do NOT write improvement instructions about them: no 'if true, add ...', no statements of willingness, "
+    "availability or plans the candidate has not made, and no sentences that point the employer to what the candidate lacks."
 )
 
 CRITIQUE_HUMAN_PROMPT = (
@@ -99,6 +105,8 @@ GROUNDING_PROMPT = (
     "experience that the {document_type} claims for the candidate but that the candidate's material does not support. "
     "Rephrasing, summarising and obvious inference are supported (e.g. 'built a React app' supports 'JavaScript'). "
     "Statements about the employer, the role or the job's requirements are not claims about the candidate; do not list them. "
+    "Statements that the candidate lacks something, or plans or is willing to obtain it, are not claims to have it; "
+    "list such a statement only if neither the candidate's material nor the user's requests say it. "
     "Quote each unsupported claim briefly, as it appears in the document. Return an empty list if everything is supported."
 )
 

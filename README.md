@@ -39,9 +39,9 @@ cp examples/sample_CV.txt data/CV/CV.txt   # or put your own CV here as data/CV/
 uv run python langgraph_agent.py
 ```
 
-- **Your CV** goes in `data/CV/` as `CV.txt` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program.
+- **Your CV** goes in `data/CV/` as `CV.txt` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program (`examples/sample_CV_butcher.txt` is one for a job outside IT).
 - **Your projects and past jobs** go in `data/portfolio/portfolio.txt`, one item per paragraph (separated by a blank line). Only that file is read. The one in the repository is a made-up example; replace it with your own.
-- **The job ad**: when asked, paste the ad text or a path to a file. `job_description/sample_job_ad.txt` is a made-up ad for trying it out.
+- **The job ad**: when asked, paste the ad text or a path to a file. `job_description/sample_job_ad.txt` is a made-up ad for trying it out (`job_description/sample_job_ad_butcher.txt` goes with the butcher CV).
 - **Costs**: right after startup the program makes paid OpenAI calls (it indexes your portfolio before you type anything), and every step after that makes paid OpenAI and Tavily calls.
 - The `data/` and `job_description/` folders are in `.gitignore`, so your own CV and ads are not committed by accident.
 
@@ -49,8 +49,9 @@ Features
 --------
 
 - **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/portfolio.txt`) based on the job description.
+- **Output Language**: The CV and cover letter are written in the language of the job ad, even when the job is in another country; ask for another language ("write the cover letter in English") to change it.
 - **Relevance Verification**: Uses a two-stage filtering process (Vector Similarity + LLM Verification) to ensure only truly relevant experience is included.
-- **Automatic Refinement**: Documents can be refined automatically based on critique feedback, with a small budget: one redraft by default, and at most one more if that redraft raised the critique score (see [Configuration](#configuration)).
+- **Automatic Refinement**: Documents can be refined automatically based on critique feedback, with a small budget: one redraft by default, and at most one more if that redraft raised the critique score or still makes claims your CV, portfolio and requests do not support (see [Configuration](#configuration)).
 - **Version Control**: All document iterations are saved as draft versions with quality scores.
 - **Structured Data**: Centralized data management in `data/` folder (`CV`, `portfolio`, `generated_CVs`).
 - **Flexible Input**: Supports reading job descriptions from text files (`job_description/`).
@@ -174,8 +175,8 @@ Workflow Walkthrough
    - `CritiqueAgent` evaluates generated documents on three dimensions: content quality, ATS compatibility, and job alignment.
    - Provides a quality score (0-100) and actionable improvement instructions.
    - All document iterations are saved to version history with their quality scores as draft files.
-   - If the quality score is below the threshold (default: 85) or critical issues are found, the document is refined automatically, up to `workflow.max_refinements` times (1 in the shipped config). After that it gets another pass only while each redraft raises the score by at least `workflow.quality_improvement_threshold` (5), and never more than `workflow.max_refinements_hard_cap` (2) times in total. Set `max_refinements: 0` to turn automatic refinement off.
-8. **Final selection**: The highest-scoring draft written for the current request is selected as the final output (drafts from earlier requests are not considered).
+   - If the quality score is below the threshold (default: 85) or critical issues are found, the document is refined automatically, up to `workflow.max_refinements` times (1 in the shipped config). After that it gets another pass only while each redraft raises the score by at least `workflow.quality_improvement_threshold` (5) or still makes claims your CV, portfolio and requests do not support, and never more than `workflow.max_refinements_hard_cap` (2) times in total. Set `max_refinements: 0` to turn automatic refinement off.
+8. **Final selection**: Of the drafts written for the current request (drafts from earlier requests are not considered), the one with the fewest unsupported claims is kept, and among those the highest-scoring one.
 9. **PDF Generation**: 
    - `CVPDFGenerator` and `CoverLetterPDFGenerator` convert the final text documents to professional PDFs.
    - The LLM generates complete LaTeX documents based on the text content and any style preferences.
@@ -202,7 +203,7 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 
 **Key Configuration Options:**
 - **Agent Models**: Each agent (CV writer, cover letter writer, router, critique, etc.) can be configured with specific models and temperatures.
-- **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds are allowed regardless of score (shipped: `1`; `0` turns refinement off). `workflow.max_refinements_hard_cap` (shipped: `2`) allows extra rounds only while the critique score keeps rising by at least `workflow.quality_improvement_threshold`, and is never exceeded.
+- **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds are allowed regardless of score (shipped: `1`; `0` turns refinement off). `workflow.max_refinements_hard_cap` (shipped: `2`) allows extra rounds only while the critique score keeps rising by at least `workflow.quality_improvement_threshold` or the draft still makes unsupported claims, and is never exceeded.
 - **LaTeX Fixer**: Configure `max_latex_fix_iterations` in the `workflow` section to control how many times the system attempts to fix LaTeX compilation errors automatically (shipped value: 2; the code falls back to 1 if the key is missing).
 - **Quality Thresholds**: Set quality score thresholds for automatic refinement in the critique agent configuration.
 - **RAG Settings**: Configure vector similarity thresholds and relevance verification settings for experience retrieval.

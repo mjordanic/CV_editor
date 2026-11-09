@@ -34,8 +34,10 @@ CV_LATEX_SYSTEM_PROMPT = (
     "  but keep any working structure that is still appropriate.\n"
     "- Apply the style_preferences to BOTH the preamble (colors, spacing, fonts, layout) and the content "
     "  (section structure, emphasis) where appropriate.\n"
-    "- Keep the factual content faithful to the plain-text CV, but you may improve formatting, ordering, "
-    "  and wording for clarity and professionalism.\n"
+    "- Copy the text of the plain-text CV word for word, in the same order and language. Change only the "
+    "  LaTeX markup and layout: do NOT reword, add, drop or reorder sentences, and do NOT change names or "
+    "  accented letters (that text was already checked against the candidate's material). Escaping a special "
+    "  character is not a change.\n"
     "- Escape LaTeX special characters where needed (%, _, $, &, #, {{, }}, ~, ^, \\).\n"
     "- Keep the CV professional, readable, and well-structured.\n"
 )
@@ -57,7 +59,7 @@ CV_LATEX_HUMAN_PROMPT = (
     "Your job is to produce a COMPLETE LaTeX CV document that:\n"
     "- Keeps or improves the existing layout and structure when it makes sense.\n"
     "- Applies the style preferences (e.g., colors, spacing, typography, section layout).\n"
-    "- Preserves the factual content from the plain-text CV, but may reorganize/rephrase for clarity.\n\n"
+    "- Contains the plain-text CV word for word (only LaTeX markup and layout change).\n\n"
     "IMPORTANT:\n"
     "- You MUST output a single, self-contained LaTeX document that can be compiled with pdflatex.\n"
     "- You may modify or remove existing commands and add new ones as needed, as long as the document compiles.\n"
@@ -219,6 +221,11 @@ class CVPDFGenerator:
                 compile_cmd,
                 capture_output=True,
                 text=True,
+                # pdflatex echoes text from the document in 8-bit form (e.g. "\xe4" for "ä" in an
+                # overfull-box warning), which is not UTF-8; strict decoding raised and the PDF failed
+                # before the LaTeX fixer could run.
+                encoding="utf-8",
+                errors="replace",
                 cwd=self.temp_folder,  # All output files will be written here
             )
 

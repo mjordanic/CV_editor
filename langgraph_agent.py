@@ -334,8 +334,8 @@ class MasterAgent:
         
         # Conditional routing for CV critique
         def route_cv_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising
-            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
+            # Redraft while within max_refinements, or past it while the score keeps rising or the
+            # draft still has unsupported claims (never beyond max_refinements_hard_cap); see agents/refinement.py.
             needs_refinement = state.get("cv_needs_refinement", False)
             refinement_count = state.get("cv_refinement_count", 0)
             critique = state.get("cv_critique")
@@ -350,6 +350,7 @@ class MasterAgent:
                 self.max_refinements,
                 self.max_refinements_hard_cap,
                 self.quality_improvement_threshold,
+                has_unsupported_claims=bool(critique and critique.get("unsupported_claims")),
             )
             if quality_improved:
                 logger.info(f"CV quality improved from {previous_score} to {current_score}")
@@ -370,8 +371,8 @@ class MasterAgent:
 
         # Conditional routing for Cover Letter critique
         def route_cover_letter_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising
-            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
+            # Redraft while within max_refinements, or past it while the score keeps rising or the
+            # draft still has unsupported claims (never beyond max_refinements_hard_cap); see agents/refinement.py.
             needs_refinement = state.get("cover_letter_needs_refinement", False)
             refinement_count = state.get("cover_letter_refinement_count", 0)
             critique = state.get("cover_letter_critique")
@@ -386,6 +387,7 @@ class MasterAgent:
                 self.max_refinements,
                 self.max_refinements_hard_cap,
                 self.quality_improvement_threshold,
+                has_unsupported_claims=bool(critique and critique.get("unsupported_claims")),
             )
             if quality_improved:
                 logger.info(f"Cover letter quality improved from {previous_score} to {current_score}")

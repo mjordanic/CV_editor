@@ -6,6 +6,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
 from debug_utils import write_to_debug
+from agents.refinement import best_draft
+from agents.job_description import output_language_instruction
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,7 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "**Relevant Experience from Portfolio (RAG):**\n{relevant_experience_context}\n\n"
     "**Modification Instructions:**\n{modification_instructions}\n\n"
     "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
+    "**Output Language:** {output_language}\n\n"
     "CRITICAL: When modification instructions are provided, you MUST:\n"
     "1. **PRESERVE the existing cover letter structure and content** - Keep all paragraphs, formatting, and information that is NOT mentioned in the modification instructions\n"
     "2. **ONLY make the specific changes requested** - Do NOT add, remove, or modify anything that is not explicitly mentioned in the modification instructions\n"
@@ -315,7 +318,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             "company_info": company_info_text,
             "relevant_experience_context": relevant_experience_context,
             "modification_instructions": modification_instructions or "",
-            "previous_modification_instructions": previous_modification_instructions_formatted or ""
+            "previous_modification_instructions": previous_modification_instructions_formatted or "",
+            "output_language": output_language_instruction(job_description_info, "cover letter"),
         }
         logger.info("Calling LLM to generate cover letter with structured output...")
         logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, candidate_cover_letter length: {len(candidate_cover_letter_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions) if modification_instructions else 0}")
@@ -533,10 +537,11 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             
         # Pick the best draft of the current cycle only (drafts since the router last sent a
         # request here). An older draft from an earlier request must not win on score, or the
-        # user's latest change would be thrown away. If scores are equal, prefer the later draft.
+        # user's latest change would be thrown away. Fewer unsupported claims first, then score,
+        # then the later draft (see best_draft).
         cycle_start = state.get("cover_letter_cycle_start") or 0
         candidates = cover_letter_history[cycle_start:] or cover_letter_history
-        best_version = max(candidates, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        best_version = best_draft(candidates)
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         

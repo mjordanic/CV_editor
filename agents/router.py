@@ -27,7 +27,8 @@ ROUTER_SYSTEM_PROMPT = (
     "   - PDF APPEARANCE MODIFICATIONS (style/layout/colors/fonts ONLY):\n"
     "       * Extract instructions about HOW the PDF should LOOK (visual appearance only).\n"
     "       * Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing', 'change font to Arial'.\n"
-    "       * Store in 'cv_pdf_style' or 'cover_letter_pdf_style' fields.\n"
+    "       * Store in 'cv_pdf_style' or 'cover_letter_pdf_style' fields: only the field of the document the user names "
+    "(both fields only if the user asks for both documents).\n"
     "   CRITICAL: A single user message can contain feedback for BOTH CV and cover letter (content + style for each). Extract them separately.\n"
     "   - If content feedback exists for a document, route to the appropriate 'draft_*' action for that document.\n"
     "   - If content feedback exists for BOTH documents, check the conversation history to determine which one the user wants to generate first, or route to the one that makes most sense based on context.\n"
@@ -184,6 +185,8 @@ class RouterResponse(BaseModel):
             "Extract instructions about HOW the CV PDF should LOOK. "
             "Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing'. "
             "Do NOT include content modification instructions here. "
+            "Fill it ONLY when the user's message is about the CV PDF (or names both documents); if the user "
+            "asks only about the cover letter, leave this empty. "
             "Empty if no CV PDF style feedback provided."
         ),
     )
@@ -194,6 +197,8 @@ class RouterResponse(BaseModel):
             "Extract instructions about HOW the cover letter PDF should LOOK. "
             "Examples: 'titles in dark blue color and bolded', 'make it more compact', 'use minimal spacing'. "
             "Do NOT include content modification instructions here. "
+            "Fill it ONLY when the user's message is about the cover letter PDF (or names both documents); if the user "
+            "asks only about the CV, leave this empty. "
             "Empty if no cover letter PDF style feedback provided."
         ),
     )
@@ -392,8 +397,8 @@ class RouterAgent:
             cv_generated: Whether a CV has been generated already
             cover_letter_generated: Whether a cover letter has been generated already
             messages: Conversation messages (to check for user feedback)
-            cv_pdf_available: Whether a CV PDF exists
-            cover_letter_pdf_available: Whether a cover letter PDF exists
+            cv_pdf_available: Whether a CV PDF can be (re)rendered, i.e. the CV text exists
+            cover_letter_pdf_available: Whether a cover letter PDF can be (re)rendered
 
         Returns:
             str: Formatted list of available actions
@@ -424,7 +429,8 @@ class RouterAgent:
         if cover_letter_available:
             actions.append("- 'draft_cover_letter': Generate a new cover letter or modify an existing one (ONLY cover letter-related feedback should be passed)")
         
-        # PDF appearance-only style update actions (available only if corresponding PDF exists)
+        # PDF appearance-only style update actions (available once the document's text exists, so a
+        # PDF that failed to build can be rendered again)
         if cv_pdf_available and has_user_feedback:
             actions.append(
                 "- 'update_cv_pdf_style': Regenerate the CV PDF using the SAME CV text but with updated visual style "
@@ -574,9 +580,11 @@ class RouterAgent:
         job_desc_formatted = self._format_job_description_info(job_description_info)
         company_info_formatted = self._format_company_info(company_info)
         candidate_text_formatted = self._format_candidate_text(candidate_text)
-        # Determine if PDFs exist (for appearance-only style updates)
-        cv_pdf_available = bool(state.get("cv_pdf_path"))
-        cover_letter_pdf_available = bool(state.get("cover_letter_pdf_path"))
+        # Appearance-only style updates need the document's text, not an existing PDF: when the last
+        # PDF failed to build, a style request must still be able to render it again. (Requiring the
+        # PDF made the router refuse the request and tell the user the PDF "has been updated".)
+        cv_pdf_available = bool(state.get("cv_pdf_path") or generated_cv)
+        cover_letter_pdf_available = bool(state.get("cover_letter_pdf_path") or generated_cover_letter)
 
         feedback_context = self._format_feedback_context(
             messages,
@@ -690,8 +698,15 @@ class RouterAgent:
         offered = _offered_actions(available_actions)
         if next_action not in offered:
             logger.warning(f"Router LLM chose '{next_action}', which was not offered ({sorted(offered)}) - asking the user instead")
+            # Actions are withdrawn once they have run (the latest message is then the assistant's);
+            # only then can the message say the step is done.
+            done_note = (
+                _FINISHED_ACTION_NOTE.get(next_action, "Done.")
+                if not self._has_user_feedback(messages)
+                else "I can't do that step yet."
+            )
             response.message_to_user = (
-                f"{_FINISHED_ACTION_NOTE.get(next_action, 'Done.')} Tell me what you would like to change "
+                f"{done_note} Tell me what you would like to change "
                 "in the CV or cover letter, or type 'exit' to finish."
             )
             next_action = "collect_user_input"
