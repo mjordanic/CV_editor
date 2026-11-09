@@ -83,7 +83,8 @@ class ExperienceRetrievalAgent:
             # In a real app, we'd use a smarter splitter, but this works for our format
             raw_chunks = [c.strip() for c in content.split("\n\n") if c.strip()]
             
-            documents = [Document(page_content=chunk) for chunk in raw_chunks]
+            source = os.path.basename(self.portfolio_path)
+            documents = [Document(page_content=chunk, metadata={"source": source}) for chunk in raw_chunks]
             
             if documents:
                 self.vectorstore = FAISS.from_documents(documents, self.embeddings)
@@ -110,7 +111,7 @@ class ExperienceRetrievalAgent:
             bool: True if relevant, False otherwise
         """
         prompt = RELEVANCE_VERIFICATION_PROMPT.format(
-            job_description=job_description[:2000] + "... (truncated)",
+            job_description=job_description if len(job_description) <= 2000 else job_description[:2000] + "... (truncated)",
             chunk_content=chunk_content
         )
         try:

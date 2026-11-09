@@ -163,8 +163,8 @@ System: [Generates CV with content and style changes]
 Workflow Walkthrough
 --------------------
 
-1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`.
-2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc.
+1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`. If there is no CV there (or it has no text, e.g. a scanned PDF), it asks you to paste your CV or give a path to it.
+2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc. An empty answer or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked once to add details or reply `continue`.
 3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
 4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.

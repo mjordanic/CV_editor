@@ -56,7 +56,12 @@ import sys
 from agents.search import SearchAgent
 from agents.refinement import should_refine
 from agents.document_reader import DocumentReaderAgent
-from agents.job_description import JobDescriptionAgent
+from agents.job_description import (
+    JobDescriptionAgent,
+    clarify_job_ad,
+    route_after_clarify_job_ad,
+    route_after_job_description,
+)
 from agents.router import RouterAgent
 from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
@@ -97,6 +102,8 @@ class State(TypedDict, total=False):
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
+    job_ad_clarification_asked: bool | None  # clarify_job_ad has asked for more details about a thin job ad (asked once)
+    job_ad_extra_details: str | None  # The user's answer to that question, added to the ad and extracted again
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
     current_node: str | None  # Current node in the graph
@@ -295,6 +302,7 @@ class MasterAgent:
         logger.debug("Adding nodes to graph...")
         graph_builder.add_node("load_candidate_documents", document_reader_agent.run)
         graph_builder.add_node("analyze_job_description", job_description_agent.run)
+        graph_builder.add_node("clarify_job_ad", clarify_job_ad)
         graph_builder.add_node("research_company_context", search_agent.run)
         graph_builder.add_node("retrieve_experience", experience_retrieval_agent.run)
         graph_builder.add_node("router", router_agent.run)
@@ -313,7 +321,17 @@ class MasterAgent:
         logger.debug("Adding edges to graph...")
         graph_builder.add_edge(START, "load_candidate_documents")
         graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
-        graph_builder.add_edge("analyze_job_description", "research_company_context")
+        # An ad with no job title and no requirements gets one follow-up question first
+        graph_builder.add_conditional_edges(
+            "analyze_job_description",
+            route_after_job_description,
+            {"clarify_job_ad": "clarify_job_ad", "research_company_context": "research_company_context"},
+        )
+        graph_builder.add_conditional_edges(
+            "clarify_job_ad",
+            route_after_clarify_job_ad,
+            {"analyze_job_description": "analyze_job_description", "research_company_context": "research_company_context"},
+        )
         graph_builder.add_edge("research_company_context", "retrieve_experience")
         graph_builder.add_edge("retrieve_experience", "router")
         
