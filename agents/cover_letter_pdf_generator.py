@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
@@ -26,8 +27,10 @@ COVER_LETTER_LATEX_SYSTEM_PROMPT = (
     "  but keep any working structure that is still appropriate.\n"
     "- Apply the style_preferences to BOTH the preamble (colors, spacing, fonts, layout) and the content "
     "  (paragraph structure, emphasis) where appropriate.\n"
-    "- Keep the factual content faithful to the plain-text cover letter, but you may improve formatting, "
-    "  ordering, and wording for clarity and professionalism.\n"
+    "- Copy the text of the plain-text cover letter word for word, in the same order and language. Change only the "
+    "  LaTeX markup and layout: do NOT reword, add, drop or reorder sentences, and do NOT change names or "
+    "  accented letters (that text was already checked against the candidate's material). Escaping a special "
+    "  character is not a change.\n"
     "- Escape LaTeX special characters where needed (%, _, $, &, #, {{, }}, ~, ^, \\).\n"
     "- Keep the letter professional, readable, and well-structured.\n"
 )
@@ -49,7 +52,7 @@ COVER_LETTER_LATEX_HUMAN_PROMPT = (
     "Your job is to produce a COMPLETE LaTeX cover letter document that:\n"
     "- Keeps or improves the existing layout and structure when it makes sense.\n"
     "- Applies the style preferences (e.g., colors, spacing, typography, margins).\n"
-    "- Preserves the factual content from the plain-text cover letter, but may reorganize/rephrase for clarity.\n\n"
+    "- Contains the plain-text cover letter word for word (only LaTeX markup and layout change).\n\n"
     "IMPORTANT:\n"
     "- You MUST output a single, self-contained LaTeX document that can be compiled with pdflatex.\n"
     "- You may modify or remove existing commands and add new ones as needed, as long as the document compiles.\n"
@@ -107,7 +110,7 @@ class CoverLetterPDFGenerator:
         
         # Initialize LLM for LaTeX content
         logger.info(f"Initializing cover letter content LLM - model: {model}")
-        self._content_llm = init_chat_model(model, temperature=temperature)
+        self._content_llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self._prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", COVER_LETTER_LATEX_SYSTEM_PROMPT),
@@ -213,6 +216,11 @@ class CoverLetterPDFGenerator:
                 compile_cmd,
                 capture_output=True,
                 text=True,
+                # pdflatex echoes text from the document in 8-bit form (e.g. "\xe4" for "ä" in an
+                # overfull-box warning), which is not UTF-8; strict decoding raised and the PDF failed
+                # before the LaTeX fixer could run.
+                encoding="utf-8",
+                errors="replace",
                 cwd=self.temp_folder,  # All output files will be written here
             )
 
@@ -428,12 +436,9 @@ class CoverLetterPDFGenerator:
             # Then copy to generated_cover_letter.pdf so it always has the latest version
             cover_letter_history = state.get("cover_letter_history", [])
             
-            if cover_letter_history:
-                # This is a draft version during refinement
-                iteration = len(cover_letter_history)
-            else:
-                # No history, first generation (treat as draft_1)
-                iteration = 1
+            # Name the PDF after the draft it renders: finalize may pick an earlier draft than
+            # the latest one, and the file name must say which.
+            iteration = state.get("cover_letter_final_iteration") or len(cover_letter_history) or 1
             
             draft_filename = f"generated_cover_letter_draft_{iteration}.pdf"
             logger.info(f"Generating draft cover letter PDF (iteration {iteration})")
@@ -457,10 +462,10 @@ class CoverLetterPDFGenerator:
             # - Subsequent iterations: use the previously generated .tex file as template
             template_content: Optional[str] = None
             if cover_letter_history:
-                last_iteration = len(cover_letter_history)
+                # Reuse this draft's .tex if it was rendered before (a style-only update)
                 last_tex_path = os.path.join(
                     self.temp_folder,
-                    f"generated_cover_letter_draft_{last_iteration}.tex",
+                    f"generated_cover_letter_draft_{iteration}.tex",
                 )
                 if os.path.exists(last_tex_path):
                     logger.info(

@@ -13,6 +13,7 @@ if __file__ and Path(__file__).parent.name == "agents":
         sys.path.insert(0, str(project_root))
 
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
@@ -33,8 +34,10 @@ CV_LATEX_SYSTEM_PROMPT = (
     "  but keep any working structure that is still appropriate.\n"
     "- Apply the style_preferences to BOTH the preamble (colors, spacing, fonts, layout) and the content "
     "  (section structure, emphasis) where appropriate.\n"
-    "- Keep the factual content faithful to the plain-text CV, but you may improve formatting, ordering, "
-    "  and wording for clarity and professionalism.\n"
+    "- Copy the text of the plain-text CV word for word, in the same order and language. Change only the "
+    "  LaTeX markup and layout: do NOT reword, add, drop or reorder sentences, and do NOT change names or "
+    "  accented letters (that text was already checked against the candidate's material). Escaping a special "
+    "  character is not a change.\n"
     "- Escape LaTeX special characters where needed (%, _, $, &, #, {{, }}, ~, ^, \\).\n"
     "- Keep the CV professional, readable, and well-structured.\n"
 )
@@ -56,7 +59,7 @@ CV_LATEX_HUMAN_PROMPT = (
     "Your job is to produce a COMPLETE LaTeX CV document that:\n"
     "- Keeps or improves the existing layout and structure when it makes sense.\n"
     "- Applies the style preferences (e.g., colors, spacing, typography, section layout).\n"
-    "- Preserves the factual content from the plain-text CV, but may reorganize/rephrase for clarity.\n\n"
+    "- Contains the plain-text CV word for word (only LaTeX markup and layout change).\n\n"
     "IMPORTANT:\n"
     "- You MUST output a single, self-contained LaTeX document that can be compiled with pdflatex.\n"
     "- You may modify or remove existing commands and add new ones as needed, as long as the document compiles.\n"
@@ -104,7 +107,7 @@ class CVPDFGenerator:
 
         # Initialize LLM for LaTeX content
         logger.info(f"Initializing CV content LLM - model: {model}")
-        self._content_llm = init_chat_model(model, temperature=temperature)
+        self._content_llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self._prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", CV_LATEX_SYSTEM_PROMPT),
@@ -218,6 +221,11 @@ class CVPDFGenerator:
                 compile_cmd,
                 capture_output=True,
                 text=True,
+                # pdflatex echoes text from the document in 8-bit form (e.g. "\xe4" for "ä" in an
+                # overfull-box warning), which is not UTF-8; strict decoding raised and the PDF failed
+                # before the LaTeX fixer could run.
+                encoding="utf-8",
+                errors="replace",
                 cwd=self.temp_folder,  # All output files will be written here
             )
 
@@ -428,12 +436,9 @@ class CVPDFGenerator:
             # Then copy to generated_CV.pdf so it always has the latest version
             cv_history = state.get("cv_history", [])
             
-            if cv_history:
-                # This is a draft version during refinement
-                iteration = len(cv_history)
-            else:
-                # No history, first generation (treat as draft_1)
-                iteration = 1
+            # Name the PDF after the draft it renders: finalize may pick an earlier draft than
+            # the latest one, and the file name must say which.
+            iteration = state.get("cv_final_iteration") or len(cv_history) or 1
             
             draft_filename = f"generated_CV_draft_{iteration}.pdf"
             logger.info(f"Generating draft CV PDF (iteration {iteration})")
@@ -457,12 +462,10 @@ class CVPDFGenerator:
             # - Subsequent iterations (drafts or final): use the previously generated .tex file as template
             template_content: Optional[str] = None
             if cv_history:
-                # Last iteration index
-                last_iteration = len(cv_history)
-                # Try to find the last draft's .tex file
+                # Reuse this draft's .tex if it was rendered before (a style-only update)
                 last_tex_path = os.path.join(
                     self.temp_folder,
-                    f"generated_CV_draft_{last_iteration}.tex",
+                    f"generated_CV_draft_{iteration}.tex",
                 )
                 if os.path.exists(last_tex_path):
                     logger.info(

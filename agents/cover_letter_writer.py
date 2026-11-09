@@ -1,10 +1,13 @@
 from typing import Optional
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
 from debug_utils import write_to_debug
+from agents.refinement import best_draft
+from agents.job_description import output_language_instruction
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,7 @@ COVER_LETTER_GENERATION_HUMAN_PROMPT = (
     "**Relevant Experience from Portfolio (RAG):**\n{relevant_experience_context}\n\n"
     "**Modification Instructions:**\n{modification_instructions}\n\n"
     "**Previous Modification Instructions (preserve these):**\n{previous_modification_instructions}\n\n"
+    "**Output Language:** {output_language}\n\n"
     "CRITICAL: When modification instructions are provided, you MUST:\n"
     "1. **PRESERVE the existing cover letter structure and content** - Keep all paragraphs, formatting, and information that is NOT mentioned in the modification instructions\n"
     "2. **ONLY make the specific changes requested** - Do NOT add, remove, or modify anything that is not explicitly mentioned in the modification instructions\n"
@@ -93,11 +97,11 @@ class CoverLetterWriterAgent:
         logger.info(f"Initializing CoverLetterWriterAgent with output_folder: {output_folder}")
         
         # Main LLM for cover letter generation
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"CoverLetterWriterAgent LLM initialized - model: {model}, temperature: {temperature}")
         
         # Separate LLM for filtering operations
-        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature)
+        self.filter_llm = init_chat_model(filter_model, temperature=filter_temperature, **local_model_kwargs(filter_model))
         logger.debug(f"CoverLetterWriterAgent filter LLM initialized - model: {filter_model}, temperature: {filter_temperature}")
         
         self.output_folder = output_folder
@@ -314,7 +318,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             "company_info": company_info_text,
             "relevant_experience_context": relevant_experience_context,
             "modification_instructions": modification_instructions or "",
-            "previous_modification_instructions": previous_modification_instructions_formatted or ""
+            "previous_modification_instructions": previous_modification_instructions_formatted or "",
+            "output_language": output_language_instruction(job_description_info, "cover letter"),
         }
         logger.info("Calling LLM to generate cover letter with structured output...")
         logger.debug(f"LLM input - candidate_cv length: {len(candidate_cv_text)}, candidate_cover_letter length: {len(candidate_cover_letter_text)}, job_description length: {len(job_desc_text)}, company_info length: {len(company_info_text)}, modification_instructions length: {len(modification_instructions) if modification_instructions else 0}")
@@ -388,9 +393,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         candidate_cover_letter = generated_cover_letter if generated_cover_letter else (candidate_text.get("cover_letter") if candidate_text else None)
         job_description_info = state.get("job_description_info")
         company_info = state.get("company_info")
-        # Use cover_letter_content_feedback if it exists (when both CV and cover letter feedback are provided),
-        # otherwise fall back to cv_content_feedback
-        user_feedback = state.get("cover_letter_content_feedback") or state.get("cv_content_feedback")
+        # Only cover letter feedback applies here; CV feedback is for the CV writer.
+        user_feedback = state.get("cover_letter_content_feedback")
         relevant_experience_context = state.get("relevant_experience", "No relevant experience retrieved.")
         
         # Check for critique improvement instructions (prioritize over user feedback for automatic refinement)
@@ -421,7 +425,9 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                     "generated_cover_letter": state.get("generated_cover_letter"),  # Keep existing cover letter
                     "cover_letter_needs_critique": False,  # Don't critique again
                     "cover_letter_needs_refinement": False,  # Reset refinement flag
-                    "cover_letter_refinement_count": state.get("cover_letter_refinement_count", 0),  # Keep count
+                    # Count the skipped pass: the graph still goes on to critique the unchanged
+                    # draft, and without this the critique -> redraft loop would never use up its budget.
+                    "cover_letter_refinement_count": (state.get("cover_letter_refinement_count") or 0) + 1,
                     "current_node": "cover_letter_writer",
                     "messages": state.get("messages", []) + [{
                         "role": "assistant",
@@ -529,9 +535,13 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             logger.warning("No cover letter history found. Cannot finalize best version.")
             return {"current_node": "finalize_cover_letter"}
             
-        # Find the version with the highest score
-        # If scores are equal, prefer the later version (higher iteration number)
-        best_version = max(cover_letter_history, key=lambda x: (x.get("score", 0), x.get("iteration", 0)))
+        # Pick the best draft of the current cycle only (drafts since the router last sent a
+        # request here). An older draft from an earlier request must not win on score, or the
+        # user's latest change would be thrown away. Fewer unsupported claims first, then score,
+        # then the later draft (see best_draft).
+        cycle_start = state.get("cover_letter_cycle_start") or 0
+        candidates = cover_letter_history[cycle_start:] or cover_letter_history
+        best_version = best_draft(candidates)
         
         logger.info(f"Selected best version: Iteration {best_version.get('iteration')} with score {best_version.get('score')}")
         
@@ -544,6 +554,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         
         return {
             "generated_cover_letter": final_cover_letter_text,
+            "cover_letter_final_iteration": best_version.get("iteration"),
             "current_node": "finalize_cover_letter",
             # Clear cover_letter_content_feedback after finalization to prevent infinite loops
             "cover_letter_content_feedback": None,

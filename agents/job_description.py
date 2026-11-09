@@ -3,6 +3,7 @@ import logging
 import os
 import json
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
@@ -24,6 +25,7 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
     "- Industry\n"
     "- Whether the job is remote, hybrid, or on-site. If not specified, return 'unknown'.\n"
     "- Candidate minimal requirements (qualifications, skills, experience, education, etc.)\n"
+    "- The language the job description is written in (e.g. English, German)\n"
     "- Any other relevant company or position details\n\n"
     "Job Description:\n\n{job_description}"
 )
@@ -60,6 +62,10 @@ class JobDescriptionInfo(BaseModel):
         None,
         description="The minimum requirements, qualifications, skills, experience, and education needed for the position"
     )
+    language: Optional[str] = Field(
+        None,
+        description="The language the job description is written in, as an English name (e.g. 'English', 'German')"
+    )
     job_description: Optional[str] = Field(
         None,
         description="The full original job description text"
@@ -69,6 +75,22 @@ class JobDescriptionInfo(BaseModel):
         description="Any other relevant information about the company or position"
     )
 
+
+
+def output_language_instruction(job_description_info: Optional[dict], document: str) -> str:
+    """
+    Tell a writer which language to write the document in.
+
+    Without this a light model sometimes wrote the letter in the language of the job's country
+    instead of the language of the ad and the user's CV (an English ad for a Zagreb job got a
+    Croatian cover letter). The user's own request for another language still wins.
+    """
+    language = ((job_description_info or {}).get("language") or "").strip()
+    target = f"{language}, the language of the job ad" if language else "the language the job ad is written in"
+    return (
+        f"Write the {document} in {target}, even if the employer or job is in another country. "
+        f"Use another language only if the user's instructions (current or previous) ask for it."
+    )
 
 
 class JobDescriptionAgent:
@@ -87,7 +109,7 @@ class JobDescriptionAgent:
         """
         logger.info("Initializing JobDescriptionAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"JobDescriptionAgent LLM initialized - model: {model}, temperature: {temperature}")
     
     def extract_info(self, job_description: str) -> JobDescriptionInfo:

@@ -1,31 +1,57 @@
-CV Editor Agentic System
-========================
+CV Editor
+=========
 
-Create high‑quality, tailored CVs and cover letters with an AI-first, LangGraph‑based agentic workflow that reads your existing documents, analyzes a job description, researches the target company, and iteratively generates polished drafts with LLM-guided user feedback loops.
+CV Editor helps job seekers tailor a CV and cover letter to one specific job ad. You give it your current CV and the text of the ad. It reads both, looks up the company, writes a matching CV and cover letter, and turns them into PDFs. You can then ask for changes in plain English ("add my research stay at Berkeley", "make the titles blue") until you are happy. It runs on your own computer from a terminal, so it is aimed at people who are comfortable installing a Python program. It uses paid OpenAI and Tavily accounts: your CV and the job ad are sent to those services, and each run costs a small amount in API fees.
 
 Table of Contents
 -----------------
 
-1. [Features](#features)  
-2. [High-Level Architecture](#high-level-architecture)  
-3. [Prerequisites](#prerequisites)  
-4. [Project Setup](#project-setup)  
-5. [Environment Variables](#environment-variables)  
-6. [Running the Agent](#running-the-agent)  
-7. [Workflow Walkthrough](#workflow-walkthrough)  
-8. [Logging and Debugging](#logging-and-debugging)  
-9. [Configuration](#configuration)  
-10. [Customization Tips](#customization-tips)  
-11. [Troubleshooting](#troubleshooting)
+1. [Quick Start](#quick-start)
+2. [Features](#features)
+3. [High-Level Architecture](#high-level-architecture)
+4. [Prerequisites](#prerequisites)
+5. [Project Setup](#project-setup)
+6. [Environment Variables](#environment-variables)
+7. [Running the Agent](#running-the-agent)
+8. [Workflow Walkthrough](#workflow-walkthrough)
+9. [Logging and Debugging](#logging-and-debugging)
+10. [Configuration](#configuration)
+11. [Customization Tips](#customization-tips)
+12. [Troubleshooting](#troubleshooting)
+13. [Drawing the workflow graph](#drawing-the-workflow-graph)
+14. [Licence](#licence)
+
+Quick Start
+-----------
+
+You need Python 3.12, [uv](https://docs.astral.sh/uv/), a LaTeX install with `pdflatex` (see [Prerequisites](#prerequisites)), an OpenAI API key and a Tavily API key.
+
+```bash
+git clone https://github.com/mjordanic/CV_editor.git
+cd CV_editor
+uv sync                                    # creates .venv and installs the locked dependencies
+
+cp .env_sample .env                        # then put your real keys in .env
+
+mkdir -p data/CV
+cp examples/sample_CV.txt data/CV/CV.txt   # or put your own CV here as data/CV/CV.txt or data/CV/CV.pdf
+
+uv run python langgraph_agent.py
+```
+
+- **Your CV** goes in `data/CV/` as `CV.txt` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program (`examples/sample_CV_butcher.txt` is one for a job outside IT).
+- **Your projects and past jobs** go in `data/portfolio/portfolio.txt`, one item per paragraph (separated by a blank line). Only that file is read. The one in the repository is a made-up example; replace it with your own.
+- **The job ad**: when asked, paste the ad text or a path to a file. `job_description/sample_job_ad.txt` is a made-up ad for trying it out (`job_description/sample_job_ad_butcher.txt` goes with the butcher CV).
+- **Costs**: right after startup the program makes paid OpenAI calls (it indexes your portfolio before you type anything), and every step after that makes paid OpenAI and Tavily calls.
+- The `data/` and `job_description/` folders are in `.gitignore`, so your own CV and ads are not committed by accident.
 
 Features
 --------
 
-![LangGraph workflow](images/graph_visualization.png)
-
-- **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/`) based on the job description.
+- **Smart Experience Retrieval (RAG)**: Automatically retrieves relevant projects and experiences from your portfolio (`data/portfolio/portfolio.txt`) based on the job description.
+- **Output Language**: The CV and cover letter are written in the language of the job ad, even when the job is in another country; ask for another language ("write the cover letter in English") to change it.
 - **Relevance Verification**: Uses a two-stage filtering process (Vector Similarity + LLM Verification) to ensure only truly relevant experience is included.
-- **Automatic Refinement**: Documents are automatically refined based on critique feedback until quality thresholds are met.
+- **Automatic Refinement**: Documents can be refined automatically based on critique feedback, with a small budget: one redraft by default, and at most one more if that redraft raised the critique score or still makes claims your CV, portfolio and requests do not support (see [Configuration](#configuration)).
 - **Version Control**: All document iterations are saved as draft versions with quality scores.
 - **Structured Data**: Centralized data management in `data/` folder (`CV`, `portfolio`, `generated_CVs`).
 - **Flexible Input**: Supports reading job descriptions from text files (`job_description/`).
@@ -62,32 +88,34 @@ All agents share a common `State` TypedDict managed by LangGraph, which keeps tr
 Prerequisites
 -------------
 
-- Python 3.11+ (project tested with 3.12).
-- Access to OpenAI API with GPT-5 series models (`gpt-5-mini`, `gpt-5-nano`) or configure alternative models in `config/agent_models.yaml`.
-- Tavily API key for company research.
-- LaTeX distribution (for PDF generation): TeX Live, MiKTeX, or MacTeX with `pdflatex` command available.
+- Python 3.12 or newer (`pyproject.toml` requires `>=3.12`; `.python-version` pins 3.12).
+- [uv](https://docs.astral.sh/uv/) to install the dependencies from `uv.lock`.
+- An OpenAI API key (paid, pay-per-use). The shipped `config/agent_models.yaml` uses `gpt-6-luna` for every agent (a session on the sample files costs about 2 US cents); you can switch agents to other models there. To try the program without paid keys, see [Running with a local model (Ollama)](#running-with-a-local-model-ollama).
+- A Tavily API key for company research (paid, with a limited free tier). Without one, company research is skipped.
+- A LaTeX distribution for PDF generation, with the `pdflatex` command available: MacTeX or BasicTeX on macOS (`brew install --cask basictex`), TeX Live on Linux (`sudo apt install texlive-latex-extra`), or MiKTeX on Windows.
 - macOS/Linux (Windows works but paths/logging instructions assume POSIX).
 
 Project Setup
 -------------
 
 ```bash
-# clone the repo (example path)
-git clone <repo-url> CV_editor
+git clone https://github.com/mjordanic/CV_editor.git
 cd CV_editor
 
-# create and activate a virtual environment (uv or venv)
-uv venv               # or: python3 -m venv .venv
-source .venv/bin/activate
-
-# install dependencies
-uv pip install -r requirements.txt   # or `uv pip sync pyproject.toml` if using uv/lockfile
+# create .venv and install the exact dependency versions from uv.lock
+uv sync
 ```
+
+Graphviz is **not** needed to run the program. It is only needed if you want to redraw the workflow picture (see [Drawing the workflow graph](#drawing-the-workflow-graph)).
 
 Environment Variables
 ---------------------
 
-Create a `.env` file in the project root (or set variables in your shell):
+Copy the sample file and fill in your keys (or set the variables in your shell):
+
+```bash
+cp .env_sample .env
+```
 
 ```
 OPENAI_API_KEY=sk-...
@@ -100,23 +128,26 @@ Running the Agent
 -----------------
 
 ```bash
-source .venv/bin/activate
-python langgraph_agent.py
+uv run python langgraph_agent.py
 ```
+
+(or `source .venv/bin/activate` and then `python langgraph_agent.py`)
+
+`uv run python langgraph_agent.py --help` lists the options without starting a run. `uv run pytest` runs the offline tests (no API keys needed).
 
 The program will:
 
 1. Load user CV/cover-letter data from `data/CV/`.
-2. Load portfolio data from `data/portfolio/`.
+2. Load portfolio data from `data/portfolio/portfolio.txt`.
 3. Ask you to paste the target job description (or provide a file path).
 4. Fetch company insights via Tavily.
 5. Retrieve relevant experience from your portfolio.
 6. Chat with you about what to generate next.
 7. Produce tailored documents and save them to `data/generated_CVs/`.
 
-While streaming, the CLI may pause with prompts such as “Please paste the job description…” or “Please provide your input:”. Paste multiline text and press `Ctrl+D` (or Enter twice) to continue.
+While streaming, the CLI may pause with prompts such as “Please paste the job description…” or “Please provide your input:”. Paste multiline text and finish with `Ctrl+D`, two empty lines in a row, or `END` on its own line.
 
-**Tip:** For long job descriptions that might exceed terminal buffer limits, you can save the text to a file (e.g., `job_description/my_job.txt`) and simply paste the file path when prompted.
+**Tip:** For long job descriptions that might exceed terminal buffer limits, you can save the text to a file (e.g., `job_description/sample_job_ad.txt`) and simply paste the file path when prompted.
 
 **Example Workflow:**
 ```
@@ -133,38 +164,37 @@ Workflow Walkthrough
 --------------------
 
 1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`.
-2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/job.txt`), extracts company name, work type, requirements, etc.
+2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc.
 3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
-4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
+4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
-5. **Generation**:
+6. **Generation**:
    - `CVWriterAgent` creates or updates a CV using the selected LLM.
    - `CoverLetterWriterAgent` creates or updates a cover letter (often leveraging the freshly generated CV).
-6. **Quality assessment and refinement**:
+7. **Quality assessment and refinement**:
    - `CritiqueAgent` evaluates generated documents on three dimensions: content quality, ATS compatibility, and job alignment.
    - Provides a quality score (0-100) and actionable improvement instructions.
    - All document iterations are saved to version history with their quality scores as draft files.
-   - If quality score is below threshold (default: 85) or critical issues are identified, the document is automatically refined based on the improvement instructions.
-   - Refinement loop continues until quality threshold is met or no further improvements are suggested.
-7. **Final selection**: The highest-scoring version from the iteration history is selected as the final output.
-8. **PDF Generation**: 
+   - If the quality score is below the threshold (default: 85) or critical issues are found, the document is refined automatically, up to `workflow.max_refinements` times (1 in the shipped config). After that it gets another pass only while each redraft raises the score by at least `workflow.quality_improvement_threshold` (5) or still makes claims your CV, portfolio and requests do not support, and never more than `workflow.max_refinements_hard_cap` (2) times in total. Set `max_refinements: 0` to turn automatic refinement off.
+8. **Final selection**: Of the drafts written for the current request (drafts from earlier requests are not considered), the one with the fewest unsupported claims is kept, and among those the highest-scoring one.
+9. **PDF Generation**: 
    - `CVPDFGenerator` and `CoverLetterPDFGenerator` convert the final text documents to professional PDFs.
    - The LLM generates complete LaTeX documents based on the text content and any style preferences.
    - LaTeX compilation errors are automatically fixed using the `LatexFixer` agent (up to a configurable number of iterations).
    - Each generation creates a draft version (`generated_CV_draft_N.pdf`), with the latest always available as `generated_CV.pdf`.
-9. **User feedback loop**: 
+10. **User feedback loop**: 
    - The router intelligently extracts content and style feedback from user messages.
    - You can provide feedback for both CV and cover letter in a single message.
    - Content feedback modifies the text, while style feedback modifies PDF appearance.
    - If both documents are requested, the system generates them sequentially without additional prompts.
-   - `UserInputAgent` interrupts the graph when clarification is needed, allowing you to provide instructions that reset version history and initiate new refinement cycles.
+   - `UserInputAgent` interrupts the graph when clarification is needed, allowing you to provide instructions that start a new draft and refinement cycle (earlier drafts stay on disk).
 
 Logging and Debugging
 ---------------------
 
 - **Structured logs**: Stored in `logs/cv_editor_<timestamp>.log`.
 - **Debug transcripts**: `debug/cv_editor_<timestamp>.log` captures prompts, state snapshots, and generated text segments for auditing.
-- **Graph visualization**: On startup the orchestrator attempts to render `images/graph_visualization.png`. Install Graphviz + `pygraphviz` if you want this artifact.
+- **Graph visualization**: Not drawn on a normal run. See [Drawing the workflow graph](#drawing-the-workflow-graph).
 
 Configuration
 -------------
@@ -173,18 +203,34 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 
 **Key Configuration Options:**
 - **Agent Models**: Each agent (CV writer, cover letter writer, router, critique, etc.) can be configured with specific models and temperatures.
-- **LaTeX Fixer**: Configure `max_latex_fix_iterations` in the `workflow` section to control how many times the system attempts to fix LaTeX compilation errors automatically (default: 1).
+- **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds are allowed regardless of score (shipped: `1`; `0` turns refinement off). `workflow.max_refinements_hard_cap` (shipped: `2`) allows extra rounds only while the critique score keeps rising by at least `workflow.quality_improvement_threshold` or the draft still makes unsupported claims, and is never exceeded.
+- **LaTeX Fixer**: Configure `max_latex_fix_iterations` in the `workflow` section to control how many times the system attempts to fix LaTeX compilation errors automatically (shipped value: 2; the code falls back to 1 if the key is missing).
 - **Quality Thresholds**: Set quality score thresholds for automatic refinement in the critique agent configuration.
 - **RAG Settings**: Configure vector similarity thresholds and relevance verification settings for experience retrieval.
 
 All agents load configuration at startup from the YAML file. No code changes needed to adjust models or workflow parameters.
 
+### Running with a local model (Ollama)
+
+For testing without paid API calls you can run every agent on a local [Ollama](https://ollama.com) model:
+
+```bash
+ollama pull gemma4:e4b            # or another model, see below
+ollama pull nomic-embed-text      # optional: portfolio retrieval (RAG); without it RAG is skipped
+CV_EDITOR_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
+```
+
+- No OpenAI or Tavily key is needed. Company research is skipped without a Tavily key.
+- Local models get a 16k-token context (`CV_EDITOR_OLLAMA_NUM_CTX` to change it) and run with thinking off.
+- Expect it to be slow and rougher than the hosted model. On an M1 with 16 GB, a full session on the sample files took about 30 minutes with `gemma4:e4b`. That model also kept invented skills that the critique had flagged, and wrote LaTeX that did not compile, so no PDFs were produced. Use local runs to test the workflow, not to judge the output.
+- On 16 GB of memory, models up to about 8 GB on disk fit next to the operating system: `gemma4:e4b-it-qat` (6.1 GB), `qwen3:8b` (5.2 GB) or `gemma4:12b-it-qat` (7.2 GB, best quality of these but slowest).
+
 Customization Tips
 ------------------
 
-- **Models**: Change model IDs or temperatures in each agent (e.g., `CVWriterAgent` uses `temperature=0.7`). Ensure the chosen model is available in your OpenAI organization.
+- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces every model for one run without editing the file.
 - **Prompt tone**: Update the system/human prompt strings in each agent to reflect a different writing style or formatting rules.
-- **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences. See `templates/README.md` for details.
+- **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences.
 - **PDF Style Customization**: Provide style preferences in natural language when generating PDFs. Examples:
   - "Make all titles dark blue and bolded"
   - "Use minimal spacing and make it more compact"
@@ -197,14 +243,36 @@ Customization Tips
 Troubleshooting
 ---------------
 
-- **Missing docstring lint**: Already resolved; if you add new modules, remember to include docstrings for all public classes/functions.
-- **Graphviz errors**: Install Graphviz (`brew install graphviz`) and `pygraphviz` per the instructions in `langgraph_agent.py`.
+- **Graphviz / `pygraphviz` build errors**: Only relevant for `uv sync --extra graph`; see [Drawing the workflow graph](#drawing-the-workflow-graph). A plain `uv sync` does not need Graphviz.
 - **Tracing interrupts**: If the CLI seems stuck, make sure you finished input with `Ctrl+D` or typed `END` on its own line.
 - **LaTeX compilation errors**: If PDF generation fails repeatedly, check the logs for LaTeX error messages. The system will attempt to fix errors automatically, but some issues may require manual template adjustments.
-- **Missing pdflatex**: Ensure `pdflatex` is in your PATH. On macOS, install with `brew install texlive`. Verify with `which pdflatex`.
-- **Imports failing in `langgraph_agent_example.py`**: This legacy sample references optional packages. Either install the missing dependencies or ignore the warnings; it is not used by the main workflow.
+- **Missing pdflatex**: Ensure `pdflatex` is in your PATH. On macOS, install with `brew install --cask basictex` (or `brew install texlive`); on Linux, `sudo apt install texlive-latex-extra`. Verify with `which pdflatex`.
 
-Questions or ideas? Open an issue or drop a note in the repo discussions. Happy document crafting!
+Drawing the workflow graph
+--------------------------
+
+![LangGraph workflow](images/graph_visualization.png)
+
+The picture above shows how the agents are wired together. A normal run does not touch it. To redraw it after changing the graph, install the Graphviz system library and the optional `graph` extra, then run with `--draw-graph` (this overwrites `images/graph_visualization.png`):
+
+```bash
+# macOS (Homebrew)
+brew install graphviz
+CFLAGS="-I$(brew --prefix graphviz)/include" LDFLAGS="-L$(brew --prefix graphviz)/lib" uv sync --extra graph
+
+# Debian/Ubuntu
+sudo apt install graphviz graphviz-dev
+uv sync --extra graph
+
+uv run python langgraph_agent.py --draw-graph
+```
+
+Questions or ideas? Open an issue on GitHub.
+
+Licence
+-------
+
+MIT, see [LICENSE](LICENSE). Made by Mislav Jordanic.
 
 
 TODO list

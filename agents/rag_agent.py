@@ -5,6 +5,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from debug_utils import write_to_debug
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,19 @@ RELEVANCE_VERIFICATION_PROMPT = (
     "Irrelevant means it is unrelated (e.g., a hobby, a different field, or generic fluff).\n\n"
     "Answer ONLY with 'YES' or 'NO'."
 )
+
+def _embeddings_for(model: str):
+    """
+    Embeddings from the same provider as the chat model: a local Ollama embedding model when running
+    against Ollama (no OpenAI key needed; CV_EDITOR_EMBEDDING_MODEL, default nomic-embed-text),
+    OpenAI's text-embedding-3-small otherwise. Chat models such as gemma4 cannot embed in Ollama.
+    If the embedding model is not pulled, indexing fails with a warning and RAG is skipped.
+    """
+    if model and model.startswith("ollama:"):
+        from langchain_ollama import OllamaEmbeddings
+        return OllamaEmbeddings(model=os.environ.get("CV_EDITOR_EMBEDDING_MODEL", "nomic-embed-text"))
+    return OpenAIEmbeddings(model="text-embedding-3-small")
+
 
 class ExperienceRetrievalAgent:
     """Agent for retrieving relevant experience from a portfolio using RAG."""
@@ -43,10 +57,11 @@ class ExperienceRetrievalAgent:
         """
         logger.info(f"Initializing ExperienceRetrievalAgent - model: {model}, threshold: {similarity_threshold}")
         self.portfolio_path = portfolio_path
+        self.portfolio_text = ""  # full portfolio: the critique checks drafts against it for unsupported claims
         self.similarity_threshold = similarity_threshold
         
-        self.embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.embeddings = _embeddings_for(model)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         self.vectorstore = None
         
         # Load and index the portfolio on initialization
@@ -62,6 +77,7 @@ class ExperienceRetrievalAgent:
         try:
             with open(self.portfolio_path, "r", encoding="utf-8") as f:
                 content = f.read()
+            self.portfolio_text = content
             
             # Split content into chunks (assuming chunks are separated by double newlines)
             # In a real app, we'd use a smarter splitter, but this works for our format
@@ -76,7 +92,11 @@ class ExperienceRetrievalAgent:
                 logger.warning("No documents found in portfolio file.")
                 
         except Exception as e:
-            logger.error(f"Error indexing portfolio: {e}")
+            logger.warning(
+                f"Could not build the portfolio vector index from {self.portfolio_path} "
+                f"({type(e).__name__}: {e}). RAG is disabled for this run: documents will be "
+                f"written without retrieved portfolio experience."
+            )
 
     def _verify_relevance(self, chunk_content: str, job_description: str) -> bool:
         """
@@ -172,7 +192,7 @@ class ExperienceRetrievalAgent:
         job_description_info = state.get("job_description_info")
         if not job_description_info:
             logger.warning("No job description info found in state. Skipping retrieval.")
-            return {"relevant_experience": ""}
+            return {"relevant_experience": "", "portfolio_text": self.portfolio_text}
             
         # Use the full job description text for retrieval
         job_description_text = job_description_info.get("job_description", "")
@@ -191,5 +211,6 @@ class ExperienceRetrievalAgent:
         
         return {
             "relevant_experience": relevant_experience,
+            "portfolio_text": self.portfolio_text,
             "current_node": "retrieve_experience"
         }

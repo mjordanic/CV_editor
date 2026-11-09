@@ -4,6 +4,7 @@ import os
 import json
 import logging
 from langchain.chat_models import init_chat_model
+from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
@@ -64,11 +65,14 @@ class SearchAgent:
         """
         logger.info("Initializing SearchAgent...")
         
-        self.llm = init_chat_model(model, temperature=temperature)
+        self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
         logger.debug(f"SearchAgent LLM initialized - model: {model}, temperature: {temperature}")
         # Initialize TavilyClient lazily to ensure environment variables are loaded
-        self.tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-        logger.debug("TavilyClient initialized")
+        # Without a key (e.g. a local run with Ollama) company research is skipped, not fatal.
+        api_key = os.getenv("TAVILY_API_KEY")
+        self.tavily_client = TavilyClient(api_key=api_key) if api_key else None
+        if self.tavily_client is None:
+            logger.warning("TAVILY_API_KEY is not set - company research will be skipped")
 
     def search_tavily(self, query: str):
         """
@@ -80,6 +84,8 @@ class SearchAgent:
         Returns:
             dict: Raw Tavily response containing search results payload.
         """
+        if self.tavily_client is None:
+            raise RuntimeError("TAVILY_API_KEY is not set")
         logger.info(f"Searching Tavily with query: {query}")
         results = self.tavily_client.search(
             query=query, 
@@ -229,12 +235,18 @@ class SearchAgent:
         )
         logger.debug(f"Formatted query: {formatted_query}")
         
-        # Execute search
-        results = self.search_tavily(formatted_query)
-        
-        # Process results
-        company_description = self.process_search_results(results)
-        remote_work = self.is_remote(results)
+        # Execute search. Company research is optional context: if the web search or its summary
+        # fails (network, rate limit, quota), carry on without it instead of ending the session
+        # after the user has already pasted the job ad.
+        try:
+            results = self.search_tavily(formatted_query) or {}
+            company_description = self.process_search_results(results)
+            remote_work = self.is_remote(results)
+        except Exception as e:
+            logger.warning(f"Company research failed ({type(e).__name__}: {e}) - continuing without company information")
+            results = {}
+            company_description = "No information found about the company."
+            remote_work = "NA"
         
         # Extract search content for debug logging
         extracted_search_content = self._extract_search_content(results)

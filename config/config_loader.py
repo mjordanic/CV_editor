@@ -104,12 +104,14 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
         
         agent_config = agents[agent_name].copy()  # Make a copy to avoid modifying cached config
         
-        # Apply defaults for model and temperature if not specified in config
+        # Apply defaults for model and temperature if not specified in config. An explicit
+        # `temperature: null` means "the model's default" (some models accept no other value).
         if agent_config.get('model') is None:
             agent_config['model'] = default_model
-        if agent_config.get('temperature') is None:
+        if 'temperature' not in agent_config:
             agent_config['temperature'] = default_temperature
         
+        _apply_model_override(agent_config)
         logger.debug(f"Loaded config for '{agent_name}': model={agent_config.get('model')}, temperature={agent_config.get('temperature')}")
         
         # Return complete config with all fields from YAML
@@ -121,6 +123,42 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
             'model': default_model,
             'temperature': default_temperature
         }
+
+
+MODEL_OVERRIDE_ENV = "CV_EDITOR_MODEL"
+
+
+def _apply_model_override(agent_config: Dict[str, Any]) -> None:
+    """
+    If CV_EDITOR_MODEL is set (e.g. "ollama:gemma4:e4b" or "openai:gpt-6-luna"), use that model for
+    every agent that uses one, in place of the models in agent_models.yaml. Handy for local runs
+    and for comparing models without editing the file.
+    """
+    override = os.environ.get(MODEL_OVERRIDE_ENV, "").strip()
+    if not override:
+        return
+    for key in ("model", "filter_model"):
+        if agent_config.get(key):
+            agent_config[key] = override
+    # Some models accept only their default temperature: CV_EDITOR_TEMPERATURE=default leaves it unset.
+    temperature = os.environ.get("CV_EDITOR_TEMPERATURE", "").strip()
+    if temperature and agent_config.get("model"):
+        for key in ("temperature", "filter_temperature"):
+            if key in agent_config:
+                agent_config[key] = None if temperature == "default" else float(temperature)
+
+
+def local_model_kwargs(model: Optional[str]) -> Dict[str, Any]:
+    """
+    Extra init_chat_model arguments for a local Ollama model ("ollama:<name>"), empty otherwise.
+
+    Ollama serves models with a 4096-token context by default, which cuts off this tool's prompts
+    (CV + job ad + portfolio), so ask for a larger one (CV_EDITOR_OLLAMA_NUM_CTX, default 16384).
+    Thinking is turned off: on a laptop it multiplies the time per call.
+    """
+    if not model or not model.startswith("ollama:"):
+        return {}
+    return {"num_ctx": int(os.environ.get("CV_EDITOR_OLLAMA_NUM_CTX", "16384")), "reasoning": False}
 
 
 def get_all_agents() -> Dict[str, Dict[str, Any]]:
