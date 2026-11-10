@@ -1,0 +1,114 @@
+{
+  "run_dir": "runs/p04_a6_all4_wp-remote_luna_r1",
+  "labels": {
+    "persona": "p04",
+    "ad": "a6",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p04_a6_all4_wp-remote_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p04-aiyana-junior-frontend/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1441
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p04-aiyana-junior-frontend/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1459
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p04-aiyana-junior-frontend/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 760
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p04-aiyana-junior-frontend/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 624
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a6-fullstack-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a6-fullstack-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": "remote",
+  "started_at": "2026-11-10T20:23:29+00:00",
+  "status": "completed",
+  "minutes": 2.75,
+  "cv_drafts": 1,
+  "cover_letter_drafts": 1,
+  "cv_final_iteration": 1,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "The ad offers hybrid work in Graz, Austria, or fully remote work from Austria, Germany, Croatia or Slovenia. The ad does not state required office days.",
+    "culture_signals": [
+      "Patients first",
+      "Privacy by default",
+      "Simple beats clever",
+      "A friendly, low-ego team that cares about the people who use its software",
+      "A diverse and inclusive workplace",
+      "“Make healthcare feel human”",
+      "Pair programming on request",
+      "Weekly demos with real clinic staff"
+    ],
+    "notes": "The job ad sets the role’s arrangement and eligible remote-work countries. Company pages also mention employees in Graz and Ljubljana and some remote colleagues, plus an engineering hub in Ljubljana; these do not override the job-specific terms in the ad."
+  },
+  "work_preference_final": "remote",
+  "redrafts": {
+    "cv": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T20:26:14+00:00",
+  "cost_usd": 0.017186
+}

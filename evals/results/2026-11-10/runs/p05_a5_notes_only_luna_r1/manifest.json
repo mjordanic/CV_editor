@@ -1,0 +1,98 @@
+{
+  "run_dir": "runs/p05_a5_notes_only_luna_r1",
+  "labels": {
+    "persona": "p05",
+    "ad": "a5",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "notes_only",
+    "case": "p05_a5_notes_only_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "notes"
+  ],
+  "inputs_omitted": [
+    "cv",
+    "portfolio",
+    "cover_letter"
+  ],
+  "inputs": {
+    "notes": {
+      "source": "evals/fixtures/personas/p05-rafael-overqualified-principal/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 750
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a5-backend-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a5-backend-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T18:54:16+00:00",
+  "status": "completed",
+  "minutes": 3.81,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Antwerp, Belgium: 2 days per week in the office. Candidates based elsewhere in the EU may work remotely, with quarterly on-site weeks.",
+    "culture_signals": [
+      "Values pragmatic engineering, clear documentation and a sustainable pace.",
+      "Keeps teams small and expects teams to own what they run.",
+      "Engineers carry a pager for their services and spend one day per sprint on reliability work.",
+      "Prefers short design notes to long specifications.",
+      "Values: “Be dependable. Say what you see. Leave it better.”",
+      "The ad describes a runbook-driven on-call team and blameless post-mortems."
+    ],
+    "notes": "The job ad specifies hybrid work in Antwerp, with remote work and quarterly on-site weeks for candidates elsewhere in the EU. The company About page describes a remote-first engineering group; the ad’s arrangement takes precedence for this job."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T18:58:05+00:00",
+  "cost_usd": 0.024206
+}

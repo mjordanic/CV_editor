@@ -1,0 +1,78 @@
+[
+  {
+    "iteration": 1,
+    "content": "LENA VARGA-HOLM\nSenior Data Engineer\nRijeka, Croatia (open to remote, EU time zones) | lena.vargaholm@example.com | +385 55 555 0101 | github.com/lvh-data-example\n\nPROFILE\nData engineer with 9 years of experience building batch and streaming data platforms for e-commerce and payments. I like boring, well-tested pipelines, clear data contracts and warehouses that analysts actually trust.\n\nEXPERIENCE\n\nSenior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka            03/2022 - present\n- Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake.\n- Moved transformation logic from stored procedures to dbt (420+ models, tests on every model); nightly run time down from 5h10 to 1h35.\n- Introduced data contracts between product teams and the data team (JSON Schema + CI checks), cutting broken-pipeline incidents from ~9/month to ~2/month.\n- Built a Kafka-based event pipeline (Kafka Connect + Snowpipe Streaming) for shipment tracking events, ~30M events/day.\n- Reduced Snowflake costs from about $38k to $24k/month through warehouse sizing and auto-suspend.\n- Take part in the data-platform on-call rotation (one week in six).\n- Mentor two mid-level data engineers; run the weekly data platform office hours.\n\nData Engineer - Kovalent Pay (payments startup), Zagreb                            09/2019 - 02/2022\n- Built PySpark jobs on AWS EMR for transaction reconciliation (daily ~1.2 TB of raw files from S3).\n- Designed the Redshift warehouse schema (star schema, 30+ fact/dimension tables) used by finance and risk.\n- Set up data quality checks with Great Expectations on critical finance tables.\n- Wrote internal Python library for S3/Glue catalog access used by 4 teams.\n\nJunior Data Engineer / BI Developer - Adria Retail Group, Split                     06/2017 - 08/2019\n- Maintained SSIS packages and T-SQL ETL into an on-prem SQL Server warehouse.\n- Built Power BI reports for store operations (40+ stores).\n- Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.\n\nEDUCATION\nMSc Computer Science (Data Science track) - Northgate Technical University, 2017\nThesis: Incremental materialized views for analytical queries\n\nCERTIFICATION\nAWS Certified Data Engineer – Associate (May 2024)\n\nSKILLS\nLanguages: Python, SQL, Bash\nData: Airflow, dbt, Spark (PySpark), Kafka, Kafka Connect, Snowflake, Redshift, PostgreSQL, Great Expectations\nCloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker, Terraform (basic), GitHub Actions\nBI: Power BI, Looker (basic)\n\nLANGUAGES\nCroatian (native), English (C1), German (B1)",
+    "score": 84,
+    "critique": {
+      "quality_score": 84,
+      "content_quality_feedback": "This is a strong, concise, highly credible data-engineering CV. It uses measurable outcomes effectively, including pipeline volume, model count, runtime reduction, incident reduction, event throughput, and Snowflake cost reduction. The career progression is clear, the formatting is easy to scan, and the tone is professional and technically specific. The main content limitation is positioning: the CV convincingly presents a senior data engineer, but it does not yet establish the backend-services experience expected for this Backend Engineer role. Several relevant projects and achievements from the candidate information are also absent, particularly CDC with Debezium, event-pipeline latency and replay tooling, the reconciliation outcome, and the open-source Python/Airflow contribution.",
+      "ats_compatibility_feedback": "The CV has ATS-friendly section headings, chronological experience, conventional text formatting, clear technology lists, and strong keyword coverage for Python, PostgreSQL, Docker, AWS, Kafka, Terraform, GitHub Actions, automated testing, and logistics. Its likely AI/ATS screening probability is moderate rather than high for this specific vacancy. The main missing or weakly represented terms are backend services, REST API design/consumption, FastAPI, query tuning, schema migrations, cloud service deployment, pytest, and production API reliability. These terms must not be added as claims because the candidate information does not substantiate all of them. Adding supported evidence around Python libraries, partner webhooks/APIs, CDC, CI checks, GitHub Actions, pytest, AWS MSK, Docker, and production reliability would improve retrieval without overstating the background. The current use of pipes in the header and standard hyphenated dates should parse correctly, although a plain-text email and full HTTPS GitHub URL would be marginally safer for automated parsing.",
+      "job_alignment_feedback": "The strongest alignment is with the shipment-tracking domain and the team's reliability culture: the candidate has logistics experience, built a Kafka shipment-event pipeline processing approximately 30 million events per day, participates in a one-week-in-six on-call rotation, works with AWS, Docker, Terraform, GitHub Actions, Python, PostgreSQL, and automated data testing, and has reduced operational incidents and infrastructure cost. The CV also supports the company's pragmatic engineering signals through data contracts, CI checks, mentoring, office hours, and measurable reliability improvements. The candidate's material does not establish 3+ years building backend services, REST API design or consumption, FastAPI, PostgreSQL query tuning, safe schema migrations, or deployment of backend services to AWS. It also does not show observability tooling, Dutch/French, or substantive Kubernetes ownership. These are genuine role-alignment gaps or unproven requirements, not defects that can be solved by wording alone.",
+      "improvement_instructions": "CRITICAL ALIGNMENT IMPROVEMENTS\n1. In the Profile section, revise the opening to target the supported overlap with the role without claiming unsupported backend-service experience. For example: \"Senior Data Engineer with 9 years of experience building production Python data platforms, event-ingestion pipelines, and reliable cloud data systems for logistics, payments, and e-commerce. Experienced with Kafka, PostgreSQL, AWS, Docker, CI checks, automated data testing, and on-call operations.\" Keep the existing pragmatic wording only if space permits.\n2. In the Experience section under Lukovac Freight Hub, expand the shipment-event bullet using the supported portfolio details: add that partner webhooks fed Kafka topics, the pipeline achieved under-two-minute p95 end-to-end latency, and dead-letter/replay tooling enabled failed events to be reprocessed without data loss. Also add AWS MSK and Terraform only where they accurately describe that project. This directly improves alignment with event ingestion, reliability, and shipment tracking.\n3. In the Experience section under Lukovac Freight Hub, add a separate bullet for the supported Postgres CDC work: \"Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70% to 25%.\" This strengthens PostgreSQL, event-streaming, production reliability, and performance evidence.\n4. In the Experience section under Lukovac Freight Hub, make the CI/testing evidence more explicit by revising the dbt bullet or adding a related bullet: \"Migrated approximately 300 stored procedures into dbt models with tests and documentation; introduced incremental models and state:modified CI in GitHub Actions, reducing nightly warehouse build time from 5h10 to 1h35.\" The candidate information supports all of these details.\n5. In the Experience section under Kovalent Pay, add the supported business-impact result to the PySpark bullet: \"Built PySpark reconciliation jobs on AWS EMR to match bank settlement files against internal ledgers, reducing finance-team manual reconciliation from approximately three days to four hours per month-end.\" This gives the role a stronger production-engineering impact statement.\n6. Add a short \"Selected Engineering Projects\" section after Experience or before Education. Include the shipment streaming pipeline, PostgreSQL CDC, and the open-source Airflow provider contribution. For the latter, state: \"Fixed a pagination bug and added tests in a community Airflow provider for a SaaS CRM API; two pull requests merged. Technologies: Python, Airflow, pytest.\" This is supported by the candidate information and supplies stronger evidence of Python testing and code contribution.\n7. In the Skills section, add supported technologies currently missing from the document: \"Debezium, JSON Schema, pytest, AWS MSK\". Keep Terraform marked as \"basic\" and do not add FastAPI, Kubernetes, Prometheus, Grafana, OpenTelemetry, or REST as standalone skills because the supplied information does not substantiate them.\n\nMINOR ATS AND PRESENTATION ENHANCEMENTS\n8. In the contact header, change \"github.com/lvh-data-example\" to \"https://github.com/lvh-data-example\" if that is the actual portfolio URL, and use a conventional plain-text separator layout rather than relying on visual spacing. This makes contact details more reliably clickable and parseable.\n9. In the Certification section, retain the AWS Certified Data Engineer – Associate entry and use a consistent format such as \"AWS Certified Data Engineer – Associate | May 2024.\" It is supported by the candidate information and is relevant to the AWS requirement.\n10. In the Skills section, consider separating \"Testing & Delivery: pytest, Great Expectations, GitHub Actions, CI checks\" from the general data tools. This makes the automated-testing and CI/CD evidence easier for both recruiters and ATS systems to locate.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional experience building backend services in Python or a comparable language",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Solid relational database experience, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to a cloud environment",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "shown",
+          "quote": "\"420+ models, tests on every model\"; \"JSON Schema + CI checks\"; Skills: \"Docker, Terraform (basic), GitHub Actions\""
+        },
+        {
+          "requirement": "Good written and spoken English; ability to explain technical trade-offs clearly",
+          "status": "shown",
+          "quote": "Languages: \"English (C1)\"; Profile: \"clear data contracts\" and \"well-tested pipelines\""
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "\"Built a Kafka-based event pipeline ... ~30M events/day\""
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code (Terraform)",
+          "status": "shown",
+          "quote": "Skills: \"Terraform (basic)\"; the CV does not claim Kubernetes ownership"
+        },
+        {
+          "requirement": "Exposure to observability tooling such as Prometheus, Grafana, or OpenTelemetry",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Knowledge of logistics, transport, supply-chain domains, or EDI formats",
+          "status": "shown",
+          "quote": "\"Lukovac Freight Hub d.o.o. (logistics marketplace)\" and \"shipment tracking events\""
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

@@ -1,0 +1,63 @@
+[
+  {
+    "iteration": 1,
+    "content": "Tiago Ferrão-Lindqvist\nData Engineering | Test Data Automation\n\nSetúbal, Portugal | tiago.ferraolindqvist@example.com | +351 555 010 311 | linkedin.com/in/tfl-example\n\nPROFESSIONAL SUMMARY\nMechanical engineer with 12 years of experience in product design, testing and validation, and engineering data analysis. Builds Python tools to process test-rig data, check results against specifications, and generate reports. Developed an internal processing tool used by four test engineers and a Power BI dashboard used by around 15 colleagues. Experienced with Python, SQL Server, MATLAB/Simulink and test data; currently completing an online data engineering course.\n\nTECHNICAL SKILLS\nProgramming and data: Python (pandas, NumPy, Matplotlib, npTDMS), SQL, MATLAB/Simulink, Excel/VBA\nData tools: SQL Server, Power BI, SQLite, Flask\nEngineering and testing: ANSYS Mechanical, SolidWorks, CATIA V5, LabVIEW, Minitab, design of experiments (DOE), GD&T, DFMEA, 8D problem solving\nDevelopment tools: Git (personal projects), Docker Compose (tutorial project)\n\nEXPERIENCE\n\nTest & Validation Engineer | Corvane Automotive Components | Setúbal\nMar 2019–Present\n- Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms across six servo-hydraulic and electric test rigs; prepare reports for OEM customers.\n- Develop Python scripts to parse TDMS and CSV rig outputs (around 2 GB per week), check channels against test specifications, and generate standard report figures. Reduced report preparation from about three days to half a day per test.\n- Maintain an internal data-processing tool scheduled nightly on a laboratory PC. It writes summary results to a staging table in the plant’s SQL Server database and is used by four other test engineers.\n- Query the plant’s test-results database for trend analysis across three product generations.\n- Built a Power BI dashboard using the staging table to show pass/fail trends and cycles to failure by product generation; used by around 15 validation and design engineers.\n- Correlate rig results with FEA in ANSYS Mechanical and lead 8D root-cause analysis on field failures. Proposed a redesigned adjuster rail bracket that cut warranty returns for the part by 40%.\n- Maintain MATLAB/Simulink models of the adjuster drive, used to select rig load profiles that match customer duty cycles.\n- Trained three apprentices in rig safety and test setup (2022–2024).\n\nMechanical Design Engineer | Halvik Pumps | Porto\nSep 2014–Feb 2019\n- Designed centrifugal pump casings and impellers in SolidWorks and produced manufacturing drawings with GD&T; owned DFMEA for two product lines.\n- Performed structural FEA of casings in ANSYS. Supported a move from grey cast iron to ductile iron for one casing family, saving 12% in material cost.\n- Wrote a LabVIEW data-acquisition program for the pump performance test bench, reducing test setup time from about two hours to 30 minutes.\n- Supported conversion of the performance test bench to a Siemens S7 PLC-controlled setup, changing setpoints and timers in TIA Portal under the automation engineer’s supervision.\n\nSELECTED DATA PROJECTS\n\nBike-sharing Trips API | Personal learning project | 2025\n- Built a small Flask API over a public bike-sharing dataset loaded into SQLite, with three read-only endpoints.\n- Followed a tutorial to run the project with Docker Compose; maintains personal project repositories using Git.\n\nEDUCATION & PROFESSIONAL DEVELOPMENT\n\nMSc Mechanical Engineering | Sado Valley Polytechnic | 2014\nThesis: Fatigue life prediction of welded brackets under variable-amplitude loading\n\nOnline Data Engineering Course | In progress\nCompleted 6 of 9 modules\n\nLANGUAGES\nPortuguese (native) | English (fluent) | Spanish (good)",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "This is a clear, professional and well-structured CV with strong quantified evidence: report preparation reduced from three days to half a day, an internal tool used by four engineers, a dashboard used by approximately 15 colleagues, and warranty returns reduced by 40%. The document presents a credible transition from mechanical/test engineering toward data engineering without claiming unsupported cloud, platform, or senior data-engineering experience. The project and education sections add useful context. The main content limitation is that the CV remains stronger as an engineering test-data automation profile than as a Senior Data Engineer profile, because the candidate's platform, modelling, cloud, and large-scale SQL experience is not present in the underlying material.",
+      "ats_compatibility_feedback": "The CV uses ATS-friendly standard headings, simple text structure, conventional dates, readable bullets, and relevant searchable terms including Python, SQL Server, Power BI, Docker Compose, Git, Flask, SQLite, pandas, NumPy, TDMS and data processing. Parsing and keyword coverage should be good for junior or transition-oriented data roles. For this specific vacancy, AI/ATS screening probability is moderate to low because the document does not contain supported evidence for several high-priority terms in the advert: Google Cloud, BigQuery, Cloud Run, GKE, Airflow, dbt, CI/CD, dimensional modelling, data governance, or query optimisation on large datasets. These are genuine experience gaps rather than omissions that can be solved by inserting keywords.",
+      "job_alignment_feedback": "The CV shows useful transferable alignment with ownership, reusable tooling, operational data processing, data quality checks, reporting automation, and collaboration with validation and design engineers. The nightly scheduled tool and shared dashboard are relevant evidence of moving beyond one-off analysis. Portuguese and professional English are shown, satisfying the language requirements. Curiosity about data architecture and open-source practices is suggested by the online data-engineering course, personal Flask project, Git repositories, and Docker Compose tutorial. However, the candidate's material shows gaps against the central Senior Data Engineer requirements: no production data platform or cloud data warehouse at scale, no Google Cloud or comparable cloud, no advanced SQL/query optimisation on large datasets, no strong dimensional data modelling, and no graph modelling. The candidate also has no Airflow, dbt, Spark, Kafka, CI/CD, or cloud experience according to the supplied notes. These gaps materially limit alignment with this senior platform role, although the CV is a credible presentation for a data-engineering transition or junior/mid-level data tooling position.",
+      "improvement_instructions": "MINOR, HIGH-VALUE CV ENHANCEMENTS:\n1. In the Professional Summary, make the career transition explicit while preserving the current truthful positioning. For example, change the final sentence to: “Transitioning from mechanical test and validation engineering into data engineering; currently completing an online data engineering course (6 of 9 modules completed).” This makes the intended direction immediately clear without implying senior platform experience.\n2. In the Test & Validation Engineer experience section, revise the bullet about the scheduled tool to name the operating mechanism and clarify the operational scope: “Maintain a Python data-processing tool running nightly on a laboratory PC via Windows Task Scheduler; it writes summary results to an IT-managed staging table in SQL Server and is used by four other test engineers.” This adds a supported ATS term and prevents the tool from sounding like a cloud production platform.\n3. In the Technical Skills section, make the SQL capability more precise rather than leaving “SQL” broad. For example, change “SQL Server” to “SQL Server (read-only test-results queries; writes to assigned staging table)” if space permits, or add the same qualification in the experience bullet. This accurately reflects the candidate’s notes that IT owns the database and that the candidate has not designed schemas.\n4. In the Selected Data Projects section, add the supported scale and implementation details already present in the candidate material to the Rig data processing and reporting tool entry: “Parses TDMS and CSV outputs from six rigs, approximately 2 GB per week; flags channels outside test specifications and generates standard report figures.” This strengthens the data-volume and data-quality evidence without claiming large-scale platform experience.\n5. In the Bike-sharing Trips API project, retain the qualification that it runs locally and was tutorial-based, but make the technology keywords easier to parse by using a concise technology line such as: “Technologies: Python, Flask, SQLite, Docker Compose, Git.” The current information is truthful; this is only a minor consistency and scanability improvement.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Experience designing, building and operating production data platforms or cloud data warehouses at scale",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Strong data modelling skills (dimensional modelling)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Hands-on experience with Google Cloud or a comparable cloud",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Curiosity about new data architecture ideas and open-source practices",
+          "status": "shown",
+          "quote": "currently completing an online data engineering course; personal Flask API project using Docker Compose and Git"
+        },
+        {
+          "requirement": "Good professional English",
+          "status": "shown",
+          "quote": "English (fluent)"
+        },
+        {
+          "requirement": "Graph modelling",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Portuguese",
+          "status": "shown",
+          "quote": "Portuguese (native)"
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

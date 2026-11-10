@@ -1,0 +1,115 @@
+{
+  "run_dir": "runs/p13_a8_all4_revision_luna_r1",
+  "labels": {
+    "persona": "p13",
+    "ad": "a8",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p13_a8_all4_revision_luna",
+    "script": "revision"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1553
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1053
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 642
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 729
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter. In the CV, put my most relevant experience for this job first.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10,
+    "purpose": "One content wish in the first message and one revision after the first CV (the original revision script).",
+    "correct_behaviour": "The CV puts the most relevant experience first and the summary is shortened to two sentences; nothing else changes.",
+    "revision": "Please shorten the professional summary to two sentences."
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:43:44+00:00",
+  "status": "completed",
+  "minutes": 6.62,
+  "cv_drafts": 5,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 5,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "on-site",
+    "location_limits": "Based in Kirchzarten; tours are in the Dreisamtal and care is provided in clients’ homes. A class B driving licence is required. No other geographic or time-zone limits are stated.",
+    "culture_signals": [
+      "Fixed tour groups so clients see familiar faces",
+      "“Pflege mit Zeit und Respekt” (care with time and respect)",
+      "Respect, reliability, team humour, and honest communication with relatives",
+      "Part-time work is normal; many colleagues work only early shifts to fit around childcare"
+    ],
+    "notes": "The job ad describes on-site ambulatory care on tours in the Dreisamtal. The company pages give broader organizational details, including 52 employees overall; they do not state a different work arrangement or location for this job."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 5,
+      "first": 1,
+      "critique_redrafts": 3,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "revision"
+  ],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:50:22+00:00",
+  "cost_usd": 0.048024
+}

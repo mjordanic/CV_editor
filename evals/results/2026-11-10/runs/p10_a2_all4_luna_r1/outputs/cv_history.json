@@ -1,0 +1,63 @@
+[
+  {
+    "iteration": 1,
+    "content": "Tobias Mwangi-Hartley\nData Scientist | Applied Machine Learning\n\nEdinburgh, UK | tobias.mwangihartley@example.com | +44 7700 900110 | linkedin.com/in/tmh-example\n\nPROFILE\nData scientist with 6 years of experience in analytics and data science, including 4+ years as a data scientist. Builds and evaluates machine-learning models and scheduled batch workflows for forecasting, churn targeting and experimentation. Strong Python, statistical modelling and feature engineering, with experience using BigQuery, Vertex AI Workbench, dbt and automated tests. Moving towards machine learning engineering, with a focus on developing production software engineering practice.\n\nTECHNICAL SKILLS\nPython (pandas, scikit-learn, LightGBM, XGBoost, statsmodels, pytest), SQL (BigQuery), R (tidyverse, brms), dbt, Git, Jupyter, Looker, Vertex AI Workbench, Docker, Streamlit, PyTorch (course project)\nMachine learning: Feature engineering, time-series forecasting, churn propensity modelling, model evaluation, SHAP, Bayesian statistics\nExperimentation: A/B testing, sequential testing, causal inference\n\nEXPERIENCE\n\nData Scientist | Thistlebox (meal-kit subscriptions), Edinburgh\nFeb 2022–Present\n- Built a weekly, six-week-ahead recipe and region demand forecasting model using LightGBM and calendar, price and menu-position features. Its WAPE improved from 23% to 14%; food waste decreased by an estimated 9%.\n- Operationalised forecasts through a scheduled Vertex AI Workbench notebook writing results to BigQuery for operations use in Looker.\n- Developed an XGBoost churn propensity model, scored weekly in BigQuery, to target retention offers to top-decile customers. A 10% holdout validated a 2.1 percentage-point reduction in churn in the treated group.\n- Design and analyse approximately 40 A/B tests annually for growth and product teams; built a sequential testing calculator used by around 25 colleagues.\n- Wrote the Streamlit experiment-planning app and its Dockerfile; the data platform team handles deployment to Cloud Run.\n- Since 2025, added pytest unit tests for forecasting feature code, reaching approximately 60% coverage.\n- Write production SQL in BigQuery and maintain dbt models for the analytics layer; present results to leadership monthly.\n- Delivered the internal “Stats for PMs” training three times.\n\nJunior Data Analyst | Firth Energy Retail, Glasgow\nSep 2020–Jan 2022\n- Performed customer segmentation and tariff analysis using R and SQL.\n- Automated monthly regulator reports with R Markdown, saving the team approximately two days each month.\n\nPROJECTS\n\nImage Classification Course Project | Personal, 2025\n- Fine-tuned a small CNN in PyTorch on a public food-images dataset, achieving approximately 80% accuracy as part of an online deep-learning course.\n- Tools: PyTorch, torchvision, Google Colab.\n\nEDUCATION\nMSc Statistics, University of the Lothians | 2020 | Distinction\nDissertation: Bayesian hierarchical models for small-area energy demand\n\nBSc Mathematics, University of the Lothians | 2019\n\nLANGUAGES\nEnglish (native) | Swahili (conversational)",
+    "score": 80,
+    "critique": {
+      "quality_score": 80,
+      "content_quality_feedback": "This is a clear, professional and well-structured CV with strong quantified achievements. The forecasting, churn and experimentation bullets communicate business impact effectively, and the document makes a credible transition from data science toward machine learning engineering without directly claiming unsupported API deployment or infrastructure ownership. The main content limitation is job fit rather than writing quality: the CV demonstrates batch modelling and analytics productionisation, but not the customer-support AI, language-model, model-serving, monitoring or data-versioning experience required by this role.",
+      "ats_compatibility_feedback": "The document is ATS-friendly overall: standard section headings, chronological experience, readable text, and strong keyword coverage for Python, SQL, BigQuery, Vertex AI Workbench, feature engineering, forecasting, XGBoost, LightGBM, Docker, pytest and dbt. It should parse reliably. AI-screening probability is low-to-moderate for this particular vacancy because several high-weight terms are absent or contradicted by the candidate's background: chat assistants, RAG, language models, model serving, monitoring, data versioning, MLflow, Kubeflow, Airflow and machine learning engineer experience. Do not add those terms unless supported. The CV also omits the truthful Cloud Run deployment context and dbt Cloud scheduler, which would improve keyword coverage for cloud and orchestration without overstating ownership.",
+      "job_alignment_feedback": "The CV aligns well with strong Python, GCP-related services, feature engineering, statistical modelling, automated testing, batch ML workflows and business-facing experimentation. It also demonstrates models used operationally: scheduled forecasting writes to BigQuery and churn scoring runs weekly in BigQuery. However, the candidate's material shows substantial gaps against this specific role: no chat assistant or RAG experience, no language-model or large-text-data work, no personal model API deployment, no monitoring or data-versioning experience, no MLflow/Kubeflow/Airflow/LLM-observability experience, and fewer than four years as a machine learning engineer. The degree is in Statistics and Mathematics rather than machine learning, computer science or engineering. The CV is therefore a credible adjacent or developing MLE profile, but a weak match for a role whose must-haves require an experienced production Customer Support AI engineer.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE CV IMPROVEMENTS:\n1. In the Technical Skills section, add the supported cloud and deployment terms \"Cloud Run\" and \"dbt Cloud scheduler\". Keep the wording factual, for example: \"Cloud and orchestration: BigQuery, Vertex AI Workbench scheduled notebooks, Cloud Run (deployment handled by data platform team), dbt Cloud scheduler.\" This improves ATS coverage without implying that the candidate owned Cloud Run deployment.\n2. In the Data Scientist | Thistlebox experience section, revise the forecasting operationalisation bullet to make the production workflow and ownership boundary explicit: \"Operationalised forecasts as a scheduled Vertex AI Workbench notebook job writing results to BigQuery for operations use in Looker; the workflow is batch-based rather than an API service.\" This accurately highlights production use while preventing recruiters from interpreting it as model serving.\n3. In the same Thistlebox section, revise the Streamlit bullet to include the supported deployment term and ownership boundary: \"Wrote the Streamlit experiment-planning app and Dockerfile; the data platform team deploys it to Cloud Run.\" This is more ATS-relevant and remains truthful.\n4. In the Profile section, change \"experience using BigQuery, Vertex AI Workbench, dbt and automated tests\" to \"experience operationalising batch ML workflows with BigQuery and Vertex AI Workbench, maintaining dbt models, and writing automated tests with pytest.\" This uses the job's operational language while clearly distinguishing batch workflows from model serving.\n5. In the Technical Skills section, retain \"Feature engineering\" as a prominent standalone skill and ensure it is also reflected in the forecasting experience bullet, which already names calendar, price and menu-position features. Do not add data ingestion pipelines, model monitoring, data versioning, RAG, chat assistants or MLOps platforms because the supplied candidate information does not support them.\n6. In the Projects section, retain the qualification that the PyTorch work is a course project. Do not present it as production AI experience; the current wording is appropriately conservative.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "BigQuery; Vertex AI Workbench"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels, pytest)"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "shown",
+          "quote": "Operationalised forecasts through a scheduled Vertex AI Workbench notebook writing results to BigQuery; maintain dbt models"
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

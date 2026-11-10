@@ -1,0 +1,124 @@
+{
+  "run_dir": "runs/p13_a8_all4_emphasis-p13_terra_r1",
+  "labels": {
+    "persona": "p13",
+    "ad": "a8",
+    "model": "openai:gpt-6.1-terra",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p13_a8_all4_emphasis-p13_terra",
+    "script": "emphasis-p13"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1553
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1053
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 642
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 729
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Bitte schreiben Sie zuerst meinen Lebenslauf und danach das Anschreiben.",
+    "cover_letter": "Danke. Bitte schreiben Sie jetzt das Anschreiben.",
+    "exit": "Danke, das ist alles.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 12,
+    "purpose": "A German-speaking user asks, in German, to emphasise dementia care and LG1 treatment care, which the candidate really has.",
+    "persona": "p13",
+    "correct_behaviour": "The CV (still in German) gives dementia care and LG1 treatment care more weight using only facts from the candidate's material.",
+    "requests": [
+      {
+        "id": "betone-demenz-lg1",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Bitte heben Sie meine Erfahrung in der Demenzbetreuung und in der Behandlungspflege (LG1) stärker hervor, im Profil und weiter oben bei meiner aktuellen Stelle.",
+        "correct_behaviour": "The final CV, in German, puts dementia care and LG1 treatment care in the profile and early in the current role, with no new qualifications."
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6.1-terra",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T20:06:08+00:00",
+  "status": "completed",
+  "minutes": 4.16,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "on-site",
+    "location_limits": "Based in Kirchzarten near Freiburg; tours in the Dreisamtal, providing care in clients’ homes. The company names Kirchzarten, Stegen, Buchenbach and Oberried as its service area.",
+    "culture_signals": [
+      "“Care with time and respect”",
+      "Reliability and humour in the team",
+      "Honest communication with relatives",
+      "Fixed tour groups to provide continuity for clients"
+    ],
+    "notes": "The ad requires early and late tours and work every second weekend. The careers page says many colleagues work only early tours; the ad’s schedule applies to this job. The careers page also describes two weeks of shadowing an experienced carer before taking on individual tours."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "betone-demenz-lg1"
+  ],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T20:10:18+00:00",
+  "cost_usd": 0.116242
+}

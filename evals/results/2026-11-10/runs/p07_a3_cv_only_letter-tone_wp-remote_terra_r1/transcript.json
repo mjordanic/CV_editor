@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "You said you prefer remote work, but this job is hybrid, with occasional office days. Would you like to generate a CV or a cover letter first?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to their content or appearance?",
+      "user": "Please make the cover letter warmer and more personal, and keep it under 250 words."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and revised cover letter are ready. You said you prefer remote work, but this job is hybrid, with occasional office days. Would you like any changes to either document?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "warmer-shorter",
+      "after": "cover_letter",
+      "text": "Please make the cover letter warmer and more personal, and keep it under 250 words.",
+      "expect": "follow",
+      "correct_behaviour": "The final cover letter is noticeably warmer and personal, has under 250 words, and adds no claim the candidate's material lacks.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 1
+      },
+      "drafts_after": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

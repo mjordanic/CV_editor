@@ -1,0 +1,26 @@
+{
+  "first": "Please write my CV first, then the cover letter.",
+  "cover_letter": "Thank you. Now please write the cover letter.",
+  "exit": "Thanks, that is all. Please exit.",
+  "clarify_job_ad": "That is all the information the ad gives.",
+  "missing_details": "I'd rather leave those details out.",
+  "max_turns": 12,
+  "purpose": "Two ordinary revision requests to the CV: shorten the summary, then reorder the sections.",
+  "correct_behaviour": "Each request changes the CV as asked and keeps the earlier change; nothing else is changed and nothing is invented.",
+  "requests": [
+    {
+      "id": "shorten-summary",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Please shorten the professional summary to two sentences.",
+      "correct_behaviour": "The final CV's summary is at most two sentences."
+    },
+    {
+      "id": "skills-first",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Thanks. Now please move the skills section above the work experience.",
+      "correct_behaviour": "The final CV has the skills section before the work experience, and the summary is still at most two sentences."
+    }
+  ]
+}

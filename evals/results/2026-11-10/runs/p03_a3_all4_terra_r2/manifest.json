@@ -1,0 +1,113 @@
+{
+  "run_dir": "runs/p03_a3_all4_terra_r2",
+  "labels": {
+    "persona": "p03",
+    "ad": "a3",
+    "model": "openai:gpt-6.1-terra",
+    "rep": "2",
+    "input_set": "all4",
+    "case": "p03_a3_all4_terra",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6.1-terra",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:30:25+00:00",
+  "status": "completed",
+  "minutes": 2.84,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 1,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. The frequency of office days is not stated.",
+    "culture_signals": [
+      "Collaborative, fast-moving and open to new ideas",
+      "International teams with shared goals",
+      "Technology first and engineering-led",
+      "Teams solve problems together and own systems end to end",
+      "Ownership of career paths",
+      "Sustainability as part of growth",
+      "Values: Lead, Shape, Own, Enjoy the journey"
+    ],
+    "notes": "The job ad describes a remote-friendly contractor engagement with occasional office days. Company pages describe hybrid work for employees; they do not specify that employee policy for contractors."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:33:16+00:00",
+  "cost_usd": 0.077065
+}

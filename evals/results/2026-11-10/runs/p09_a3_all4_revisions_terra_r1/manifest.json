@@ -1,0 +1,135 @@
+{
+  "run_dir": "runs/p09_a3_all4_revisions_terra_r1",
+  "labels": {
+    "persona": "p09",
+    "ad": "a3",
+    "model": "openai:gpt-6.1-terra",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p09_a3_all4_revisions_terra",
+    "script": "revisions"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2393
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1741
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 822
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 607
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 12,
+    "purpose": "Two ordinary revision requests to the CV: shorten the summary, then reorder the sections.",
+    "correct_behaviour": "Each request changes the CV as asked and keeps the earlier change; nothing else is changed and nothing is invented.",
+    "requests": [
+      {
+        "id": "shorten-summary",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Please shorten the professional summary to two sentences.",
+        "correct_behaviour": "The final CV's summary is at most two sentences."
+      },
+      {
+        "id": "skills-first",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Thanks. Now please move the skills section above the work experience.",
+        "correct_behaviour": "The final CV has the skills section before the work experience, and the summary is still at most two sentences."
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6.1-terra",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:57:39+00:00",
+  "status": "completed",
+  "minutes": 7.05,
+  "cv_drafts": 5,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 5,
+  "cover_letter_final_iteration": 3,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. Required frequency and other location or right-to-work limits are not stated.",
+    "culture_signals": [
+      "Collaborative, fast-moving and open to new ideas",
+      "International teams with shared goals",
+      "Technology first",
+      "Sustainability as part of growth",
+      "Teams solve problems together",
+      "Ownership and shaping your own career path",
+      "Engineering-led, with teams owning systems end to end",
+      "Values: Lead, Shape, Own, Enjoy the journey"
+    ],
+    "notes": "The job ad specifies a B2B or freelance service agreement. Company pages say employees can work hybrid, but the ad's remote-friendly model with occasional office days applies to this engagement."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 5,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 2,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "shorten-summary",
+    "skills-first"
+  ],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T20:04:43+00:00",
+  "cost_usd": 0.183485
+}

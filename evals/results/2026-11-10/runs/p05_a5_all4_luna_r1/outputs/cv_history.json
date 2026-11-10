@@ -1,0 +1,78 @@
+[
+  {
+    "iteration": 1,
+    "content": "RAFAEL MORETTI-KLEIN\nSenior / Staff Backend Engineer | Python, Go & Distributed Systems\nMunich, Germany | rafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\n\nPROFESSIONAL SUMMARY\nBackend engineer with 21 years of experience building production services and large-scale distributed systems, primarily in Python and Go. Designed and wrote most of a Go entitlement service handling 120,000 requests per second at peak, led technical work on a customer-facing playback API, and contributed to migrating a Python monolith into approximately 60 services. Recent hands-on coding has focused on internal tools and Python cost-dashboard scripts. Experienced with PostgreSQL/PostGIS, Cassandra, Kafka, Kubernetes, Terraform, automated testing, and production observability.\n\nTECHNICAL SKILLS\nLanguages: Python, Go, C++\nBackend and APIs: FastAPI, Tornado, Django, Flask, asyncio, gRPC, Protobuf\nDatabases and messaging: PostgreSQL, PostGIS, Cassandra, Redis, Kafka, RabbitMQ\nCloud and infrastructure: GCP (GKE, Pub/Sub, BigQuery), Kubernetes, Terraform; AWS (EC2, S3)\nTesting and observability: pytest, Python test harnesses, Prometheus, Grafana, OpenTelemetry\nAdditional: Distributed systems design, architecture reviews, technical documentation\n\nPROFESSIONAL EXPERIENCE\n\nDirector of Engineering, Platform | Streamhaus GmbH, Munich\n2019 – August 2026\n- Led the platform organisation across five teams, with 45 engineers and five engineering managers; areas included identity, playback API, billing integration, and developer platform.\n- Drove the strangler-fig migration of a Python 2 monolith into approximately 60 Python 3 and Go services on GKE; playback API availability improved from 99.5% to 99.95%.\n- Established a service template for Python and Go services, including OpenTelemetry tracing, Prometheus metrics, and Terraform modules.\n- Built Python scripts and an internal cost dashboard using BigQuery billing exports and Looker Studio; rightsizing and committed-use discounts reduced cloud spend by 31% (€4.2M per year).\n- Introduced an RFC process, architecture review board, and on-call guidelines adopted company-wide.\n\nPrincipal Engineer | Streamhaus GmbH\n2015 – 2019\n- Served as technical lead for the playback API, using Python, Tornado, Cassandra, and Redis.\n- Designed and wrote most of a Go entitlement service for subscriptions, regions, and devices; it handled 120,000 requests per second at peak with p99 latency under 15 ms, using Cassandra and local in-memory caching.\n- Co-authored the company’s service template and Python style guide.\n\nSenior Software Engineer | Nordfels Telematik AG, Stuttgart\n2010 – 2015\n- Built backend services ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS, and RabbitMQ.\n- Led a team of six developers on the route-history product.\n- Co-inventor on a granted German patent for adaptive GPS sampling in vehicle fleets.\n\nSoftware Engineer | Dataquelle Systems GmbH, Karlsruhe\n2005 – 2010\n- Developed C++ and Python for industrial data acquisition software on Linux and embedded x86.\n- Built a Python test harness used by QA for eight years.\n\nSELECTED ADDITIONAL EXPERIENCE\nOpen-source maintainer | Python retry library, 2012–2018\n- Maintained a Python retry library that reached approximately 1,500 GitHub stars; handed over maintenance in 2018.\n\nEDUCATION\nDipl.-Inf. (equivalent to MSc), Computer Science | Rhine Valley University, 2005\n\nPUBLICATIONS & TALKS\n- “Running Python at 100k rps” — conference talk, 2018\n- “Cost is a feature” — internal platform engineering summit keynote, 2023\n\nLANGUAGES\nGerman (native) | Italian (native) | English (fluent)",
+    "score": 88,
+    "critique": {
+      "quality_score": 88,
+      "content_quality_feedback": "This is a strong, professional, well-structured CV with substantial quantified impact. It clearly presents senior backend experience, Python and Go expertise, distributed-systems scale, cloud infrastructure, observability, and leadership in architecture and reliability. The summary is appropriately honest about recent hands-on coding, which is important for this role. The main content limitation is that several requirements are either not evidenced or are only implied: REST API work, query tuning, schema migrations, Docker, and CI/CD. The document also omits the granted patent and the candidate's pytest/tox experience, although these are not essential to the role.",
+      "ats_compatibility_feedback": "The CV uses ATS-friendly standard headings, simple text formatting, conventional dates, and searchable technology keywords. Python, FastAPI, PostgreSQL, Kafka, Kubernetes, Terraform, Prometheus, Grafana, OpenTelemetry, automated testing, and cloud deployment are visible. AI screening probability is high for the general Python backend and distributed-systems aspects of the role, but lower for exact must-have keyword matching because Docker, REST APIs, CI/CD, query tuning, and schema migrations are not present. Do not add those terms unless supported by the candidate's actual experience. The AWS wording is accurate but relatively limited, so it should not be overstated.",
+      "job_alignment_feedback": "The CV aligns strongly with Python backend services, API ownership, PostgreSQL, Kafka, Kubernetes, Terraform, observability, cloud deployment, automated testing, technical documentation, and production reliability. The fleet-telematics work provides relevant transport-domain experience, even though it is not shipment tracking or freight software. The candidate also has unusually strong scale and architecture experience for the advertised level. The main candidate-material gaps or unsubstantiated areas are Docker, REST specifically, PostgreSQL query tuning and schema migrations, CI/CD, and Dutch or French. The document should not claim these capabilities without evidence. The Director of Engineering background may make the candidate appear overqualified, but the Senior / Staff Backend Engineer headline and the honest statement about recent coding help address that concern.",
+      "improvement_instructions": "MINOR, HIGH-VALUE IMPROVEMENTS:\n1. In the Technical Skills section, change \"Testing and observability: pytest, Python test harnesses, Prometheus, Grafana, OpenTelemetry\" to \"Testing and observability: pytest, tox, Python test harnesses, Prometheus, Grafana, OpenTelemetry\". The candidate's portfolio explicitly supports pytest and tox through the maintained Python retry library.\n2. In the Selected Additional Experience section under \"Open-source maintainer\", change the bullet to: \"Maintained a Python retry library from 2012–2018; used pytest and tox, and grew the project to approximately 1,500 GitHub stars before handing over maintenance.\" This adds supported automated-testing keywords and makes the contribution more relevant to the role.\n3. In the Professional Experience section under \"Principal Engineer | Streamhaus GmbH\", revise the playback bullet to make the API ownership more searchable without claiming REST: \"Served as technical lead for the customer-facing playback API, using Python, Tornado, Cassandra, and Redis.\" The customer-facing API wording is supported by the existing summary and better matches the job's tracking-API requirement.\n4. In the Professional Experience section under \"Senior Software Engineer | Nordfels Telematik AG\", revise the first bullet to: \"Built backend services for fleet telematics, ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS, and RabbitMQ.\" This makes the transport-domain relevance explicit while remaining truthful.\n5. Add the granted patent to improve completeness and distinguish the application. Place a new \"Patent\" section after \"Selected Additional Experience\" with: \"Co-inventor, granted German patent for adaptive GPS sampling in vehicle fleets, Nordfels Telematik AG.\" Do not add the fictional patent number from the portfolio notes unless it is an actual verifiable patent number.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional experience building backend services in Python or a comparable language, with willingness to work mainly in Python",
+          "status": "shown",
+          "quote": "Backend engineer with 21 years of experience building production services and large-scale distributed systems, primarily in Python and Go."
+        },
+        {
+          "requirement": "Solid experience with relational databases, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to a cloud environment",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good written and spoken English",
+          "status": "shown",
+          "quote": "English (fluent)"
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "Databases and messaging: PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ"
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code (Terraform)",
+          "status": "shown",
+          "quote": "Cloud and infrastructure: GCP (GKE, Pub/Sub, BigQuery), Kubernetes, Terraform"
+        },
+        {
+          "requirement": "Exposure to observability tooling (Prometheus, Grafana, OpenTelemetry)",
+          "status": "shown",
+          "quote": "Testing and observability: pytest, Python test harnesses, Prometheus, Grafana, OpenTelemetry"
+        },
+        {
+          "requirement": "Knowledge of logistics, transport or supply-chain domains, or EDI formats (EDIFACT, X12)",
+          "status": "shown",
+          "quote": "Built backend services ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS, and RabbitMQ."
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]
