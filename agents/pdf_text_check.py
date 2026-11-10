@@ -64,10 +64,11 @@ def _uncovered(side: list[str], other: list[str]) -> Counter:
     """
     Occurrences of each word of `side` that `other` does not account for, as a multiset.
 
-    A word without a digit is also accounted for by its occurrences inside `other` with all
-    spaces and punctuation removed: PDF text extraction sometimes loses the spaces between words
-    ("ihavealsoused...") or splits a word at a line break ("ex perienced"). A word with a digit
-    gets no such tolerance here; the numbers themselves are compared exactly by compare_texts.
+    A word is also accounted for by its occurrences inside `other` with all spaces and
+    punctuation removed: PDF text extraction sometimes loses the spaces between words
+    ("ihavealsoused...") or splits a word at a line break ("ex perienced"). This applies to words
+    with digits too, since real PDFs glue numbers to neighbouring words; the numbers themselves
+    are compared exactly, as runs of digits, by compare_texts (number_changes).
     """
     counts, other_counts = Counter(side), Counter(other)
     joined = "".join(other)

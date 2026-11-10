@@ -485,6 +485,42 @@ def test_a_pdf_that_still_differs_is_reported(tmp_path):
     assert "does not match the checked text" in notice and "haccp" in notice and "award" in notice
 
 
+def test_a_retry_that_changes_numbers_does_not_replace_a_first_pdf_that_only_dropped_words(monkeypatch, tmp_path):
+    from agents import pdf_text_check
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    sentences = [f"Served customer group number {w} at the meat counter every morning." for w in
+                 ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")]
+    text = "Ana Horvat\nButcher at Lidl 2019-2023, team of 5.\n" + "\n".join(sentences) + "\nHACCP hygiene course passed with distinction."
+    pdf_texts = {
+        "first": text.replace("\nHACCP hygiene course passed with distinction.", ""),
+        "retry": text.replace("2019", "2018").replace("team of 5", "team of 3"),
+    }
+    monkeypatch.setattr(pdf_text_check, "extract_pdf_text",
+                        lambda path: (pdf_texts["retry" if "_retry" in os.path.basename(path) else "first"], 1, None))
+
+    def compile_latex(latex, name, max_fix_iterations):
+        path = os.path.join(gen.temp_folder, f"{name}.pdf")
+        open(path, "w", encoding="utf-8").write(name)
+        return path, 0, None
+
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    gen._build_latex_document = lambda template, plain, style: "latex"
+    gen._compile_latex = compile_latex
+    first = pdf_text_check.compare_texts(text, pdf_texts["first"])
+    retry = pdf_text_check.compare_texts(text, pdf_texts["retry"])
+    assert first["number_changes"] == [] and retry["number_changes"]
+    assert retry["text_words_found_in_pdf_pct"] > first["text_words_found_in_pdf_pct"]
+
+    out = gen.run({"generated_cv": text, "cv_history": [{"iteration": 1}], "messages": []})
+    assert out["cv_pdf_check"]["ok"] is False and out["cv_pdf_check"]["converted_twice"] is True
+    assert out["cv_pdf_check"]["number_changes"] == []
+    assert open(out["cv_pdf_path"], encoding="utf-8").read() == "generated_CV_draft_1"
+
+
 def test_an_unreadable_pdf_is_not_reported_as_a_mismatch(tmp_path):
     fake = tmp_path / "x.pdf"
     fake.write_text("not a pdf", encoding="utf-8")

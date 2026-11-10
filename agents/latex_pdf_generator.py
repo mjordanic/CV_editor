@@ -26,6 +26,15 @@ from agents.pdf_text_check import check_pdf
 logger = logging.getLogger(__name__)
 
 
+def _closeness(check: dict) -> tuple:
+    """Sort key for a PDF check, higher is closer: fewer changed numbers, then fewer missing and added word
+    occurrences, then more of the text's words found, then fewer distinct added words."""
+    return (-len(check.get("number_changes") or []),
+            -((check.get("missing_occurrence_count") or 0) + (check.get("extra_occurrence_count") or 0)),
+            check.get("text_words_found_in_pdf_pct") or 0,
+            -(check.get("extra_word_count") or 0))
+
+
 class LatexPDFGenerator:
     """Base class of CVPDFGenerator and CoverLetterPDFGenerator."""
 
@@ -192,7 +201,8 @@ class LatexPDFGenerator:
             return pdf_path, fix_attempts, check
 
         logger.warning(f"{self.label} PDF text differs from the checked text ({check.get('text_words_found_in_pdf_pct')}% "
-                       f"of its words found, {check.get('extra_word_count')} added) - converting it once more")
+                       f"of its words found, {check.get('extra_word_count')} added, "
+                       f"numbers changed: {check.get('number_changes') or 'none'}) - converting it once more")
         retry_name = f"{output_name}_retry"
         try:
             retry_latex = self._build_latex_document(self._load_template(), text, style_description)
@@ -202,8 +212,7 @@ class LatexPDFGenerator:
             return pdf_path, fix_attempts, check
         retry_check = check_pdf(retry_path, text)
         better = retry_check.get("ok") or (
-            (retry_check.get("text_words_found_in_pdf_pct") or 0, -(retry_check.get("extra_word_count") or 0))
-            > (check.get("text_words_found_in_pdf_pct") or 0, -(check.get("extra_word_count") or 0))
+            retry_check.get("ok") is False and _closeness(retry_check) > _closeness(check)
         )
         if better:
             # Keep the closer PDF and its .tex under the draft's own name (a style update reuses that .tex).
