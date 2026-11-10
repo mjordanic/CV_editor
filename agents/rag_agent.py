@@ -36,57 +36,82 @@ def _embeddings_for(model: str):
     return OpenAIEmbeddings(model="text-embedding-3-small")
 
 
+# Where the user's own portfolio goes. It is optional, unique to each person and never shipped with
+# the repository (data/ is git-ignored): without it the session simply has no portfolio.
+DEFAULT_PORTFOLIO_PATH = os.path.join("data", "portfolio", "portfolio.txt")
+
+# A portfolio up to this size goes to the writers whole: portfolios are usually a few KB, a top-k cut
+# can silently drop the item that matters, and the writer can judge relevance itself. Only a larger
+# one is indexed (one paid embedding call) and searched.
+FULL_PORTFOLIO_CHARS = 12000
+
+NO_PORTFOLIO = "No portfolio provided."
+
+
 class ExperienceRetrievalAgent:
-    """Agent for retrieving relevant experience from a portfolio using RAG."""
+    """Agent that gives the writers the candidate's portfolio: whole, or the relevant items of a large one (RAG)."""
     
     def __init__(
         self, 
-        portfolio_path: str = "data/portfolio/portfolio.txt",
+        portfolio_path: str = DEFAULT_PORTFOLIO_PATH,
         model: str = "openai:gpt-5-nano",
         temperature: float = 0.0,
-        similarity_threshold: float = 0.5
+        similarity_threshold: float = 0.5,
+        full_text_limit: int = FULL_PORTFOLIO_CHARS,
     ):
         """
         Initialize the ExperienceRetrievalAgent.
         
         Args:
-            portfolio_path: Path to the portfolio text file
-            model: LLM model for relevance verification
+            portfolio_path: Path to the user's portfolio text file (read only if the user put one there)
+            model: LLM model for relevance verification (large portfolios only)
             temperature: Temperature for verification LLM
             similarity_threshold: L2 distance threshold (lower is better)
+            full_text_limit: Portfolios up to this many characters go to the writers whole, without retrieval
         """
         logger.info(f"Initializing ExperienceRetrievalAgent - model: {model}, threshold: {similarity_threshold}")
         self.portfolio_path = portfolio_path
-        self.portfolio_text = ""  # full portfolio: the critique checks drafts against it for unsupported claims
+        self.model = model
         self.similarity_threshold = similarity_threshold
-        
-        self.embeddings = _embeddings_for(model)
+        self.full_text_limit = full_text_limit
         self.llm = init_chat_model(model, temperature=temperature, **local_model_kwargs(model))
+        self.embeddings = None  # created only when a large portfolio is indexed
         self.vectorstore = None
-        
-        # Load and index the portfolio on initialization
-        self._index_portfolio()
+        # full portfolio: the critique checks drafts against it for unsupported claims
+        self.portfolio_text = self._read_portfolio()
         logger.debug("ExperienceRetrievalAgent initialized")
-    
-    def _index_portfolio(self):
-        """Load portfolio data and create vector index."""
-        if not os.path.exists(self.portfolio_path):
-            logger.warning(f"Portfolio file not found at {self.portfolio_path}. RAG will not work.")
-            return
-            
+
+    def _read_portfolio(self) -> str:
+        """The user's portfolio text, or "" (logged as 'no portfolio') when they did not supply one."""
+        if not self.portfolio_path or not os.path.isfile(self.portfolio_path):
+            logger.info(f"No portfolio: {self.portfolio_path} does not exist (a portfolio is optional)")
+            return ""
         try:
             with open(self.portfolio_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            self.portfolio_text = content
-            
+                text = f.read().strip()
+        except Exception as e:
+            logger.warning(f"No portfolio: could not read {self.portfolio_path} ({type(e).__name__}: {e})")
+            return ""
+        if not text:
+            logger.info(f"No portfolio: {self.portfolio_path} is empty")
+            return ""
+        logger.info(f"Portfolio read from {self.portfolio_path} ({len(text)} characters)")
+        return text
+
+    def _index_portfolio(self):
+        """Create the vector index of the portfolio (one paid embedding call)."""
+        if not self.portfolio_text:
+            return
+        try:
             # Split content into chunks (assuming chunks are separated by double newlines)
-            # In a real app, we'd use a smarter splitter, but this works for our format
-            raw_chunks = [c.strip() for c in content.split("\n\n") if c.strip()]
+            raw_chunks = [c.strip() for c in self.portfolio_text.split("\n\n") if c.strip()]
             
             source = os.path.basename(self.portfolio_path)
             documents = [Document(page_content=chunk, metadata={"source": source}) for chunk in raw_chunks]
             
             if documents:
+                if self.embeddings is None:
+                    self.embeddings = _embeddings_for(self.model)
                 self.vectorstore = FAISS.from_documents(documents, self.embeddings)
                 logger.info(f"Indexed {len(documents)} portfolio items.")
             else:
@@ -118,7 +143,8 @@ class ExperienceRetrievalAgent:
             response = self.llm.invoke(prompt)
             answer = response.content.strip().upper() if hasattr(response, 'content') else str(response).strip().upper()
             
-            is_relevant = "YES" in answer
+            # startswith: "NO ... YES ..." contains YES too
+            is_relevant = answer.lstrip("*'\" ").startswith("YES")
             logger.debug(f"Relevance verification: {answer} (Relevant: {is_relevant})")
             return is_relevant
         except Exception as e:
@@ -180,20 +206,33 @@ class ExperienceRetrievalAgent:
 
     def run(self, state):
         """
-        Main method to retrieve relevant experience based on the job description.
+        Give the writers the portfolio: the whole text when it is small, otherwise the items
+        retrieved for this job description.
         
         Args:
             state: The state dictionary containing job_description_info
             
         Returns:
-            dict: Updated state with relevant_experience
+            dict: Updated state with relevant_experience (what the writers see) and portfolio_text
         """
         logger.info("ExperienceRetrievalAgent.run() called")
-        
+
+        if not self.portfolio_text:
+            logger.info("No portfolio - the writers get none")
+            return {"relevant_experience": "", "portfolio_text": "", "current_node": "retrieve_experience"}
+
+        if len(self.portfolio_text) <= self.full_text_limit:
+            logger.info(f"Portfolio is small ({len(self.portfolio_text)} characters) - giving it to the writers whole")
+            return {"relevant_experience": self.portfolio_text, "portfolio_text": self.portfolio_text,
+                    "current_node": "retrieve_experience"}
+
         job_description_info = state.get("job_description_info")
         if not job_description_info:
             logger.warning("No job description info found in state. Skipping retrieval.")
             return {"relevant_experience": "", "portfolio_text": self.portfolio_text}
+
+        if self.vectorstore is None:
+            self._index_portfolio()  # only now: no paid call before the user has typed anything
             
         # Use the full job description text for retrieval
         job_description_text = job_description_info.get("job_description", "")
@@ -202,6 +241,11 @@ class ExperienceRetrievalAgent:
              job_description_text = job_description_info.get("candidate_minimal_requirements", "")
         
         relevant_experience = self.retrieve_relevant_experience(job_description_text)
+        if relevant_experience and self.vectorstore is not None:
+            relevant_experience = (
+                "(The candidate's portfolio is long; these are the items most relevant to this job.)\n\n"
+                + relevant_experience
+            )
         
         # Write debug info
         debug_content = "RETRIEVED RELEVANT EXPERIENCE:\n"

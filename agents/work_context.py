@@ -20,9 +20,10 @@ PREFERENCES = ("remote", "hybrid", "on-site", "no preference")
 OPEN_PREFERENCE_RULE = (
     "Treat the candidate as open to this job's arrangement (remote, hybrid, on-site or relocation). Never present the arrangement or location as a conflict, gap or "
     "weakness, and never narrow the candidate's options (e.g. by saying they only want remote work or are tied to "
-    "their current city). Do not invent a specific commitment the candidate did not make, such as 'willing to "
-    "relocate to <place>' or a number of office days; neutral, open wording (e.g. 'open to the role's working "
-    "arrangement') is fine."
+    "their current city). Do not mention the arrangement, location or relocation at all unless the ad asks for "
+    "something specific (e.g. on-site work in a named city, or a work permit); then state only what the candidate "
+    "said about it, or nothing. Never invent a commitment the candidate did not make, such as 'willing to relocate "
+    "to <place>' or a number of office days, and do not add filler such as 'open to the role's working arrangement'."
 )
 
 WORK_CONTEXT_PROMPT = (
@@ -47,11 +48,6 @@ class WorkContext(BaseModel):
     notes: str = Field("", description="Where the facts came from, or a difference between ad and company pages")
 
 
-def remote_work_from(arrangement: str) -> str:
-    """The older yes / no / NA remote flag, kept for existing readers of company_info."""
-    return {"remote": "yes", "hybrid": "no", "on-site": "no"}.get(arrangement, "NA")
-
-
 def preference_conflict(preference: Optional[str], arrangement: Optional[str]) -> Optional[str]:
     """A sentence for the user when the stated preference does not match the job, else None."""
     if not preference or preference == "no preference" or not arrangement or arrangement == NOT_STATED:
@@ -71,8 +67,6 @@ def describe(company_info: Optional[dict], preference: Optional[str]) -> str:
         lines.append(f"Location or country limits: {ctx.get('location_limits') or NOT_STATED}")
         culture = ctx.get("culture_signals") or []
         lines.append(f"Culture signals: {'; '.join(culture) if culture else NOT_STATED}")
-    elif (company_info or {}).get("remote_work"):
-        lines.append(f"Remote Work Policy: {company_info['remote_work']}")
     if preference and preference != "no preference":
         lines.append(f"Candidate's own work-arrangement preference (stated by the candidate): {preference}")
     elif preference:

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import platform
 import shutil
@@ -52,8 +53,12 @@ DEFAULT_SCRIPT = {
     "cover_letter": "Thank you. Now please write the cover letter.",
     "exit": "Thanks, that is all. Please exit.",
     "clarify_job_ad": "That is all the information the ad gives.",
+    # The app asks for contact details a document still lacks ([EMAIL] and similar placeholders).
+    "missing_details": "I'd rather leave those details out.",
     "max_turns": 10,
 }
+# Optional key "revision": one change request sent once, after the first CV and its PDF exist and
+# before the cover letter is asked for (see evals/scripts/revision.json).
 
 
 def _git(*args: str) -> str | None:
@@ -126,7 +131,8 @@ def prepare_run_folder(args) -> dict:
 
     script = dict(DEFAULT_SCRIPT)
     if args.script:
-        script.update(json.loads(Path(args.script).read_text(encoding="utf-8")))
+        from evals.cases import find_script
+        script.update(json.loads(find_script(args.script).read_text(encoding="utf-8")))
     (inputs / "script.json").write_text(json.dumps(script, indent=2, ensure_ascii=False), encoding="utf-8")
 
     (workspace / "templates").symlink_to(REPO / "templates")
@@ -141,20 +147,23 @@ def prepare_run_folder(args) -> dict:
         "search": search,
         "script": script,
         "model_override": args.model,
+        "critic_model_override": args.critic_model,
+        "grounding_model_override": args.grounding_model,
         "work_preference": args.work_preference,
         "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
 
 def effective_config() -> dict:
-    """Model and settings per agent as the app will use them (after CV_EDITOR_MODEL)."""
-    from config.config_loader import get_agent_config, load_config, MODEL_OVERRIDE_ENV
+    """Model and settings per agent as the app will use them (after CV_EDITOR_MODEL, CV_EDITOR_CRITIC_MODEL and CV_EDITOR_GROUNDING_MODEL)."""
+    from config.config_loader import (CRITIC_MODEL_OVERRIDE_ENV, GROUNDING_MODEL_OVERRIDE_ENV, MODEL_OVERRIDE_ENV,
+                                      get_agent_config, load_config)
     full = load_config()
     return {
         "workflow": full.get("workflow", {}),
         "agents": {name: get_agent_config(name) for name in full.get("agents", {})},
         "embeddings": os.environ.get("CV_EDITOR_EMBEDDING_MODEL") or "text-embedding-3-small",
-        "env_overrides": {k: os.environ.get(k) for k in (MODEL_OVERRIDE_ENV, "CV_EDITOR_TEMPERATURE",
+        "env_overrides": {k: os.environ.get(k) for k in (MODEL_OVERRIDE_ENV, CRITIC_MODEL_OVERRIDE_ENV, GROUNDING_MODEL_OVERRIDE_ENV, "CV_EDITOR_TEMPERATURE",
                                                           "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD")
                           if os.environ.get(k)},
         "code": {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
@@ -164,12 +173,18 @@ def effective_config() -> dict:
     }
 
 
+def _asks_missing_details(waiting_at: tuple) -> bool:
+    """The app's interrupt nodes that ask for contact details a document lacks (ask_*_missing_details)."""
+    return any(n.startswith("ask_") and n.endswith("_missing_details") for n in waiting_at)
+
+
 class ScriptedUser:
     """Answers the app's questions from the script, by what the app is waiting for."""
 
-    def __init__(self, script: dict, job_ad_path: str):
+    def __init__(self, script: dict, job_ad_path: str, workspace: str | Path | None = None):
         self.script = script
         self.job_ad_path = job_ad_path
+        self.workspace = Path(workspace) if workspace else Path.cwd()  # PDF paths in the state are relative to it
         self.used: dict = {}
         self.observations: list = []
 
@@ -187,12 +202,22 @@ class ScriptedUser:
             raise RuntimeError("the app asked for a CV: the input set has no CV and no notes")
         if "clarify_job_ad" in waiting_at:
             return self._use("clarify_job_ad")
+        if _asks_missing_details(waiting_at):
+            if self.used.get("missing_details", 0) == 2:
+                self.observations.append("the app asked for missing details more than twice")
+            return self._use("missing_details")
         if not values.get("generated_cv"):
             if self.used.get("first", 0) >= 2:
                 self.observations.append("the app still had no CV after the user asked for it twice")
                 return self._use("exit")
             return self._use("first")
         if not values.get("generated_cover_letter"):
+            if self.script.get("revision") and not self.used.get("revision"):
+                pdf = values.get("cv_pdf_path")
+                if pdf and (self.workspace / pdf).is_file():
+                    return self._use("revision")
+                if not self.used.get("cover_letter"):
+                    self.observations.append("the revision was not sent: there was no CV PDF before the cover letter")
             if self.used.get("cover_letter", 0) >= 2:
                 self.observations.append("the app still had no cover letter after the user asked for it twice")
                 return self._use("exit")
@@ -259,10 +284,15 @@ def main(argv=None) -> int:
     group.add_argument("--search-fixture", help="prepared web-search results to replay (no live search)")
     group.add_argument("--record-search", help="live Tavily search, saved to this fixture file")
     group.add_argument("--no-search", action="store_true", help="company research finds nothing (default)")
-    parser.add_argument("--model", help="use this model for every agent (sets CV_EDITOR_MODEL)")
+    parser.add_argument("--model", help="use this model for every writer-side agent; never the critic's two calls (sets CV_EDITOR_MODEL)")
+    parser.add_argument("--critic-model", dest="critic_model",
+                        help="use this model for the critic's quality review, 'critique' (sets CV_EDITOR_CRITIC_MODEL)")
+    parser.add_argument("--grounding-model", dest="grounding_model",
+                        help="use this model for the critic's fact check, 'grounding' (sets CV_EDITOR_GROUNDING_MODEL)")
     parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"],
                         help="the candidate's own work-arrangement preference (default: not given)")
-    parser.add_argument("--script", help="JSON with scripted replies overriding the defaults")
+    parser.add_argument("--script", help="JSON with scripted replies overriding the defaults, or a name in "
+                                          "evals/scripts/ (e.g. revision)")
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--cost-cap", type=float, default=1.0, help="stop the run past this many USD (default 1.0)")
     parser.add_argument("--label", action="append", help="key=value stored in manifest.json (repeatable)")
@@ -285,6 +315,10 @@ def main(argv=None) -> int:
         load_dotenv(REPO / ".env")
     if args.model:
         os.environ["CV_EDITOR_MODEL"] = args.model
+    if args.critic_model:
+        os.environ["CV_EDITOR_CRITIC_MODEL"] = args.critic_model
+    if args.grounding_model:
+        os.environ["CV_EDITOR_GROUNDING_MODEL"] = args.grounding_model
     os.environ.pop("CV_EDITOR_SEARCH_FIXTURE", None)
     os.environ.pop("CV_EDITOR_SEARCH_RECORD", None)
     if manifest["search"]["mode"] == "record":
@@ -324,8 +358,10 @@ def main(argv=None) -> int:
     from langgraph.types import Command
     import langgraph_agent as la
     import debug_utils
+    if not logging.getLogger().handlers:
+        la.setup_logging()  # the app's own logs/ and debug/ files in the workspace, as on a normal run
     if not os.path.isfile(debug_utils.get_debug_file_path() or ""):
-        debug_utils.initialize_debug_file()  # app imported earlier from another folder: debug file here
+        debug_utils.initialize_debug_file()  # logging was set up elsewhere: the debug file still goes here
 
     import signal
 
@@ -334,7 +370,7 @@ def main(argv=None) -> int:
 
     signal.signal(signal.SIGTERM, stop_on_sigterm)
 
-    user = ScriptedUser(manifest["script"], str(workspace / "job_ad.txt"))
+    user = ScriptedUser(manifest["script"], str(workspace / "job_ad.txt"), workspace)
     transcript, status, values = [], "completed", {}
     t0 = time.time()
     agent = None

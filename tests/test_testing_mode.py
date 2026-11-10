@@ -61,15 +61,21 @@ class _Capture:
 def test_writers_get_the_notes(module_name, cls, field, tmp_path, monkeypatch):
     import importlib
     module = importlib.import_module(f"agents.{module_name}")
+    from agents import document_writer
     llm = _Capture(field)
-    monkeypatch.setattr(module, "init_chat_model", lambda *_, **__: llm)
-    monkeypatch.setattr(module, "write_to_debug", lambda *_, **__: None)
+    monkeypatch.setattr(document_writer, "init_chat_model", lambda *_, **__: llm)
     agent = getattr(module, cls)(output_folder=str(tmp_path))
     agent.run({"candidate_text": {"cv": None, "cover_letter": None, "notes": "NOTE-FACT: ran the on-call rota"},
                "job_description_info": {"job_title": "SRE"}, "messages": []})
     assert "NOTE-FACT: ran the on-call rota" in llm.prompts[0]
     if module_name == "cv_writer":
         assert "only from the facts in the candidate's notes" in llm.prompts[0]
+    # what the user says in the chat is candidate material for the writers too
+    agent.run({"candidate_text": {"cv": None, "cover_letter": None, "notes": "N"},
+               "job_description_info": {"job_title": "SRE"},
+               "messages": [{"role": "user", "content": "CHAT-FACT: I hold a forklift licence since 2019."}]})
+    assert "CHAT-FACT: I hold a forklift licence since 2019." in llm.prompts[1]
+    assert "facts they state about themselves are the candidate's own material" in llm.prompts[1]
 
 
 def test_grounding_and_critique_see_the_notes():
@@ -269,6 +275,8 @@ class _FakeModels:
                           job_alignment_feedback="ok", improvement_instructions="", critical_issues="")
         if name == "GroundingResponse":
             return schema(unsupported_claims=[])
+        if name == "DraftComparison":
+            return schema(better="B")
         if name == "WorkContext":
             return schema(arrangement="on-site", location_limits="Antwerp office, 4 days a week",
                           culture_signals=["small teams that own what they run"])
@@ -279,20 +287,24 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     import subprocess
     from evals import run_case
     from agents import (cover_letter_pdf_generator, cover_letter_writer, cv_pdf_generator, cv_writer,
-                        job_description, latex_fixer, rag_agent, router)
+                        document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router)
 
     # restore everything run_case changes globally
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(subprocess, "run", subprocess.run)
     monkeypatch.setattr(rag_agent, "_embeddings_for", rag_agent._embeddings_for)
-    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
+    for var in ("CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
         monkeypatch.delenv(var, raising=False)
+    # run_case sets the model overrides in os.environ; an empty value (no override) is restored after
+    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_CRITIC_MODEL", "CV_EDITOR_GROUNDING_MODEL"):
+        monkeypatch.setenv(var, "")
     monkeypatch.setenv("OPENAI_API_KEY", "dummy-no-calls")
     monkeypatch.setenv("TAVILY_API_KEY", "dummy-no-calls")
 
     fake = _FakeModels()
-    for module in (router, cv_writer, cover_letter_writer, critique, job_description, search, rag_agent,
-                   cv_pdf_generator, cover_letter_pdf_generator, latex_fixer):
+    # The writers and PDF generators create their models in their shared base modules.
+    for module in (router, document_writer, critique, job_description, search, rag_agent,
+                   latex_pdf_generator, latex_fixer):
         monkeypatch.setattr(module, "init_chat_model", lambda *_, **__: fake)
 
     def fake_compile(self, latex, output_name, max_fix_iterations=1):
@@ -314,6 +326,8 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
         "--search-fixture", str(fixtures / "ads" / "a5-backend-engineer" / "search_fixture.json"),
         "--cv", str(persona / "cv.txt"), "--notes", str(persona / "notes.txt"),
         "--env-file", str(env), "--label", "case=offline", "--work-preference", "remote",
+        "--model", "openai:writer-model", "--critic-model", "openai:critic-model",
+        "--grounding-model", "openai:fact-check-model",
     ])
 
     manifest = json.loads((run_dir / "manifest.json").read_text())
@@ -344,6 +358,12 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     assert build_prompt(run_dir)[0]["work_preference"] == "remote"
     config = json.loads((run_dir / "config.json").read_text())
     assert "agents" in config and "OPENAI_API_KEY" not in json.dumps(config)
+    # each model flag reaches only its own agents: --model never replaces the critic's two calls
+    models = {name: cfg.get("model") for name, cfg in config["agents"].items()}
+    assert models["critique"] == "openai:critic-model"
+    assert models["grounding"] == "openai:fact-check-model"
+    assert models["cv_writer"] == models["cover_letter_writer"] == models["router"] == "openai:writer-model"
+    assert config["env_overrides"]["CV_EDITOR_CRITIC_MODEL"] == "openai:critic-model"
 
 
 # --- work arrangement, culture and preference -------------------------------------------------
@@ -371,9 +391,11 @@ def test_without_a_stated_preference_the_default_is_inclusive(preference, arrang
     assert "Never present the arrangement or location as a conflict, gap or weakness" in text
     assert "never narrow the candidate's options" in text
     assert "Preference conflict" not in text and preference_conflict(preference, arrangement) is None
-    # honest: no specific commitment the candidate did not make; neutral open wording allowed
-    assert "Do not invent a specific commitment" in text and "willing to relocate to <place>" in text
-    assert "neutral, open wording" in text
+    # honest: no specific commitment the candidate did not make, and silence by default: no filler
+    # line about the arrangement unless the ad asks for something specific
+    assert "Never invent a commitment" in text and "willing to relocate to <place>" in text
+    assert "Do not mention the arrangement, location or relocation at all unless the ad asks for something specific" in text
+    assert "do not add filler such as 'open to the role's working arrangement'" in text
 
 
 def test_the_inclusive_default_reaches_every_prompt_even_without_company_research():
@@ -453,12 +475,12 @@ def _search_agent(monkeypatch, llm, tmp_path):
 def test_search_extracts_work_context_from_ad_and_pages(monkeypatch, tmp_path):
     fake = _FakeModels()
     fake.prompts.clear()
-    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results: "A company.")
+    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results, company_name=None: "A company.")
     agent = _search_agent(monkeypatch, fake, tmp_path)
     out = agent.run({"job_description_info": {"company_name": "X", "job_description": "AD-TEXT: office in Antwerp"},
                      "messages": []})
     info = out["company_info"]
-    assert info["work_context"]["arrangement"] == "on-site" and info["remote_work"] == "no"
+    assert info["work_context"]["arrangement"] == "on-site" and "remote_work" not in info
     prompt = next(p for n, p in fake.prompts if n == "WorkContext")
     assert "AD-TEXT: office in Antwerp" in prompt and "We are remote-first." in prompt
     assert "Work arrangement (from the ad and company pages): on-site" in out["messages"][-1]["content"]
@@ -469,11 +491,11 @@ def test_failed_extraction_falls_back_to_the_ads_work_type(monkeypatch, tmp_path
         def with_structured_output(self, schema):
             raise RuntimeError("model down")
 
-    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results: "A company.")
+    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results, company_name=None: "A company.")
     agent = _search_agent(monkeypatch, Broken(), tmp_path)
     out = agent.run({"job_description_info": {"company_name": "X", "work_type": "unknown"}, "messages": []})
     assert out["company_info"]["work_context"]["arrangement"] == "not stated"
-    assert out["company_info"]["remote_work"] == "NA"
+    assert "remote_work" not in out["company_info"]
 
 
 def test_router_keeps_a_preference_only_when_the_user_states_it(monkeypatch):
@@ -513,9 +535,12 @@ def test_every_matrix_case_resolves_to_tracked_fixture_files():
     for case in cases:
         paths = resolve_case(case)
         files = [paths["job_ad"], paths["search_fixture"], paths["persona_truth"], *paths["inputs"].values()]
+        if case.get("script"):
+            files.append(paths["script"])  # a named script in evals/scripts/
         assert paths["inputs"], case["id"]
         for f in files:
-            assert f.resolve().is_relative_to((REPO / "evals" / "fixtures").resolve()), (case["id"], f)
+            assert any(f.resolve().is_relative_to((REPO / "evals" / d).resolve()) for d in ("fixtures", "scripts")), \
+                (case["id"], f)
             assert f.resolve() in tracked, f"{case['id']}: {f} is not tracked (or ignored)"
             assert f.read_text(encoding="utf-8").strip(), f"{case['id']}: {f} is empty"
         # the ids the case uses match the folders it resolves to
@@ -523,12 +548,13 @@ def test_every_matrix_case_resolves_to_tracked_fixture_files():
         assert paths["persona_truth"].parent.name.split("-")[0] == case["persona"]
 
 
-def test_all_eleven_personas_and_six_ads_are_tracked():
+def test_all_thirteen_personas_and_eight_ads_are_tracked():
     from evals.cases import FIXTURES
     personas = sorted(p.name.split("-")[0] for p in (FIXTURES / "personas").iterdir() if p.is_dir())
     ads = sorted(p.name.split("-")[0] for p in (FIXTURES / "ads").iterdir() if p.is_dir())
-    assert personas == [f"p{i:02d}" for i in range(1, 12)]
-    assert ads == [f"a{i}" for i in range(1, 7)]
+    # p01-p11 and a1-a6 are IT; p12/a7 (butcher, English) and p13/a8 (care work, German) are not
+    assert personas == [f"p{i:02d}" for i in range(1, 14)]
+    assert ads == [f"a{i}" for i in range(1, 9)]
     for persona in (FIXTURES / "personas").iterdir():
         assert json.loads((persona / "persona.json").read_text())["fictional"] is True
 
