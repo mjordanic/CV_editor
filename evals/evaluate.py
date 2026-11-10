@@ -15,13 +15,27 @@ quoted evidence:
   (f) cover letter       specificity, consistency with the CV, stale framing from the old letter
   (g) work arrangement   remote / hybrid / on-site, location limits and culture used correctly and not
                          invented; the candidate's preference stated only if given, conflicts not hidden
+  (h) visual layout      from images of the PDF pages: layout, spacing, overflow or cut-off text, page
+                         count, consistency, readability (deterministic measurements alongside)
+  (i) language quality   grammar, fluency, tone, and the right language for the ad or the user's request
+  (j) additional info    facts from the notes and from what the user said in the chat: used, ignored, misused
+  (k) user requests      each request the user made in the conversation: followed, partly followed,
+                         refused correctly, refused wrongly, ignored, or (for an untruthful one) followed
+                         wrongly; the test script's expected behaviour is given for each
+
+The evaluator also sees the conversation (the app's messages shortened, the user's replies in full)
+and, from the test script, what each user request expects. What the user says about themselves in the
+chat is candidate material (source "chat").
 
 Results go to RUN/evaluation/<name>/: prompt.json, raw_response.json, evaluation.json (the rubric
-answer plus deterministic PDF checks and counts), llm_calls.jsonl and summary.json (cost).
+answer plus deterministic PDF checks and counts), llm_calls.jsonl, summary.json (cost) and pages/
+(the PNG page images the evaluator saw).
 
 Usage:
     .venv/bin/python -m evals.evaluate RUN_DIR [--model openai:gpt-6.1-sol] [--name eval1] [--env-file .env]
-This makes one paid model call per evaluation.
+This makes one paid model call per evaluation (text and page images in the same call). If the
+provider reports no credit left, nothing is retried, summary.json says "interrupted: out of credit"
+and the exit code is 75 (evals/credit.py).
 """
 from __future__ import annotations
 
@@ -56,14 +70,14 @@ class Claim(BaseModel):
     verdict: Literal["supported", "partly_supported", "unsupported"] = Field(
         description="supported: the material states it or it follows obviously; partly_supported: overstated or "
                     "stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material")
-    source: Literal["cv", "portfolio", "cover_letter", "notes", "none"]
+    source: Literal["cv", "portfolio", "cover_letter", "notes", "chat", "none"]
     evidence_quote: str = Field(description="Short verbatim quote from the candidate's material that supports it; empty if none")
     note: str = Field(description="Why partly_supported or unsupported; empty otherwise")
 
 
 class Omission(BaseModel):
     fact: str = Field(description="A fact about the candidate, relevant to this ad, that neither output uses")
-    source: Literal["cv", "portfolio", "cover_letter", "notes"]
+    source: Literal["cv", "portfolio", "cover_letter", "notes", "chat"]
     source_quote: str
     relevance: Literal["high", "medium", "low"]
     why_it_matters: str
@@ -148,6 +162,72 @@ class WorkArrangement(BaseModel):
     score: int = Field(ge=0, le=10)
 
 
+class VisualLayout(BaseModel):
+    cv_pages_seen: int = Field(ge=0, description="CV pages shown as images")
+    cover_letter_pages_seen: int = Field(ge=0)
+    page_count_appropriate: bool = Field(description="CV 1-2 pages for the seniority (or what the user asked), "
+                                                     "cover letter one page")
+    overflow_or_cutoff: list[str] = Field(description="Text cut off, running past a margin or page edge, overlapping "
+                                                      "or hidden; where")
+    spacing_issues: list[str] = Field(description="Cramped or uneven spacing, large empty areas, orphaned headings "
+                                                  "or lines, a nearly empty last page")
+    consistency_issues: list[str] = Field(description="Inconsistent fonts, sizes, bullet styles, date formats or "
+                                                      "alignment; the CV and letter not looking like one set")
+    readability: Literal["good", "acceptable", "poor"]
+    issues: list[str]
+    score: int = Field(ge=0, le=10, description="10 = clean professional layout; 0 = unusable. If no images were "
+                                                "given, judge only from the measurements and say so in issues")
+
+
+class LanguageQuality(BaseModel):
+    expected_language_cv: str = Field(description="The language the CV should be in: the ad's, unless the user asked "
+                                                  "for another")
+    expected_language_cover_letter: str = Field(description="As for the CV; a user request in the chat for the letter's "
+                                                            "language wins")
+    cv_language: str
+    cover_letter_language: str
+    right_language_cv: bool
+    right_language_cover_letter: bool
+    grammar_and_spelling_errors: list[str] = Field(description="Quotes of real errors, with the correction")
+    fluency_and_tone_issues: list[str] = Field(description="Awkward, machine-like, mixed-language or wrong-register "
+                                                           "passages, quoted")
+    score: int = Field(ge=0, le=10)
+
+
+class AdditionalInformation(BaseModel):
+    notes_facts_used: list[str] = Field(description="Relevant facts only in the candidate's notes that the outputs use")
+    notes_facts_ignored: list[str] = Field(description="Relevant facts only in the notes that the outputs leave out")
+    chat_facts_used: list[str] = Field(description="Facts the user gave in the conversation (notice period, details, "
+                                                   "contact data) that the outputs use")
+    chat_facts_ignored: list[str] = Field(description="Relevant facts from the conversation the outputs leave out")
+    misused: list[str] = Field(description="Notes or chat facts distorted, overstated, or used where the user said not to")
+    score: int = Field(ge=0, le=10, description="10 = every relevant extra fact used correctly; use 10 if there was "
+                                                "no extra information")
+
+
+class RequestCompliance(BaseModel):
+    request: str = Field(description="The user's request, quoted briefly from the conversation")
+    expected: Literal["follow", "refuse"] = Field(description="From the test script's expectation when given; else "
+                                                              "follow, or refuse for a request to state something untrue")
+    outcome: Literal["followed", "partly_followed", "refused_correctly", "refused_wrongly", "ignored",
+                     "followed_untruthful"] = Field(
+        description="followed / partly_followed: the change is in the final outputs (fully / in part); "
+                    "refused_correctly: an untruthful request was not followed (ideally the app said so); "
+                    "refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the "
+                    "final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue "
+                    "thing")
+    app_explained: bool = Field(description="The app told the user what it did or why it did not")
+    evidence: str = Field(description="Quote from the final outputs or the app's reply that shows the outcome")
+    note: str
+
+
+class UserRequests(BaseModel):
+    requests: list[RequestCompliance] = Field(description="Every request the user made in the conversation, beyond "
+                                                          "simply asking for the CV, the letter or to exit")
+    score: int = Field(ge=0, le=10, description="10 = every legitimate request followed and every untruthful one "
+                                                "refused; use 10 if the user made no requests")
+
+
 class Evaluation(BaseModel):
     claims: list[Claim] = Field(description="Every factual claim about the candidate in both outputs")
     omissions: list[Omission]
@@ -156,6 +236,10 @@ class Evaluation(BaseModel):
     ats: ATS
     cover_letter: CoverLetter
     work_arrangement: WorkArrangement
+    visual_layout: VisualLayout
+    language_quality: LanguageQuality
+    additional_information: AdditionalInformation
+    user_requests: UserRequests
     invented_content_score: int = Field(ge=0, le=10, description="10 = nothing invented or stretched, 0 = much invented")
     completeness_score: int = Field(ge=0, le=10, description="10 = every relevant fact used")
     overall_score: int = Field(ge=0, le=10)
@@ -184,6 +268,14 @@ location limits and culture must match the job ad and company information; anyth
 degree, certificate, language and notable achievement, in both documents. Quote briefly.
 - Quote evidence verbatim from the candidate material. Never invent quotes.
 - For omissions, list only facts that would help this application (not every detail).
+- What the user said about themselves in the conversation is candidate material too (source "chat"), except when \
+the user asks to state something they themselves say is untrue, or that their material contradicts: such a request \
+must not be followed, and following it makes the claim unsupported.
+- A user request in the conversation changes what is correct: a CV or letter in another language, shorter, reordered \
+or in another tone is right if the user asked for it. The test checklist gives the expected behaviour of the \
+requests the test made; judge every request against it.
+- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
+the visual layout from both.
 - Be calibrated: use the full score ranges; 10 is rare."""
 
 HUMAN_TEMPLATE = """# JOB AD
@@ -211,6 +303,19 @@ The tool was given only these documents about the candidate:
 
 # OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF
 {cover_letter_pdf}
+
+# CONVERSATION BETWEEN THE USER AND THE WRITING TOOL
+(The tool's messages are shortened; the user's replies are complete.)
+{conversation}
+
+# TEST CHECKLIST: THE USER'S REQUESTS AND THE CORRECT BEHAVIOUR
+{checklist}
+
+# LAYOUT MEASUREMENTS OF THE PDFS
+{layout}
+
+# PAGE IMAGES
+{images_note}
 
 Evaluate both outputs against the rubric."""
 
@@ -265,7 +370,96 @@ def company_text(fixture_path: Path) -> str:
     return "\n\n".join(parts) if parts else "(the search found nothing)"
 
 
-def build_prompt(run_dir: Path) -> tuple[dict, dict]:
+APP_MESSAGE_CHARS = 700  # the tool's messages repeat whole documents; the outputs are shown in full above
+MAX_CV_PAGE_IMAGES = 3
+MAX_LETTER_PAGE_IMAGES = 2
+
+
+def conversation_text(run_dir: Path) -> str:
+    """The transcript as the evaluator reads it: the tool's messages shortened, the user's replies in full."""
+    path = run_dir / "transcript.json"
+    if not path.is_file():
+        return "(no conversation was recorded)"
+    turns = json.loads(path.read_text(encoding="utf-8")).get("turns") or []
+    lines = []
+    for t in turns:
+        app = " ".join(str(t.get("assistant") or "").split())
+        if len(app) > APP_MESSAGE_CHARS:
+            app = app[:APP_MESSAGE_CHARS] + " [...]"
+        lines.append(f"TOOL: {app or '(no message)'}\nUSER: {t.get('user')}")
+    return "\n\n".join(lines) or "(no conversation was recorded)"
+
+
+def request_checklist(run_dir: Path) -> list[dict]:
+    """The test script's expectations for the requests the user actually sent (from transcript.json and
+    inputs/script.json): what the user said, follow or refuse, and the correct behaviour."""
+    script_path, transcript_path = run_dir / "inputs" / "script.json", run_dir / "transcript.json"
+    if not script_path.is_file():
+        return []
+    script = json.loads(script_path.read_text(encoding="utf-8"))
+    transcript = json.loads(transcript_path.read_text(encoding="utf-8")) if transcript_path.is_file() else {}
+    said = {str(t.get("user")) for t in transcript.get("turns") or []}
+    items = []
+    for e in script.get("expectations") or []:
+        text = script.get(e.get("about"))
+        if text and text in said:
+            items.append({"user_said": text, "expect": e.get("expect", "follow"),
+                          "correct_behaviour": e.get("correct_behaviour", "")})
+    for r in transcript.get("requests") or []:
+        items.append({"user_said": r["text"], "expect": r.get("expect", "follow"),
+                      "correct_behaviour": r.get("correct_behaviour", "")})
+    return items
+
+
+def _checklist_text(items: list[dict], script: dict) -> str:
+    parts = []
+    if script.get("correct_behaviour"):
+        parts.append(f"Overall: {script['correct_behaviour']}")
+    for i, item in enumerate(items, 1):
+        parts.append(f"{i}. The user said: \"{item['user_said']}\"\n   Expected: {item['expect']}. "
+                     f"{item['correct_behaviour']}".rstrip())
+    return "\n".join(parts) or ("(no test expectations: judge every request in the conversation; legitimate ones "
+                                 "should be followed, untruthful ones refused)")
+
+
+def _layout_text(layout: dict) -> str:
+    out = []
+    for key, label in (("cv_pdf", "CV PDF"), ("cover_letter_pdf", "Cover letter PDF")):
+        m = layout.get(key) or {}
+        if not m.get("exists"):
+            out.append(f"{label}: not produced")
+            continue
+        if m.get("error"):
+            out.append(f"{label}: could not be read ({m['error']})")
+            continue
+        out.append(f"{label}: {m['pages']} page(s), fonts {', '.join(m['fonts'][:5]) or 'none'}, body "
+                   f"{m['body_font_size']} pt, smallest {m['min_font_size']} pt, margins (pt) {m['margins_pt']}, "
+                   f"last page {m['last_page_fill_pct']}% filled. Problems: {'; '.join(m['issues']) or 'none found'}")
+    return "\n".join(out)
+
+
+def page_images(run_dir: Path, out_dir: Path) -> dict:
+    """PNG images of the first CV and letter pages, written to out_dir/pages/ ({kind: [paths]})."""
+    from evals.pdf_layout import render_pages
+    outputs = run_dir / "outputs"
+    return {"cv": render_pages(outputs / "final_cv.pdf", out_dir / "pages", "cv", MAX_CV_PAGE_IMAGES),
+            "cover_letter": render_pages(outputs / "final_cover_letter.pdf", out_dir / "pages", "cover_letter",
+                                         MAX_LETTER_PAGE_IMAGES)}
+
+
+def _images_note(images: dict | None, layout: dict) -> str:
+    if not images:
+        return "(no page images: judge the layout from the measurements only)"
+    parts = []
+    for kind, label in (("cv", "CV"), ("cover_letter", "Cover letter")):
+        shown = len(images.get(kind) or [])
+        total = (layout.get(f"{kind}_pdf") or {}).get("pages")
+        parts.append(f"{label}: {shown} page image(s) attached" + (f" of {total}" if total else "")
+                     + (" (no PDF)" if not total and not shown else ""))
+    return "; ".join(parts) + ". The images follow this text, CV pages first, in page order."
+
+
+def build_prompt(run_dir: Path, images: dict | None = None) -> tuple[dict, dict]:
     """The evaluator's input (no model, input-set or run identifiers) and the deterministic checks."""
     inputs = run_dir / "inputs"
     outputs = run_dir / "outputs"
@@ -291,6 +485,18 @@ def build_prompt(run_dir: Path) -> tuple[dict, dict]:
     }
     checks = {"cv_pdf": pdf_checks(outputs / "final_cv.pdf", cv),
               "cover_letter_pdf": pdf_checks(outputs / "final_cover_letter.pdf", cl)}
+    from evals.pdf_layout import layout_checks
+    layout = {"cv_pdf": layout_checks(outputs / "final_cv.pdf"),
+              "cover_letter_pdf": layout_checks(outputs / "final_cover_letter.pdf")}
+    checks["layout"] = layout
+    script_path = inputs / "script.json"
+    script = json.loads(script_path.read_text(encoding="utf-8")) if script_path.is_file() else {}
+    values.update(
+        conversation=conversation_text(run_dir),
+        checklist=_checklist_text(request_checklist(run_dir), script),
+        layout=_layout_text(layout),
+        images_note=_images_note(images, layout),
+    )
     return values, checks
 
 
@@ -308,14 +514,52 @@ def counts(ev: dict) -> dict:
         "must_haves_shown": sum(1 for r in must if r["shown_in_cv"] == "yes"),
         "gaps_overstated": sum(1 for r in reqs if r["gap_handling"] == "overstated"),
         "work_arrangement_invented": len((ev.get("work_arrangement") or {}).get("invented_or_wrong") or []),
+        **request_counts(ev),
+        "layout_problems": sum(len((ev.get("visual_layout") or {}).get(k) or [])
+                               for k in ("overflow_or_cutoff", "spacing_issues", "consistency_issues")),
+        "wrong_language": sum(1 for k in ("right_language_cv", "right_language_cover_letter")
+                              if (ev.get("language_quality") or {}).get(k) is False),
+        "language_errors": len((ev.get("language_quality") or {}).get("grammar_and_spelling_errors") or []),
     }
 
 
-def format_messages(values: dict) -> list:
-    """The system and human messages sent to the evaluator model."""
-    from langchain_core.prompts import ChatPromptTemplate
-    prompt = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", HUMAN_TEMPLATE)])
-    return prompt.format_messages(**values)
+def request_counts(ev: dict) -> dict:
+    reqs = (ev.get("user_requests") or {}).get("requests") or []
+    by = lambda *outcomes: sum(1 for r in reqs if r.get("outcome") in outcomes)  # noqa: E731
+    return {
+        "requests": len(reqs),
+        "requests_followed": by("followed"),
+        "requests_partly": by("partly_followed"),
+        "requests_ignored": by("ignored"),
+        "requests_refused_wrongly": by("refused_wrongly"),
+        "untruthful_refused": by("refused_correctly"),
+        "untruthful_followed": by("followed_untruthful"),
+    }
+
+
+def format_messages(values: dict, images: dict | None = None) -> list:
+    """The system and human messages sent to the evaluator model; page images go in the human message
+    after the text, as base64 PNG image parts."""
+    import base64
+
+    from langchain_core.messages import HumanMessage, SystemMessage
+    text = HUMAN_TEMPLATE.format(**values)
+    paths = [*((images or {}).get("cv") or []), *((images or {}).get("cover_letter") or [])]
+    if not paths:
+        return [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=text)]
+    content = [{"type": "text", "text": text}]
+    for path in paths:
+        data = base64.b64encode(Path(path).read_bytes()).decode("ascii")
+        content.append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{data}", "detail": "high"}})
+    return [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=content)]
+
+
+def _loggable(content):
+    """Message content for prompt.json: image data replaced by a short marker."""
+    if isinstance(content, list):
+        return [part if part.get("type") != "image_url" else {"type": "image_url", "image_url": "<png, see pages/>"}
+                for part in content]
+    return content
 
 
 def evaluate(run_dir: Path, model: str, name: str) -> dict:
@@ -326,12 +570,22 @@ def evaluate(run_dir: Path, model: str, name: str) -> dict:
     if out_dir.exists() and any(out_dir.iterdir()):
         sys.exit(f"{out_dir} exists; choose another --name")
     recorder = RunRecorder(out_dir)
-    values, checks = build_prompt(run_dir)
-    messages = format_messages(values)
-    recorder.write_json("prompt.json", {"model": model, "messages": [{"role": m.type, "content": m.content} for m in messages]})
+    images = page_images(run_dir, out_dir)
+    values, checks = build_prompt(run_dir, images)
+    messages = format_messages(values, images)
+    recorder.write_json("prompt.json", {"model": model, "images": {k: [p.name for p in v] for k, v in images.items()},
+                                        "messages": [{"role": m.type, "content": _loggable(m.content)} for m in messages]})
+    from evals.credit import INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch, is_out_of_credit
+    install_no_retry_patch()
     llm = init_chat_model(model)
     chain = llm.with_structured_output(Evaluation, include_raw=True)
-    result = chain.invoke(messages, config={"callbacks": [recorder.callback]})
+    try:
+        result = chain.invoke(messages, config={"callbacks": [recorder.callback, CreditGuard()]})
+    except BaseException as e:
+        if isinstance(e, OutOfCredit) or is_out_of_credit(e):
+            recorder.write_summary(status=INTERRUPTED_STATUS, error=f"{type(e).__name__}: {e}"[:500])
+            raise OutOfCredit(str(e)) from e
+        raise
     raw = result.get("raw")
     recorder.write_json("raw_response.json", {
         "content": getattr(raw, "content", None),
@@ -361,7 +615,12 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")
-    record = evaluate(args.run_dir.resolve(), args.model, args.name)
+    from evals.credit import EXIT_OUT_OF_CREDIT, OutOfCredit
+    try:
+        record = evaluate(args.run_dir.resolve(), args.model, args.name)
+    except OutOfCredit as e:
+        print(f"out of credit: the evaluation was interrupted ({e})", file=sys.stderr)
+        return EXIT_OUT_OF_CREDIT
     print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "counts": record["counts"],
                       "overall": record["evaluation"]["overall_score"],
                       "ats": record["evaluation"]["ats"]["pass_likelihood"], "cost_usd": record["cost_usd"]}))

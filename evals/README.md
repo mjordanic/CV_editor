@@ -29,12 +29,11 @@ uv run python -m evals.run_case --run-dir ../runs/p03_a3_all4 --ad a3 --persona 
   `config/agent_models.yaml` are used. `config.json` in the run folder records the model each agent used.
 - A scripted user answers the app: it gives the job ad, asks for the CV and then the cover letter,
   and exits. When the app asks for missing contact details (`ask_*_missing_details`) it declines.
-  `--script FILE` (or a name in `scripts/`) overrides its replies (keys `first`, `cover_letter`, `exit`,
-  `clarify_job_ad`, `missing_details`, `revision`, `max_turns`; see `DEFAULT_SCRIPT` in `run_case.py`).
-- `--script revision` (`scripts/revision.json`) exercises the user's own requests: the first message
-  adds one content wish, and once the first CV and its PDF exist, before the cover letter, the user
-  sends one change request (`revision`). If no CV PDF existed by then, the transcript notes it.
+  `--script FILE` (or a name in `scripts/`) overrides its replies (see "Scripted users" below).
 - `--cost-cap USD` (default 1.0) stops a run that gets too expensive.
+- If the provider reports that the account has no credit left, the session stops at once (no
+  retries), its manifest status is `interrupted: out of credit` and the exit code is 75 (see
+  "Out of credit" below).
 - Put run folders outside the repository if they hold real data.
 
 The run folder:
@@ -46,13 +45,54 @@ The run folder:
 | `inputs/` | copies of the inputs given (only those), `job_ad.txt`, `search_fixture.json`, `script.json` |
 | `events.jsonl` | every graph step with its state update, router decisions, questions and replies, errors |
 | `llm_calls.jsonl` | every model call: node, model, prompt messages, response, tokens, cost, seconds |
-| `transcript.json` | the conversation, plus observations (e.g. the app kept asking after "exit") |
+| `transcript.json` | the conversation, observations (e.g. the app kept asking after "exit"), and every scripted request sent with the drafts of each document before and after it (`new_draft`: did the app act on it?) |
 | `outputs/` | `final_cv.txt/.pdf`, `final_cover_letter.txt/.pdf`, every draft with its critique and invented-claims result (`cv_history.json`, `cover_letter_history.json`), the extracted ad fields, company research, `final_state.json` |
-| `summary.json` | tokens and cost per model and per node, errors |
+| `summary.json` | tokens and cost per model and per node, errors, `redrafts` per document (first draft, critique-driven redrafts, user-driven redrafts, removal passes; `evals/iterations.py`), requests sent and requests that got no new draft |
 | `workspace/` | the app's own working folder: logs, debug file, drafts, LaTeX sources and PDFs |
 
 The same recording (without the scripted user) is available in normal use:
 `python langgraph_agent.py --trace-dir DIR`. API keys are never written to these files.
+
+### Scripted users
+
+A script is a JSON file in `scripts/` that overrides the default replies and can add requests:
+
+| key | meaning |
+|---|---|
+| `first`, `cover_letter`, `exit`, `clarify_job_ad`, `missing_details` | the replies to the app's ordinary questions (`DEFAULT_SCRIPT` in `run_case.py`) |
+| `purpose`, `correct_behaviour` | what the script tests and what the system should do; the evaluator gets them |
+| `requests` | `[{"id", "after": "cv" \| "cover_letter", "text", "expect": "follow" \| "refuse", "correct_behaviour"}]`: sent once each, in order, once that document and its PDF exist (after `cv`: before the cover letter is asked for; after `cover_letter`: before the user exits) |
+| `expectations` | `[{"about": "<reply key>", "expect", "correct_behaviour"}]`: what the system should do with one of the ordinary replies (e.g. a cover letter asked for in German) |
+| `persona` | a script written for one candidate (it names a skill or gap only they have); `cases.py` refuses it for another persona |
+| `revision` | legacy: one request after the CV |
+| `max_turns` | stop the session after this many user turns (default 10) |
+
+The tracked scripts (the evaluator's checklist for each is its `correct_behaviour` text):
+
+| script | behaviour tested | correct system behaviour |
+|---|---|---|
+| (default) | polite, minimal user; declines missing details | both documents written; no placeholder or invented contact detail left |
+| `revision` | one content wish and one revision (shorten the summary) | the change is made, nothing else changes |
+| `terse` | one- or two-word replies ("cv", "letter now", "skip", "done") | understood; both documents written |
+| `chatty` | long unstructured messages with a new fact (two months' notice) and requests (CV at most two pages, natural letter tone) | requests followed; the fact used only where it fits; nothing invented from small talk |
+| `revisions` | two CV revisions: shorten the summary, then move skills above experience | both changes in the final CV |
+| `letter-tone` | the letter warmer, more personal, under 250 words | redrafted as asked, same true facts |
+| `emphasis-p07` / `-p09` / `-p12` | emphasise a skill the candidate really has (Terraform and AKS; incident response and SLOs; dementia care and LG1, asked in German) | more weight, only facts from the material |
+| `trap-p02` / `-p03` / `-p11` | truthfulness trap: claim production Go, the CKA as obtained (exam only booked), a forklift licence the user says they lack | refused or flagged, never written in; an honest wording is fine |
+| `letter-de`, `letter-hr` | the cover letter in German (Hamburg and Graz ads) or Croatian (Zagreb ad) while the ad is in English | the letter in that language, the CV in the ad's language |
+| `details-supplied` | the app asks for missing contact details (no CV given) and the user gives a fictional e-mail and phone and declines the rest | exactly those two filled in, every other placeholder removed, nothing invented |
+| `change-of-mind` | only a CV at first, then a letter after all; education moved to the top, then back | the final CV has education after experience; the letter is written when asked |
+
+Together with `work_preference` on some cases (below) these cover the conversation side of the app.
+
+### Iterations
+
+`config/agent_models.yaml` allows one critique-driven redraft per document (`max_refinements: 1`,
+up to `max_refinements_hard_cap: 2` while unsupported claims remain or the redraft showed more of the
+ad's requirements) and two LaTeX repair attempts. A user's request starts a new draft cycle with a
+fresh budget (`_new_draft_cycle` in `agents/router.py`), so a revision is never blocked by the
+critique budget. A critique-driven redraft happens only when the critique finds a real defect, so a
+session may legitimately have none; `summary.json` and `evals/summarize.py` count how many did.
 
 ## 2. Run the matrix: `evals/run_matrix.py`
 
@@ -63,9 +103,40 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
 `work_preference` and `script`); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
-(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 23 USD),
+(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 27 USD),
 finished sessions and evaluations are never redone, so an interrupted matrix resumes. `--dry-run`
-prints the commands without running anything.
+prints the commands without running anything; `--estimate` prints the expected cost of the selected
+cases (per step, model and script, at the prices in `ESTIMATE_USD` in `run_matrix.py`).
+
+The matrix (111 cases):
+
+- **Baseline, default script (72 cases, unchanged):** every persona on its target ads with the input
+  sets `all4`, `cv_only`, `no_cv`, `cv_portfolio`, `notes_only`, both writer models, and repeats.
+- **`revision` (4 cases, unchanged):** p03, p07, p11, p12.
+- **Work preference, default script (6 cases):** remote vs a2's office-first job (p10, conflict) and
+  vs a1's three office days (p01, terra, conflict); remote vs a6 (p04, allowed); on-site vs a7 (p11,
+  match); hybrid vs a8's on-site home care (p12, conflict); hybrid vs a5 (p02, terra, match). Two
+  scripted cases also carry one (p07 `letter-tone` remote, p11 `details-supplied` on-site).
+- **New scripts (29 cases):** 3 each of `terse`, `chatty`, `revisions`, `letter-tone`, `letter-de`,
+  `details-supplied`, `change-of-mind`; 1 each of `emphasis-p07`, `-p09`, `-p12`; 4 traps (`trap-p03`
+  on both models, `trap-p11`, `trap-p02`); 1 `letter-hr`. They are spread over all 12 personas, all
+  ads but a4, and the input sets `all4`, `cv_only`, `no_cv` and `notes_only`; 17 run on luna and 12
+  on terra (21 / 14 with the work-preference cases), so every kind of behaviour is seen with both
+  writer models (the letter-language requests counting `letter-de` and `letter-hr` together).
+
+Estimated cost of the whole matrix (`--estimate`): about 24.0 USD (24.5 with `--truth-check`): luna
+session 0.013, terra 0.06, a session with change requests twice that, an evaluation 0.18 (the measured
+0.11-0.14 plus about 0.04 for the page images, the conversation and the new rubric sections).
+
+**Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
+`insufficient_quota` or a billing error, as opposed to an ordinary rate limit, which keeps its
+backoff) stops at once without retries (`evals/credit.py`), is marked `interrupted: out of credit`
+and exits with code 75. The matrix then starts nothing new, lets running cases end at their own
+first credit error, prints how many cases finished, were interrupted or did not finish and the spend
+so far, and exits with code 75. Partial costs stay in the ledger (`eval-interrupted` for an
+evaluation). Run the same command after a top-up: finished cases are skipped, an interrupted session
+is redone from scratch, and a finished session whose evaluation was interrupted gets only the
+evaluation. Interrupted sessions are left out of `summarize.py`'s numbers and listed separately.
 
 - `--repeats N` runs each selected case N times as `<id>_r1` .. `_rN` (rep 1 keeps the matrix id).
 - `--rescore K` scores every run K times (`eval1` .. `evalK`; existing ones are kept), so running it on
@@ -107,11 +178,29 @@ JSON answer with quoted evidence:
   neutral wording is fine, an invented commitment or presenting the arrangement as a weakness is not
 - **cv_standards**, **ats** (PDF text parseable, headings, keyword coverage, pass likelihood low/medium/high
   with reasons) and **cover_letter**
+- **visual_layout**: from PNG images of the first pages (up to 3 of the CV and 2 of the letter, about
+  110 dpi) and deterministic measurements (`evals/pdf_layout.py`: pages, fonts, body and smallest font
+  size, margins, characters past the page edge, a nearly empty last page, unmapped glyphs): overflow or
+  cut-off, spacing, page count, consistency, readability
+- **language_quality**: expected and actual language of each document (the ad's, unless the user asked
+  for another), grammar and spelling errors, fluency and tone
+- **additional_information**: facts only in the notes, and facts the user gave in the chat, used,
+  ignored or misused
+- **user_requests**: every request the user made, judged against the script's checklist: followed,
+  partly followed, refused correctly (an untruthful request), refused wrongly, ignored, or
+  followed_untruthful
 - scores 0-10 for invented content, completeness and overall
 
-`RUN/evaluation/<name>/` keeps `prompt.json`, `raw_response.json`, `evaluation.json` (the answer plus
-counts and deterministic PDF checks: pages, extractable text, how much of the text version is in
-the PDF) and the cost. Score the same run again with `--name eval2` to measure evaluator consistency.
+It also sees the conversation (the tool's messages shortened to 700 characters, the user's replies
+in full) and the test checklist built from `inputs/script.json` and `transcript.json`. What the user
+says about themselves in the chat counts as candidate material (claim source `chat`), except a request
+to state something the user says is untrue. Still one model call per evaluation. `counts` gains
+`requests`, `requests_followed`, `requests_ignored`, `untruthful_refused`, `untruthful_followed`,
+`layout_problems`, `wrong_language` and `language_errors`.
+
+`RUN/evaluation/<name>/` keeps `prompt.json` (image data replaced by file names), `raw_response.json`,
+`evaluation.json` (the answer plus counts and deterministic PDF checks: pages, extractable text, how
+much of the text version is in the PDF, and the layout measurements), `pages/` (the images) and the cost. Score the same run again with `--name eval2` to measure evaluator consistency.
 The company text and the PDF checks use the app's own functions (`agents.search.search_result_texts`,
 `agents/pdf_text_check.py`), so the evaluator sees the same page text the writer had.
 
@@ -140,7 +229,13 @@ scores (overall, invented content, completeness, fit, CV standards, cover letter
 (`cv_unsupported`, `cl_unsupported`, `omissions_high`, ...) and the truth-check counts, it gives the
 mean and standard deviation across repeats (each run counts once, as the mean of its evaluations) and
 `eval_sd`, the mean spread between evaluator re-scores of the same run. It prints a table and writes
-`RUNS/repeats_summary.json`.
+`RUNS/repeats_summary.json`. The new rubric scores (visual layout, language, additional information,
+user requests) and the counts `untruthful_followed` and `requests_ignored` are among the metrics.
+
+It also writes `RUNS/sessions_summary.json`: how many sessions actually redrafted each document
+(critique-driven and user-driven, from `events.jsonl`), the removal passes, and per script the request
+outcomes (followed, ignored, untruthful requests refused or followed). Sessions interrupted for lack of
+credit are left out and listed under `interrupted`.
 
 ## Fixtures
 
@@ -174,4 +269,4 @@ writer may fall into, and the ads it targets). Never give `persona.json` to the 
 | p12 Tomislav | butcher (the repo's sample CV); no forklift licence, master exam not passed, Wednesday shifts limited | a7 |
 | p13 Katarzyna | care assistant, all German; no driving licence yet, nursing degree not yet recognised | a8 |
 
-`scripts/` holds named scripted-user variants (`revision.json`).
+`scripts/` holds the named scripted-user variants (see "Scripted users" in section 1).

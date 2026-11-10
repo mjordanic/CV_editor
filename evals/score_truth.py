@@ -17,7 +17,7 @@ RUN/evaluation/<name>/truth_check.json, with llm_calls.jsonl and summary.json (c
 
 Usage:
     .venv/bin/python -m evals.score_truth RUN_DIR [--model openai:gpt-6-luna] [--name truth1] [--persona p12] [--env-file .env]
-This makes one paid model call per check.
+This makes one paid model call per check. Out of credit: no retry, exit code 75 (evals/credit.py).
 """
 from __future__ import annotations
 
@@ -200,8 +200,16 @@ def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1",
     if llm is None:
         from langchain.chat_models import init_chat_model
         llm = init_chat_model(model)
-    result = llm.with_structured_output(TruthCheck, include_raw=True).invoke(
-        messages, config={"callbacks": [recorder.callback]})
+    from evals.credit import INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch, is_out_of_credit
+    install_no_retry_patch()
+    try:
+        result = llm.with_structured_output(TruthCheck, include_raw=True).invoke(
+            messages, config={"callbacks": [recorder.callback, CreditGuard()]})
+    except BaseException as e:
+        if isinstance(e, OutOfCredit) or is_out_of_credit(e):
+            recorder.write_summary(status=INTERRUPTED_STATUS, error=f"{type(e).__name__}: {e}"[:500])
+            raise OutOfCredit(str(e)) from e
+        raise
     parsed = result.get("parsed")
     if parsed is None:
         recorder.write_summary(status="parse_error")
@@ -226,10 +234,14 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")
+    from evals.credit import EXIT_OUT_OF_CREDIT, OutOfCredit
     try:
         record = score_truth(args.run_dir.resolve(), args.model, args.name, args.persona)
     except (ValueError, FileExistsError) as e:
         sys.exit(str(e))
+    except OutOfCredit as e:
+        print(f"out of credit: the truth check was interrupted ({e})", file=sys.stderr)
+        return EXIT_OUT_OF_CREDIT
     print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "persona": record["persona"],
                       "counts": record["counts"]}))
     return 0

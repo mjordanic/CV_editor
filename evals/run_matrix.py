@@ -5,7 +5,7 @@ are in `evals/matrix.json`. This makes paid model calls (never Tavily: every ad 
 
 Usage (from the repo root):
     .venv/bin/python -m evals.run_matrix --out RUNS_DIR --env-file PATH/.env [--matrix evals/matrix.json]
-        [--workers 4] [--only CASE_ID ...] [--total-cap 23] [--cost-cap 1.5] [--dry-run]
+        [--workers 4] [--only CASE_ID ...] [--total-cap 27] [--cost-cap 1.5] [--dry-run] [--estimate]
         [--repeats N] [--eval-name eval1 | --rescore K] [--truth-check]
 
 Each case gets RUNS_DIR/<case id>/ (see evals/README.md) and RUNS_DIR/<case id>.out (console log).
@@ -17,6 +17,14 @@ re-scored. --dry-run prints the commands without running anything.
 --repeats N runs every selected case N times: <id without _rN>_r1 .. _rN (rep 1 keeps the matrix id).
 --rescore K scores each run K times (eval1 .. evalK); --eval-name names a single evaluation instead.
 --truth-check also runs evals/score_truth.py (truth1) after the evaluations.
+--estimate prints the expected cost of the selected cases (ESTIMATE_USD below) and runs nothing.
+
+Out of credit: when a session or an evaluation exits with code 75 (the provider reported no credit
+left, evals/credit.py), no new case or step starts; cases already running finish their current step
+(and stop at their own first credit error). The matrix then prints the finished / unfinished /
+interrupted counts and the spend, and exits with code 75. Its partial cost stays in the ledger. Run
+the same command again after a top-up: finished cases are skipped, an interrupted session is redone
+from scratch, and a finished session whose evaluation was interrupted gets only the evaluation.
 """
 from __future__ import annotations
 
@@ -32,9 +40,20 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from evals.cases import DEFAULT_MATRIX, load_matrix, resolve_case
+from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
 
 REPO = Path(__file__).resolve().parent.parent
 _LOCK = threading.Lock()
+OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new starts after it
+
+# Expected cost per step in USD, from the measured partial runs (2026-11): a gpt-6-luna session about
+# 0.013, a gpt-6.1-terra session about 0.06, one gpt-6.1-sol evaluation 0.11-0.14 (text only). The
+# evaluation now also reads the conversation, page images (about 1.5k tokens a page, up to 5 pages at
+# $2/1M input) and answers four more rubric sections (about 2k more output tokens at $10/1M): about
+# +0.04, so 0.18 at the high end. A script with change requests redrafts more: its session is
+# estimated at twice the default session. The truth check is one short luna call.
+ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval": 0.18, "truth": 0.005,
+                "scripted_session_factor": 2.0}
 
 
 def spent(ledger: Path) -> float:
@@ -105,6 +124,26 @@ def truth_command(run_dir: Path, env_file: str | None, name: str = "truth1") -> 
     return cmd + (["--env-file", env_file] if env_file else [])
 
 
+def _manifest_status(manifest: Path) -> str | None:
+    try:
+        return json.loads(manifest.read_text()).get("status")
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _partial_cost(folder: Path) -> float:
+    """The cost an interrupted evaluation or truth check had made (its summary.json), else 0."""
+    try:
+        return float(json.loads((folder / "summary.json").read_text()).get("cost_usd") or 0)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return 0.0
+
+
+def _mark_out_of_credit(cid: str, step: str) -> tuple[str, str]:
+    OUT_OF_CREDIT.set()
+    return cid, f"interrupted (out of credit) during {step}"
+
+
 def run_one(case: dict, opts) -> tuple[str, str]:
     cid = case["id"]
     out = Path(opts.out)
@@ -113,21 +152,30 @@ def run_one(case: dict, opts) -> tuple[str, str]:
     truth = run_dir / "evaluation" / "truth1" / "truth_check.json"
     if all(f.exists() for f in evals.values()) and (not opts.truth_check or truth.exists()):
         return cid, "skip (done)"
+    if OUT_OF_CREDIT.is_set():
+        return cid, "not started (out of credit)"
     if spent(ledger) > opts.total_cap:
         return cid, "skip (total cap reached)"
     manifest = run_dir / "manifest.json"
-    if not manifest.exists() or json.loads(manifest.read_text()).get("status") == "running":
-        shutil.rmtree(run_dir, ignore_errors=True)  # an unfinished session is redone from scratch
+    status = _manifest_status(manifest) if manifest.exists() else None
+    if status is None or status == "running" or str(status).startswith("interrupted"):
+        shutil.rmtree(run_dir, ignore_errors=True)  # an unfinished or interrupted session is redone from scratch
         with open(log, "w") as f:
-            subprocess.run(session_command(case, run_dir, opts.env_file, opts.cost_cap), cwd=str(REPO),
-                           stdout=f, stderr=subprocess.STDOUT)
+            proc = subprocess.run(session_command(case, run_dir, opts.env_file, opts.cost_cap), cwd=str(REPO),
+                                  stdout=f, stderr=subprocess.STDOUT)
         if not manifest.exists():
+            if proc.returncode == EXIT_OUT_OF_CREDIT:
+                return _mark_out_of_credit(cid, "the session")
             return cid, "session failed before writing a manifest"
         _record(ledger, cid, "app", json.loads(manifest.read_text()).get("cost_usd") or 0)
+        if proc.returncode == EXIT_OUT_OF_CREDIT or _manifest_status(manifest) == INTERRUPTED_STATUS:
+            return _mark_out_of_credit(cid, "the session")  # not evaluated: redone after a top-up
     failed = []
     for name, result in evals.items():
         if result.exists():
             continue
+        if OUT_OF_CREDIT.is_set():
+            return cid, "evaluation not started (out of credit)"
         if (result.parent).exists():
             shutil.rmtree(result.parent)  # a failed attempt leaves a folder the evaluator refuses to reuse
         ev = subprocess.run(evaluate_command(run_dir, opts.env_file, name), cwd=str(REPO), capture_output=True, text=True)
@@ -135,9 +183,14 @@ def run_one(case: dict, opts) -> tuple[str, str]:
             f.write(f"\n--- evaluate {name} ---\n" + ev.stdout[-3000:] + ev.stderr[-3000:])
         if result.exists():
             _record(ledger, cid, "eval", json.loads(result.read_text())["cost_usd"])
+        elif ev.returncode == EXIT_OUT_OF_CREDIT:
+            _record(ledger, cid, "eval-interrupted", _partial_cost(result.parent))
+            return _mark_out_of_credit(cid, f"evaluation {name}")
         else:
             failed.append(name)
     if opts.truth_check and not truth.exists():
+        if OUT_OF_CREDIT.is_set():
+            return cid, "truth check not started (out of credit)"
         if truth.parent.exists():
             shutil.rmtree(truth.parent)
         tc = subprocess.run(truth_command(run_dir, opts.env_file), cwd=str(REPO), capture_output=True, text=True)
@@ -145,9 +198,38 @@ def run_one(case: dict, opts) -> tuple[str, str]:
             f.write("\n--- truth check ---\n" + tc.stdout[-3000:] + tc.stderr[-3000:])
         if truth.exists():
             _record(ledger, cid, "truth", json.loads(truth.read_text())["cost_usd"])
+        elif tc.returncode == EXIT_OUT_OF_CREDIT or OUT_OF_CREDIT.is_set():
+            return _mark_out_of_credit(cid, "the truth check")
         else:
             failed.append("truth1")
     return cid, f"failed: {', '.join(failed)}" if failed else "ok"
+
+
+def estimate(cases: list[dict], opts) -> dict:
+    """Expected cost of the selected cases at ESTIMATE_USD: per step kind, per model and per script."""
+    p = ESTIMATE_USD
+    total = {"sessions": 0.0, "evaluations": 0.0, "truth_checks": 0.0}
+    by_model, by_script = {}, {}
+    n_evals = len(eval_names(opts))
+    for case in cases:
+        model = case["model"].split(":", 1)[-1]
+        session = p["session"].get(model, max(p["session"].values()))
+        if case.get("script"):
+            session *= p["scripted_session_factor"]
+        cost = session + n_evals * p["eval"] + (p["truth"] if opts.truth_check else 0)
+        total["sessions"] += session
+        total["evaluations"] += n_evals * p["eval"]
+        total["truth_checks"] += p["truth"] if opts.truth_check else 0
+        by_model[model] = by_model.get(model, 0) + cost
+        key = case.get("script") or "default"
+        by_script.setdefault(key, {"cases": 0, "usd": 0.0})
+        by_script[key]["cases"] += 1
+        by_script[key]["usd"] += cost
+    r = lambda x: round(x, 2)  # noqa: E731
+    return {"cases": len(cases), "total_usd": r(sum(total.values())), **{k: r(v) for k, v in total.items()},
+            "by_model": {k: r(v) for k, v in sorted(by_model.items())},
+            "by_script": {k: {"cases": v["cases"], "usd": r(v["usd"])} for k, v in sorted(by_script.items())},
+            "prices": p}
 
 
 def select_cases(cases: list[dict], only: list[str] | None, repeats: int = 1) -> list[dict]:
@@ -168,9 +250,10 @@ def main(argv=None) -> int:
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--only", nargs="+", help="run only these case ids")
-    parser.add_argument("--total-cap", type=float, default=23.0, help="start no new case past this many USD in total")
+    parser.add_argument("--total-cap", type=float, default=27.0, help="start no new case past this many USD in total")
     parser.add_argument("--cost-cap", type=float, default=1.5, help="per-session cap passed to run_case")
     parser.add_argument("--dry-run", action="store_true", help="print the commands, run nothing")
+    parser.add_argument("--estimate", action="store_true", help="print the expected cost of the selected cases, run nothing")
     parser.add_argument("--repeats", type=int, default=1, help="run each selected case N times (ids _r1.._rN)")
     names = parser.add_mutually_exclusive_group()
     names.add_argument("--eval-name", default="eval1", help="name of the evaluation to make for each run (default eval1)")
@@ -179,6 +262,9 @@ def main(argv=None) -> int:
     opts = parser.parse_args(argv)
 
     cases = select_cases(load_matrix(opts.matrix), opts.only, opts.repeats)
+    if opts.estimate:
+        print(json.dumps(estimate(cases, opts), indent=2))
+        return 0
     if opts.dry_run:
         for case in cases:
             run_dir = Path(opts.out) / case["id"]
@@ -190,9 +276,20 @@ def main(argv=None) -> int:
         return 0
     Path(opts.out).mkdir(parents=True, exist_ok=True)
     ledger = Path(opts.out) / "ledger.tsv"
+    OUT_OF_CREDIT.clear()
+    results = {}
     with ThreadPoolExecutor(opts.workers) as pool:
         for cid, status in pool.map(lambda c: run_one(c, opts), cases):
+            results[cid] = status
             print(f"{cid}: {status}  [spent ${spent(ledger):.3f}]", flush=True)
+    if OUT_OF_CREDIT.is_set():
+        finished = sum(1 for s in results.values() if s == "ok" or s.startswith("skip (done)"))
+        interrupted = sorted(c for c, s in results.items() if s.startswith("interrupted"))
+        unfinished = len(results) - finished - len(interrupted)
+        print(f"\nOUT OF CREDIT: the model provider reported no credit left. Finished {finished}, "
+              f"interrupted {len(interrupted)} ({', '.join(interrupted)}), not finished {unfinished}; "
+              f"spent ${spent(ledger):.3f}. Top up, then run the same command again to resume.", flush=True)
+        return EXIT_OUT_OF_CREDIT
     return 0
 
 
