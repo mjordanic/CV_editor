@@ -122,7 +122,7 @@ class GroundingResponse(BaseModel):
 # Appended to every critique-driven redraft instruction: a light critic sometimes proposes adding
 # what the job asks for even when the candidate does not have it.
 NO_NEW_CLAIMS_RULE = (
-    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, "
+    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, notes, "
     "portfolio or the user's own requests, even if the job asks for it."
 )
 
@@ -230,6 +230,10 @@ class CritiqueAgent:
         else:
             parts.append("Original Cover Letter: Not provided")
         
+        if candidate_text.get("notes"):
+            # Free-form notes are the candidate's own statements, like the CV.
+            parts.append(f"Candidate's Own Notes:\n{candidate_text['notes']}")
+
         if candidate_text.get("portfolio"):
             # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
             parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
@@ -472,9 +476,9 @@ class CritiqueAgent:
         unsupported = self.check_grounding(label if kind == "cv" else "cover letter", document, candidate_text)
         if unsupported:
             listed = "\n".join(f"- {claim}" for claim in unsupported)
-            critical_issues = _join(critical_issues, f"Claims the candidate's CV, portfolio and requests do not support:\n{listed}")
+            critical_issues = _join(critical_issues, f"Claims the candidate's own material (CV, cover letter, notes, portfolio, requests) does not support:\n{listed}")
             instructions = _join(instructions, (
-                f"Remove these claims, which the candidate's CV, portfolio and requests do not support "
+                f"Remove these claims, which the candidate's own material (CV, cover letter, notes, portfolio, requests) does not support "
                 f"(do not replace them with other claims the candidate cannot back):\n{listed}"
             ))
         if instructions:

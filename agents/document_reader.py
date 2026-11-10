@@ -106,34 +106,29 @@ class DocumentReaderAgent:
     def fetch_document_text(self, document_name: str) -> Optional[str]:
         """
         Fetches document text from the CV folder.
-        
+
         Args:
-            document_name: Name of the document (e.g., "CV", "cover_letter")
-        
+            document_name: Name of the document (e.g., "CV", "cover_letter", "notes")
+
         Returns:
-            str: The content of the document file (txt or pdf), or None if not found
+            str: The content of the document file (.txt, .md or .pdf), or None if not found
         """
         logger.debug(f"Fetching document: {document_name}")
-        doc_txt_path = os.path.join(self.cv_folder, f"{document_name}.txt")
-        doc_pdf_path = os.path.join(self.cv_folder, f"{document_name}.pdf")
-        
-        # Check if .txt file exists
-        if os.path.exists(doc_txt_path):
-            logger.debug(f"Found .txt file: {doc_txt_path}")
-            with open(doc_txt_path, "r", encoding="utf-8") as f:
+        for suffix in (".txt", ".md", ".pdf"):
+            path = os.path.join(self.cv_folder, f"{document_name}{suffix}")
+            if not os.path.exists(path):
+                continue
+            logger.debug(f"Found {suffix} file: {path}")
+            if suffix == ".pdf":
+                return self.read_pdf(path)
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
                 content = f.read()
-                logger.info(f"Document {document_name} read from .txt - {len(content)} characters")
-                return content
-        
-        # Check if .pdf file exists
-        if os.path.exists(doc_pdf_path):
-            logger.debug(f"Found .pdf file: {doc_pdf_path}")
-            return self.read_pdf(doc_pdf_path)
-        
-        # If neither exists, return None
-        logger.warning(f"Document {document_name} not found in {self.cv_folder} (checked .txt and .pdf)")
+            logger.info(f"Document {document_name} read from {suffix} - {len(content)} characters")
+            return content
+
+        logger.warning(f"Document {document_name} not found in {self.cv_folder} (checked .txt, .md and .pdf)")
         return None
-    
+
     def read_cv(self) -> Optional[str]:
         """
         Read the CV document if available.
@@ -151,18 +146,29 @@ class DocumentReaderAgent:
             str: Cover letter content if found, None otherwise
         """
         return self.fetch_document_text("cover_letter")
+
+    def read_notes(self) -> Optional[str]:
+        """
+        Read the candidate's free-form notes if available: anything about their career in any
+        shape (a rough CV draft without structure, bullet notes, a pasted LinkedIn profile).
+
+        Returns:
+            str: Notes content if found, None otherwise
+        """
+        return self.fetch_document_text("notes")
     
     def read_all_documents(self) -> Dict[str, Optional[str]]:
         """
-        Read both CV and cover letter documents if available.
-        
+        Read the CV, cover letter and free-form notes if available.
+
         Returns:
-            Dict with keys 'cv' and 'cover_letter', containing the document
+            Dict with keys 'cv', 'cover_letter' and 'notes', containing the document
             content if found, or None if not found
         """
         return {
             "cv": self.read_cv(),
-            "cover_letter": self.read_cover_letter()
+            "cover_letter": self.read_cover_letter(),
+            "notes": self.read_notes(),
         }
     
     def run(self, state=None) -> Dict[str, Dict[str, Optional[str]]]:
@@ -178,18 +184,24 @@ class DocumentReaderAgent:
         """
         logger.info("DocumentReaderAgent.run() called - reading all documents")
         documents = self.read_all_documents()
-        if not (documents.get("cv") or "").strip():
-            # Without a CV the writer builds one from the job ad and the portfolio alone, with
-            # placeholders such as [YOUR NAME]; ask for it instead.
-            logger.warning(f"No CV with text in {self.cv_folder} - asking the user for it")
+        for key in ("cv", "cover_letter", "notes"):
+            if not (documents.get(key) or "").strip():
+                documents[key] = None
+        if not documents.get("cv") and not documents.get("notes"):
+            # Without a CV or notes the writer builds a CV from the job ad and the portfolio alone,
+            # with placeholders such as [YOUR NAME]; ask for it instead. Notes alone are enough:
+            # they are the candidate's own facts, and the writer builds the CV from them.
+            logger.warning(f"No CV or notes with text in {self.cv_folder} - asking the user for them")
             documents["cv"] = ask_for_document(
-                f"I could not find your CV in {self.cv_folder} (CV.txt or CV.pdf), or it has no text. "
-                "Please paste your CV, or the path to a .txt or .pdf file that holds it.",
+                f"I could not find your CV in {self.cv_folder} (CV.txt, CV.md or CV.pdf), or it has no text. "
+                "Please paste your CV, or the path to a .txt or .pdf file that holds it. "
+                "A rough draft or loose notes about your work history are fine too.",
                 "CV",
             )
         cv_found = documents.get("cv") is not None
         cover_letter_found = documents.get("cover_letter") is not None
-        logger.info(f"Documents read - CV found: {cv_found}, Cover letter found: {cover_letter_found}")
+        notes_found = documents.get("notes") is not None
+        logger.info(f"Documents read - CV found: {cv_found}, Cover letter found: {cover_letter_found}, Notes found: {notes_found}")
         if cv_found:
             logger.debug(f"CV length: {len(documents['cv'])} characters")
         if cover_letter_found:
@@ -212,6 +224,11 @@ class DocumentReaderAgent:
             debug_content += "\n\n"
         else:
             debug_content += "COVER LETTER CONTENT: Not found\n\n"
+
+        if notes_found:
+            debug_content += "CANDIDATE NOTES:\n" + "-" * 80 + "\n" + documents["notes"] + "\n\n"
+        else:
+            debug_content += "CANDIDATE NOTES: Not found\n\n"
         
         write_to_debug(debug_content, "DOCUMENT READER DEBUG INFO")
         

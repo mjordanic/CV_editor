@@ -36,6 +36,7 @@ CV_GENERATION_SYSTEM_PROMPT = (
 CV_GENERATION_HUMAN_PROMPT = (
     "Create a professional, tailored CV based on the following information:\n\n"
     "**Existing CV (Base Document):**\n{candidate_cv}\n\n"
+    "**Candidate's Own Notes (free-form, possibly rough; facts here are the candidate's own, like the CV):**\n{candidate_notes}\n\n"
     "**Job Description:**\n{job_description}\n\n"
     "**Company Information:**\n{company_info}\n\n"
     "**Relevant Experience from Portfolio (RAG):**\n{relevant_experience_context}\n\n"
@@ -282,7 +283,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         company_info: Optional[dict],
         modification_instructions: Optional[str] = None,
         previous_modification_instructions_formatted: Optional[str] = None,
-        relevant_experience_context: Optional[str] = "No relevant experience retrieved."
+        relevant_experience_context: Optional[str] = "No relevant experience retrieved.",
+        candidate_notes: Optional[str] = None,
     ) -> tuple[str, str]:
         """
         Generate a tailored CV with separate content and notes.
@@ -293,12 +295,16 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             company_info: Company information from search
             modification_instructions: Optional modification instructions
             previous_modification_instructions_formatted: Optional formatted previous modification instructions
-            
+            candidate_notes: The candidate's free-form notes about their career (if available)
+
         Returns:
             tuple[str, str]: Tuple of (CV content, notes)
         """
         # Format inputs
-        candidate_cv_text = candidate_cv or "No existing CV provided. Create a professional CV based on the job requirements."
+        candidate_cv_text = candidate_cv or (
+            "No existing CV provided. Build the CV only from the facts in the candidate's notes and the portfolio "
+            "experience below; leave out anything they do not state, and use placeholders such as [EMAIL] for missing contact details."
+        )
         job_desc_text = self._format_job_description(job_description_info)
         company_info_text = self._format_company_info(company_info)
         
@@ -317,6 +323,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         
         llm_input = {
             "candidate_cv": candidate_cv_text,
+            "candidate_notes": candidate_notes or "No notes provided.",
             "job_description": job_desc_text,
             "company_info": company_info_text,
             "relevant_experience_context": relevant_experience_context,
@@ -446,7 +453,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                     "You are NOT bound to preserve its structure, formatting, or exact phrasing. "
                     "Your goal is to create the BEST possible CV tailored to the Job Description. "
                     "Feel free to reorder sections, rewrite bullet points for impact, and choose the most professional format. "
-                    "However, do NOT hallucinate facts - only use the factual information provided in the Existing CV."
+                    "However, do NOT hallucinate facts - only use the factual information provided in the Existing CV, "
+                    "the candidate's own notes and the portfolio experience."
                 )
                 logger.info("First iteration detected - granting creative liberty to CV Writer")
             else:
@@ -461,7 +469,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             company_info=company_info,
             modification_instructions=modification_instructions,
             previous_modification_instructions_formatted=previous_modification_instructions_formatted,
-            relevant_experience_context=relevant_experience_context
+            relevant_experience_context=relevant_experience_context,
+            candidate_notes=(candidate_text or {}).get("notes"),
         )
 
         # Store feedback for future iterations (only if non-empty and not from critique)

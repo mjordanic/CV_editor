@@ -99,3 +99,30 @@ class LatexFixer:
             return latex_source
 
 
+
+
+# Added to every generated document so that the PDF's text layer reads like the text version:
+# ATS parsers and pdf text extractors merge words on justified lines whose spaces TeX squeezed,
+# and split keywords at hyphenation points ("Kuber-\nnetes"). Ragged-right text without
+# hyphenation avoids both, and glyph-to-Unicode maps keep ligatures and accents searchable.
+_EXTRACTABLE_PREAMBLE = (
+    "% Plain text layer for ATS parsers (added by the CV editor)\n"
+    "\\IfFileExists{lmodern.sty}{\\usepackage{lmodern}}{}\n"
+    "\\ifdefined\\pdfgentounicode\\input{glyphtounicode}\\pdfgentounicode=1\\fi\n"
+)
+_EXTRACTABLE_BODY = "\\raggedright\\hyphenpenalty=10000\\exhyphenpenalty=10000\n"
+
+
+def ensure_text_extractable(latex: str) -> str:
+    """
+    Make a LaTeX document's PDF text extract cleanly (no merged or hyphen-split words).
+
+    Inserts a short preamble block before \\begin{document} and ragged-right, no-hyphenation
+    settings right after it, unless the document already has them. Leaves text without a
+    \\begin{document} unchanged.
+    """
+    marker = "\\begin{document}"
+    if not latex or marker not in latex or "\\pdfgentounicode" in latex:
+        return latex
+    head, body = latex.split(marker, 1)
+    return f"{head.rstrip()}\n{_EXTRACTABLE_PREAMBLE}{marker}\n{_EXTRACTABLE_BODY}{body.lstrip(chr(10))}"
