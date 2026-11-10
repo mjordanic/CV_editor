@@ -12,6 +12,15 @@ Metrics: overall, invented-content, completeness, fit, CV-standards and cover-le
 evaluator's counts (unsupported and stretched claims, high-relevance omissions, overstated gaps,
 invented work arrangement), and the truth check's counts when a truth_check.json exists.
 
+It also writes RUNS_DIR/sessions_summary.json (`session_totals`): over all sessions, how many
+actually redrafted (critique-driven redrafts and user-driven redrafts per document, from
+events.jsonl via evals/iterations.py), the mean of the new rubric scores (visual layout, language,
+additional information, user requests) and the user-request outcomes per script (followed, ignored,
+untruthful requests refused or followed).
+
+Sessions interrupted because the provider ran out of credit (manifest status "interrupted: out of
+credit") are left out of every number and listed under "interrupted".
+
 Usage:
     .venv/bin/python -m evals.summarize RUNS_DIR [--out RUNS_DIR/repeats_summary.json] [--only-repeated]
 """
@@ -40,7 +49,15 @@ EVAL_METRICS = {
     "omissions_high": lambda r: r["counts"]["omissions_high"],
     "gaps_overstated": lambda r: r["counts"]["gaps_overstated"],
     "work_arrangement_invented": lambda r: r["counts"]["work_arrangement_invented"],
+    "visual_layout": lambda r: r["evaluation"]["visual_layout"]["score"],
+    "language_quality": lambda r: r["evaluation"]["language_quality"]["score"],
+    "additional_information": lambda r: r["evaluation"]["additional_information"]["score"],
+    "user_requests": lambda r: r["evaluation"]["user_requests"]["score"],
+    "untruthful_followed": lambda r: r["counts"]["untruthful_followed"],
+    "requests_ignored": lambda r: r["counts"]["requests_ignored"],
 }
+REQUEST_COUNTS = ("requests", "requests_followed", "requests_partly", "requests_ignored", "requests_refused_wrongly",
+                  "untruthful_refused", "untruthful_followed")
 TRUTH_METRICS = ("gaps_claimed", "traps_hit", "unclear", "unverified_quotes")
 
 
@@ -73,10 +90,58 @@ def read_run(run_dir: Path) -> dict:
     return values
 
 
+def _manifest(run: Path) -> dict:
+    try:
+        return json.loads((run / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def is_interrupted(run: Path) -> bool:
+    return str(_manifest(run).get("status") or "").startswith("interrupted")
+
+
+def run_folders(runs_dir: Path) -> tuple[list[Path], list[str]]:
+    """(run folders to count, names of interrupted runs left out)."""
+    runs = sorted(p for p in runs_dir.iterdir() if p.is_dir() and (p / "manifest.json").is_file())
+    return [r for r in runs if not is_interrupted(r)], [r.name for r in runs if is_interrupted(r)]
+
+
+def session_totals(runs_dir: Path) -> dict:
+    """Redrafts and user-request outcomes over every (not interrupted) session of a runs folder."""
+    from evals.iterations import KINDS, redrafts
+    runs, interrupted = run_folders(runs_dir)
+    out = {"sessions": len(runs), "interrupted": interrupted, "redrafts": {}, "by_script": {}}
+    per_run = {r.name: redrafts(r) for r in runs}
+    for kind in KINDS:
+        out["redrafts"][kind] = {
+            "sessions_with_a_draft": sum(1 for d in per_run.values() if d[kind]["drafts"]),
+            "sessions_with_critique_redraft": sum(1 for d in per_run.values() if d[kind]["critique_redrafts"]),
+            "sessions_with_user_redraft": sum(1 for d in per_run.values() if d[kind]["user_redrafts"]),
+            "critique_redrafts": sum(d[kind]["critique_redrafts"] for d in per_run.values()),
+            "critique_skipped": sum(d[kind]["critique_skipped"] for d in per_run.values()),
+            "user_redrafts": sum(d[kind]["user_redrafts"] for d in per_run.values()),
+            "removal_passes": sum(d[kind]["removal_passes"] for d in per_run.values()),
+        }
+    out["redrafts"]["sessions_with_any_critique_redraft"] = sum(
+        1 for d in per_run.values() if any(d[k]["critique_redrafts"] for k in KINDS))
+    for run in runs:
+        script = (_manifest(run).get("labels") or {}).get("script") or "default"
+        bucket = out["by_script"].setdefault(script, {"sessions": 0, "evaluated": 0, **{k: 0 for k in REQUEST_COUNTS}})
+        bucket["sessions"] += 1
+        for f in sorted(run.glob("evaluation/*/evaluation.json"))[:1]:  # the first evaluation of each run
+            counts = json.loads(f.read_text(encoding="utf-8")).get("counts") or {}
+            bucket["evaluated"] += 1
+            for k in REQUEST_COUNTS:
+                bucket[k] += counts.get(k) or 0
+    return out
+
+
 def summarize(runs_dir: Path) -> dict:
-    """{case: {"runs": [run ids], "metrics": {metric: {reps, mean, sd, min, max, eval_sd}}}}."""
+    """{case: {"runs": [run ids], "metrics": {metric: {reps, mean, sd, min, max, eval_sd}}}}.
+    Interrupted (out-of-credit) runs are left out."""
     groups: dict[str, dict[str, dict]] = {}
-    for run in sorted(p for p in runs_dir.iterdir() if p.is_dir() and (p / "manifest.json").is_file()):
+    for run in run_folders(runs_dir)[0]:
         groups.setdefault(_REP_SUFFIX.sub("", run.name), {})[run.name] = read_run(run)
     out = {}
     for case, runs in groups.items():
@@ -136,6 +201,15 @@ def main(argv=None) -> int:
     out = args.out or args.runs_dir / "repeats_summary.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(format_table(summary))
+    totals = session_totals(args.runs_dir)
+    (args.runs_dir / "sessions_summary.json").write_text(json.dumps(totals, indent=2), encoding="utf-8")
+    r = totals["redrafts"]
+    print(f"\n{totals['sessions']} sessions; critique-driven redraft: CV in {r['cv']['sessions_with_critique_redraft']}, "
+          f"cover letter in {r['cover_letter']['sessions_with_critique_redraft']}, either in "
+          f"{r['sessions_with_any_critique_redraft']}; user-driven redraft: CV in {r['cv']['sessions_with_user_redraft']}, "
+          f"cover letter in {r['cover_letter']['sessions_with_user_redraft']}")
+    if totals["interrupted"]:
+        print(f"left out (interrupted, out of credit): {', '.join(totals['interrupted'])}")
     print("mean±sd across repeats; (ev±x) = mean spread between evaluator re-scores of the same run", file=sys.stderr)
     print(f"written to {out}", file=sys.stderr)
     return 0

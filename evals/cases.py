@@ -11,7 +11,9 @@ Every input an evaluation run uses comes from `evals/fixtures/`:
 
 Ads and personas are referred to by their id prefix ("a3", "p07") or their full folder name.
 `matrix.json` lists the cases: {"id", "persona", "ad", "input_set", "inputs", "model", "rep"}, plus an
-optional "work_preference" and "script" (a name in scripts/, e.g. "revision").
+optional "work_preference" and "script" (a name in scripts/, e.g. "revision"). A script written for
+one persona (its "persona" key, e.g. a request to emphasise a skill only that candidate has) can
+only be used with that persona.
 """
 from __future__ import annotations
 
@@ -83,6 +85,10 @@ def resolve_case(case: dict) -> dict:
     }
     if case.get("script"):
         paths["script"] = find_script(case["script"])
+        script = json.loads(paths["script"].read_text(encoding="utf-8"))
+        if script.get("persona") and find_persona(script["persona"]) != persona:
+            raise ValueError(f"case {case.get('id')}: script '{case['script']}' is written for persona "
+                             f"{script['persona']}, not {case['persona']}")
     return paths
 
 

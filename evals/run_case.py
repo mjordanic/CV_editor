@@ -57,8 +57,50 @@ DEFAULT_SCRIPT = {
     "missing_details": "I'd rather leave those details out.",
     "max_turns": 10,
 }
-# Optional key "revision": one change request sent once, after the first CV and its PDF exist and
-# before the cover letter is asked for (see evals/scripts/revision.json).
+# Optional keys (see evals/scripts/ and evals/README.md):
+#   "purpose", "correct_behaviour"   what the script tests and what the system should do (for the evaluator)
+#   "persona"                        the persona a persona-specific script is written for (checked by cases.py)
+#   "requests"                       list of {"id", "after": "cv" | "cover_letter", "text", "expect": "follow" |
+#                                    "refuse", "correct_behaviour"}: change requests sent once each, in order,
+#                                    after that document and its PDF exist ("cv": before the cover letter is
+#                                    asked for; "cover_letter": before the user exits)
+#   "expectations"                   list of {"about": a script key (e.g. "first", "cover_letter",
+#                                    "missing_details"), "expect", "correct_behaviour"}: what the system should do
+#                                    with one of the ordinary replies
+#   "revision"                       legacy: one request sent after the CV (same as one "after": "cv" request)
+REQUEST_STAGES = ("cv", "cover_letter")
+EXPECT = ("follow", "refuse")
+
+
+def script_requests(script: dict) -> list[dict]:
+    """The script's change requests in order, with the legacy "revision" key as one request after the CV."""
+    out = []
+    if script.get("revision"):
+        out.append({"id": "revision", "after": "cv", "text": script["revision"], "expect": "follow",
+                    "correct_behaviour": "The CV is changed as asked, and nothing else is changed."})
+    out.extend(dict(r) for r in script.get("requests") or [])
+    return out
+
+
+def validate_script(script: dict) -> None:
+    """Raise ValueError for a script the scripted user cannot follow."""
+    for key in ("first", "cover_letter", "exit", "clarify_job_ad", "missing_details"):
+        if not isinstance(script.get(key), str) or not script[key].strip():
+            raise ValueError(f"script key '{key}' must be a non-empty string")
+    ids = set()
+    for r in script_requests(script):
+        if not {"id", "after", "text"} <= set(r) or not str(r["text"]).strip():
+            raise ValueError(f"request {r} needs id, after and text")
+        if r["after"] not in REQUEST_STAGES:
+            raise ValueError(f"request '{r['id']}': after must be one of {REQUEST_STAGES}")
+        if r.get("expect", "follow") not in EXPECT:
+            raise ValueError(f"request '{r['id']}': expect must be one of {EXPECT}")
+        if r["id"] in ids or r["id"] in DEFAULT_SCRIPT or r["id"] in ("job_ad", "requests", "expectations"):
+            raise ValueError(f"request id '{r['id']}' is repeated or clashes with a script key")
+        ids.add(r["id"])
+    for e in script.get("expectations") or []:
+        if e.get("about") not in DEFAULT_SCRIPT or e.get("expect", "follow") not in EXPECT:
+            raise ValueError(f"expectation {e} must name a script reply key and expect follow or refuse")
 
 
 def _git(*args: str) -> str | None:
@@ -133,6 +175,10 @@ def prepare_run_folder(args) -> dict:
     if args.script:
         from evals.cases import find_script
         script.update(json.loads(find_script(args.script).read_text(encoding="utf-8")))
+    try:
+        validate_script(script)
+    except ValueError as e:
+        sys.exit(f"script {args.script}: {e}")
     (inputs / "script.json").write_text(json.dumps(script, indent=2, ensure_ascii=False), encoding="utf-8")
 
     (workspace / "templates").symlink_to(REPO / "templates")
@@ -179,7 +225,13 @@ def _asks_missing_details(waiting_at: tuple) -> bool:
 
 
 class ScriptedUser:
-    """Answers the app's questions from the script, by what the app is waiting for."""
+    """Answers the app's questions from the script, by what the app is waiting for.
+
+    Stages: the first message until a CV exists; then the "after": "cv" requests one per turn once the
+    CV PDF exists; then the cover-letter message until a letter exists; then the "after":
+    "cover_letter" requests once its PDF exists; then exit. Every request sent is logged with the
+    number of drafts of each document before it and at the next turn (did the app act on it?).
+    """
 
     def __init__(self, script: dict, job_ad_path: str, workspace: str | Path | None = None):
         self.script = script
@@ -187,12 +239,54 @@ class ScriptedUser:
         self.workspace = Path(workspace) if workspace else Path.cwd()  # PDF paths in the state are relative to it
         self.used: dict = {}
         self.observations: list = []
+        self.requests = script_requests(script)
+        self.request_log: list = []
+        self._skipped_stage: set = set()
 
     def _use(self, key: str) -> str:
         self.used[key] = self.used.get(key, 0) + 1
         return self.script[key]
 
+    @staticmethod
+    def _drafts(values: dict) -> dict:
+        return {k: len(values.get(f"{k}_history") or []) for k in REQUEST_STAGES}
+
+    def _close_open_requests(self, values: dict) -> None:
+        for entry in self.request_log:
+            if entry.get("drafts_after") is None:
+                entry["drafts_after"] = self._drafts(values)
+                entry["new_draft"] = entry["drafts_after"] != entry["drafts_before"]
+
+    def finish(self, values: dict) -> list:
+        """Close the request log with the final state; returns it."""
+        self._close_open_requests(values or {})
+        return self.request_log
+
+    def _pdf_exists(self, values: dict, kind: str) -> bool:
+        pdf = values.get(f"{kind}_pdf_path")
+        return bool(pdf) and (self.workspace / pdf).is_file()
+
+    def _next_request(self, stage: str, values: dict) -> str | None:
+        pending = [r for r in self.requests if r["after"] == stage and not self.used.get(r["id"])]
+        if not pending:
+            return None
+        if not self._pdf_exists(values, stage):
+            if stage not in self._skipped_stage:
+                self._skipped_stage.add(stage)
+                for r in pending:
+                    label = "revision" if r["id"] == "revision" else f"request '{r['id']}'"
+                    nxt = "the cover letter" if stage == "cv" else "the user exited"
+                    self.observations.append(f"the {label} was not sent: there was no {stage.replace('_', ' ').replace('cv', 'CV')} PDF before {nxt}")
+            return None
+        r = pending[0]
+        self.used[r["id"]] = 1
+        self.request_log.append({"id": r["id"], "after": stage, "text": r["text"], "expect": r.get("expect", "follow"),
+                                 "correct_behaviour": r.get("correct_behaviour", ""),
+                                 "drafts_before": self._drafts(values), "drafts_after": None})
+        return r["text"]
+
     def reply(self, waiting_at: tuple, values: dict) -> str:
+        self._close_open_requests(values)
         if "analyze_job_description" in waiting_at:
             if self.used.get("job_ad"):
                 raise RuntimeError("the app asked for the job ad again (it could not read it)")
@@ -212,16 +306,16 @@ class ScriptedUser:
                 return self._use("exit")
             return self._use("first")
         if not values.get("generated_cover_letter"):
-            if self.script.get("revision") and not self.used.get("revision"):
-                pdf = values.get("cv_pdf_path")
-                if pdf and (self.workspace / pdf).is_file():
-                    return self._use("revision")
-                if not self.used.get("cover_letter"):
-                    self.observations.append("the revision was not sent: there was no CV PDF before the cover letter")
+            request = self._next_request("cv", values)
+            if request:
+                return request
             if self.used.get("cover_letter", 0) >= 2:
                 self.observations.append("the app still had no cover letter after the user asked for it twice")
                 return self._use("exit")
             return self._use("cover_letter")
+        request = self._next_request("cv", values) or self._next_request("cover_letter", values)
+        if request:
+            return request
         if self.used.get("exit"):
             self.observations.append("the app kept asking after the user said exit")
         return self._use("exit")
@@ -340,14 +434,31 @@ def main(argv=None) -> int:
     subprocess.run = run_with_timeout
 
     from provenance import CountingEmbeddings, RunRecorder, stream_turn
+    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
+    credit_guard = CreditGuard()  # out of credit: no retries, the session ends at once (evals/credit.py)
+    install_no_retry_patch()
 
     from agents import rag_agent
     real_embeddings_for = rag_agent._embeddings_for
 
+    class CreditCheckedEmbeddings(CountingEmbeddings):
+        def _call(self, fn, *a):
+            try:
+                return fn(*a)
+            except Exception as e:  # noqa: BLE001 - only a credit error is turned into OutOfCredit
+                credit_guard.guard(e)
+                raise
+
+        def embed_documents(self, texts):
+            return self._call(super().embed_documents, texts)
+
+        def embed_query(self, text):
+            return self._call(super().embed_query, text)
+
     def counted_embeddings(model):
         inner = real_embeddings_for(model)
-        return CountingEmbeddings(inner, recorder, getattr(inner, "model", "embeddings"))
+        return CreditCheckedEmbeddings(inner, recorder, getattr(inner, "model", "embeddings"))
 
     rag_agent._embeddings_for = counted_embeddings
 
@@ -375,6 +486,7 @@ def main(argv=None) -> int:
     t0 = time.time()
     agent = None
     config = recorder.graph_config("testing-mode")
+    config["callbacks"] = [*config["callbacks"], credit_guard]
     try:
         agent = la.MasterAgent()
         initial = {k: None for k in la.State.__annotations__}
@@ -396,6 +508,10 @@ def main(argv=None) -> int:
                                "assistant": (question or {}).get("message"), "user": shown})
             recorder.event("user_reply", turn=turn, text=shown)
             graph_input = Command(resume=reply)
+    except OutOfCredit as e:  # not a failure of the app: the run is redone after a top-up
+        status = INTERRUPTED_STATUS
+        recorder.record_error("session", e)
+        user.observations.append(f"interrupted: the model provider reported no credit left ({e})"[:300])
     except Exception as e:  # noqa: BLE001 - record what happened
         status = f"error: {type(e).__name__}: {e}"[:500]
         recorder.record_error("session", e)
@@ -406,7 +522,10 @@ def main(argv=None) -> int:
             recorder.record_error("final_state", e)
 
     files = _write_outputs(recorder, values, workspace)
-    recorder.write_json("transcript.json", {"turns": transcript, "observations": user.observations})
+    request_log = user.finish(values)
+    recorder.write_json("transcript.json", {"turns": transcript, "observations": user.observations,
+                                            "requests": request_log})
+    from evals.iterations import redrafts
     summary = {
         "status": status,
         "minutes": round((time.time() - t0) / 60, 2),
@@ -418,6 +537,9 @@ def main(argv=None) -> int:
         "observations": user.observations,
         "work_context": (values.get("company_info") or {}).get("work_context"),
         "work_preference_final": values.get("work_preference"),
+        "redrafts": redrafts(run_dir),
+        "requests_sent": [r["id"] for r in request_log],
+        "requests_without_new_draft": [r["id"] for r in request_log if not r.get("new_draft")],
     }
     recorder.write_summary(**summary)
     recorder.write_json("manifest.json", {
@@ -428,6 +550,9 @@ def main(argv=None) -> int:
     recorder.event("run_end", **summary, cost_usd=round(recorder.cost, 6))
     print(json.dumps({"run_dir": str(run_dir), "status": status, "cost_usd": round(recorder.cost, 4),
                       "minutes": summary["minutes"], "outputs": sorted(files)}))
+    if status == INTERRUPTED_STATUS:
+        print(f"out of credit: the session was interrupted and is marked '{INTERRUPTED_STATUS}'", file=sys.stderr)
+        return EXIT_OUT_OF_CREDIT
     return 0 if status == "completed" else 1
 
 
