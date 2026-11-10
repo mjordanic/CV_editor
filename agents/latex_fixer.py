@@ -114,19 +114,27 @@ _EXTRACTABLE_PREAMBLE = (
 _EXTRACTABLE_BODY = "\\raggedright\\hyphenpenalty=10000\\exhyphenpenalty=10000\n"
 
 
+_DOCUMENTCLASS = re.compile(r"\\documentclass\s*(?:\[[^\]]*\])?\s*\{[^}]*\}")
+
+
 def ensure_text_extractable(latex: str) -> str:
     """
     Make a LaTeX document's PDF text extract cleanly (no merged or hyphen-split words).
 
-    Inserts a short preamble block before \\begin{document} and ragged-right, no-hyphenation
-    settings right after it, unless the document already has them. Leaves text without a
-    \\begin{document} unchanged.
+    Inserts a short preamble block right after \\documentclass, so any font package the document
+    loads still wins over lmodern, and ragged-right, no-hyphenation settings right after
+    \\begin{document}, unless the document already has them. Leaves text without a
+    \\documentclass or \\begin{document} unchanged.
     """
     marker = "\\begin{document}"
     if not latex or marker not in latex or "\\pdfgentounicode" in latex:
         return latex
     head, body = latex.split(marker, 1)
-    return f"{head.rstrip()}\n{_EXTRACTABLE_PREAMBLE}{marker}\n{_EXTRACTABLE_BODY}{body.lstrip(chr(10))}"
+    match = _DOCUMENTCLASS.search(head)
+    if not match:
+        return latex
+    head = f"{head[:match.end()]}\n{_EXTRACTABLE_PREAMBLE}{head[match.end():].lstrip(chr(10))}"
+    return f"{head.rstrip()}\n{marker}\n{_EXTRACTABLE_BODY}{body.lstrip(chr(10))}"
 
 
 _UNESCAPED_DOLLAR = re.compile(r"(?<!\\)\$")

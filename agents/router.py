@@ -338,7 +338,7 @@ class RouterAgent:
         Summarize any user-provided documents for LLM conditioning.
 
         Args:
-            candidate_text: Dictionary of `cv` and `cover_letter` strings from `DocumentReaderAgent`.
+            candidate_text: Dictionary of `cv`, `cover_letter` and `notes` strings from `DocumentReaderAgent`.
 
         Returns:
             str: Short preview of available candidate materials or fallback notice.
@@ -364,6 +364,11 @@ class RouterAgent:
                 parts.append("Original Cover Letter: Not provided")
         else:
             parts.append("Original Cover Letter: Not provided")
+
+        if candidate_text.get("notes"):
+            parts.append(f"Candidate's Own Notes: {candidate_text['notes'][:300]}...")
+        else:
+            parts.append("Candidate's Own Notes: Not provided")
         
         return "\n".join(parts) if parts else "No original documents uploaded by the user."
     

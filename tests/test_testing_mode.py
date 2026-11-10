@@ -171,6 +171,15 @@ def test_generated_latex_gets_an_extractable_text_layer_once():
     assert ensure_text_extractable("no document") == "no document"
 
 
+@pytest.mark.parametrize("fonts", ["\\usepackage{helvet}\n\\renewcommand{\\familydefault}{\\sfdefault}",
+                                   "\\usepackage{mathptmx}", "\\usepackage{fontspec}\n\\setmainfont{Arial}"])
+def test_the_text_layer_never_overrides_a_font_the_document_chose(fonts):
+    doc = f"\\documentclass[11pt,a4paper]{{article}}\n{fonts}\n\\begin{{document}}\nHello\n\\end{{document}}"
+    fixed = ensure_text_extractable(doc)
+    assert fixed.startswith("\\documentclass[11pt,a4paper]{article}\n")
+    assert fixed.index("\\usepackage{lmodern}") < fixed.index(fonts) < fixed.index("\\begin{document}")
+
+
 # --- scripted user and evaluator input -------------------------------------------------------
 def test_scripted_user_follows_the_session():
     from evals.run_case import DEFAULT_SCRIPT, ScriptedUser
@@ -375,7 +384,42 @@ def test_the_inclusive_default_reaches_every_prompt_even_without_company_researc
     for formatter in (cv_writer.CVWriterAgent._format_company_info, cover_letter_writer.CoverLetterWriterAgent._format_company_info,
                       critique.CritiqueAgent._format_company_info, router.RouterAgent._format_company_info):
         assert "Treat the candidate as open to this job's arrangement" in formatter(None, info)
-    assert "never raise the arrangement, location or relocation as a problem" in router.ROUTER_SYSTEM_PROMPT
+
+
+def _router_prompt(monkeypatch, state) -> str:
+    from langchain_core.runnables import RunnableLambda
+    from agents import router as router_module
+
+    seen = []
+
+    class CapturingRouterLLM:
+        def with_structured_output(self, schema):
+            def reply(prompt):
+                seen.append(prompt.to_string())
+                return router_module.RouterResponse(next_action="draft_cv", message_to_user="", needs_user_input=False)
+            return RunnableLambda(reply)
+
+    monkeypatch.setattr(router_module, "init_chat_model", lambda *_, **__: CapturingRouterLLM())
+    router_module.RouterAgent(model="fake", temperature=None).run(state)
+    return seen[-1]
+
+
+def test_the_router_prompt_keeps_an_unstated_preference_open(monkeypatch):
+    prompt = _router_prompt(monkeypatch, {"messages": [{"role": "user", "content": "Write my CV."}],
+                                          "job_description_info": {"job_title": "X"}, "company_info": None})
+    assert "never raise the arrangement, location or relocation as a problem" in prompt
+    assert "Treat the candidate as open to this job's arrangement" in prompt
+
+
+def test_the_router_sees_the_candidates_notes(monkeypatch):
+    prompt = _router_prompt(monkeypatch, {"messages": [{"role": "user", "content": "Write my CV."}],
+                                          "job_description_info": {"job_title": "X"}, "company_info": None,
+                                          "candidate_text": {"cv": None, "cover_letter": None,
+                                                             "notes": "- 2019-2024 support engineer, Ansible"}})
+    assert "Original CV: Not provided" in prompt
+    assert "Candidate's Own Notes: - 2019-2024 support engineer, Ansible" in prompt
+
+
 
 
 def test_a_stated_preference_replaces_the_open_default():
@@ -387,11 +431,16 @@ def test_a_stated_preference_replaces_the_open_default():
     assert "Preference conflict" in text
 
 
-def test_evaluator_treats_a_missing_preference_as_open():
-    from evals.evaluate import SYSTEM_PROMPT, WorkArrangement
-    assert "candidate counts as open to the job's arrangement" in SYSTEM_PROMPT
-    allowed = WorkArrangement.model_fields["preference_handling"].annotation.__args__
-    assert {"not_given_and_kept_open", "not_given_but_narrowed", "not_given_but_stated"} <= set(allowed)
+def test_evaluator_treats_a_missing_preference_as_open(tmp_path):
+    from evals.evaluate import build_prompt, format_messages
+    (tmp_path / "inputs").mkdir()
+    (tmp_path / "outputs").mkdir()
+    (tmp_path / "inputs" / "job_ad.txt").write_text("On-site in Antwerp.", encoding="utf-8")
+    values, _ = build_prompt(tmp_path)
+    assert values["work_preference"].startswith("(not given")
+    system, human = format_messages(values)
+    assert "candidate counts as open to the job's arrangement" in system.content
+    assert values["work_preference"] in human.content and "On-site in Antwerp." in human.content
 
 
 def _search_agent(monkeypatch, llm, tmp_path):
@@ -451,7 +500,7 @@ def test_router_keeps_a_preference_only_when_the_user_states_it(monkeypatch):
 # --- tracked fixtures and the evaluation matrix ------------------------------------------------
 def _tracked_files() -> set[Path]:
     import subprocess
-    out = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "evals"],
+    out = subprocess.run(["git", "ls-files", "-z", "--cached", "evals"],
                          cwd=REPO, capture_output=True, text=True, check=True).stdout
     return {(REPO / p).resolve() for p in out.split("\0") if p}
 

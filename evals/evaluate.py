@@ -316,9 +316,15 @@ def counts(ev: dict) -> dict:
     }
 
 
+def format_messages(values: dict) -> list:
+    """The system and human messages sent to the evaluator model."""
+    from langchain_core.prompts import ChatPromptTemplate
+    prompt = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", HUMAN_TEMPLATE)])
+    return prompt.format_messages(**values)
+
+
 def evaluate(run_dir: Path, model: str, name: str) -> dict:
     from langchain.chat_models import init_chat_model
-    from langchain_core.prompts import ChatPromptTemplate
     from provenance import RunRecorder, to_jsonable
 
     out_dir = run_dir / "evaluation" / name
@@ -326,8 +332,7 @@ def evaluate(run_dir: Path, model: str, name: str) -> dict:
         sys.exit(f"{out_dir} exists; choose another --name")
     recorder = RunRecorder(out_dir)
     values, checks = build_prompt(run_dir)
-    prompt = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", HUMAN_TEMPLATE)])
-    messages = prompt.format_messages(**values)
+    messages = format_messages(values)
     recorder.write_json("prompt.json", {"model": model, "messages": [{"role": m.type, "content": m.content} for m in messages]})
     llm = init_chat_model(model)
     chain = llm.with_structured_output(Evaluation, include_raw=True)
