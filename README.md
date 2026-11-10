@@ -245,7 +245,7 @@ For testing without paid API calls you can run every agent on a local [Ollama](h
 ```bash
 ollama pull gemma4:e4b            # or another model, see below
 ollama pull nomic-embed-text      # optional: retrieval for a portfolio over 12,000 characters (RAG); without it RAG is skipped
-CV_EDITOR_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
+CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_GROUNDING_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
 ```
 
 - No OpenAI or Tavily key is needed. Company research is skipped without a Tavily key.
@@ -256,7 +256,7 @@ CV_EDITOR_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
 Customization Tips
 ------------------
 
-- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces every model for one run without editing the file.
+- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces every model except the grounding check's for one run without editing the file; the grounding check is meant to run on a different model from the writer's, so only `CV_EDITOR_GROUNDING_MODEL=<provider:model>` replaces its model.
 - **Prompt tone**: Update the system/human prompt strings in each agent to reflect a different writing style or formatting rules.
 - **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences.
 - **PDF Style Customization**: Provide style preferences in natural language when generating PDFs. Examples:

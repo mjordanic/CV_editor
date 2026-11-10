@@ -147,20 +147,21 @@ def prepare_run_folder(args) -> dict:
         "search": search,
         "script": script,
         "model_override": args.model,
+        "grounding_model_override": args.grounding_model,
         "work_preference": args.work_preference,
         "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
 
 def effective_config() -> dict:
-    """Model and settings per agent as the app will use them (after CV_EDITOR_MODEL)."""
-    from config.config_loader import get_agent_config, load_config, MODEL_OVERRIDE_ENV
+    """Model and settings per agent as the app will use them (after CV_EDITOR_MODEL and CV_EDITOR_GROUNDING_MODEL)."""
+    from config.config_loader import GROUNDING_MODEL_OVERRIDE_ENV, MODEL_OVERRIDE_ENV, get_agent_config, load_config
     full = load_config()
     return {
         "workflow": full.get("workflow", {}),
         "agents": {name: get_agent_config(name) for name in full.get("agents", {})},
         "embeddings": os.environ.get("CV_EDITOR_EMBEDDING_MODEL") or "text-embedding-3-small",
-        "env_overrides": {k: os.environ.get(k) for k in (MODEL_OVERRIDE_ENV, "CV_EDITOR_TEMPERATURE",
+        "env_overrides": {k: os.environ.get(k) for k in (MODEL_OVERRIDE_ENV, GROUNDING_MODEL_OVERRIDE_ENV, "CV_EDITOR_TEMPERATURE",
                                                           "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD")
                           if os.environ.get(k)},
         "code": {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
@@ -281,7 +282,9 @@ def main(argv=None) -> int:
     group.add_argument("--search-fixture", help="prepared web-search results to replay (no live search)")
     group.add_argument("--record-search", help="live Tavily search, saved to this fixture file")
     group.add_argument("--no-search", action="store_true", help="company research finds nothing (default)")
-    parser.add_argument("--model", help="use this model for every agent (sets CV_EDITOR_MODEL)")
+    parser.add_argument("--model", help="use this model for every agent except the grounding check (sets CV_EDITOR_MODEL)")
+    parser.add_argument("--grounding-model", dest="grounding_model",
+                        help="use this model for the grounding check (sets CV_EDITOR_GROUNDING_MODEL)")
     parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"],
                         help="the candidate's own work-arrangement preference (default: not given)")
     parser.add_argument("--script", help="JSON with scripted replies overriding the defaults, or a name in "
@@ -308,6 +311,8 @@ def main(argv=None) -> int:
         load_dotenv(REPO / ".env")
     if args.model:
         os.environ["CV_EDITOR_MODEL"] = args.model
+    if args.grounding_model:
+        os.environ["CV_EDITOR_GROUNDING_MODEL"] = args.grounding_model
     os.environ.pop("CV_EDITOR_SEARCH_FIXTURE", None)
     os.environ.pop("CV_EDITOR_SEARCH_RECORD", None)
     if manifest["search"]["mode"] == "record":

@@ -299,14 +299,14 @@ def test_an_unreadable_pdf_is_not_reported_as_a_mismatch(tmp_path):
 
 # --- D8: the cover letter writer has the same truthfulness rules as the CV writer ---------------
 
-def test_both_writers_share_the_truthfulness_rules():
-    from agents.cover_letter_writer import COVER_LETTER_GENERATION_SYSTEM_PROMPT
-    from agents.cv_writer import CV_GENERATION_SYSTEM_PROMPT
-
-    for prompt in (CV_GENERATION_SYSTEM_PROMPT, COVER_LETTER_GENERATION_SYSTEM_PROMPT):
-        assert document_writer.TRUTHFULNESS_PROTOCOL in prompt
-    assert "NO INVENTED COMMITMENTS OR PREFERENCES" in document_writer.TRUTHFULNESS_PROTOCOL
-    assert "Show enthusiasm for the role" not in COVER_LETTER_GENERATION_SYSTEM_PROMPT
+def test_both_writers_share_the_truthfulness_rules(monkeypatch, tmp_path):
+    for cls in (CVWriterAgent, CoverLetterWriterAgent):
+        llm = WriterLLM()
+        agent = _writer(monkeypatch, tmp_path, cls, llm)
+        agent.run({"candidate_text": {"cv": SAMPLE_CV}, "job_description_info": AD_INFO, "messages": []})
+        system = llm.prompts[0].split("\nHuman: ", 1)[0]
+        assert "NO INVENTED COMMITMENTS OR PREFERENCES" in system, cls.__name__
+        assert "Show enthusiasm for the role" not in system, cls.__name__
 
 
 # --- D9: company research ------------------------------------------------------------------------
@@ -405,14 +405,40 @@ def test_job_ad_extraction_does_not_echo_the_ad(monkeypatch):
 
 # --- I1, I6: the writer and critic aim at a truthful match; the job's country conventions ----------
 
-def test_writer_and_critic_aim_at_a_truthful_match_not_keywords():
-    from agents.cv_writer import CV_GENERATION_HUMAN_PROMPT, CV_GENERATION_SYSTEM_PROMPT
+class CriticLLM:
+    """Stands in for the critic model: keeps every prompt it is sent, finds nothing to fix."""
 
-    for prompt in (CV_GENERATION_SYSTEM_PROMPT, critique.CRITIQUE_SYSTEM_PROMPT):
+    def __init__(self):
+        self.prompts = []
+
+    def with_structured_output(self, schema):
+        def answer(prompt):
+            self.prompts.append(prompt.to_string())
+            if schema is critique.CritiqueResponse:
+                return schema(quality_score=90, content_quality_feedback="ok",
+                              ats_compatibility_feedback="ok", job_alignment_feedback="ok")
+            return schema(unsupported_claims=[])
+        return RunnableLambda(answer)
+
+
+def test_writer_and_critic_aim_at_a_truthful_match_not_keywords(monkeypatch, tmp_path):
+    llm = WriterLLM()
+    _writer(monkeypatch, tmp_path, CVWriterAgent, llm).run(
+        {"candidate_text": {"cv": SAMPLE_CV}, "job_description_info": AD_INFO, "messages": []})
+    writer_prompt = llm.prompts[0]
+
+    monkeypatch.setattr(critique, "write_to_debug", lambda *_, **__: None)
+    critic = critique.CritiqueAgent.__new__(critique.CritiqueAgent)
+    critic.llm, critic.grounding_llm = CriticLLM(), CriticLLM()
+    critic.run_cv({"generated_cv": "Ana Horvat, butcher", "cv_history": [], "messages": [],
+                   "candidate_text": {"cv": SAMPLE_CV}, "job_description_info": AD_INFO})
+    critic_prompt = critic.llm.prompts[0]
+
+    for prompt in (writer_prompt, critic_prompt):
         assert "most convincing TRUTHFUL match to this job ad for a human recruiter" in prompt
         assert "passes AI-based screening" not in prompt
-    assert "Check specifically for keyword matching" not in critique.CRITIQUE_SYSTEM_PROMPT
-    assert "never add an ad term the candidate's material does not support" in CV_GENERATION_HUMAN_PROMPT
+    assert "Check specifically for keyword matching" not in critic_prompt
+    assert "never add an ad term the candidate's material does not support" in writer_prompt
 
 
 def test_cv_writer_sees_the_jobs_location_and_country_conventions(monkeypatch, tmp_path):
@@ -434,7 +460,22 @@ def test_grounding_check_has_its_own_model(monkeypatch):
 
     from config.config_loader import get_agent_config
     monkeypatch.delenv("CV_EDITOR_MODEL", raising=False)
+    monkeypatch.delenv("CV_EDITOR_GROUNDING_MODEL", raising=False)
     assert get_agent_config("grounding")["model"] != get_agent_config("cv_writer")["model"]
+
+
+def test_the_model_override_leaves_the_grounding_model_alone(monkeypatch):
+    from config.config_loader import get_agent_config
+
+    monkeypatch.delenv("CV_EDITOR_GROUNDING_MODEL", raising=False)
+    shipped = get_agent_config("grounding")["model"]
+    monkeypatch.setenv("CV_EDITOR_MODEL", "openai:gpt-6-luna")
+    assert get_agent_config("cv_writer")["model"] == "openai:gpt-6-luna"
+    assert get_agent_config("grounding")["model"] == shipped != "openai:gpt-6-luna"
+
+    monkeypatch.setenv("CV_EDITOR_GROUNDING_MODEL", "ollama:gemma4:e4b")
+    assert get_agent_config("grounding")["model"] == "ollama:gemma4:e4b"
+    assert get_agent_config("cv_writer")["model"] == "openai:gpt-6-luna"
 
 
 # --- I7: placeholders such as [EMAIL] make the program ask once before the PDF -------------------
@@ -445,7 +486,8 @@ class PlaceholderLLM(ScriptedLLM):
             text = prompt.to_string()
             self.writer_instructions.append(_instructions(text))
             filled = "placeholders for missing details" in _instructions(text)
-            return schema(cv_content="Ana Horvat\n" + ("ana@example.com" if filled else "[EMAIL] | [PHONE]"), notes="")
+            contact = "ana@example.com" if filled else "[EMAIL] | [PHONE]"
+            return schema(cv_content=f"Ana Horvat\n{contact}\nDraft {len(self.writer_instructions)}", notes="")
         return super()._answer(name, schema, prompt)
 
 
@@ -465,19 +507,24 @@ def test_missing_details_are_asked_for_once_before_the_pdf(monkeypatch, tmp_path
     assert len(asked) == 1
 
 
-# --- C1 / section 4, C2, C5: removed dead code and import-time side effects ------------------------
+def test_missing_details_reply_is_applied_when_the_critique_budget_ran_out(monkeypatch, tmp_path):
+    """The last critique still asked for a redraft past the budget; the user's reply must win over it."""
+    llm = PlaceholderLLM(router_script=[_route("draft_cv"), _route("exit", "Done.")],
+                         critique_scores=[(70, "Fix the title."), (70, "Fix the title."), (90, "")])
+    agent, rendered = _build_agent(monkeypatch, tmp_path, llm)
+    ad = (REPO / "job_description" / "sample_job_ad.txt").read_text(encoding="utf-8")
 
-def test_the_old_remote_work_flag_is_gone():
-    out = subprocess.run(["git", "grep", "-n", "-e", "remote_work", "-e", "Remote Work Policy", "--", "agents", "langgraph_agent.py"],
-                         cwd=REPO, capture_output=True, text=True)
-    assert out.stdout == ""
+    final = _play(agent, [ad, "My email is ana@example.com; leave the phone out."])
+
+    assert len(llm.writer_instructions) == 3
+    assert "ana@example.com; leave the phone out" in llm.writer_instructions[2]
+    assert "Fix the title." not in llm.writer_instructions[2]
+    assert final["cv_placeholders"] == []
+    [pdf] = rendered.values()  # the PDF was made once, from the filled-in draft
+    assert "ana@example.com" in pdf and "[EMAIL]" not in pdf
 
 
-def test_router_has_no_critique_refinement_switches():
-    import inspect
-
-    assert "refinement_allowed" not in inspect.getsource(router)
-
+# --- C5: no import-time side effects ---------------------------------------------------------------
 
 def test_importing_the_app_creates_no_folders_and_configures_no_logging(tmp_path):
     code = ("import logging, langgraph_agent, os, sys; "

@@ -143,11 +143,15 @@ def _new_draft_cycle(kind: str, state) -> dict:
     Every router -> draft_* step is a new request (the critique loop redrafts without the router),
     so the critique-driven redraft budget starts again and finalize picks the best draft of this
     cycle only. Without this, an older draft with a higher score would replace the one that
-    carries the user's change.
+    carries the user's change. A critique the last cycle left unapplied (its budget ran out) is
+    cleared, so the writer applies the user's request instead of that critique.
     """
     return {
         f"{kind}_refinement_count": 0,
         f"{kind}_cycle_start": len(state.get(f"{kind}_history") or []),
+        f"{kind}_needs_refinement": False,
+        f"{kind}_critique_improvement_instructions": None,
+        f"{kind}_claims_to_remove": None,
     }
 
 
@@ -656,14 +660,6 @@ class RouterAgent:
             logger.info(f"User stated a work-arrangement preference: {response.work_preference}")
             return_state["work_preference"] = response.work_preference
 
-        # The critique loop ended (budget used) before the router was reached: clear what it left, so a
-        # later user request starts from the user's words, not from a stale critique.
-        for kind in ("cv", "cover_letter"):
-            if state.get(f"{kind}_needs_refinement"):
-                return_state[f"{kind}_needs_refinement"] = False
-                return_state[f"{kind}_critique_improvement_instructions"] = None
-                return_state[f"{kind}_claims_to_remove"] = None
-        
         # Store content feedback for the writers. Feedback for a document that does not exist yet
         # is kept for later (the user may want the other document first). Feedback for an existing
         # document is stored only on the turn that redrafts it; finalize clears it afterwards, so a

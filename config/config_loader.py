@@ -111,7 +111,7 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
         if 'temperature' not in agent_config:
             agent_config['temperature'] = default_temperature
         
-        _apply_model_override(agent_config)
+        _apply_model_override(agent_name, agent_config)
         logger.debug(f"Loaded config for '{agent_name}': model={agent_config.get('model')}, temperature={agent_config.get('temperature')}")
         
         # Return complete config with all fields from YAML
@@ -126,15 +126,20 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
 
 
 MODEL_OVERRIDE_ENV = "CV_EDITOR_MODEL"
+GROUNDING_MODEL_OVERRIDE_ENV = "CV_EDITOR_GROUNDING_MODEL"
 
 
-def _apply_model_override(agent_config: Dict[str, Any]) -> None:
+def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None:
     """
     If CV_EDITOR_MODEL is set (e.g. "ollama:gemma4:e4b" or "openai:gpt-6-luna"), use that model for
     every agent that uses one, in place of the models in agent_models.yaml. Handy for local runs
     and for comparing models without editing the file.
+
+    The grounding check is exempt: it is meant to run on a different model from the writer's, so
+    only CV_EDITOR_GROUNDING_MODEL replaces its model.
     """
-    override = os.environ.get(MODEL_OVERRIDE_ENV, "").strip()
+    env = GROUNDING_MODEL_OVERRIDE_ENV if agent_name == "grounding" else MODEL_OVERRIDE_ENV
+    override = os.environ.get(env, "").strip()
     if not override:
         return
     for key in ("model", "filter_model"):
