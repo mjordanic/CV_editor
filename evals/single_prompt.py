@@ -1,43 +1,47 @@
-"""Single-prompt baseline: one model call writes the tailored CV and cover letter from everything at once.
+"""Single-prompt baseline: exactly ONE model call writes the tailored CV and cover letter, text and LaTeX.
 
-The comparison point for the multi-agent app (evals/run_case.py). For one case it builds a single prompt
-holding all the information the multi-agent session gets:
+The comparison point for the multi-agent app (evals/run_case.py; a default-script session there
+makes a median of 22 model calls on three models). Here a case is one call and nothing else. The
+single prompt holds all the information the multi-agent session gets:
 
     - the candidate files the input set gives (omitted ones are absent, as in run_case),
     - the job ad as published,
     - the company search results replayed from the ad's search fixture (the same fixture, read with the
       app's own `agents.search.search_result_texts`, that the multi-agent run and the evaluator see),
     - the candidate's work-arrangement preference rule,
+    - the app's two LaTeX templates (templates/cv_template.tex, cover_letter_template.tex),
 
-and the writers' own goal and truthfulness rules (imported from agents/cv_writer.py,
-agents/cover_letter_writer.py and agents/document_writer.py, not copied). One call to `--model`
-(default openai:gpt-6.1-sol) returns the CV, the cover letter and notes.
+and the app's own instructions, imported, not copied: the writers' goal, guidelines and truthfulness
+rules (agents/cv_writer.py, cover_letter_writer.py, document_writer.py) and the LaTeX formatters' rules
+(agents/cv_pdf_generator.py, cover_letter_pdf_generator.py). The call to `--model` (default
+openai:gpt-6.1-sol) returns, per document, the plain text and the full LaTeX source, plus notes.
 
-The PDFs are made by the app's own PDF path (agents/cv_pdf_generator.py, cover_letter_pdf_generator.py:
-text -> LaTeX by the `template_customizer` model, pdflatex, the LaTeX fixer when it does not compile,
-the PDF text check and its one re-conversion), so they are comparable with the multi-agent PDFs. Those
-rendering calls are model calls too: every one is logged in llm_calls.jsonl under the app's node names
-(generate_cv_pdf, generate_cover_letter_pdf) and counted separately in the manifest (`calls`).
-`--render-model` sets their model (default: the `template_customizer` model in config/agent_models.yaml).
+PDFs: the returned LaTeX goes through the app's deterministic LaTeX helpers (`ensure_text_extractable`,
+`escape_text_specials`; no model) and pdflatex, twice as in the app. No repair, retry or re-conversion
+call is made. A document whose LaTeX does not compile gets its compile error recorded in the manifest
+(`pdfs.<kind>`), and a PDF made from its plain text by a fixed built-in layout (`fallback_latex`, no
+model), marked `"source": "fallback_layout"`, so its content can still be graded and the report can
+separate fallbacks from model-made PDFs.
 
 The run folder has run_case's layout (manifest.json, config.json, inputs/, llm_calls.jsonl,
 events.jsonl, transcript.json, outputs/final_cv.txt/.pdf, final_cover_letter.txt/.pdf, summary.json,
-workspace/), plus prompt.json (the single prompt as sent) and outputs/writer_notes.txt and
-outputs/pdf_checks.json, so evals/evaluate.py grades it unchanged and blind: the evaluator reads inputs/, outputs/,
-transcript.json and inputs/script.json, never the manifest, so it does not see the method or the model.
-The manifest says `"method": "single_prompt"` (also as a label) for evals/summarize.py to split on.
-There is no conversation: transcript.json has no turns. The default script's answer to the app's
-question for missing contact details (decline) is written into the prompt instead.
+workspace/), plus prompt.json (the prompt as sent), outputs/final_cv.tex, final_cover_letter.tex,
+writer_notes.txt and pdf_checks.json. evals/evaluate.py grades it unchanged and blind: it reads inputs/,
+outputs/, transcript.json and inputs/script.json, never the manifest, so it sees neither the method nor
+the model. The manifest says `"method": "single_prompt"` (also as a label) for evals/summarize.py, and
+`"calls"`: the number of model calls made (1). There is no conversation: transcript.json has no turns.
+The default script's answer to the app's question for missing contact details (decline) is in the prompt.
 
-Usage (from the repo root; this makes paid model calls):
+Usage (from the repo root; this makes one paid model call per case):
     .venv/bin/python -m evals.single_prompt --run-dir RUN --ad a3 --persona p03 [--inputs all4|cv_only|no_cv]
-        [--model openai:gpt-6.1-sol] [--render-model openai:gpt-6-luna] [--env-file PATH/.env] [--cost-cap 1.0]
+        [--model openai:gpt-6.1-sol] [--env-file PATH/.env] [--cost-cap 1.0]
 """
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -53,19 +57,26 @@ from langchain.chat_models import init_chat_model  # noqa: E402
 from langchain_core.messages import HumanMessage, SystemMessage  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
+from agents.cover_letter_pdf_generator import COVER_LETTER_LATEX_SYSTEM_PROMPT  # noqa: E402
 from agents.cover_letter_writer import (COVER_LETTER_GENERATION_HUMAN_PROMPT,  # noqa: E402
                                         COVER_LETTER_GENERATION_SYSTEM_PROMPT, CoverLetterGenerationResponse,
                                         CoverLetterWriterAgent)
+from agents.cv_pdf_generator import CV_LATEX_SYSTEM_PROMPT  # noqa: E402
 from agents.cv_writer import (CV_GENERATION_HUMAN_PROMPT, CV_GENERATION_SYSTEM_PROMPT, NO_CV_TEXT,  # noqa: E402
                               CVGenerationResponse, CVWriterAgent)
 from agents.document_writer import TRUTHFULNESS_PROTOCOL  # noqa: E402
 from agents.job_description import output_language_instruction  # noqa: E402
+from agents.latex_fixer import ensure_text_extractable, escape_text_specials  # noqa: E402 - pure functions, no model
 from agents.work_context import describe as describe_work_context, with_preference  # noqa: E402
 
 METHOD = "single_prompt"
 DEFAULT_MODEL = "openai:gpt-6.1-sol"
 GENERATION_NODE = "single_prompt"
-RENDER_NODES = {"cv": "generate_cv_pdf", "cover_letter": "generate_cover_letter_pdf"}  # the app's node names
+KINDS = ("cv", "cover_letter")
+TEMPLATES = {"cv": REPO / "templates" / "cv_template.tex",
+             "cover_letter": REPO / "templates" / "cover_letter_template.tex"}
+PDF_STEMS = {"cv": "final_cv", "cover_letter": "final_cover_letter"}
+PDFLATEX_TIMEOUT = 180  # seconds, as run_case gives the app's pdflatex
 
 # Section labels as the writers' prompts name the candidate's material (the source-fact wording is theirs).
 INPUT_SECTIONS = {
@@ -78,17 +89,23 @@ INPUT_SECTIONS = {
 INPUT_ORDER = ("cv", "cover_letter", "notes", "portfolio")
 
 
-def _between(text: str, start: str, end: str) -> str:
-    """The part of a writer prompt from `start` up to (not including) `end`; fails loudly if the prompt changed."""
+def _between(text: str, start: str, end: str | None) -> str:
+    """The part of an app prompt from `start` up to (not including) `end` (None: to the end); fails loudly if
+    the prompt changed."""
     i = text.find(start)
-    j = text.find(end, i + len(start)) if i >= 0 else -1
+    j = (text.find(end, i + len(start)) if end else len(text)) if i >= 0 else -1
     if i < 0 or j < 0:
-        raise ValueError(f"writer prompt changed: cannot find '{start}' ... '{end}'")
+        raise ValueError(f"app prompt changed: cannot find '{start}' ... '{end}'")
     return text[i:j].strip()
 
 
+def _unbrace(template_text: str) -> str:
+    """A ChatPromptTemplate string as the model reads it ({{ }} are its escaped braces)."""
+    return template_text.replace("{{", "{").replace("}}", "}")
+
+
 def writer_rules() -> dict:
-    """The writers' goal, guidelines and truthfulness rules, taken from the app's prompts (not forked)."""
+    """The app's own instructions, taken from its prompts (not forked)."""
     return {
         "cv_goal": _between(CV_GENERATION_SYSTEM_PROMPT, "Your PRIMARY GOAL", "Your CVs are"),
         "cover_letter_goal": _between(COVER_LETTER_GENERATION_SYSTEM_PROMPT, "Your PRIMARY GOAL", "IMPORTANT:"),
@@ -96,6 +113,8 @@ def writer_rules() -> dict:
         "cover_letter_guidelines": _between(COVER_LETTER_GENERATION_HUMAN_PROMPT, "General guidelines",
                                             "CRITICAL: Provide your response"),
         "truthfulness": TRUTHFULNESS_PROTOCOL.strip(),
+        "cv_latex": _unbrace(_between(CV_LATEX_SYSTEM_PROMPT, "CRITICAL RULES:", None)),
+        "cover_letter_latex": _unbrace(_between(COVER_LETTER_LATEX_SYSTEM_PROMPT, "CRITICAL RULES:", None)),
     }
 
 
@@ -105,10 +124,15 @@ def _fresh_instructions(agent_cls, has_document: bool) -> str:
 
 
 class SinglePromptResponse(BaseModel):
-    """Both documents and the notes, in one answer (field descriptions are the writers' own)."""
+    """Both documents as plain text and as LaTeX, and the notes, in one answer."""
     cv_content: str = Field(..., description=CVGenerationResponse.model_fields["cv_content"].description)
+    cv_latex: str = Field(..., description="The complete LaTeX source of the CV (preamble and document environment), "
+                                           "ready for pdflatex, containing cv_content word for word.")
     cover_letter_content: str = Field(
         ..., description=CoverLetterGenerationResponse.model_fields["cover_letter_content"].description)
+    cover_letter_latex: str = Field(..., description="The complete LaTeX source of the cover letter (preamble and "
+                                                     "document environment), ready for pdflatex, containing "
+                                                     "cover_letter_content word for word.")
     notes: str = Field(..., description=CVGenerationResponse.model_fields["notes"].description)
 
 
@@ -123,8 +147,9 @@ def build_messages(given: dict[str, str], job_ad: str, company: str, work_prefer
     `company` is the search fixture's result text (evals.evaluate.company_text)."""
     rules = writer_rules()
     system = (
-        "You are an expert CV and cover letter writer. In one answer you write two documents for the same job "
-        "application: a tailored CV and a cover letter that is consistent with it.\n\n"
+        "You are an expert CV and cover letter writer and LaTeX formatter. In one answer you write two documents "
+        "for the same job application, a tailored CV and a cover letter consistent with it, each as clean plain "
+        "text and as a complete LaTeX document that compiles with pdflatex.\n\n"
         f"For the CV: {rules['cv_goal']}\n\n"
         f"For the cover letter: {rules['cover_letter_goal']}\n\n"
         "Keep the documents clean: no explanations, notes or meta-commentary inside them. Put what you did and why "
@@ -152,11 +177,18 @@ def build_messages(given: dict[str, str], job_ad: str, company: str, work_prefer
                  f"{_fresh_instructions(CoverLetterWriterAgent, bool(given.get('cover_letter')))}\n"
                  "Keep the letter consistent with the CV you write in this answer.\n\n"
                  f"{rules['cover_letter_guidelines']}\n")
+    for kind, label in (("cv", "CV"), ("cover_letter", "cover letter")):
+        parts.append(f"**LaTeX for the {label}** (start from this template; the plain-text {label} you write is the "
+                     f"text to copy):\n{rules[f'{kind}_latex']}\n"
+                     f"-------------------------------------\n{TEMPLATES[kind].read_text(encoding='utf-8')}\n"
+                     "-------------------------------------\n")
     parts.append(
-        "Return exactly three fields:\n"
-        "1. cv_content: the CV document only.\n"
-        "2. cover_letter_content: the cover letter document only.\n"
-        "3. notes: for the user, what you did and why (tailoring choices, requirements the candidate does not meet).")
+        "Return exactly five fields:\n"
+        "1. cv_content: the CV document only, as plain text.\n"
+        "2. cv_latex: the full LaTeX source of that CV (only LaTeX code, no prose).\n"
+        "3. cover_letter_content: the cover letter document only, as plain text.\n"
+        "4. cover_letter_latex: the full LaTeX source of that cover letter (only LaTeX code, no prose).\n"
+        "5. notes: for the user, what you did and why (tailoring choices, requirements the candidate does not meet).")
     return [SystemMessage(content=system), HumanMessage(content="\n".join(parts))]
 
 
@@ -174,7 +206,7 @@ def read_given_inputs(inputs_dir: Path, given_keys: list[str]) -> dict[str, str]
 
 
 def generate(llm, messages: list, callbacks: list) -> SinglePromptResponse:
-    """The one generation call (no retries: a second call would be a hidden extra call)."""
+    """The one model call of the case (no retries: a second call would change the topology)."""
     chain = llm.with_structured_output(SinglePromptResponse, include_raw=True)
     result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": {"langgraph_node": GENERATION_NODE},
                                             "run_name": GENERATION_NODE})
@@ -184,50 +216,92 @@ def generate(llm, messages: list, callbacks: list) -> SinglePromptResponse:
     return parsed
 
 
-def _logged(runnable, callbacks: list, node: str):
-    """A chain whose every model call goes to the run's recorder under the app's node name."""
-    return runnable.with_config(callbacks=callbacks, metadata={"langgraph_node": node}, run_name=node)
+# ---------------------------------------------------------------------------------------------- PDFs (no model)
+def pdflatex(tex: Path) -> tuple[bool, str]:
+    """Compile tex in its folder, twice as the app does (references); (ok, compiler output tail)."""
+    def once():
+        return subprocess.run(["pdflatex", "-interaction=nonstopmode", tex.name], capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", cwd=str(tex.parent), timeout=PDFLATEX_TIMEOUT)
+    try:
+        first = once()
+        if first.returncode != 0:
+            return False, (first.stdout or "")[-3000:] + (first.stderr or "")[-1000:]
+        once()
+    except FileNotFoundError:
+        return False, "pdflatex not found"
+    except subprocess.TimeoutExpired:
+        return False, f"pdflatex timed out after {PDFLATEX_TIMEOUT} s"
+    pdf = tex.with_suffix(".pdf")
+    return pdf.is_file(), "" if pdf.is_file() else "pdflatex made no PDF"
 
 
-def render_pdfs(texts: dict[str, str], render_model: str, render_temperature, callbacks: list) -> dict:
-    """The app's PDF path for each document, run in the current folder (the run's workspace).
-
-    Returns {kind: {"pdf": path or None, "check": dict, "fix_attempts": int, "error": str or None}}."""
-    from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
-    from agents.cv_pdf_generator import CVPDFGenerator
-    from agents.latex_fixer import LatexFixer
-    out = {}
-    for kind, cls in (("cv", CVPDFGenerator), ("cover_letter", CoverLetterPDFGenerator)):
-        node = RENDER_NODES[kind]
-        try:
-            gen = cls(model=render_model, temperature=render_temperature)
-            gen._content_chain = _logged(gen._content_chain, callbacks, node)
-            fixer: LatexFixer = gen._latex_fixer
-            fixer._chain = _logged(fixer._chain, callbacks, node)
-            pdf, fixes, check = gen._render_checked(texts[kind], gen._load_template(), None,
-                                                    f"{gen.file_stem}_draft_1", gen.max_latex_fix_iterations)
-            out[kind] = {"pdf": pdf, "check": check, "fix_attempts": fixes, "error": None}
-        except Exception as e:  # noqa: BLE001 - a PDF that fails is recorded, as in the app (no PDF, an error)
-            from evals.credit import OutOfCredit, is_out_of_credit
-            if is_out_of_credit(e):
-                raise OutOfCredit(str(e)) from e
-            out[kind] = {"pdf": None, "check": None, "fix_attempts": None, "error": f"{type(e).__name__}: {e}"[:500]}
-    return out
+_LATEX_SPECIALS = {"\\": r"\textbackslash{}", "{": r"\{", "}": r"\}", "$": r"\$", "&": r"\&", "#": r"\#",
+                   "^": r"\^{}", "_": r"\_", "~": r"\~{}", "%": r"\%"}
+_PUNCTUATION = {"\u2013": "--", "\u2014": "---", "\u2018": "`", "\u2019": "'", "\u201c": "``", "\u201d": "''",
+                "\u201e": ",,", "\u2022": r"\textbullet{}", "\u2026": "...", "\u2192": "->", "\u00a0": "~",
+                "\u2212": "-", "\u00b7": r"\textperiodcentered{}"}
 
 
-def _render_model() -> tuple[str, object]:
-    from config.config_loader import get_agent_config
-    cfg = get_agent_config("template_customizer", default_model="openai:gpt-5-nano", default_temperature=0.1)
-    return cfg["model"], cfg["temperature"]
+def _fallback_line(line: str) -> tuple[str, set]:
+    out, dropped = [], set()
+    for ch in line:
+        if ch in _LATEX_SPECIALS:
+            out.append(_LATEX_SPECIALS[ch])
+        elif ch in _PUNCTUATION:
+            out.append(_PUNCTUATION[ch])
+        elif ch == "\t":
+            out.append(" ")
+        elif ord(ch) < 0x250:  # Latin-1 and Latin Extended-A/B: T1 fonts cover the languages of the fixtures
+            out.append(ch)
+        else:
+            dropped.add(ch)
+    return "".join(out), dropped
 
 
-def calls_by_kind(totals: dict) -> dict:
-    """Model calls and cost split into the generation call and the PDF rendering calls (from summary totals)."""
-    by_node = totals.get("by_node") or {}
-    pick = lambda nodes: {"calls": sum((by_node.get(n) or {}).get("calls", 0) for n in nodes),  # noqa: E731
-                          "cost_usd": round(sum((by_node.get(n) or {}).get("cost_usd", 0.0) for n in nodes), 6)}
-    return {"generation": pick([GENERATION_NODE]), "rendering": pick(list(RENDER_NODES.values())),
-            "other": pick([n for n in by_node if n != GENERATION_NODE and n not in RENDER_NODES.values()])}
+def fallback_latex(text: str) -> tuple[str, list[str]]:
+    """A fixed, plain layout for a document's text (no model): blank lines separate paragraphs, other lines
+    break where the text breaks. Returns (LaTeX, characters left out because the fonts lack them)."""
+    paragraphs, dropped = [], set()
+    for block in re.split(r"\n\s*\n", text.strip()):
+        lines = []
+        for line in block.splitlines():
+            escaped, gone = _fallback_line(line.strip())
+            dropped |= gone
+            if escaped:
+                lines.append(escaped)
+        if lines:
+            paragraphs.append(" \\\\\n".join(lines))
+    body = "\n\n".join(paragraphs) or "~"
+    latex = ("\\documentclass[11pt,a4paper]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[T1]{fontenc}\n"
+             "\\usepackage[margin=2cm]{geometry}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0pt}\n"
+             "\\setlength{\\parskip}{0.6em}\n\\begin{document}\n" + body + "\n\\end{document}\n")
+    return ensure_text_extractable(latex), sorted(dropped)
+
+
+def make_pdfs(texts: dict[str, str], latex: dict[str, str], out_dir: Path) -> dict:
+    """Each document's PDF from the model's LaTeX, else from the fallback layout; never a model call.
+
+    Returns {kind: {"source": "model_latex" | "fallback_layout" | None, "compiled": bool,
+    "compile_error": str | None, "fallback_error": str | None, "fallback_dropped_chars": [...], "pdf": path}}."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    results = {}
+    for kind in KINDS:
+        stem = PDF_STEMS[kind]
+        tex = out_dir / f"{stem}.tex"
+        tex.write_text(escape_text_specials(ensure_text_extractable(latex.get(kind) or "")), encoding="utf-8")
+        ok, log = pdflatex(tex) if (latex.get(kind) or "").strip() else (False, "the answer had no LaTeX")
+        entry = {"source": "model_latex" if ok else None, "compiled": ok, "compile_error": None if ok else log,
+                 "fallback_error": None, "fallback_dropped_chars": [], "pdf": str(tex.with_suffix(".pdf")) if ok else None}
+        if not ok:
+            fb_tex = out_dir / f"{stem}_fallback.tex"
+            fb_latex, dropped = fallback_latex(texts.get(kind) or "")
+            fb_tex.write_text(fb_latex, encoding="utf-8")
+            fb_ok, fb_log = pdflatex(fb_tex)
+            entry.update(fallback_dropped_chars=dropped, fallback_error=None if fb_ok else fb_log)
+            if fb_ok:
+                entry.update(source="fallback_layout", pdf=str(fb_tex.with_suffix(".pdf")))
+        results[kind] = entry
+    return results
 
 
 def parse_args(argv=None):
@@ -236,12 +310,10 @@ def parse_args(argv=None):
     parser.add_argument("--ad", required=True, help="tracked fixture ad id (e.g. a3): its ad.md and search_fixture.json")
     parser.add_argument("--persona", required=True, help="tracked fixture persona id (e.g. p03): its candidate files")
     parser.add_argument("--inputs", help="all4 (default), cv_only, no_cv, or e.g. cv,notes")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"the one generation call's model (default {DEFAULT_MODEL})")
-    parser.add_argument("--render-model", dest="render_model",
-                        help="model of the PDF rendering calls (default: template_customizer in config/agent_models.yaml)")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"the one call's model (default {DEFAULT_MODEL})")
     parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"])
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
-    parser.add_argument("--cost-cap", type=float, default=1.0, help="no PDF rendering past this many USD (default 1.0)")
+    parser.add_argument("--cost-cap", type=float, default=1.0, help="recorded in the manifest; a run is one call (default 1.0)")
     parser.add_argument("--label", action="append", help="key=value stored in manifest.json (repeatable)")
     args = parser.parse_args(argv)
     # The attributes run_case's folder preparation reads: no script, no recorded search, no file overrides.
@@ -260,32 +332,24 @@ def main(argv=None) -> int:
         print("note: no --cv and no --notes; the single prompt has only the portfolio and earlier letter", file=sys.stderr)
     manifest = prepare_run_folder(args)
     run_dir = Path(manifest["run_dir"])
-    workspace = run_dir / "workspace"
-    labels = {**manifest["labels"], "method": METHOD}
-    from dotenv import load_dotenv
-    load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
-    for key in ("CV_EDITOR_MODEL", "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
-        os.environ.pop(key, None)  # the rendering models come from the config (or --render-model), as stated
-    render_model, render_temperature = _render_model()
-    if args.render_model:
-        render_model, render_temperature = args.render_model, None
-    manifest.update(method=METHOD, labels=labels, model=args.model, render_model=render_model,
+    manifest.update(method=METHOD, labels={**manifest["labels"], "method": METHOD}, model=args.model,
                     model_override=args.model, script=None)
     for key in ("critic_model_override", "grounding_model_override"):
         manifest.pop(key, None)
+    from dotenv import load_dotenv
+    load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
     from provenance import RunRecorder
     from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
     from evals.evaluate import company_text
     from evals.run_case import _git, _package_versions
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
-    guard = CreditGuard()
     install_no_retry_patch()
-    callbacks = [recorder.callback, guard]
+    callbacks = [recorder.callback, CreditGuard()]
     recorder.write_json("config.json", {
-        "method": METHOD, "generation": {"model": args.model, "calls": 1, "retries": 0},
-        "rendering": {"model": render_model, "temperature": render_temperature, "agents": ["template_customizer",
-                                                                                          "latex_fixer"]},
+        "method": METHOD, "topology": "exactly one model call per case; PDFs by pdflatex and a fixed fallback layout",
+        "generation": {"model": args.model, "calls": 1, "retries": 0},
+        "templates": {k: str(p.relative_to(REPO)) for k, p in TEMPLATES.items()},
         "code": {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
                  "dirty": bool(_git("status", "--porcelain"))},
         "packages": _package_versions(),
@@ -299,61 +363,52 @@ def main(argv=None) -> int:
                               company_text(inputs / "search_fixture.json"), args.work_preference)
     recorder.write_json("prompt.json", [{"role": m.type, "content": m.content} for m in messages])
 
-    status, response, rendered = "completed", None, {}
+    status, response, pdfs = "completed", None, {}
     t0 = time.time()
-    real_run = subprocess.run
-
-    def run_with_timeout(cmd, *a, **kw):  # a stuck pdflatex must not hang a batch (as in run_case)
-        if isinstance(cmd, list) and cmd and cmd[0] == "pdflatex":
-            kw.setdefault("timeout", 180)
-        return real_run(cmd, *a, **kw)
-
-    cwd = os.getcwd()
     try:
-        llm = init_chat_model(args.model)
-        response = generate(llm, messages, callbacks)
-        recorder.event("generation", model=args.model, cv_chars=len(response.cv_content),
-                       cover_letter_chars=len(response.cover_letter_content))
-        if recorder.over_cap():
-            status = f"stopped: cost cap {args.cost_cap} USD reached before rendering"
-        else:
-            os.chdir(workspace)
-            subprocess.run = run_with_timeout
-            rendered = render_pdfs({"cv": response.cv_content, "cover_letter": response.cover_letter_content},
-                                   render_model, render_temperature, callbacks)
-            recorder.event("rendering", **{k: {kk: v[kk] for kk in ("pdf", "fix_attempts", "error")}
-                                           for k, v in rendered.items()})
+        response = generate(init_chat_model(args.model), messages, callbacks)
+        recorder.event("generation", model=args.model, **{f"{f}_chars": len(getattr(response, f)) for f in
+                                                          ("cv_content", "cv_latex", "cover_letter_content",
+                                                           "cover_letter_latex")})
+        pdfs = make_pdfs({"cv": response.cv_content, "cover_letter": response.cover_letter_content},
+                         {"cv": response.cv_latex, "cover_letter": response.cover_letter_latex},
+                         run_dir / "workspace" / "latex")
+        recorder.event("pdfs", **{k: {kk: v[kk] for kk in ("source", "compiled", "fallback_error")} for k, v in pdfs.items()})
     except OutOfCredit as e:
         status = INTERRUPTED_STATUS
         recorder.record_error("session", e)
     except Exception as e:  # noqa: BLE001 - record what happened
         status = f"error: {type(e).__name__}: {e}"[:500]
         recorder.record_error("session", e)
-    finally:
-        subprocess.run = real_run
-        os.chdir(cwd)
 
     out = run_dir / "outputs"
     out.mkdir(exist_ok=True)
     files = {}
     if response is not None:
-        for key, name, text in (("generated_cv", "final_cv.txt", response.cv_content),
-                                ("generated_cover_letter", "final_cover_letter.txt", response.cover_letter_content)):
-            (out / name).write_text(text, encoding="utf-8")
-            files[key] = f"outputs/{name}"
+        for kind, text, latex in (("cv", response.cv_content, response.cv_latex),
+                                  ("cover_letter", response.cover_letter_content, response.cover_letter_latex)):
+            (out / f"{PDF_STEMS[kind]}.txt").write_text(text, encoding="utf-8")
+            (out / f"{PDF_STEMS[kind]}.tex").write_text(latex, encoding="utf-8")  # as the model returned it
+            files[f"generated_{kind}"] = f"outputs/{PDF_STEMS[kind]}.txt"
         (out / "writer_notes.txt").write_text(response.notes or "", encoding="utf-8")
-    for kind, name in (("cv", "final_cv.pdf"), ("cover_letter", "final_cover_letter.pdf")):
-        pdf = (rendered.get(kind) or {}).get("pdf")
-        if pdf and (workspace / pdf).is_file():
-            shutil.copy(workspace / pdf, out / name)
-            files[f"{kind}_pdf_path"] = f"outputs/{name}"
-    recorder.write_json("outputs/pdf_checks.json", {k: {kk: v[kk] for kk in ("check", "fix_attempts", "error")}
-                                                    for k, v in rendered.items()})
+    from agents.pdf_text_check import check_pdf
+    for kind, entry in pdfs.items():
+        if entry.get("pdf") and Path(entry["pdf"]).is_file():
+            shutil.copy(entry["pdf"], out / f"{PDF_STEMS[kind]}.pdf")
+            files[f"{kind}_pdf_path"] = f"outputs/{PDF_STEMS[kind]}.pdf"
+            entry["check"] = check_pdf(out / f"{PDF_STEMS[kind]}.pdf",
+                                       response.cv_content if kind == "cv" else response.cover_letter_content)
+        entry["pdf"] = files.get(f"{kind}_pdf_path")
+    recorder.write_json("outputs/pdf_checks.json", pdfs)
     # No conversation: the evaluator's conversation section says so, and its request checklist is empty.
     recorder.write_json("transcript.json", {"turns": [], "observations": [], "requests": []})
-    pdf_errors = {k: v["error"] for k, v in rendered.items() if v.get("error")}
+    calls = recorder.totals["llm_calls"] + recorder.totals["llm_errors"]
     summary = {"status": status, "method": METHOD, "minutes": round((time.time() - t0) / 60, 2), "outputs": files,
-               "pdf_errors": pdf_errors, "calls": calls_by_kind(recorder.totals)}
+               "calls": calls, "calls_by_node": {n: v["calls"] for n, v in recorder.totals["by_node"].items()},
+               "pdfs": {k: {kk: v.get(kk) for kk in ("source", "compiled", "compile_error", "fallback_error",
+                                                       "fallback_dropped_chars", "pdf")} for k, v in pdfs.items()},
+               "fallback_pdfs": sorted(k for k, v in pdfs.items() if v.get("source") == "fallback_layout"),
+               "compile_failures": sorted(k for k, v in pdfs.items() if not v.get("compiled"))}
     recorder.write_summary(**summary)
     recorder.write_json("manifest.json", {
         **manifest, **summary,
@@ -361,8 +416,9 @@ def main(argv=None) -> int:
         "cost_usd": round(recorder.cost, 6),
     })
     recorder.event("run_end", **summary, cost_usd=round(recorder.cost, 6))
-    print(json.dumps({"run_dir": str(run_dir), "status": status, "method": METHOD, "cost_usd": round(recorder.cost, 4),
-                      "calls": summary["calls"], "outputs": sorted(files)}))
+    print(json.dumps({"run_dir": str(run_dir), "status": status, "method": METHOD, "calls": calls,
+                      "cost_usd": round(recorder.cost, 4), "fallback_pdfs": summary["fallback_pdfs"],
+                      "outputs": sorted(files)}))
     if status == INTERRUPTED_STATUS:
         print(f"out of credit: the run was interrupted and is marked '{INTERRUPTED_STATUS}'", file=sys.stderr)
         return EXIT_OUT_OF_CREDIT

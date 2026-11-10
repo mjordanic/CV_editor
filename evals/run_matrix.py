@@ -20,7 +20,7 @@ re-scored. --dry-run prints the commands without running anything.
 --estimate prints the expected cost of the selected cases (ESTIMATE_USD below) and runs nothing.
 
 A case with "method": "single_prompt" (evals/matrix_single_prompt.json) runs evals/single_prompt.py
-(one model call writes both documents, then the app's PDF path) instead of the multi-agent session; the
+(exactly one model call writes both documents as text and LaTeX; pdflatex makes the PDFs) instead of the multi-agent session; the
 ledger, caps, resume, evaluation and out-of-credit handling are the same. --total-cap defaults to the
 matrix file's "total_cap" (12 USD for the single-prompt matrix), else 24.
 
@@ -57,14 +57,14 @@ OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new 
 # $2/1M input) and answers four more rubric sections (about 2k more output tokens at $10/1M): about
 # +0.04, so 0.18 at the high end. A script with change requests redrafts more: its session is
 # estimated at twice the default session. The truth check is one short luna call.
-# A single-prompt session (evals/single_prompt.py) is one generation call plus the app's PDF rendering.
-# gpt-6.1-sol at $2 / $10 per 1M tokens: the prompt is the writers' rules plus the case's inputs, job ad and
-# search results (about 4-7k tokens on these fixtures, ~0.01), the answer both documents and notes plus
-# reasoning (up to about 7k tokens, ~0.07): 0.09 at the high end. Rendering is two LaTeX conversions on the
-# template_customizer model (gpt-6-luna), with the possible fix and re-conversion: about 0.01.
+# A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex).
+# gpt-6.1-sol at $2 / $10 per 1M tokens: the prompt is the app's writer and LaTeX rules, both LaTeX templates
+# and the case's inputs, job ad and search results (about 4-7k tokens on these fixtures, ~0.015); the answer is
+# both documents as text and as LaTeX plus notes (about 4-5k tokens) and reasoning (up to about 5k): up to
+# about 10k output tokens, ~0.10. So 0.12 at the high end.
 ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval": 0.18, "truth": 0.005,
                 "scripted_session_factor": 2.0,
-                "single_prompt": {"gpt-6.1-sol": 0.09}, "single_prompt_render": 0.01}
+                "single_prompt": {"gpt-6.1-sol": 0.12}}
 DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 
 
@@ -232,7 +232,7 @@ def estimate(cases: list[dict], opts) -> dict:
         model = case["model"].split(":", 1)[-1]
         method = case.get("method") or "multi_agent"
         if method == "single_prompt":
-            session = p["single_prompt"].get(model, max(p["single_prompt"].values())) + p["single_prompt_render"]
+            session = p["single_prompt"].get(model, max(p["single_prompt"].values()))
         else:
             session = p["session"].get(model, max(p["session"].values()))
         if case.get("script"):
