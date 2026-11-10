@@ -104,9 +104,10 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 ```
 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
-`work_preference` and `script`); every case must resolve to tracked files in `fixtures/` and `scripts/`
+`work_preference`, `script`, and `method`/`baseline` for single-prompt cases, section 7); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
-(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 24 USD, the budget for this round),
+(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default: the matrix file's
+`total_cap`, else 24 USD, the budget for this round),
 finished sessions and evaluations are never redone, so an interrupted matrix resumes. `--dry-run`
 prints the commands without running anything; `--estimate` prints the expected cost of the selected
 cases (per step, model and script, at the prices in `ESTIMATE_USD` in `run_matrix.py`).
@@ -249,6 +250,62 @@ outcomes (followed, ignored, untruthful requests refused or followed), with the 
 sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_replaced`,
 `scripted_not_exercised`, from each session's script and transcript). Sessions interrupted for lack of
 credit are left out and listed under `interrupted`.
+
+## 7. Single-prompt baseline: `evals/single_prompt.py`
+
+Does the multi-agent app beat one strong model given everything at once? The single-prompt runner
+writes the CV and the cover letter with **one model call** (default `openai:gpt-6.1-sol`) and no
+router, critic, grounding check or redraft:
+
+```bash
+# one case
+uv run python -m evals.single_prompt --run-dir ../runs-sp/p03_a3_all4 --ad a3 --persona p03 --inputs all4 \
+    [--model openai:gpt-6.1-sol] [--render-model openai:gpt-6-luna] --env-file PATH/.env
+# the 39-case matrix: cost first, then the run (same ledger, caps, resume and out-of-credit stop as section 2)
+uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --estimate
+uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --env-file PATH/.env
+# side by side with the main round's runs
+uv run python -m evals.summarize ../runs-sp --with ../runs
+```
+
+**The prompt** holds what the multi-agent session gets: the candidate files of the input set (omitted
+ones are absent, exactly as in `run_case`), the job ad as published, and the company search results of
+the ad's search fixture, read with the app's `agents.search.search_result_texts` (the same text the
+app's company research and the evaluator read). The instructions are the writers' own, imported, not
+copied: the goal sentences of both writer system prompts, `TRUTHFULNESS_PROTOCOL`, the writers'
+fresh-draft ("creative liberty") instructions, their general guidelines, the output-language rule and
+the work-arrangement rule (`agents/work_context.py`). The default script declines missing contact
+details, so the prompt says the candidate declined them and asks for no placeholders. The prompt as
+sent is in `RUN/prompt.json`.
+
+**PDFs** come from the app's own PDF path (`CVPDFGenerator` / `CoverLetterPDFGenerator`: text to LaTeX
+by the `template_customizer` model, pdflatex, the LaTeX fixer, the PDF text check and its one
+re-conversion), so the layout is comparable. Those are model calls too: every one is logged in
+`llm_calls.jsonl` under the app's node names (`generate_cv_pdf`, `generate_cover_letter_pdf`), and the
+manifest's `calls` gives `generation` (always 1 call), `rendering` and `other` (always 0) with their cost.
+They use the `template_customizer` model of `config/agent_models.yaml` (gpt-6-luna, the same as the
+luna baseline sessions) unless `--render-model` is given. `--cost-cap` skips the rendering when the
+generation alone passed it.
+
+**The run folder** has `run_case`'s layout, so `evals/evaluate.py` grades it unchanged. The grader stays
+blind: it reads `inputs/`, `outputs/`, `transcript.json` and `inputs/script.json` (the default script), never
+the manifest, so it sees neither the method nor the model. There is no conversation, so
+`transcript.json` has no turns and the grader's conversation section says none was recorded (the
+baseline's default-script conversation only asks for the two documents). The manifest has
+`"method": "single_prompt"` and the labels `method` and `baseline`; `summarize.py` writes
+`methods_summary.json` with every metric split by method (runs without a method are `multi_agent`) and,
+per single-prompt run, the pair with its baseline run and the difference (`paired_mean_diff`).
+
+**`matrix_single_prompt.json`** (39 cases, ids `sp_<persona>_<ad>_<input set>_sol_r1`): every persona
+p01-p13 on its primary ad with the input sets `all4`, `cv_only` and `no_cv`. Each case's `baseline` is
+the main matrix's default-script gpt-6-luna session with the same persona, ad and inputs (rep 1, no work
+preference). Scripted-user cases are out of scope: a single prompt cannot hold a conversation, and
+`cases.py` refuses a single-prompt case with a script. The file's `total_cap` (12 USD) is run_matrix's
+default `--total-cap` for it.
+
+Estimated cost (`--estimate`): **10.92 USD** for the 39 cases: 0.10 per run (0.09 for the gpt-6.1-sol
+call: a 3-6k token prompt at $2/1M and up to about 7k output and reasoning tokens at $10/1M; 0.01
+for the rendering on gpt-6-luna) plus 0.18 per evaluation.
 
 ## Fixtures
 

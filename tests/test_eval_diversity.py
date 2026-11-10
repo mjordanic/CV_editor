@@ -194,10 +194,11 @@ def test_the_estimate_of_the_whole_matrix_stays_under_the_default_cap(capsys):
 
 
 def test_the_default_total_cap_is_24():
-    import inspect
-
     from evals import run_matrix
-    assert 'default=24.0' in inspect.getsource(run_matrix.main)
+    from evals.cases import DEFAULT_MATRIX
+    # main matrix.json sets no total_cap, so --total-cap defaults to the round's 24 USD budget
+    assert run_matrix.DEFAULT_TOTAL_CAP == 24.0
+    assert run_matrix.default_total_cap(DEFAULT_MATRIX) == 24.0
 
 
 # --- iterations ---------------------------------------------------------------------------------------

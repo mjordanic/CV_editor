@@ -13,7 +13,10 @@ Ads and personas are referred to by their id prefix ("a3", "p07") or their full 
 `matrix.json` lists the cases: {"id", "persona", "ad", "input_set", "inputs", "model", "rep"}, plus an
 optional "work_preference" and "script" (a name in scripts/, e.g. "revision"). A script written for
 one persona (its "persona" key, e.g. a request to emphasise a skill only that candidate has) can
-only be used with that persona.
+only be used with that persona. A case with "method": "single_prompt" runs evals/single_prompt.py
+instead of the multi-agent session (no script: one prompt cannot hold a conversation); its optional
+"baseline" names the multi-agent case it is compared with. A matrix file may also set "total_cap"
+(USD), run_matrix's default --total-cap for it.
 """
 from __future__ import annotations
 
@@ -25,6 +28,7 @@ FIXTURES = EVALS / "fixtures"
 DEFAULT_MATRIX = EVALS / "matrix.json"
 SCRIPTS = EVALS / "scripts"
 INPUT_FILES = {"cv": "cv.txt", "portfolio": "portfolio.txt", "cover_letter": "cover_letter.txt", "notes": "notes.txt"}
+METHODS = ("multi_agent", "single_prompt")
 INPUT_SETS = {
     "all4": ["cv", "portfolio", "cover_letter", "notes"],
     "cv_only": ["cv"],
@@ -83,6 +87,11 @@ def resolve_case(case: dict) -> dict:
         "inputs": {k: persona / INPUT_FILES[k] for k in parse_inputs(case.get("inputs"))},
         "persona_truth": persona / "persona.json",
     }
+    method = case.get("method", "multi_agent")
+    if method not in METHODS:
+        raise ValueError(f"case {case.get('id')}: method must be one of {METHODS}")
+    if method == "single_prompt" and case.get("script"):
+        raise ValueError(f"case {case.get('id')}: a single-prompt case cannot have a script (no conversation)")
     if case.get("script"):
         paths["script"] = find_script(case["script"])
         script = json.loads(paths["script"].read_text(encoding="utf-8"))
@@ -94,3 +103,9 @@ def resolve_case(case: dict) -> dict:
 
 def load_matrix(path: str | Path = DEFAULT_MATRIX) -> list[dict]:
     return json.loads(Path(path).read_text(encoding="utf-8"))["cases"]
+
+
+def matrix_total_cap(path: str | Path = DEFAULT_MATRIX) -> float | None:
+    """The matrix file's own "total_cap" in USD, or None."""
+    cap = json.loads(Path(path).read_text(encoding="utf-8")).get("total_cap")
+    return float(cap) if cap is not None else None
