@@ -92,7 +92,7 @@ High-Level Architecture
 - **ExperienceRetrievalAgent**: Reads your portfolio if you supplied one; gives it to the writers whole, or retrieves the relevant items of a large one (RAG with relevance verification).
 - **RouterAgent**: Uses conversation context and LLM reasoning to decide the next action (generate CV, cover letter, prompt user, exit). Intelligently handles sequential document generation when both are requested.
 - **CVWriterAgent / CoverLetterWriterAgent**: Generate tailored drafts using LangChain chat models with iterative refinement based on critique feedback.
-- **CritiqueAgent**: Evaluates generated documents for quality, ATS compatibility, and job alignment, marks each of the ad's requirements as shown, a gap, or missing from the draft, and gives improvement instructions. Its grounding check (on a separate model, `grounding` in the config) lists claims about you that your material does not support and claims about the employer that the ad and company research do not support.
+- **CritiqueAgent**: Evaluates generated documents for quality, ATS compatibility, and job alignment, marks each of the ad's requirements as shown, a gap, or missing from the draft, and gives improvement instructions. It runs on a model different from the writers' (`critique` in the config). Its grounding check, a separate call (`grounding` in the config, also on a non-writer model), lists claims about you that your material does not support and claims about the employer that the ad and company research do not support.
 - **CVPDFGenerator / CoverLetterPDFGenerator**: Convert generated text documents to professional PDFs using LLM-generated LaTeX. Supports style customization, error fixing, and automatic versioning.
 - **LatexFixer**: LLM-based agent that automatically fixes LaTeX compilation errors by analyzing error logs and generating corrected LaTeX code.
 - **UserInputAgent**: Collects free-form responses when more clarity or feedback is required.
@@ -104,7 +104,7 @@ Prerequisites
 
 - Python 3.12 or newer (`pyproject.toml` requires `>=3.12`; `.python-version` pins 3.12).
 - [uv](https://docs.astral.sh/uv/) to install the dependencies from `uv.lock`.
-- An OpenAI API key (paid, pay-per-use). The shipped `config/agent_models.yaml` uses `gpt-6-luna` for every agent except the invented-claims check, which uses `gpt-5.6-luna` (a session on the sample files costs about 2 to 3 US cents); you can switch agents to other models there. To try the program without paid keys, see [Running with a local model (Ollama)](#running-with-a-local-model-ollama).
+- An OpenAI API key (paid, pay-per-use). The shipped `config/agent_models.yaml` uses `gpt-6-luna` for every agent except the critic's two calls (the quality review and the invented-claims check), which use `gpt-5.6-luna` (a session on the sample files is estimated at about 4 to 6 US cents); you can switch agents to other models there. To try the program without paid keys, see [Running with a local model (Ollama)](#running-with-a-local-model-ollama).
 - A Tavily API key for company research (paid, with a limited free tier). Without one, company research is skipped.
 - A LaTeX distribution for PDF generation, with the `pdflatex` command available: MacTeX or BasicTeX on macOS (`brew install --cask basictex`), TeX Live on Linux (`sudo apt install texlive-latex-extra`), or MiKTeX on Windows.
 - macOS/Linux (Windows works but paths/logging instructions assume POSIX).
@@ -223,7 +223,7 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 - **Agent Models**: Each agent (CV writer, cover letter writer, router, critique, etc.) can be configured with specific models and temperatures.
 - **Refinement**: `workflow.max_refinements` sets how many automatic refinement rounds a draft with a real defect gets (shipped: `1`; `0` turns refinement off). `workflow.max_refinements_hard_cap` (shipped: `2`) allows extra rounds only while the draft still makes unsupported claims or the last redraft showed more of the ad's requirements, and is never exceeded.
 - **LaTeX Fixer**: Configure `max_latex_fix_iterations` in the `workflow` section to control how many times the system attempts to fix LaTeX compilation errors automatically (shipped value: 2; the code falls back to 1 if the key is missing).
-- **Grounding check model**: `agents.grounding` sets the model of the invented-claims check, separate from the writer's so the checker does not share its blind spots (shipped: `gpt-5.6-luna`).
+- **Critic models**: the critic makes two separate calls, the quality review (`agents.critique`) and the invented-claims check (`agents.grounding`). Both run on a model different from the writers' so the critic does not share their blind spots (shipped: `gpt-5.6-luna` for both, roughly +$0.02-0.03 per session).
 - **RAG Settings**: Configure vector similarity thresholds and relevance verification settings for experience retrieval (used only for a portfolio over 12,000 characters).
 
 All agents load configuration at startup from the YAML file. No code changes needed to adjust models or workflow parameters.
@@ -245,7 +245,7 @@ For testing without paid API calls you can run every agent on a local [Ollama](h
 ```bash
 ollama pull gemma4:e4b            # or another model, see below
 ollama pull nomic-embed-text      # optional: retrieval for a portfolio over 12,000 characters (RAG); without it RAG is skipped
-CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_GROUNDING_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
+CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_CRITIC_MODEL=ollama:gemma4:e4b CV_EDITOR_GROUNDING_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
 ```
 
 - No OpenAI or Tavily key is needed. Company research is skipped without a Tavily key.
@@ -256,7 +256,7 @@ CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_GROUNDING_MODEL=ollama:gemma4:e4b uv
 Customization Tips
 ------------------
 
-- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces every model except the grounding check's for one run without editing the file; the grounding check is meant to run on a different model from the writer's, so only `CV_EDITOR_GROUNDING_MODEL=<provider:model>` replaces its model.
+- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces the writer-side models for one run without editing the file, never the critic's. The critic is meant to run on a different model from the writers', so `CV_EDITOR_CRITIC_MODEL=<provider:model>` replaces the quality review's model (`critique`) and `CV_EDITOR_GROUNDING_MODEL=<provider:model>` replaces the fact check's (`grounding`). For an all-local run, set all three.
 - **Prompt tone**: Update the system/human prompt strings in each agent to reflect a different writing style or formatting rules.
 - **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences.
 - **PDF Style Customization**: Provide style preferences in natural language when generating PDFs. Examples:

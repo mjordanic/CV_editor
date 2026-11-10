@@ -1,9 +1,10 @@
 # Agent Model Configuration
 # This file defines which model each agent uses (any provider init_chat_model supports, e.g.
-# "openai:..." or "ollama:..."). CV_EDITOR_MODEL overrides every model here except grounding's
-# (CV_EDITOR_GROUNDING_MODEL overrides that one); see README.md.
+# "openai:..." or "ollama:..."). CV_EDITOR_MODEL overrides the writer-side models here, never the
+# critic's: CV_EDITOR_CRITIC_MODEL overrides critique and CV_EDITOR_GROUNDING_MODEL overrides
+# grounding; see README.md.
 #
-# Every agent uses gpt-6-luna except the grounding check (see below). OpenAI list prices per 1M tokens, read 2026-11-09 from
+# Every agent uses gpt-6-luna except the critic's two calls, critique and grounding (see below). OpenAI list prices per 1M tokens, read 2026-11-09 from
 # https://developers.openai.com/api/docs/pricing (input / cached input / output):
 #   gpt-6-luna   $0.10 / $0.01  / $0.50
 #   gpt-6.1-terra $1.00 / $0.10 / $5.00
@@ -42,15 +43,17 @@ agents:
     description: "Writes and redrafts the cover letter; the filter model works as for cv_writer"
 
   critique:
-    model: "openai:gpt-6-luna"
+    # The whole critic is independent of the writers: the quality review (here) and the fact check
+    # (grounding, below) stay two separate calls, both on a model different from the writers', so
+    # the critic does not share the writers' blind spots. gpt-5.6-luna is another model family at
+    # about 2x luna's price. Together with grounding: roughly +$0.02-0.03 per session.
+    model: "openai:gpt-5.6-luna"
     temperature: null
     description: "Scores each draft, checks it against the ad's requirements, writes redraft instructions and compares equally honest drafts"
 
   grounding:
-    # The invented-claims check runs on a different model from the writer's, so the checker does not
-    # share the writer's blind spots. gpt-5.6-luna is another model family at about 2x luna's price:
-    # roughly +$0.01 per session (one short call per draft). gpt-6.1-terra is the stronger choice at
-    # roughly +$0.04 per session.
+    # The invented-claims check, the critic's second call, on the same non-writer model as critique.
+    # gpt-6.1-terra is the stronger choice here at roughly +$0.04 per session more.
     model: "openai:gpt-5.6-luna"
     temperature: null
     description: "Lists claims in a draft that the candidate's own material (or, for the employer, the ad and company research) does not support"

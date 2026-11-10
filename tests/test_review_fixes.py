@@ -478,6 +478,54 @@ def test_the_model_override_leaves_the_grounding_model_alone(monkeypatch):
     assert get_agent_config("cv_writer")["model"] == "openai:gpt-6-luna"
 
 
+# --- the whole critic (quality review and fact check) is independent of the writers ---------------
+
+def _clear_model_overrides(monkeypatch):
+    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_CRITIC_MODEL", "CV_EDITOR_GROUNDING_MODEL"):
+        monkeypatch.delenv(var, raising=False)
+
+
+def test_shipped_critic_runs_on_a_model_different_from_the_writers(monkeypatch):
+    from config.config_loader import get_agent_config
+
+    _clear_model_overrides(monkeypatch)
+    writer_models = {get_agent_config(name)[key] for name in ("cv_writer", "cover_letter_writer")
+                     for key in ("model", "filter_model")}
+    assert get_agent_config("critique")["model"] not in writer_models
+    assert get_agent_config("grounding")["model"] not in writer_models
+
+
+def test_the_model_override_never_replaces_the_critic(monkeypatch):
+    from config.config_loader import get_agent_config
+
+    _clear_model_overrides(monkeypatch)
+    shipped_critique = get_agent_config("critique")["model"]
+    shipped_grounding = get_agent_config("grounding")["model"]
+
+    monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:writer")
+    assert get_agent_config("cv_writer")["model"] == get_agent_config("router")["model"] == "ollama:writer"
+    assert get_agent_config("critique")["model"] == shipped_critique
+    assert get_agent_config("grounding")["model"] == shipped_grounding
+
+
+def test_each_critic_call_has_its_own_override(monkeypatch):
+    from config.config_loader import get_agent_config
+
+    _clear_model_overrides(monkeypatch)
+    shipped_grounding = get_agent_config("grounding")["model"]
+    shipped_writer = get_agent_config("cv_writer")["model"]
+
+    monkeypatch.setenv("CV_EDITOR_CRITIC_MODEL", "ollama:critic")
+    assert get_agent_config("critique")["model"] == "ollama:critic"
+    assert get_agent_config("grounding")["model"] == shipped_grounding  # the fact check is separate
+    assert get_agent_config("cv_writer")["model"] == shipped_writer
+
+    monkeypatch.setenv("CV_EDITOR_GROUNDING_MODEL", "ollama:fact-check")
+    assert get_agent_config("grounding")["model"] == "ollama:fact-check"
+    assert get_agent_config("critique")["model"] == "ollama:critic"
+
+
+
 # --- I7: placeholders such as [EMAIL] make the program ask once before the PDF -------------------
 
 class PlaceholderLLM(ScriptedLLM):

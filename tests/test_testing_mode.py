@@ -293,8 +293,11 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(subprocess, "run", subprocess.run)
     monkeypatch.setattr(rag_agent, "_embeddings_for", rag_agent._embeddings_for)
-    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
+    for var in ("CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
         monkeypatch.delenv(var, raising=False)
+    # run_case sets the model overrides in os.environ; an empty value (no override) is restored after
+    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_CRITIC_MODEL", "CV_EDITOR_GROUNDING_MODEL"):
+        monkeypatch.setenv(var, "")
     monkeypatch.setenv("OPENAI_API_KEY", "dummy-no-calls")
     monkeypatch.setenv("TAVILY_API_KEY", "dummy-no-calls")
 
@@ -323,6 +326,8 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
         "--search-fixture", str(fixtures / "ads" / "a5-backend-engineer" / "search_fixture.json"),
         "--cv", str(persona / "cv.txt"), "--notes", str(persona / "notes.txt"),
         "--env-file", str(env), "--label", "case=offline", "--work-preference", "remote",
+        "--model", "openai:writer-model", "--critic-model", "openai:critic-model",
+        "--grounding-model", "openai:fact-check-model",
     ])
 
     manifest = json.loads((run_dir / "manifest.json").read_text())
@@ -353,6 +358,12 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     assert build_prompt(run_dir)[0]["work_preference"] == "remote"
     config = json.loads((run_dir / "config.json").read_text())
     assert "agents" in config and "OPENAI_API_KEY" not in json.dumps(config)
+    # each model flag reaches only its own agents: --model never replaces the critic's two calls
+    models = {name: cfg.get("model") for name, cfg in config["agents"].items()}
+    assert models["critique"] == "openai:critic-model"
+    assert models["grounding"] == "openai:fact-check-model"
+    assert models["cv_writer"] == models["cover_letter_writer"] == models["router"] == "openai:writer-model"
+    assert config["env_overrides"]["CV_EDITOR_CRITIC_MODEL"] == "openai:critic-model"
 
 
 # --- work arrangement, culture and preference -------------------------------------------------

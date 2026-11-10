@@ -126,20 +126,34 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
 
 
 MODEL_OVERRIDE_ENV = "CV_EDITOR_MODEL"
+CRITIC_MODEL_OVERRIDE_ENV = "CV_EDITOR_CRITIC_MODEL"
 GROUNDING_MODEL_OVERRIDE_ENV = "CV_EDITOR_GROUNDING_MODEL"
+
+# The critic's two calls (the quality review and the fact check) run on a model different from the
+# writers', so the critic does not share the writers' blind spots. CV_EDITOR_MODEL never replaces
+# them; each has its own override.
+CRITIC_OVERRIDE_ENVS = {
+    "critique": CRITIC_MODEL_OVERRIDE_ENV,
+    "grounding": GROUNDING_MODEL_OVERRIDE_ENV,
+}
+
+
+def model_override_env(agent_name: str) -> str:
+    """The environment variable whose value replaces this agent's model(s) for one run."""
+    return CRITIC_OVERRIDE_ENVS.get(agent_name, MODEL_OVERRIDE_ENV)
 
 
 def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None:
     """
     If CV_EDITOR_MODEL is set (e.g. "ollama:gemma4:e4b" or "openai:gpt-6-luna"), use that model for
-    every agent that uses one, in place of the models in agent_models.yaml. Handy for local runs
-    and for comparing models without editing the file.
+    every writer-side agent that uses one, in place of the models in agent_models.yaml. Handy for
+    local runs and for comparing models without editing the file.
 
-    The grounding check is exempt: it is meant to run on a different model from the writer's, so
-    only CV_EDITOR_GROUNDING_MODEL replaces its model.
+    The critic is exempt: it is meant to run on a different model from the writers', so only
+    CV_EDITOR_CRITIC_MODEL replaces the quality review's model ('critique') and only
+    CV_EDITOR_GROUNDING_MODEL replaces the fact check's ('grounding').
     """
-    env = GROUNDING_MODEL_OVERRIDE_ENV if agent_name == "grounding" else MODEL_OVERRIDE_ENV
-    override = os.environ.get(env, "").strip()
+    override = os.environ.get(model_override_env(agent_name), "").strip()
     if not override:
         return
     for key in ("model", "filter_model"):

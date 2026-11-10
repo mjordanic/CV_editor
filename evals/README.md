@@ -21,10 +21,11 @@ uv run python -m evals.run_case --run-dir ../runs/p03_a3_all4 --ad a3 --persona 
   default when neither `--ad` nor `--search-fixture` is given).
 - `--work-preference remote|hybrid|on-site|no preference` is the candidate's own stated preference.
   Without it the candidate counts as open to the job's arrangement.
-- `--model` sets `CV_EDITOR_MODEL`, so every agent except the grounding check uses that model. The
-  grounding check keeps its own model (it is meant to differ from the writer's) unless
-  `--grounding-model` sets `CV_EDITOR_GROUNDING_MODEL`. Without them the models in
-  `config/agent_models.yaml` are used.
+- `--model` sets `CV_EDITOR_MODEL`, so every writer-side agent uses that model. The critic's two
+  calls keep their own model (they are meant to differ from the writers'): `--critic-model` sets
+  `CV_EDITOR_CRITIC_MODEL` for the quality review (`critique`) and `--grounding-model` sets
+  `CV_EDITOR_GROUNDING_MODEL` for the fact check (`grounding`). Without them the models in
+  `config/agent_models.yaml` are used. `config.json` in the run folder records the model each agent used.
 - A scripted user answers the app: it gives the job ad, asks for the CV and then the cover letter,
   and exits. When the app asks for missing contact details (`ask_*_missing_details`) it declines.
   `--script FILE` (or a name in `scripts/`) overrides its replies (keys `first`, `cover_letter`, `exit`,
