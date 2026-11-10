@@ -138,9 +138,37 @@ CRITIC_OVERRIDE_ENVS = {
 }
 
 
-def model_override_env(agent_name: str) -> str:
-    """The environment variable whose value replaces this agent's model(s) for one run."""
-    return CRITIC_OVERRIDE_ENVS.get(agent_name, MODEL_OVERRIDE_ENV)
+# Providers that run on the user's own machine. A local CV_EDITOR_MODEL means "send nothing to a
+# cloud provider", so it also applies to the critic unless the critic's own variables are set.
+LOCAL_PROVIDERS = ("ollama",)
+
+
+def is_local_model(model: Optional[str]) -> bool:
+    return bool(model) and model.split(":", 1)[0].strip().lower() in LOCAL_PROVIDERS
+
+
+def model_override(agent_name: str) -> Optional[str]:
+    """
+    The model that replaces this agent's model(s) for one run, or None.
+
+    Writer-side agents follow CV_EDITOR_MODEL. The critic's two calls follow their own variables
+    (CV_EDITOR_CRITIC_MODEL, CV_EDITOR_GROUNDING_MODEL), never a cloud CV_EDITOR_MODEL. A local
+    CV_EDITOR_MODEL (e.g. "ollama:gemma4:e4b") also applies to them when their own variable is not
+    set: a local run must not send the candidate's material to a cloud model, nor fail at startup
+    without a cloud key. The checker then shares the writer's model, which is logged.
+    """
+    writer_model = os.environ.get(MODEL_OVERRIDE_ENV, "").strip()
+    own_env = CRITIC_OVERRIDE_ENVS.get(agent_name)
+    if own_env is None:
+        return writer_model or None
+    own = os.environ.get(own_env, "").strip()
+    if own:
+        return own
+    if is_local_model(writer_model):
+        logger.warning(f"{MODEL_OVERRIDE_ENV}={writer_model} is a local model and {own_env} is not set: "
+                       f"'{agent_name}' uses the same model, so the checker shares the writer's model")
+        return writer_model
+    return None
 
 
 def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None:
@@ -149,11 +177,12 @@ def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None
     every writer-side agent that uses one, in place of the models in agent_models.yaml. Handy for
     local runs and for comparing models without editing the file.
 
-    The critic is exempt: it is meant to run on a different model from the writers', so only
-    CV_EDITOR_CRITIC_MODEL replaces the quality review's model ('critique') and only
-    CV_EDITOR_GROUNDING_MODEL replaces the fact check's ('grounding').
+    The critic is exempt: it is meant to run on a different model from the writers', so
+    CV_EDITOR_CRITIC_MODEL replaces the quality review's model ('critique') and
+    CV_EDITOR_GROUNDING_MODEL the fact check's ('grounding'). Only a local CV_EDITOR_MODEL also
+    reaches them when those are not set (see model_override).
     """
-    override = os.environ.get(model_override_env(agent_name), "").strip()
+    override = model_override(agent_name)
     if not override:
         return
     for key in ("model", "filter_model"):

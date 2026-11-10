@@ -138,7 +138,7 @@ class State(TypedDict, total=False):
     cover_letter_placeholders: list[str] | None  # The same for the cover letter
     cv_placeholders_asked: bool | None  # The user was asked once for the CV's missing details
     cover_letter_placeholders_asked: bool | None  # The same for the cover letter
-    notices_for_user: list[str] | None  # Fixed notices the router shows word for word in its next message to the user
+    notices_for_user: dict[str, str] | None  # Fixed notices by source ('cv_claims', 'cv_pdf', ...); the router shows them word for word in its next message to the user
     relevant_experience: str | None  # The portfolio as the writers see it: whole, or the relevant items of a large one
     portfolio_text: str | None  # Full portfolio text the user supplied (the critique checks drafts against it); empty without one
     work_preference: str | None  # The candidate's own remote / hybrid / on-site / no preference, only if they stated it

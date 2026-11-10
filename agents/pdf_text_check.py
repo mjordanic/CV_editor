@@ -8,6 +8,7 @@ The app (agents/latex_pdf_generator.py) and the evaluator (evals/evaluate.py) us
 from __future__ import annotations
 
 import re
+from collections import Counter
 from pathlib import Path
 
 # Bracketed all-caps placeholders such as [EMAIL] or [PHONE NUMBER] that a writer leaves for missing details.
@@ -15,10 +16,16 @@ PLACEHOLDER_PATTERN = re.compile(r"\[[A-Z][A-Z _/-]{2,}\]")
 
 # Thresholds for a PDF whose text matches its plain text closely enough. Checked on the PDFs of an
 # earlier evaluation round: a cover letter whose LaTeX step dropped one sentence had 9 distinct
-# words missing (96.3% found); the other 19 PDFs had at most 2 missing and none added.
+# words missing (96.3% found); the other PDFs had at most 2 missing and none added.
 MIN_WORDS_FOUND_PCT = 97.0  # share of the plain text's words that appear in the PDF text
 MAX_MISSING_WORDS = 3       # distinct plain-text words not in the PDF at all
 MAX_EXTRA_WORDS = 3         # distinct PDF words not in the plain text at all
+# Occurrences counted as a multiset, so a dropped or repeated line whose words also occur elsewhere
+# is seen. Numbers must match exactly: a changed number is the most damaging re-typing, and a short
+# number is almost always inside some other number or year, so it gets no substring tolerance.
+MAX_MISSING_OCCURRENCES = 4  # plain-text word occurrences the PDF lacks
+MAX_EXTRA_OCCURRENCES = 4    # PDF word occurrences the plain text lacks
+MAX_NUMBER_CHANGES = 0       # numbers (runs of digits) missing from or added to the PDF
 
 
 def words(text: str | None) -> list[str]:
@@ -48,38 +55,61 @@ def extract_pdf_text(path: str | Path) -> tuple[str | None, int | None, str | No
         return None, None, f"{type(e).__name__}: {e}"
 
 
+def numbers(text: str | None) -> list[str]:
+    """Every run of digits in the text ("15,000 to 24,000" -> 15, 000, 24, 000), in order."""
+    return re.findall(r"\d+", text or "")
+
+
+def _uncovered(side: list[str], other: list[str]) -> Counter:
+    """
+    Occurrences of each word of `side` that `other` does not account for, as a multiset.
+
+    A word without a digit is also accounted for by its occurrences inside `other` with all
+    spaces and punctuation removed: PDF text extraction sometimes loses the spaces between words
+    ("ihavealsoused...") or splits a word at a line break ("ex perienced"). A word with a digit
+    gets no such tolerance here; the numbers themselves are compared exactly by compare_texts.
+    """
+    counts, other_counts = Counter(side), Counter(other)
+    joined = "".join(other)
+    lacking = Counter()
+    for word, n in counts.items():
+        available = max(other_counts[word], joined.count(word))
+        if n > available:
+            lacking[word] = n - available
+    return lacking
+
+
 def compare_texts(text_version: str | None, pdf_text: str | None) -> dict:
     """
     How closely the PDF text matches the plain text it was made from.
 
-    Returns text_words_found_in_pdf_pct (share of the plain text's words, with repeats, found in the
-    PDF), missing_words and extra_words (distinct words only on one side; at most 20 each, in text
-    order) and bracket_placeholders found in the PDF.
-
-    PDF text extraction sometimes loses the spaces between words ("ihavealsoused...") or splits a
-    word at a line break ("ex perienced"). A word counts as present when it is a word of the other
-    text or occurs inside that text with all spaces and punctuation removed, so these extraction
-    artefacts are not reported, while a dropped or added sentence still is.
+    Returns text_words_found_in_pdf_pct (share of the plain text's word occurrences found in the
+    PDF), missing_words and extra_words (distinct words lacking on one side; at most 20 each, in
+    text order), their distinct and occurrence counts, number_changes (numbers, as runs of digits,
+    that one side has more often than the other: "-5" for a 5 the PDF lacks, "+15" for an added
+    15) and bracket_placeholders found in the PDF. See _uncovered for how text-extraction
+    artefacts in words are tolerated; numbers get no tolerance, and a dropped, repeated or added
+    line is still seen.
     """
     src = words(text_version)
     pdf = words(pdf_text)
-    pdf_set, src_set = set(pdf), set(src)
-    pdf_joined, src_joined = "".join(pdf), "".join(src)
-
-    def in_pdf(w):
-        return w in pdf_set or w in pdf_joined
-
-    def in_text(w):
-        return w in src_set or w in src_joined
-
-    missing = list(dict.fromkeys(w for w in src if not in_pdf(w)))
-    extra = list(dict.fromkeys(w for w in pdf if not in_text(w)))
+    missing = _uncovered(src, pdf)
+    extra = _uncovered(pdf, src)
+    missing_words = list(dict.fromkeys(w for w in src if w in missing))
+    extra_words = list(dict.fromkeys(w for w in pdf if w in extra))
+    src_numbers, pdf_numbers = Counter(numbers(text_version)), Counter(numbers(pdf_text))
+    number_changes = ([f"-{n}" for n in dict.fromkeys(numbers(text_version)) if src_numbers[n] > pdf_numbers[n]]
+                      + [f"+{n}" for n in dict.fromkeys(numbers(pdf_text)) if pdf_numbers[n] > src_numbers[n]])
+    found = len(src) - sum(missing.values())
     return {
-        "text_words_found_in_pdf_pct": round(100 * sum(in_pdf(w) for w in src) / max(len(src), 1), 1),
-        "missing_words": missing[:20],
-        "extra_words": extra[:20],
-        "missing_word_count": len(missing),
-        "extra_word_count": len(extra),
+        "text_words_found_in_pdf_pct": round(100 * found / max(len(src), 1), 1),
+        "missing_words": missing_words[:20],
+        "extra_words": extra_words[:20],
+        "missing_word_count": len(missing_words),
+        "extra_word_count": len(extra_words),
+        "missing_occurrence_count": sum(missing.values()),
+        "extra_occurrence_count": sum(extra.values()),
+        "number_changes": number_changes[:20],
         "bracket_placeholders": find_placeholders(pdf_text)[:20],
     }
 
@@ -90,7 +120,13 @@ def check_pdf(path: str | Path, text_version: str | None) -> dict:
     if text is None:
         return {"ok": None, "error": error}
     result = {"pages": pages, "chars": len(text), **compare_texts(text_version, text)}
+    # The PDF's own page numbers (1 .. pages) are not numbers added to the text.
+    page_numbers = {f"+{n}" for n in range(1, (pages or 0) + 1)}
+    result["number_changes"] = [c for c in result["number_changes"] if c not in page_numbers]
     result["ok"] = (result["text_words_found_in_pdf_pct"] >= MIN_WORDS_FOUND_PCT
                     and result["missing_word_count"] <= MAX_MISSING_WORDS
-                    and result["extra_word_count"] <= MAX_EXTRA_WORDS)
+                    and result["extra_word_count"] <= MAX_EXTRA_WORDS
+                    and result["missing_occurrence_count"] <= MAX_MISSING_OCCURRENCES
+                    and result["extra_occurrence_count"] <= MAX_EXTRA_OCCURRENCES
+                    and len(result["number_changes"]) <= MAX_NUMBER_CHANGES)
     return result

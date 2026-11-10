@@ -19,7 +19,7 @@ from langgraph.graph.message import add_messages
 from agents import critique, document_writer, job_description, router, search
 from agents.cover_letter_writer import CoverLetterWriterAgent
 from agents.cv_writer import CVWriterAgent
-from agents.notices import NOTICES_KEY
+from agents.notices import NOTICES_KEY, pending_notices
 from agents.pdf_text_check import check_pdf, compare_texts, find_placeholders
 from tests.test_session_replay import REPO, ScriptedLLM, _build_agent, _play, _route
 
@@ -91,6 +91,52 @@ def test_first_cover_letter_with_a_request_follows_the_request(monkeypatch, tmp_
     assert "CREATIVE LIBERTY" not in instructions
     assert "only as a source of facts" not in llm.prompts[0]
     assert out["cover_letter_user_requests"] == [wish]  # C4: kept in state, not on the agent object
+
+
+class LetterLLM(WriterLLM):
+    """A writer that follows the instructions it gets: it readdresses the old letter only when told to."""
+
+    def with_structured_output(self, schema):
+        def answer(prompt):
+            text = prompt.to_string()
+            self.prompts.append(text)
+            letter = OLD_LETTER
+            if "update the employer, the role and the addressee" in _instructions(text):
+                letter = letter.replace("Brightmill team", "FreshCart Supermarkets team").replace(
+                    "I am currently a QA engineer at Brightmill and want to grow here.", "I would like to join you as a butcher.")
+            if "start in March" in _instructions(text):
+                letter = letter.replace("\n\nMarta", "\n\nI can start in March.\n\nMarta")
+            return schema(cover_letter_content=letter, notes="")
+        return RunnableLambda(answer)
+
+
+def test_a_wish_on_the_first_letter_readdresses_the_old_letter_to_this_job(monkeypatch, tmp_path):
+    """N3 (captain: option a): 'mention I can start in March' with an old letter for another company."""
+    llm = LetterLLM()
+    agent = _writer(monkeypatch, tmp_path, CoverLetterWriterAgent, llm)
+    wish = "In the letter, mention that I can start in March."
+    out = agent.run({"candidate_text": {"cv": SAMPLE_CV, "cover_letter": OLD_LETTER},
+                     "cover_letter_content_feedback": wish, "job_description_info": AD_INFO, "messages": []})
+    instructions = _instructions(llm.prompts[0])
+    assert wish in instructions and "Apply ONLY these specific changes" in instructions  # the wish verbatim
+    assert "written for a different job and employer" in instructions
+    letter = out["generated_cover_letter"]
+    assert "FreshCart" in letter and "Brightmill" not in letter and "I can start in March." in letter
+
+    # a later request on the letter already written for this job is applied as asked, nothing more
+    llm2 = LetterLLM()
+    agent2 = _writer(monkeypatch, tmp_path, CoverLetterWriterAgent, llm2)
+    agent2.run({"candidate_text": {"cv": SAMPLE_CV, "cover_letter": OLD_LETTER}, "generated_cover_letter": letter,
+                "cover_letter_content_feedback": "Make it shorter.", "job_description_info": AD_INFO, "messages": []})
+    assert "different job and employer" not in llm2.prompts[0]
+
+
+def test_a_wish_on_the_first_cv_does_not_get_the_letter_note(monkeypatch, tmp_path):
+    llm = WriterLLM()
+    _writer(monkeypatch, tmp_path, CVWriterAgent, llm).run(
+        {"candidate_text": {"cv": SAMPLE_CV}, "cv_content_feedback": "Stress my team leadership.",
+         "job_description_info": AD_INFO, "messages": []})
+    assert "different job and employer" not in llm.prompts[0]
 
 
 def test_first_cv_with_a_request_follows_the_request(monkeypatch, tmp_path):
@@ -209,13 +255,13 @@ def test_removal_pass_is_kept_when_it_removes_claims(monkeypatch, tmp_path):
     assert checked == ["CV without the claim"]  # the grounding check ran again on the result
     assert out["generated_cv"] == "CV without the claim" and out["cv_final_iteration"] == 2
     assert out["cv_history"][-1]["removal_pass_of"] == 1
-    assert NOTICES_KEY not in out
+    assert pending_notices(out) == []
 
 
 def test_claims_that_remain_are_listed_to_the_user_word_for_word(monkeypatch, tmp_path):
     out, _, _ = _finalize(monkeypatch, tmp_path, remaining=["AWS"])
     assert out["generated_cv"] == "CV without the claim"
-    (notice,) = out[NOTICES_KEY]
+    (notice,) = pending_notices(out)
     assert "still contains claims" in notice and "- AWS" in notice
 
     # the router puts the notice in front of the message the user sees, whatever its model writes
@@ -234,6 +280,120 @@ def test_claims_that_remain_are_listed_to_the_user_word_for_word(monkeypatch, tm
     assert asked[NOTICES_KEY] is None
 
 
+# --- N1: a grounding check that could not run is not read as "no invented claims" -----------------
+
+class BrokenModel:
+    """A model whose every call fails (e.g. a mistyped model name or an outage)."""
+
+    def with_structured_output(self, schema):
+        def fail(_):
+            raise RuntimeError("model not found")
+        return RunnableLambda(fail)
+
+
+def _critic(grounding_llm):
+    critic = critique.CritiqueAgent.__new__(critique.CritiqueAgent)
+    critic.grounding_llm = grounding_llm
+    critic.critique_cv = lambda **_: critique.CritiqueResponse(
+        quality_score=95, content_quality_feedback="ok", ats_compatibility_feedback="ok", job_alignment_feedback="ok")
+    return critic
+
+
+def test_a_failed_grounding_check_is_not_an_empty_list(monkeypatch):
+    monkeypatch.setattr(critique, "write_to_debug", lambda *_, **__: None)
+    critic = _critic(BrokenModel())
+    assert critic.check_grounding("CV", "Forklift licence (2019)", {"cv": SAMPLE_CV}) is None
+
+    out = critic.run_cv({"generated_cv": "Ana Horvat\nForklift licence (2019)", "cv_history": [], "messages": [],
+                         "candidate_text": {"cv": SAMPLE_CV}, "job_description_info": AD_INFO})
+    (entry,) = out["cv_history"]
+    assert entry["grounding_checked"] is False and out["cv_critique"]["grounding_checked"] is False
+
+
+def test_an_unchecked_draft_ranks_below_a_checked_draft_with_claims():
+    """Probe P1c: draft 1 was flagged, the check on draft 2 failed; draft 2 must not win as 'honest'."""
+    from agents.refinement import best_draft
+
+    flagged = {"iteration": 1, "score": 70, "unsupported_claims": ["Forklift licence (2019)"], "defects": 0}
+    unchecked = {"iteration": 2, "score": 90, "unsupported_claims": [], "grounding_checked": False, "defects": 0}
+    assert best_draft([flagged, unchecked]) is flagged
+    clean = {"iteration": 3, "score": 60, "unsupported_claims": [], "grounding_checked": True, "defects": 0}
+    assert best_draft([flagged, unchecked, clean]) is clean
+
+
+def _finalize_with(monkeypatch, tmp_path, history, checker_answers, state=None):
+    llm = WriterLLM("CV without the claim")
+    answers = list(checker_answers)
+    checked = []
+
+    def checker(label, text, material, employer_info=None):
+        checked.append(text)
+        return answers.pop(0)
+
+    agent = _writer(monkeypatch, tmp_path, CVWriterAgent, llm, grounding_checker=checker)
+    out = agent.finalize_best_version({"cv_history": history, "candidate_text": {"cv": SAMPLE_CV},
+                                       "job_description_info": AD_INFO, "messages": [], **(state or {})})
+    return out, checked
+
+
+def test_finalize_keeps_the_claims_when_the_recheck_cannot_run(monkeypatch, tmp_path):
+    history = [{"iteration": 1, "score": 90, "content": "CV with claim", "unsupported_claims": ["Forklift licence"]}]
+    out, checked = _finalize_with(monkeypatch, tmp_path, history, [None])
+    assert checked == ["CV without the claim"]  # the removal pass ran, but its check failed
+    assert out["generated_cv"] == "CV with claim" and out["cv_final_iteration"] == 1
+    (notice,) = pending_notices(out)
+    assert "still contains claims" in notice and "- Forklift licence" in notice
+
+
+def test_a_final_draft_that_was_never_checked_gets_a_fixed_notice(monkeypatch, tmp_path):
+    history = [{"iteration": 1, "score": 90, "content": "Unchecked CV", "unsupported_claims": [], "grounding_checked": False}]
+    out, checked = _finalize_with(monkeypatch, tmp_path, history, [None])
+    assert checked == ["Unchecked CV"]  # one more try at finalize
+    assert out["generated_cv"] == "Unchecked CV"
+    (notice,) = pending_notices(out)
+    assert notice == "Warning: the check for invented claims could not run on the final CV. Read it before you send it."
+
+
+def test_a_recheck_at_finalize_that_runs_feeds_the_removal_pass(monkeypatch, tmp_path):
+    history = [{"iteration": 1, "score": 90, "content": "Unchecked CV", "unsupported_claims": [], "grounding_checked": False}]
+    out, checked = _finalize_with(monkeypatch, tmp_path, history, [["Forklift licence"], []])
+    assert checked == ["Unchecked CV", "CV without the claim"]
+    assert out["generated_cv"] == "CV without the claim" and out["cv_history"][-1]["grounding_checked"] is True
+    assert pending_notices(out) == []
+
+
+# --- N2: each document's warnings are set or cleared by every finalize, so none outlives its draft --
+
+def test_a_stale_claims_warning_is_cleared_when_the_next_final_draft_is_clean(monkeypatch, tmp_path):
+    """Probe P2: finalize warned about a claim, the user's reply led to a clean redraft; no false alarm."""
+    flagged = [{"iteration": 1, "score": 90, "content": "CV with claim", "unsupported_claims": ["Forklift licence"]}]
+    first, _ = _finalize_with(monkeypatch, tmp_path, flagged, [["Forklift licence"]])
+    assert len(pending_notices(first)) == 1
+
+    other_doc = "Warning: the cover letter PDF does not match the checked text exactly."
+    pending = {**first[NOTICES_KEY], "cv_pdf": "Warning: the CV PDF does not match the checked text exactly.",
+               "cover_letter_pdf": other_doc}
+    clean = flagged + [{"iteration": 2, "score": 80, "content": "Ana Horvat\nana@example.com", "unsupported_claims": []}]
+    second, _ = _finalize_with(monkeypatch, tmp_path, clean, [], state={"cv_cycle_start": 1, NOTICES_KEY: pending})
+    assert second["generated_cv"] == "Ana Horvat\nana@example.com"
+    assert pending_notices(second) == [other_doc]  # this CV's claim and PDF warnings are gone; the letter's stays
+
+
+@pytest.mark.skipif(shutil.which("pdflatex") is None, reason="needs pdflatex")
+def test_a_matching_pdf_clears_the_warning_about_an_earlier_pdf(tmp_path):
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    text = "Ana Horvat\nButcher with eight years at the counter."
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    gen._build_latex_document = lambda template, plain, style: LATEX.format(body=text.replace("\n", "\\par "))
+    out = gen.run({"generated_cv": text, "cv_history": [{"iteration": 1}], "messages": [],
+                   NOTICES_KEY: {"cv_pdf": "Warning: the CV PDF does not match the checked text exactly."}})
+    assert out["cv_pdf_check"]["ok"] is True and pending_notices(out) == []
+
+
 # --- D6: the PDF's text is compared with the checked text -------------------------------------------
 
 def test_compare_texts_finds_dropped_and_added_words():
@@ -250,6 +410,40 @@ def test_compare_texts_ignores_text_extraction_artefacts():
     result = compare_texts(text, pdf)
     assert result["missing_words"] == [] and result["extra_words"] == []
     assert result["text_words_found_in_pdf_pct"] == 100.0
+
+
+def test_a_changed_number_is_seen_even_inside_a_year(tmp_path):
+    """Probe P4: '5' is inside '2015', so the joined-text tolerance hid 'team of 5' becoming 'team of 15'."""
+    text = "Butcher, 2015-2023. Led a team of 5. Cut 200 kg a day."
+    result = compare_texts(text, text.replace("team of 5", "team of 15"))
+    assert result["number_changes"] == ["-5", "+15"]
+    assert compare_texts(text, text.replace("200 kg", "20 kg"))["number_changes"] == ["-200", "+20"]
+    assert compare_texts(text, text)["number_changes"] == []
+    # a lost space between numbers is an extraction artefact, not a changed number
+    assert compare_texts("Salary 15,000 to 24,000.", "Salary 15,000to24,000.")["number_changes"] == []
+
+
+def test_a_dropped_or_repeated_line_is_seen_by_its_word_counts():
+    """Probe P4: every word of a dropped repeated bullet still occurs elsewhere, so a set comparison missed it."""
+    lines = ["Ana Horvat", "- Served customers at the meat counter.", "Lidl, butcher",
+             "- Served customers at the meat counter.", "Konzum, butcher"]
+    text = "\n".join(lines)
+    dropped = compare_texts(text, "\n".join(lines[:3] + lines[4:]))
+    assert dropped["missing_word_count"] == 5 and dropped["missing_occurrence_count"] == 5
+    assert {"served", "customers", "meat", "counter"} <= set(dropped["missing_words"])
+    repeated = compare_texts(text, text + "\n- Served customers at the meat counter.")
+    assert repeated["extra_occurrence_count"] == 5
+
+
+def test_check_pdf_fails_a_changed_number_and_a_dropped_line(monkeypatch):
+    from agents import pdf_text_check
+
+    text = "Ana Horvat\nButcher at Lidl 2015-2023, team of 5.\n- Served customers.\n- Served customers."
+    for pdf_text in (text.replace("team of 5", "team of 15"), text.rsplit("\n", 1)[0]):
+        monkeypatch.setattr(pdf_text_check, "extract_pdf_text", lambda path, t=pdf_text: (t, 1, None))
+        assert pdf_text_check.check_pdf("x.pdf", text)["ok"] is False
+    monkeypatch.setattr(pdf_text_check, "extract_pdf_text", lambda path: (text, 1, None))
+    assert pdf_text_check.check_pdf("x.pdf", text)["ok"] is True
 
 
 LATEX = "\\documentclass{{article}}\\usepackage[T1]{{fontenc}}\\begin{{document}}{body}\\end{{document}}\n"
@@ -272,7 +466,7 @@ def test_a_pdf_that_drops_text_is_converted_again_and_the_closer_one_kept(monkey
     out = gen.run({"generated_cv": text, "cv_history": [{"iteration": 1}], "messages": []})
     assert out["cv_pdf_check"]["ok"] is True and out["cv_pdf_check"]["converted_twice"] is True
     assert check_pdf(out["cv_pdf_path"], text)["ok"] is True
-    assert NOTICES_KEY not in out
+    assert pending_notices(out) == []
 
 
 @pytest.mark.skipif(shutil.which("pdflatex") is None, reason="needs pdflatex")
@@ -287,7 +481,7 @@ def test_a_pdf_that_still_differs_is_reported(tmp_path):
     gen._build_latex_document = lambda template, plain, style: LATEX.format(body="Ana Horvat\\par Award-winning master butcher.")
     out = gen.run({"generated_cv": text, "cv_history": [{"iteration": 1}], "messages": []})
     assert out["cv_pdf_check"]["ok"] is False
-    (notice,) = out[NOTICES_KEY]
+    (notice,) = pending_notices(out)
     assert "does not match the checked text" in notice and "haccp" in notice and "award" in notice
 
 
@@ -488,8 +682,8 @@ def test_the_model_override_never_replaces_the_critic(monkeypatch):
     shipped_critique = get_agent_config("critique")["model"]
     shipped_grounding = get_agent_config("grounding")["model"]
 
-    monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:writer")
-    assert get_agent_config("cv_writer")["model"] == get_agent_config("router")["model"] == "ollama:writer"
+    monkeypatch.setenv("CV_EDITOR_MODEL", "openai:writer")
+    assert get_agent_config("cv_writer")["model"] == get_agent_config("router")["model"] == "openai:writer"
     assert get_agent_config("critique")["model"] == shipped_critique
     assert get_agent_config("grounding")["model"] == shipped_grounding
 
@@ -509,6 +703,43 @@ def test_each_critic_call_has_its_own_override(monkeypatch):
     monkeypatch.setenv("CV_EDITOR_GROUNDING_MODEL", "ollama:fact-check")
     assert get_agent_config("grounding")["model"] == "ollama:fact-check"
     assert get_agent_config("critique")["model"] == "ollama:critic"
+
+
+# --- N5: a local CV_EDITOR_MODEL keeps the whole run local ------------------------------------------
+
+def test_a_local_model_override_also_applies_to_the_critic(monkeypatch, caplog):
+    from config.config_loader import get_agent_config
+
+    _clear_model_overrides(monkeypatch)
+    monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:gemma4:e4b")
+    with caplog.at_level("WARNING", logger="config.config_loader"):
+        assert get_agent_config("critique")["model"] == "ollama:gemma4:e4b"
+        assert get_agent_config("grounding")["model"] == "ollama:gemma4:e4b"
+    assert "shares the writer's model" in caplog.text
+
+    # the critic's own variables still win, also for a local run
+    monkeypatch.setenv("CV_EDITOR_GROUNDING_MODEL", "ollama:other")
+    assert get_agent_config("grounding")["model"] == "ollama:other"
+    assert get_agent_config("critique")["model"] == "ollama:gemma4:e4b"
+
+
+def test_a_local_run_starts_without_an_openai_key(monkeypatch, tmp_path):
+    """Probe P6: with only CV_EDITOR_MODEL=ollama:... the grounding check still made an OpenAI client."""
+    (tmp_path / "templates").symlink_to(REPO / "templates")
+    (tmp_path / "data" / "CV").mkdir(parents=True)
+    shutil.copy(REPO / "examples" / "sample_CV.txt", tmp_path / "data" / "CV" / "CV.txt")
+    monkeypatch.chdir(tmp_path)
+    _clear_model_overrides(monkeypatch)
+    monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:gemma4:e4b")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    made = []
+    real = critique.init_chat_model
+    monkeypatch.setattr(critique, "init_chat_model", lambda model, **kw: made.append(model) or real(model, **kw))
+
+    import langgraph_agent as la
+    la.MasterAgent()
+    assert made and all(m.startswith("ollama:") for m in made)
 
 
 

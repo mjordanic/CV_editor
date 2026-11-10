@@ -20,7 +20,7 @@ from pydantic import BaseModel
 
 from config.config_loader import load_config, local_model_kwargs
 from agents.latex_fixer import LatexFixer, ensure_text_extractable, escape_text_specials
-from agents.notices import NOTICES_KEY, add_notice
+from agents.notices import NOTICES_KEY, set_notices
 from agents.pdf_text_check import check_pdf
 
 logger = logging.getLogger(__name__)
@@ -257,18 +257,22 @@ class LatexPDFGenerator:
             pages = f", {check['pages']} page{'s' if check['pages'] != 1 else ''}" if check.get("pages") else ""
             message = f"{title} PDF generated successfully: {pdf_path} (also saved as {self.file_stem}.pdf{pages})"
             updates = {}
+            notice = None
             if check.get("ok") is False:
                 details = []
                 if check.get("missing_words"):
                     details.append("missing from the PDF: " + ", ".join(check["missing_words"][:10]))
                 if check.get("extra_words"):
                     details.append("in the PDF but not in the checked text: " + ", ".join(check["extra_words"][:10]))
+                if check.get("number_changes"):
+                    details.append("numbers that differ (- missing, + added): " + ", ".join(check["number_changes"][:10]))
                 notice = (f"Warning: the {label} PDF does not match the checked text exactly "
                           f"({check.get('text_words_found_in_pdf_pct')}% of its words found"
                           + (f"; {'; '.join(details)}" if details else "") + "). "
                           f"Compare the PDF with {os.path.join(self.output_folder, self.file_stem + '.txt')} before you send it.")
                 message += "\n\n" + notice
-                updates[NOTICES_KEY] = add_notice(state, notice)
+            # Set or cleared on every PDF of this document, so a warning about an earlier PDF does not outlive it.
+            updates[NOTICES_KEY] = set_notices(state, updates, {f"{kind}_pdf": notice})
             logger.info(message)
             return {
                 **updates,

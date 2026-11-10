@@ -37,7 +37,7 @@ from agents.critique import (
     format_job_description,
 )
 from agents.job_description import output_language_instruction
-from agents.notices import NOTICES_KEY, add_notice
+from agents.notices import NOTICES_KEY, set_notices
 from agents.pdf_text_check import find_placeholders
 from agents.refinement import best_draft
 from agents.work_context import describe as describe_work_context, with_preference
@@ -174,6 +174,14 @@ class DocumentWriterAgent:
             return f"**User Feedback/Modification Request:**\n{user_feedback}\n\nPlease incorporate these changes into the {label}."
         if has_document:
             return f"Please review the existing {label} and make improvements based on the job description and company information."
+        return ""
+
+    def _request_on_original_note(self) -> str:
+        """
+        Added to the user's request when it applies to the candidate's original document (first
+        draft). Empty for the CV: the user's own CV belongs to them for any job, so their wish is
+        applied to it as asked (D2).
+        """
         return ""
 
     def _refinement_instructions(self, suggestions: str, claims: list[str] | None) -> str:
@@ -330,6 +338,10 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             # The user's own request steers the document (also on the first draft).
             modification_instructions = self._user_request_instructions(user_feedback, bool(document))
             mode = "request"
+            if generated is None and document:
+                note = self._request_on_original_note()
+                if note:
+                    modification_instructions += "\n\n" + note
 
         is_original = generated is None
         text, notes = self.generate_document(
@@ -419,19 +431,33 @@ You can ONLY remove parts of the critique instructions that conflict with user p
 
         updates = {}
         claims = list(best.get("unsupported_claims") or [])
+        checked = best.get("grounding_checked") is not False
         checker = getattr(self, "grounding_checker", None)
+        if not checked and checker is not None:
+            # The check could not run on this draft during the critique: try once more before it ships.
+            rechecked = checker(label, best.get("content", ""), candidate_material(state), employer_info=employer_evidence(state))
+            if rechecked is not None:
+                claims, checked = list(rechecked), True
+                best = {**best, "unsupported_claims": claims, "grounding_checked": True}
+                history = [best if h.get("iteration") == best.get("iteration") else h for h in history]
+                updates[f"{kind}_history"] = history
+                logger.info(f"Grounding check of the chosen {label} ran at finalize: {len(claims)} unsupported claim(s)")
         if claims and checker is not None:
             logger.info(f"The chosen {label} still has {len(claims)} unsupported claim(s) - running one removal-only pass")
             new_text = self._removal_pass(state, best.get("content", ""), claims)
             if new_text and new_text.strip() and new_text != best.get("content"):
                 remaining = checker(label, new_text, candidate_material(state), employer_info=employer_evidence(state))
-                if len(remaining) < len(claims):
+                if remaining is None:
+                    # An unchecked removal pass is not known to be cleaner: keep the chosen draft and its claims.
+                    logger.info("The grounding check of the removal pass could not run - keeping the chosen draft and its claims")
+                elif len(remaining) < len(claims):
                     entry = {
                         "iteration": len(history) + 1,
                         "content": new_text,
                         "score": best.get("score"),
                         "critique": None,
                         "unsupported_claims": remaining,
+                        "grounding_checked": True,
                         "defects": best.get("defects"),
                         "removal_pass_of": best.get("iteration"),
                     }
@@ -447,14 +473,22 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         final_path = self.save_document(final_text, f"{self.file_stem}.txt")
         message = (f"**Finalization Complete:**\nSelected version from iteration {best.get('iteration')} "
                    f"(Score: {best.get('score')}) as the best version.\nSaved to {final_path}")
+        # Fixed text, not the router model's words: the user must see exactly which claims remain,
+        # or that they could not be checked. Set or cleared on every finalize of this document, so a
+        # warning about an earlier draft does not outlive it; its PDF notice is cleared too, because
+        # a new PDF follows.
+        notice = None
         if claims:
-            # Fixed text, not the router model's words: the user must see exactly which claims remain.
             listed = "\n".join(f"- {c}" for c in claims)
             notice = (f"Warning: the final {label} still contains claims that your CV, notes, portfolio and messages "
                       f"(or, for the employer, the job ad and company research) do not support:\n{listed}\n"
                       f"Check them before you send it, and tell me if they should be changed or removed.")
+        elif not checked:
+            notice = (f"Warning: the check for invented claims could not run on the final {label}. "
+                      f"Read it before you send it.")
+        if notice:
             message += "\n\n" + notice
-            updates[NOTICES_KEY] = add_notice(state, notice)
+        updates[NOTICES_KEY] = set_notices(state, updates, {f"{kind}_claims": notice, f"{kind}_pdf": None})
 
         placeholders = find_placeholders(final_text)
         if placeholders:

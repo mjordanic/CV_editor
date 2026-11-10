@@ -91,11 +91,24 @@ class CoverLetterWriterAgent(DocumentWriterAgent):
         return "No existing cover letter provided. Create a new cover letter."
 
     def _base_document_note(self, mode: str, is_original: bool) -> str:
-        # Only for a fresh letter: a user's own request on the earlier letter is applied as asked.
-        if mode == "fresh" and is_original:
+        if not is_original:
+            return ""
+        if mode == "fresh":
             return ("(This is the candidate's earlier cover letter, written for a different job and employer. "
                     "Use it only as a source of facts about the candidate and of their voice.)")
+        if mode == "request":
+            return ("(This is the candidate's earlier cover letter, written for a different job and employer. "
+                    "Apply the user's request as asked, and update the employer, role and addressee to this job.)")
         return ""
+
+    def _request_on_original_note(self) -> str:
+        # The earlier letter names another employer, role and addressee: a user who asks for a
+        # change to it on the first letter for this job wants it sent to this employer. The wish
+        # itself is applied as asked (D2).
+        return ("**The existing cover letter was written for a different job and employer.** Apply the user's "
+                "request above exactly as asked, and also update the employer, the role and the addressee (and any "
+                "statement about the candidate's current situation that is about that other job) to fit this job. "
+                "Take the new employer, role and addressee only from the job description and company information.")
 
     def _fresh_draft_instructions(self, has_document: bool) -> str:
         # The first letter for a new job used to be an edit of the old letter for another employer,

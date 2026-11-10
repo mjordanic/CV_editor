@@ -24,7 +24,8 @@ uv run python -m evals.run_case --run-dir ../runs/p03_a3_all4 --ad a3 --persona 
 - `--model` sets `CV_EDITOR_MODEL`, so every writer-side agent uses that model. The critic's two
   calls keep their own model (they are meant to differ from the writers'): `--critic-model` sets
   `CV_EDITOR_CRITIC_MODEL` for the quality review (`critique`) and `--grounding-model` sets
-  `CV_EDITOR_GROUNDING_MODEL` for the fact check (`grounding`). Without them the models in
+  `CV_EDITOR_GROUNDING_MODEL` for the fact check (`grounding`). A local `--model` (`ollama:`) also
+  applies to the critic unless those flags are given. Without them the models in
   `config/agent_models.yaml` are used. `config.json` in the run folder records the model each agent used.
 - A scripted user answers the app: it gives the job ad, asks for the CV and then the cover letter,
   and exits. When the app asks for missing contact details (`ask_*_missing_details`) it declines.

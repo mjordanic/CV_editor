@@ -52,7 +52,7 @@ uv run python langgraph_agent.py
 | Input | Where | Formats | Used by |
 |---|---|---|---|
 | CV | `data/CV/CV.*`, or pasted / a file path when asked (only if there is no CV and no notes) | `.txt`, `.md`, `.pdf` (text PDFs; scanned PDFs have no text) | CV and cover letter writers, critique, invented-claims check |
-| Earlier cover letter | `data/CV/cover_letter.*` | `.txt`, `.md`, `.pdf` | both writers as source facts (the first letter for a new job is written fresh for that job, using the old one only for facts and voice; a request you make about it is applied to it as you ask), critique, invented-claims check |
+| Earlier cover letter | `data/CV/cover_letter.*` | `.txt`, `.md`, `.pdf` | both writers as source facts (the first letter for a new job is written fresh for that job, using the old one only for facts and voice; a request you make about it on the first letter is applied as you ask, and the letter is also readdressed to this employer, role and addressee), critique, invented-claims check |
 | Free-form notes | `data/CV/notes.*` | `.txt`, `.md`, `.pdf` | CV and cover letter writers, critique, invented-claims check |
 | Portfolio (optional, your own) | `data/portfolio/portfolio.txt` | plain text, one item per paragraph | the writers (the whole file up to 12,000 characters, otherwise the items retrieved for the ad), the critique and the invented-claims check |
 | Work-arrangement preference (remote, hybrid, on-site, no preference) | say it in the chat ("I only want remote jobs"); `--work-preference` in testing mode | writers state it only if you gave it; the program tells you when the job's arrangement conflicts with it. Without one you count as open to any arrangement: remote, hybrid, on-site or relocation is never presented as a conflict or weakness, and no specific commitment (e.g. relocating to a named city) is invented |
@@ -245,7 +245,7 @@ For testing without paid API calls you can run every agent on a local [Ollama](h
 ```bash
 ollama pull gemma4:e4b            # or another model, see below
 ollama pull nomic-embed-text      # optional: retrieval for a portfolio over 12,000 characters (RAG); without it RAG is skipped
-CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_CRITIC_MODEL=ollama:gemma4:e4b CV_EDITOR_GROUNDING_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
+CV_EDITOR_MODEL=ollama:gemma4:e4b uv run python langgraph_agent.py
 ```
 
 - No OpenAI or Tavily key is needed. Company research is skipped without a Tavily key.
@@ -256,7 +256,7 @@ CV_EDITOR_MODEL=ollama:gemma4:e4b CV_EDITOR_CRITIC_MODEL=ollama:gemma4:e4b CV_ED
 Customization Tips
 ------------------
 
-- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces the writer-side models for one run without editing the file, never the critic's. The critic is meant to run on a different model from the writers', so `CV_EDITOR_CRITIC_MODEL=<provider:model>` replaces the quality review's model (`critique`) and `CV_EDITOR_GROUNDING_MODEL=<provider:model>` replaces the fact check's (`grounding`). For an all-local run, set all three.
+- **Models**: Change model IDs or temperatures in `config/agent_models.yaml`. `temperature: null` uses the model's default (`gpt-6-luna` accepts no other value). Ensure the chosen model is available in your OpenAI organization. `CV_EDITOR_MODEL=<provider:model>` replaces the writer-side models for one run without editing the file, never the critic's. The critic is meant to run on a different model from the writers', so `CV_EDITOR_CRITIC_MODEL=<provider:model>` replaces the quality review's model (`critique`) and `CV_EDITOR_GROUNDING_MODEL=<provider:model>` replaces the fact check's (`grounding`). A local `CV_EDITOR_MODEL` (an `ollama:` model) is the exception: it also replaces the critic's models unless their own variables are set, so a local run sends nothing to OpenAI and needs no OpenAI key; the log then says the checker shares the writer's model.
 - **Prompt tone**: Update the system/human prompt strings in each agent to reflect a different writing style or formatting rules.
 - **PDF Templates**: Base LaTeX templates are in `templates/` directory. The LLM uses these as starting points but can modify them completely based on your style preferences.
 - **PDF Style Customization**: Provide style preferences in natural language when generating PDFs. Examples:

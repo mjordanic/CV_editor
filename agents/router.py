@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import log_messages, get_logged_message_count
 
-from agents.notices import NOTICES_KEY, with_notices
+from agents.notices import NOTICES_KEY, pending_notices, with_notices
 from agents.work_context import describe as describe_work_context, with_preference
 
 logger = logging.getLogger(__name__)
@@ -638,7 +638,7 @@ class RouterAgent:
         # at exit), so on any other action they stay pending.
         message_to_user = response.message_to_user or ""
         shows_message = next_action in ("collect_user_input", "exit")
-        if shows_message and state.get(NOTICES_KEY):
+        if shows_message and pending_notices(state):
             message_to_user = with_notices(state, message_to_user)
             if next_action == "exit":
                 logger.info(f"\n\n{message_to_user}")  # the console is where the user reads the app's messages
@@ -652,7 +652,7 @@ class RouterAgent:
             ],
         }
         
-        if shows_message and state.get(NOTICES_KEY):
+        if shows_message and pending_notices(state):
             return_state[NOTICES_KEY] = None
 
         if response.work_preference and response.work_preference != state.get("work_preference"):

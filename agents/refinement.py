@@ -3,8 +3,12 @@ from typing import Callable, Optional
 
 
 def _honesty_key(draft: dict) -> tuple:
-    """Fewer unsupported claims first, then fewer requirements the draft fails to show."""
-    return (-len(draft.get("unsupported_claims") or []), -(draft.get("defects") or 0))
+    """
+    Checked drafts first (a draft whose grounding check could not run has no known claims, which
+    is not the same as none), then fewer unsupported claims, then fewer requirements left unshown.
+    """
+    checked = draft.get("grounding_checked") is not False
+    return (checked, -len(draft.get("unsupported_claims") or []), -(draft.get("defects") or 0))
 
 
 def best_draft(drafts: list[dict], compare: Optional[Callable[[dict, dict], Optional[str]]] = None) -> dict:

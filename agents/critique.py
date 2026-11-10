@@ -327,7 +327,7 @@ class CritiqueAgent:
         document_content: str,
         candidate_text: dict,
         employer_info: Optional[str] = None,
-    ) -> list[str]:
+    ) -> Optional[list[str]]:
         """
         Ask the model, as a separate small task, which claims in the draft its sources do not
         support: claims about the candidate against the candidate's own material, and statements
@@ -335,7 +335,8 @@ class CritiqueAgent:
         nothing here knows what a skill looks like.
 
         Returns:
-            list[str]: Unsupported claims, candidate claims first (empty when all are supported or the check fails).
+            list[str] | None: Unsupported claims, candidate claims first (empty when all are
+            supported). None when the check could not run: an unchecked draft is not a clean one.
         """
         try:
             chain = ChatPromptTemplate.from_messages([("human", GROUNDING_PROMPT)]) | self.grounding_llm.with_structured_output(GroundingResponse)
@@ -346,8 +347,8 @@ class CritiqueAgent:
                 "employer_info": employer_info or "(no job ad or company research available)",
             })
         except Exception as e:  # a failed check must not end the session
-            logger.warning(f"Grounding check failed ({type(e).__name__}: {e}) - continuing without it")
-            return []
+            logger.warning(f"Grounding check failed ({type(e).__name__}: {e}) - the draft is marked as unchecked")
+            return None
         claims = [c.strip() for c in (response.unsupported_claims or []) if _clean_text(c)]
         employer = [c.strip() for c in (getattr(response, "unsupported_employer_claims", None) or []) if _clean_text(c)]
         logger.info(f"Grounding check: {len(claims)} unsupported claim(s) about the candidate and "
@@ -473,6 +474,10 @@ class CritiqueAgent:
             label if kind == "cv" else "cover letter", document, candidate_text,
             employer_info=employer_evidence(state),
         )
+        # A check that could not run is recorded as such: the draft is ranked below checked ones
+        # and, if it is still the final draft, the user is told it was not checked.
+        grounding_checked = unsupported is not None
+        unsupported = unsupported or []
         if unsupported:
             listed = "\n".join(f"- {claim}" for claim in unsupported)
             critical_issues = _join(critical_issues, f"Claims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n{listed}")
@@ -488,6 +493,7 @@ class CritiqueAgent:
             "improvement_instructions": instructions,
             "critical_issues": critical_issues,
             "unsupported_claims": unsupported,
+            "grounding_checked": grounding_checked,
             "requirements": requirements,
             "defects": len(defects),
         }
@@ -504,6 +510,7 @@ class CritiqueAgent:
             "score": quality_score,
             "critique": critique_dict,
             "unsupported_claims": unsupported,
+            "grounding_checked": grounding_checked,
             "defects": len(defects),
         }]
         logger.info(f"Added {label.lower()} iteration {iteration} to history with score {quality_score}, "

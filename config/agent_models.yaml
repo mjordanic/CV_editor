@@ -2,7 +2,8 @@
 # This file defines which model each agent uses (any provider init_chat_model supports, e.g.
 # "openai:..." or "ollama:..."). CV_EDITOR_MODEL overrides the writer-side models here, never the
 # critic's: CV_EDITOR_CRITIC_MODEL overrides critique and CV_EDITOR_GROUNDING_MODEL overrides
-# grounding; see README.md.
+# grounding. A local CV_EDITOR_MODEL (ollama:) also reaches the critic unless those are set, so a
+# local run stays local; see README.md.
 #
 # Every agent uses gpt-6-luna except the critic's two calls, critique and grounding (see below). OpenAI list prices per 1M tokens, read 2026-11-09 from
 # https://developers.openai.com/api/docs/pricing (input / cached input / output):
