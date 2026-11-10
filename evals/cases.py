@@ -7,9 +7,11 @@ Every input an evaluation run uses comes from `evals/fixtures/`:
     fixtures/ads/<id>-<slug>/search_fixture.json  web-search results replayed instead of Tavily
     fixtures/personas/<id>-<slug>/{cv,portfolio,cover_letter,notes}.txt   fictional candidate
     fixtures/personas/<id>-<slug>/persona.json    grader's ground truth (never given to the app)
+    scripts/<name>.json                           scripted-user replies that override the defaults
 
 Ads and personas are referred to by their id prefix ("a3", "p07") or their full folder name.
-`matrix.json` lists the cases: {"id", "persona", "ad", "input_set", "inputs", "model", "rep"}.
+`matrix.json` lists the cases: {"id", "persona", "ad", "input_set", "inputs", "model", "rep"}, plus an
+optional "work_preference" and "script" (a name in scripts/, e.g. "revision").
 """
 from __future__ import annotations
 
@@ -19,6 +21,7 @@ from pathlib import Path
 EVALS = Path(__file__).resolve().parent
 FIXTURES = EVALS / "fixtures"
 DEFAULT_MATRIX = EVALS / "matrix.json"
+SCRIPTS = EVALS / "scripts"
 INPUT_FILES = {"cv": "cv.txt", "portfolio": "portfolio.txt", "cover_letter": "cover_letter.txt", "notes": "notes.txt"}
 INPUT_SETS = {
     "all4": ["cv", "portfolio", "cover_letter", "notes"],
@@ -44,6 +47,18 @@ def find_persona(ref: str) -> Path:
     return _find("personas", ref)
 
 
+def find_script(ref: str) -> Path:
+    """A script file path, or the name of a tracked script in scripts/ ("revision")."""
+    named = SCRIPTS / f"{ref}.json"
+    if "/" not in ref and not ref.endswith(".json") and named.is_file():
+        return named
+    path = Path(ref)
+    if path.is_file():
+        return path
+    known = ", ".join(sorted(p.stem for p in SCRIPTS.glob("*.json")))
+    raise ValueError(f"script '{ref}' is neither a file nor a name in {SCRIPTS} (known: {known})")
+
+
 def parse_inputs(value: str | list[str] | None) -> list[str]:
     """An input-set name (all4, cv_only, no_cv) or a comma-separated list of cv, portfolio, cover_letter, notes."""
     if value is None:
@@ -60,12 +75,15 @@ def resolve_case(case: dict) -> dict:
     """Paths of everything a case uses: job ad, search fixture and the candidate files it gives."""
     ad = find_ad(case["ad"])
     persona = find_persona(case["persona"])
-    return {
+    paths = {
         "job_ad": ad / "ad.md",
         "search_fixture": ad / "search_fixture.json",
         "inputs": {k: persona / INPUT_FILES[k] for k in parse_inputs(case.get("inputs"))},
         "persona_truth": persona / "persona.json",
     }
+    if case.get("script"):
+        paths["script"] = find_script(case["script"])
+    return paths
 
 
 def load_matrix(path: str | Path = DEFAULT_MATRIX) -> list[dict]:

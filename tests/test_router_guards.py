@@ -23,8 +23,6 @@ def test_offered_actions_parses_available_actions_block():
     agent = RouterAgent.__new__(RouterAgent)
     no_user_feedback = add_messages([], [{"role": "assistant", "content": "CV critique: ..."}])
     block = agent._build_available_actions(
-        cv_refinement_allowed=False,
-        cover_letter_refinement_allowed=False,
         cv_generated=True,
         cover_letter_generated=False,
         messages=no_user_feedback,
@@ -32,6 +30,6 @@ def test_offered_actions_parses_available_actions_block():
         cover_letter_pdf_available=False,
     )
     offered = _offered_actions(block)
-    # Refinement limit reached and no new user message: redrafting the CV must not be offered.
+    # The critique loop has ended and there is no new user message: redrafting the CV must not be offered.
     assert "draft_cv" not in offered
     assert {"collect_user_input", "exit", "draft_cover_letter"} <= offered

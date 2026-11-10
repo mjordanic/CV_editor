@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import platform
 import shutil
@@ -52,8 +53,12 @@ DEFAULT_SCRIPT = {
     "cover_letter": "Thank you. Now please write the cover letter.",
     "exit": "Thanks, that is all. Please exit.",
     "clarify_job_ad": "That is all the information the ad gives.",
+    # The app asks for contact details a document still lacks ([EMAIL] and similar placeholders).
+    "missing_details": "I'd rather leave those details out.",
     "max_turns": 10,
 }
+# Optional key "revision": one change request sent once, after the first CV and its PDF exist and
+# before the cover letter is asked for (see evals/scripts/revision.json).
 
 
 def _git(*args: str) -> str | None:
@@ -126,7 +131,8 @@ def prepare_run_folder(args) -> dict:
 
     script = dict(DEFAULT_SCRIPT)
     if args.script:
-        script.update(json.loads(Path(args.script).read_text(encoding="utf-8")))
+        from evals.cases import find_script
+        script.update(json.loads(find_script(args.script).read_text(encoding="utf-8")))
     (inputs / "script.json").write_text(json.dumps(script, indent=2, ensure_ascii=False), encoding="utf-8")
 
     (workspace / "templates").symlink_to(REPO / "templates")
@@ -164,12 +170,18 @@ def effective_config() -> dict:
     }
 
 
+def _asks_missing_details(waiting_at: tuple) -> bool:
+    """The app's interrupt nodes that ask for contact details a document lacks (ask_*_missing_details)."""
+    return any(n.startswith("ask_") and n.endswith("_missing_details") for n in waiting_at)
+
+
 class ScriptedUser:
     """Answers the app's questions from the script, by what the app is waiting for."""
 
-    def __init__(self, script: dict, job_ad_path: str):
+    def __init__(self, script: dict, job_ad_path: str, workspace: str | Path | None = None):
         self.script = script
         self.job_ad_path = job_ad_path
+        self.workspace = Path(workspace) if workspace else Path.cwd()  # PDF paths in the state are relative to it
         self.used: dict = {}
         self.observations: list = []
 
@@ -187,12 +199,22 @@ class ScriptedUser:
             raise RuntimeError("the app asked for a CV: the input set has no CV and no notes")
         if "clarify_job_ad" in waiting_at:
             return self._use("clarify_job_ad")
+        if _asks_missing_details(waiting_at):
+            if self.used.get("missing_details", 0) == 2:
+                self.observations.append("the app asked for missing details more than twice")
+            return self._use("missing_details")
         if not values.get("generated_cv"):
             if self.used.get("first", 0) >= 2:
                 self.observations.append("the app still had no CV after the user asked for it twice")
                 return self._use("exit")
             return self._use("first")
         if not values.get("generated_cover_letter"):
+            if self.script.get("revision") and not self.used.get("revision"):
+                pdf = values.get("cv_pdf_path")
+                if pdf and (self.workspace / pdf).is_file():
+                    return self._use("revision")
+                if not self.used.get("cover_letter"):
+                    self.observations.append("the revision was not sent: there was no CV PDF before the cover letter")
             if self.used.get("cover_letter", 0) >= 2:
                 self.observations.append("the app still had no cover letter after the user asked for it twice")
                 return self._use("exit")
@@ -262,7 +284,8 @@ def main(argv=None) -> int:
     parser.add_argument("--model", help="use this model for every agent (sets CV_EDITOR_MODEL)")
     parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"],
                         help="the candidate's own work-arrangement preference (default: not given)")
-    parser.add_argument("--script", help="JSON with scripted replies overriding the defaults")
+    parser.add_argument("--script", help="JSON with scripted replies overriding the defaults, or a name in "
+                                          "evals/scripts/ (e.g. revision)")
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--cost-cap", type=float, default=1.0, help="stop the run past this many USD (default 1.0)")
     parser.add_argument("--label", action="append", help="key=value stored in manifest.json (repeatable)")
@@ -324,8 +347,10 @@ def main(argv=None) -> int:
     from langgraph.types import Command
     import langgraph_agent as la
     import debug_utils
+    if not logging.getLogger().handlers:
+        la.setup_logging()  # the app's own logs/ and debug/ files in the workspace, as on a normal run
     if not os.path.isfile(debug_utils.get_debug_file_path() or ""):
-        debug_utils.initialize_debug_file()  # app imported earlier from another folder: debug file here
+        debug_utils.initialize_debug_file()  # logging was set up elsewhere: the debug file still goes here
 
     import signal
 
@@ -334,7 +359,7 @@ def main(argv=None) -> int:
 
     signal.signal(signal.SIGTERM, stop_on_sigterm)
 
-    user = ScriptedUser(manifest["script"], str(workspace / "job_ad.txt"))
+    user = ScriptedUser(manifest["script"], str(workspace / "job_ad.txt"), workspace)
     transcript, status, values = [], "completed", {}
     t0 = time.time()
     agent = None

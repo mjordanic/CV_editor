@@ -3,55 +3,16 @@ from dotenv import load_dotenv
 # Load environment variables BEFORE importing agents
 load_dotenv()
 
-# Set up logging
 import logging
-from datetime import datetime
 import os
-
-
-
-# Create logs directory if it doesn't exist
-logs_dir = "logs"
-os.makedirs(logs_dir, exist_ok=True)
-
-# Create log filename with timestamp
-log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Configure logging with both file and console handlers
-logging.basicConfig(
-    level=logging.DEBUG,  # Change to logging.DEBUG for more verbose output
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_filename, encoding='utf-8'),
-        logging.StreamHandler()  # Console output
-    ]
-)
-
-# Silence noisy libraries
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("openai").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
-logger.info(f"Logging to file: {log_filename}")
-
-# Import debug_utils before using it
-from debug_utils import initialize_debug_file
-
-# Initialize debug file with same timestamp
-debug_file_path = initialize_debug_file()
-logger.info(f"Debug file initialized: {debug_file_path}")
+from datetime import datetime
 
 from typing import Annotated, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import TypedDict
-from langgraph.types import interrupt, Command
-
-import sys
+from langgraph.types import Command
 
 from agents.search import SearchAgent
 from agents.refinement import should_refine
@@ -70,8 +31,39 @@ from agents.critique import CritiqueAgent
 from agents.rag_agent import ExperienceRetrievalAgent
 from agents.cv_pdf_generator import CVPDFGenerator
 from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
+from agents.missing_details import make_ask_missing_details, route_after_ask, route_after_finalize
+
+logger = logging.getLogger(__name__)
 
 
+def setup_logging(logs_dir: str = "logs") -> str:
+    """
+    Log to the console and to a timestamped file in logs_dir, and open the debug file.
+
+    Called by the command-line entry point (and testing mode), not on import: importing this
+    module must not configure logging or create folders.
+
+    Returns:
+        str: Path to the log file
+    """
+    os.makedirs(logs_dir, exist_ok=True)
+    log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_filename, encoding='utf-8'),
+            logging.StreamHandler(),  # Console output
+        ],
+    )
+    # Silence noisy libraries
+    for name in ("httpx", "httpcore", "openai"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    logger.info(f"Logging to file: {log_filename}")
+
+    from debug_utils import initialize_debug_file
+    logger.info(f"Debug file initialized: {initialize_debug_file()}")
+    return log_filename
 
 
 class State(TypedDict, total=False):
@@ -97,15 +89,15 @@ class State(TypedDict, total=False):
         cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
         cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
         cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
-        cv_refinement_count: Number of times CV has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
-        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
+        cv_refinement_count: Number of times CV has been refined based on critique (see agents/refinement.py).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique.
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
     job_ad_clarification_asked: bool | None  # clarify_job_ad has asked for more details about a thin job ad (asked once)
     job_ad_extra_details: str | None  # The user's answer to that question, added to the ad and extracted again
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
-    company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
+    company_info: dict | None  # Company information from search (keys: 'company_description', 'work_context', 'search_results', 'search_query', 'search_source')
     current_node: str | None  # Current node in the graph
     next: Literal[
         "draft_cv",
@@ -124,22 +116,31 @@ class State(TypedDict, total=False):
     cover_letter_critique: dict | None  # Critique results for cover letter
     cv_needs_refinement: bool | None  # Whether CV needs refinement based on critique
     cover_letter_needs_refinement: bool | None  # Whether cover letter needs refinement based on critique
-    cv_critique_improvement_instructions: str | None  # Improvement instructions for CV from critique
-    cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
+    cv_critique_improvement_instructions: str | None  # The critic's suggestions for the CV redraft (filtered against the user's requests)
+    cover_letter_critique_improvement_instructions: str | None  # The critic's suggestions for the cover letter redraft
+    cv_claims_to_remove: list[str] | None  # Unsupported claims the CV redraft must remove (never filtered)
+    cover_letter_claims_to_remove: list[str] | None  # Unsupported claims the cover letter redraft must remove
+    cv_user_requests: list[str] | None  # The user's requests for the CV so far (the writer preserves them; the filter respects them)
+    cover_letter_user_requests: list[str] | None  # The user's requests for the cover letter so far
     cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
     cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
     cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (see workflow settings in config/agent_models.yaml)
-    cv_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
-    cover_letter_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
+    cv_previous_defect_count: int | None  # Requirements the previous draft of this cycle did not show (None for the first draft)
+    cover_letter_previous_defect_count: int | None  # The same for the cover letter
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
     cv_cycle_start: int | None  # Index in cv_history where the current request's drafts start (set by the router)
     cover_letter_cycle_start: int | None  # Index in cover_letter_history where the current request's drafts start
     cv_final_iteration: int | None  # Draft number finalize_cv selected (names the CV PDF)
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
-    relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
-    portfolio_text: str | None  # Full portfolio text (the critique checks drafts against it for unsupported claims)
+    cv_placeholders: list[str] | None  # Placeholders such as [EMAIL] left in the final CV
+    cover_letter_placeholders: list[str] | None  # The same for the cover letter
+    cv_placeholders_asked: bool | None  # The user was asked once for the CV's missing details
+    cover_letter_placeholders_asked: bool | None  # The same for the cover letter
+    notices_for_user: list[str] | None  # Fixed notices the router shows word for word in its next message to the user
+    relevant_experience: str | None  # The portfolio as the writers see it: whole, or the relevant items of a large one
+    portfolio_text: str | None  # Full portfolio text the user supplied (the critique checks drafts against it); empty without one
     work_preference: str | None  # The candidate's own remote / hybrid / on-site / no preference, only if they stated it
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
@@ -149,12 +150,9 @@ class State(TypedDict, total=False):
     cv_latex_last_error: str | None  # Last LaTeX error log for CV PDF compilation
     cover_letter_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for cover letter
     cover_letter_latex_last_error: str | None  # Last LaTeX error log for cover letter PDF compilation
+    cv_pdf_check: dict | None  # PDF text compared with the CV text (agents/pdf_text_check.py)
+    cover_letter_pdf_check: dict | None  # The same for the cover letter
 
-
-def operations_on_state(state):
-    logger.info(f"Current node: {state.get('current_node')}")
-    if 'messages' in state:
-        logger.info(state.get('messages'))
 
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
@@ -234,15 +232,16 @@ class MasterAgent:
         workflow_config = full_config.get('workflow', {})
         self.max_refinements = workflow_config.get('max_refinements', 2)
         self.max_refinements_hard_cap = workflow_config.get('max_refinements_hard_cap', self.max_refinements)
-        self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
         self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
-        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}, quality_improvement_threshold: {self.quality_improvement_threshold}")
+        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}")
         
         # Load agent configurations
         router_config = get_agent_config('router')
         cv_writer_config = get_agent_config('cv_writer')
         cover_letter_config = get_agent_config('cover_letter_writer')
         critique_config = get_agent_config('critique')
+        grounding_config = get_agent_config('grounding', default_model=critique_config['model'],
+                                            default_temperature=critique_config['temperature'])
         job_desc_config = get_agent_config('job_description')
         search_config = get_agent_config('search')
         rag_config = get_agent_config('rag')
@@ -268,23 +267,29 @@ class MasterAgent:
             model=router_config['model'],
             temperature=router_config['temperature']
         )
+        user_input_agent = UserInputAgent()
+        critique_agent = CritiqueAgent(
+            model=critique_config['model'],
+            temperature=critique_config['temperature'],
+            grounding_model=grounding_config['model'],
+            grounding_temperature=grounding_config['temperature'],
+        )
+        # The writers use the critic for the removal pass and the side-by-side draft comparison in finalize.
         cv_writer_agent = CVWriterAgent(
             model=cv_writer_config['model'],
             temperature=cv_writer_config['temperature'],
             filter_model=cv_writer_config['filter_model'],
-            filter_temperature=cv_writer_config['filter_temperature']
+            filter_temperature=cv_writer_config['filter_temperature'],
+            grounding_checker=critique_agent.check_grounding,
+            draft_comparer=critique_agent.compare_drafts,
         )
         cover_letter_writer_agent = CoverLetterWriterAgent(
             model=cover_letter_config['model'],
             temperature=cover_letter_config['temperature'],
             filter_model=cover_letter_config['filter_model'],
-            filter_temperature=cover_letter_config['filter_temperature']
-        )
-        user_input_agent = UserInputAgent()
-        critique_agent = CritiqueAgent(
-            model=critique_config['model'],
-            temperature=critique_config['temperature'],
-            quality_threshold=critique_config['quality_threshold']
+            filter_temperature=cover_letter_config['filter_temperature'],
+            grounding_checker=critique_agent.check_grounding,
+            draft_comparer=critique_agent.compare_drafts,
         )
         experience_retrieval_agent = ExperienceRetrievalAgent(
             model=rag_config['model'],
@@ -316,6 +321,8 @@ class MasterAgent:
         graph_builder.add_node("finalize_cover_letter", cover_letter_writer_agent.finalize_best_version)
         graph_builder.add_node("generate_cv_pdf", cv_pdf_generator.run)
         graph_builder.add_node("generate_cover_letter_pdf", cover_letter_pdf_generator.run)
+        graph_builder.add_node("ask_cv_missing_details", make_ask_missing_details("cv"))
+        graph_builder.add_node("ask_cover_letter_missing_details", make_ask_missing_details("cover_letter"))
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
@@ -351,83 +358,42 @@ class MasterAgent:
         graph_builder.add_edge("draft_cv", "critique_cv")
         graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
         
-        # Conditional routing for CV critique
-        def route_cv_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising or the
-            # draft still has unsupported claims (never beyond max_refinements_hard_cap); see agents/refinement.py.
-            needs_refinement = state.get("cv_needs_refinement", False)
-            refinement_count = state.get("cv_refinement_count", 0)
-            critique = state.get("cv_critique")
-            current_score = critique.get("quality_score") if critique else None
-            previous_score = state.get("cv_previous_quality_score")
+        def route_after_critique(kind: str):
+            # Redraft while within max_refinements, or past it while the draft still has unsupported
+            # claims or the last redraft showed more of the ad's requirements (never beyond
+            # max_refinements_hard_cap); see agents/refinement.py.
+            def route(state):
+                critique = state.get(f"{kind}_critique") or {}
+                refine, progress = should_refine(
+                    state.get(f"{kind}_needs_refinement", False),
+                    state.get(f"{kind}_refinement_count", 0) or 0,
+                    critique.get("defects"),
+                    state.get(f"{kind}_previous_defect_count"),
+                    self.max_refinements,
+                    self.max_refinements_hard_cap,
+                    has_unsupported_claims=bool(critique.get("unsupported_claims")),
+                )
+                target = f"draft_{kind}" if refine else f"finalize_{kind}"
+                logger.info(f"Routing critique_{kind} -> {target} (Refinement count: {state.get(f'{kind}_refinement_count', 0)}, progress: {progress})")
+                return target
+            return route
 
-            refine, quality_improved = should_refine(
-                needs_refinement,
-                refinement_count,
-                current_score,
-                previous_score,
-                self.max_refinements,
-                self.max_refinements_hard_cap,
-                self.quality_improvement_threshold,
-                has_unsupported_claims=bool(critique and critique.get("unsupported_claims")),
+        for kind in ("cv", "cover_letter"):
+            graph_builder.add_conditional_edges(
+                f"critique_{kind}", route_after_critique(kind),
+                {f"draft_{kind}": f"draft_{kind}", f"finalize_{kind}": f"finalize_{kind}"},
             )
-            if quality_improved:
-                logger.info(f"CV quality improved from {previous_score} to {current_score}")
-            if refine:
-                logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
-                return "draft_cv"
-            logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-            return "finalize_cv"
-
-        graph_builder.add_conditional_edges(
-            "critique_cv",
-            route_cv_critique,
-            {
-                "draft_cv": "draft_cv",
-                "finalize_cv": "finalize_cv"
-            }
-        )
-
-        # Conditional routing for Cover Letter critique
-        def route_cover_letter_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising or the
-            # draft still has unsupported claims (never beyond max_refinements_hard_cap); see agents/refinement.py.
-            needs_refinement = state.get("cover_letter_needs_refinement", False)
-            refinement_count = state.get("cover_letter_refinement_count", 0)
-            critique = state.get("cover_letter_critique")
-            current_score = critique.get("quality_score") if critique else None
-            previous_score = state.get("cover_letter_previous_quality_score")
-
-            refine, quality_improved = should_refine(
-                needs_refinement,
-                refinement_count,
-                current_score,
-                previous_score,
-                self.max_refinements,
-                self.max_refinements_hard_cap,
-                self.quality_improvement_threshold,
-                has_unsupported_claims=bool(critique and critique.get("unsupported_claims")),
+            # A final document with placeholders such as [EMAIL] asks the user once before its PDF.
+            graph_builder.add_conditional_edges(
+                f"finalize_{kind}", route_after_finalize(kind),
+                {f"ask_{kind}_missing_details": f"ask_{kind}_missing_details", f"generate_{kind}_pdf": f"generate_{kind}_pdf"},
             )
-            if quality_improved:
-                logger.info(f"Cover letter quality improved from {previous_score} to {current_score}")
-            if refine:
-                logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
-                return "draft_cover_letter"
-            logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-            return "finalize_cover_letter"
-
-        graph_builder.add_conditional_edges(
-            "critique_cover_letter",
-            route_cover_letter_critique,
-            {
-                "draft_cover_letter": "draft_cover_letter",
-                "finalize_cover_letter": "finalize_cover_letter"
-            }
-        )
+            graph_builder.add_conditional_edges(
+                f"ask_{kind}_missing_details", route_after_ask(kind),
+                {f"draft_{kind}": f"draft_{kind}", f"generate_{kind}_pdf": f"generate_{kind}_pdf"},
+            )
         
         graph_builder.add_edge("collect_user_input", "router")
-        graph_builder.add_edge("finalize_cv", "generate_cv_pdf")
-        graph_builder.add_edge("finalize_cover_letter", "generate_cover_letter_pdf")
         graph_builder.add_edge("generate_cv_pdf", "router")
         graph_builder.add_edge("generate_cover_letter_pdf", "router")
         logger.debug("All edges added to graph")
@@ -492,44 +458,10 @@ class MasterAgent:
             config = {"configurable": {"thread_id": thread_id}}
         logger.debug(f"Using thread_id: {thread_id}")
         
-        # Initial state
-        initial_state = State(
-            messages=[],
-            job_description_info=None,
-            candidate_text=None,
-            company_info=None,
-            next=None,
-            generated_cv=None,
-            generated_cover_letter=None,
-            cv_content_feedback=None,
-            cover_letter_content_feedback=None,
-            user_input_message=None,
-            cv_critique=None,
-            cover_letter_critique=None,
-            cv_needs_refinement=None,
-            cover_letter_needs_refinement=None,
-            cv_critique_improvement_instructions=None,
-            cover_letter_critique_improvement_instructions=None,
-            cv_needs_critique=None,
-            cover_letter_needs_critique=None,
-            cv_refinement_count=0,
-            cover_letter_refinement_count=0,
-            cv_history=[],
-            cover_letter_history=[],
-            relevant_experience=None,
-            portfolio_text=None,
-            cv_pdf_path=None,
-            cover_letter_pdf_path=None,
-            cv_pdf_style=None,
-            cover_letter_pdf_style=None,
-        )
-        logger.debug("Initial state created")
+        # Initial state (every other key starts unset; State is total=False)
+        stream_input = State(messages=[], cv_refinement_count=0, cover_letter_refinement_count=0,
+                             cv_history=[], cover_letter_history=[])
 
-        
-        stream_input = initial_state
-        logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
-                
-               
         # This is a simplified version of the streaming loop that handles interrupt() calls
         # It uses the invoke() method to run the graph and handle interrupt() calls
         if recorder is not None:
@@ -561,28 +493,6 @@ class MasterAgent:
             
             result = self.graph.invoke(Command(resume=human_input), config=config)
 
-        ##########################################################################################################
-        # This is another way to run the graph and handle interrupt() calls. It uses the stream() 
-        # method to stream the graph. It is more verbose as it streams the state object at each step. State
-        # can be accessed and inspected at each step. Currently there is a dummy function operations_on_state() 
-        # that prints the messages.
-        
-        # for state in self.graph.stream(stream_input, config, stream_mode="values"):
-        #     operations_on_state(state)
-            
-        #     while '__interrupt__' in state:
-        #         interrupt_data = state["__interrupt__"]
-        #         # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
-        #         interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
-        #         logger.info(f"\n\n{interrupt_message}")
-        #         logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-        #         human_input = read_multiline_input()
-        #         for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
-        #             operations_on_state(state)
-
-            
-
-
 
 
 if __name__ == "__main__":
@@ -604,5 +514,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    setup_logging()
     agent = MasterAgent(draw_graph=args.draw_graph)
     agent.run(trace_dir=args.trace_dir)

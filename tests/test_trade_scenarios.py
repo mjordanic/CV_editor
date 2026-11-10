@@ -35,7 +35,7 @@ from tests.test_session_replay import ScriptedLLM, _build_agent, _play, _route
 REPO = Path(__file__).resolve().parent.parent
 BUTCHER_CV = (REPO / "examples" / "sample_CV_butcher.txt").read_text(encoding="utf-8")
 BUTCHER_AD = (REPO / "job_description" / "sample_job_ad_butcher.txt").read_text(encoding="utf-8")
-BUDGET = dict(max_refinements=1, max_refinements_hard_cap=2, quality_improvement_threshold=5)
+BUDGET = dict(max_refinements=1, max_refinements_hard_cap=2)
 
 
 class TradesLLM(ScriptedLLM):
@@ -83,18 +83,18 @@ def test_finalize_keeps_the_draft_without_unsupported_claims():
 @pytest.mark.parametrize(
     "count, has_claims, expected",
     [
-        (1, False, False),  # budget used, score barely moved: stop (unchanged rule)
+        (1, False, False),  # budget used, no progress on the ad's requirements: stop
         (1, True, True),  # budget used but the draft still has unsupported claims: one more pass
         (2, True, False),  # never past the hard cap
     ],
 )
 def test_unsupported_claims_earn_a_redraft_within_the_hard_cap(count, has_claims, expected):
-    assert should_refine(True, count, 91, 89, **BUDGET, has_unsupported_claims=has_claims)[0] is expected
+    assert should_refine(True, count, 1, 1, **BUDGET, has_unsupported_claims=has_claims)[0] is expected
 
 
 def test_zero_max_refinements_still_turns_redrafting_off():
     off = dict(BUDGET, max_refinements=0)
-    assert should_refine(True, 0, 70, None, **off, has_unsupported_claims=True)[0] is False
+    assert should_refine(True, 0, 3, None, **off, has_unsupported_claims=True)[0] is False
 
 
 def test_session_does_not_end_on_a_flagged_draft(monkeypatch, tmp_path):
@@ -209,7 +209,7 @@ def test_non_utf8_compiler_output_does_not_fail_the_pdf(monkeypatch, tmp_path, m
         (Path(kwargs["cwd"]) / cmd[-1].replace(".tex", ".pdf")).write_bytes(b"%PDF-1.5")
         return subprocess.CompletedProcess(cmd, 0, stdout=out, stderr="")
 
-    monkeypatch.setattr(module.subprocess, "run", fake_pdflatex)
+    monkeypatch.setattr(subprocess, "run", fake_pdflatex)  # the shared base module runs pdflatex
     gen = _generator(getattr(module, class_name), tmp_path)
     pdf_path, fixes, error = gen._compile_latex(LATEX_WITH_UMLAUTS, "generated_draft_2")
     assert Path(pdf_path).exists() and fixes == 0 and error is None

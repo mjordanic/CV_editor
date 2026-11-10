@@ -25,6 +25,7 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
     "- Industry\n"
     "- Whether the job is remote, hybrid, or on-site. If not specified, return 'unknown'.\n"
     "- Candidate minimal requirements (qualifications, skills, experience, education, etc.)\n"
+    "- The ad's must-have requirements and its nice-to-have requirements, each as a list of short items in the ad's own terms\n"
     "- The language the job description is written in (e.g. English, German)\n"
     "- Any other relevant company or position details\n\n"
     "Job Description:\n\n{job_description}"
@@ -32,7 +33,12 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
 
 
 class JobDescriptionInfo(BaseModel):
-    """Structured information extracted from a job description."""
+    """
+    Structured information extracted from a job description.
+
+    The ad's own text is not a field here: structured output invited the model to type the whole ad
+    again (expensive output tokens on every run). run() adds it to the dict as 'job_description'.
+    """
     company_name: Optional[str] = Field(
         None,
         description="The name of the company posting the job"
@@ -62,13 +68,17 @@ class JobDescriptionInfo(BaseModel):
         None,
         description="The minimum requirements, qualifications, skills, experience, and education needed for the position"
     )
+    must_haves: list[str] = Field(
+        default_factory=list,
+        description="The requirements the ad says a candidate must meet, one short item each, in the ad's own terms. Empty if the ad states none."
+    )
+    nice_to_haves: list[str] = Field(
+        default_factory=list,
+        description="The requirements the ad calls preferred, a plus or nice to have, one short item each. Empty if none."
+    )
     language: Optional[str] = Field(
         None,
         description="The language the job description is written in, as an English name (e.g. 'English', 'German')"
-    )
-    job_description: Optional[str] = Field(
-        None,
-        description="The full original job description text"
     )
     additional_info: Optional[str] = Field(
         None,
@@ -139,8 +149,9 @@ class JobDescriptionAgent:
         logger.info("Calling LLM to extract job description information...")
         logger.debug(f"LLM input - job_description length: {len(job_description)}")
         
-        response = chain.invoke(llm_input)
-        
+        # Retried: a parse error or rate limit here would end the session right after the user pasted the ad.
+        response = chain.with_retry(stop_after_attempt=3).invoke(llm_input)
+
         logger.info(f"LLM response received - company: {response.company_name}, job_title: {response.job_title}, work_type: {response.work_type}")
         logger.debug(f"LLM response - location: {response.location}, industry: {response.industry}, requirements_length: {len(response.candidate_minimal_requirements) if response.candidate_minimal_requirements else 0}")
         
@@ -190,9 +201,6 @@ class JobDescriptionAgent:
         # Extract information from job description
         extracted_info = self.extract_info(job_description_text)
         
-        # Store the full job description text in the extracted info
-        extracted_info.job_description = job_description_text
-        
         logger.info("Job description extraction completed successfully")
         
         # Format the response
@@ -206,6 +214,10 @@ class JobDescriptionAgent:
 **Job Title:** {extracted_info.job_title or 'Not specified'}
 **Candidate Minimal Requirements:** {extracted_info.candidate_minimal_requirements or 'Not specified'}
 """
+        if extracted_info.must_haves:
+            info_summary += "**Must-haves:** " + "; ".join(extracted_info.must_haves) + "\n"
+        if extracted_info.nice_to_haves:
+            info_summary += "**Nice-to-haves:** " + "; ".join(extracted_info.nice_to_haves) + "\n"
         if extracted_info.additional_info:
             info_summary += f"\n**Additional Information:**\n{extracted_info.additional_info}"
         
@@ -227,7 +239,8 @@ class JobDescriptionAgent:
         # Store extracted info in state for use by other nodes
         updated_state = {
             "messages": state.get("messages", []) + [{"role": "assistant", "content": info_summary}],
-            "job_description_info": extracted_info.model_dump(),
+            # The ad's own text is added here, not echoed by the model (see JobDescriptionInfo).
+            "job_description_info": {**extracted_info.model_dump(), "job_description": job_description_text},
             "job_ad_extra_details": None,
             "current_node": "job_description"
         }
@@ -240,15 +253,17 @@ class JobDescriptionAgent:
 _EMPTY_FIELD_ANSWERS = {"", "none", "n/a", "na", "null", "unknown", "not specified", "not provided", "not stated", "unspecified"}
 
 
-def _field(value) -> str:
+def field_value(value) -> str:
+    """An extracted text field, or "" when the model answered with a placeholder such as 'unknown'."""
     text = (value or "").strip() if isinstance(value, str) else ""
     return "" if text.strip(" .").lower() in _EMPTY_FIELD_ANSWERS else text
+
 
 
 def job_ad_lacks_details(job_description_info: dict | None) -> bool:
     """True when extraction found neither a job title nor any requirements (e.g. "We're hiring!")."""
     info = job_description_info or {}
-    return not _field(info.get("job_title")) and not _field(info.get("candidate_minimal_requirements"))
+    return not field_value(info.get("job_title")) and not field_value(info.get("candidate_minimal_requirements"))
 
 
 def route_after_job_description(state) -> str:

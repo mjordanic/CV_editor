@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Literal
@@ -45,7 +44,6 @@ INPUT_LABELS = {
     "cover_letter": "CANDIDATE'S EARLIER COVER LETTER (written for a different, earlier job application)",
     "notes": "CANDIDATE'S OWN FREE-FORM NOTES",
 }
-COMPANY_CHARS_PER_RESULT = 3000
 
 
 # ---------------------------------------------------------------------------------------------
@@ -221,33 +219,28 @@ Evaluate both outputs against the rubric."""
 def pdf_text(path: Path) -> str | None:
     if not path.is_file():
         return None
-    try:
-        import pdfplumber
-        with pdfplumber.open(str(path)) as pdf:
-            return "\n".join((p.extract_text() or "") for p in pdf.pages)
-    except Exception as e:  # noqa: BLE001
-        return f"[PDF text extraction failed: {type(e).__name__}: {e}]"
+    from agents.pdf_text_check import extract_pdf_text
+    text, _, error = extract_pdf_text(path)
+    return text if text is not None else f"[PDF text extraction failed: {error}]"
+
+
+# Keys only meaningful when there is a text version to compare the PDF with.
+_COMPARISON_KEYS = ("text_words_found_in_pdf_pct", "missing_words", "extra_words", "missing_word_count",
+                    "extra_word_count", "ok")
 
 
 def pdf_checks(path: Path, text_version: str | None) -> dict:
-    """Deterministic checks on a PDF: pages, extractable text, how much of the text version survives."""
+    """Deterministic checks on a PDF (the app's own agents/pdf_text_check.py): pages, extractable text,
+    how much of the text version survives, words only on one side, leftover [PLACEHOLDERS]."""
     if not path.is_file():
         return {"exists": False}
-    out = {"exists": True}
-    try:
-        import pdfplumber
-        with pdfplumber.open(str(path)) as pdf:
-            out["pages"] = len(pdf.pages)
-            text = "\n".join((p.extract_text() or "") for p in pdf.pages)
-    except Exception as e:  # noqa: BLE001
-        return {"exists": True, "error": f"{type(e).__name__}: {e}"}
-    out["chars"] = len(text)
-    words = lambda s: re.findall(r"\w+", (s or "").lower())  # noqa: E731
-    if text_version:
-        src, pdf_words = words(text_version), set(words(text))
-        out["text_words_found_in_pdf_pct"] = round(100 * sum(w in pdf_words for w in src) / max(len(src), 1), 1)
-    out["bracket_placeholders"] = sorted(set(re.findall(r"\[[A-Z][A-Z _/-]{2,}\]", text)))[:20]
-    return out
+    from agents.pdf_text_check import check_pdf
+    result = check_pdf(path, text_version)
+    if "error" in result:
+        return {"exists": True, "error": result["error"]}
+    if not text_version:
+        result = {k: v for k, v in result.items() if k not in _COMPARISON_KEYS}
+    return {"exists": True, **result}
 
 
 def _read(path: Path) -> str | None:
@@ -259,14 +252,16 @@ def _read(path: Path) -> str | None:
 
 
 def company_text(fixture_path: Path) -> str:
+    """The search results as the app's company research reads them (agents.search.search_result_texts:
+    page text trimmed per result, else the snippet), so the evaluator sees what the writer could see."""
     if not fixture_path.is_file():
         return "(none)"
+    from agents.search import search_result_texts
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
     parts = []
     for search in fixture.get("searches", []):
-        for r in (search.get("response") or {}).get("results", []) or []:
-            body = r.get("raw_content") or r.get("content") or ""
-            parts.append(f"## {r.get('title', '')}\nURL: {r.get('url', '')}\n{body[:COMPANY_CHARS_PER_RESULT]}")
+        for r in search_result_texts(search.get("response")):
+            parts.append(f"## {r['title']}\nURL: {r['url']}\n{r['text']}")
     return "\n\n".join(parts) if parts else "(the search found nothing)"
 
 

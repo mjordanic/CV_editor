@@ -8,7 +8,8 @@ from langchain.chat_models import init_chat_model
 from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from debug_utils import write_to_debug
-from agents.work_context import NOT_STATED, WORK_CONTEXT_PROMPT, WorkContext, remote_work_from
+from agents.work_context import NOT_STATED, WORK_CONTEXT_PROMPT, WorkContext
+from agents.job_description import field_value
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +57,37 @@ COMPANY_DESCRIPTION_SYSTEM_PROMPT = (
 )
 
 COMPANY_DESCRIPTION_HUMAN_PROMPT = (
+    "The company named in the job ad is: {company_name}.\n\n"
     "Based on the following search results, create a short (max 2000 characters) description "
-    "about the company, focusing on what the company does, its industry, its values, and any notable "
+    "about that company, focusing on what the company does, its industry, its values, and any notable "
     "characteristics or values. This description will be used to tailor a CV and cover letter for a job "
-    "application so make sure to include all the relevant information about core values and company culture and working environment."
+    "application so make sure to include all the relevant information about core values and company culture and working environment. "
+    "Use only results that are about this company. If none of them are, answer only: "
+    "\"Could not identify the company in the search results.\"\n\n"
     "Here are the search results: \n\n{search_content}"
 )
+
+NO_COMPANY_INFO = "No information found about the company."
+NO_COMPANY_NAME = "The job ad names no company, so no company research was done."
+
+# Characters of page text kept per search result. The app's summary and the evaluator read the same
+# text (search_result_texts), so the evaluator never judges against facts the writers could not see.
+CHARS_PER_RESULT = 3000
+MAX_SEARCH_CONTENT_CHARS = 15000
+
+
+def search_result_texts(results: dict | None, chars_per_result: int = CHARS_PER_RESULT) -> list[dict]:
+    """
+    The text of each search result: its full page text (Tavily raw_content) trimmed to
+    chars_per_result, or the short snippet when there is no page text. Returns dicts with
+    'title', 'url' and 'text', in result order, skipping results without text.
+    """
+    out = []
+    for r in (results or {}).get("results") or []:
+        body = (r.get("raw_content") or r.get("content") or "").strip()
+        if body:
+            out.append({"title": r.get("title", ""), "url": r.get("url", ""), "text": body[:chars_per_result]})
+    return out
 
 def build_search_query(job_description_info: dict) -> str:
     """The Tavily query for the company named in the extracted job ad fields."""
@@ -158,7 +184,7 @@ class SearchAgent:
 
     def _extract_search_content(self, results: dict) -> str:
         """
-        Combine textual snippets from Tavily results into a single string.
+        Combine the page text of the Tavily results (see search_result_texts) into a single string.
 
         Args:
             results: Tavily response dictionary returned by `search_tavily`.
@@ -166,15 +192,9 @@ class SearchAgent:
         Returns:
             str: Concatenated textual content extracted from individual results.
         """
-        search_contents = []
-        if results.get('results'):
-            for result in results['results']:
-                content = result.get('content', '')
-                if content:
-                    search_contents.append(content)
-        return "\n\n".join(search_contents)
+        return "\n\n".join(r["text"] for r in search_result_texts(results))
 
-    def process_search_results(self, results: dict):
+    def process_search_results(self, results: dict, company_name: Optional[str] = None):
         """
         Summarize Tavily results into a concise company description.
 
@@ -189,7 +209,7 @@ class SearchAgent:
         
         if not combined_content:
             logger.warning("No search content extracted - returning default message")
-            return "No information found about the company."
+            return NO_COMPANY_INFO
         
         logger.debug(f"Extracted search content length: {len(combined_content)} characters")
         
@@ -201,7 +221,10 @@ class SearchAgent:
         
         # Generate description using OpenAI
         chain = prompt | self.llm
-        llm_input = {"search_content": combined_content[:8000]}  # Limit content to avoid token limits
+        llm_input = {
+            "search_content": combined_content[:MAX_SEARCH_CONTENT_CHARS],  # limit content to avoid token limits
+            "company_name": company_name or "(not given)",
+        }
         logger.info("Calling LLM to generate company description...")
         logger.debug(f"LLM input - search_content length: {len(llm_input['search_content'])} characters")
         
@@ -221,7 +244,7 @@ class SearchAgent:
         chain = ChatPromptTemplate.from_messages([("human", WORK_CONTEXT_PROMPT)]) | self.llm.with_structured_output(WorkContext)
         return chain.invoke({
             "job_ad": (job_ad or "(no job ad text)")[:6000],
-            "search_content": self._extract_search_content(results or {})[:8000] or "(no search results)",
+            "search_content": self._extract_search_content(results or {})[:MAX_SEARCH_CONTENT_CHARS] or "(no search results)",
         })
 
     def run(self, state):
@@ -249,13 +272,22 @@ class SearchAgent:
         # Execute search. Company research is optional context: if the web search or its summary
         # fails (network, rate limit, quota), carry on without it instead of ending the session
         # after the user has already pasted the job ad.
-        try:
-            results = self.search_tavily(formatted_query) or {}
-            company_description = self.process_search_results(results)
-        except Exception as e:
-            logger.warning(f"Company research failed ({type(e).__name__}: {e}) - continuing without company information")
+        company_name = field_value(job_description_info.get("company_name"))
+        if not company_name:
+            # Without a name the query is only a location or "No additional information provided",
+            # and the summary of whatever comes back reached the writers as "Company Information".
+            logger.info("The job ad names no company - skipping company research")
             results = {}
-            company_description = "No information found about the company."
+            company_description = NO_COMPANY_NAME
+            formatted_query = None
+        else:
+            try:
+                results = self.search_tavily(formatted_query) or {}
+                company_description = self.process_search_results(results, company_name)
+            except Exception as e:
+                logger.warning(f"Company research failed ({type(e).__name__}: {e}) - continuing without company information")
+                results = {}
+                company_description = NO_COMPANY_INFO
         # Arrangement and culture come from the ad and the search results together, so a failed
         # search still leaves what the ad says.
         try:
@@ -264,7 +296,6 @@ class SearchAgent:
             logger.warning(f"Work arrangement extraction failed ({type(e).__name__}: {e}) - using the ad's work type only")
             ad_type = job_description_info.get("work_type")
             work_context = WorkContext(arrangement=ad_type if ad_type in ("remote", "hybrid", "on-site") else NOT_STATED).model_dump()
-        remote_work = remote_work_from(work_context["arrangement"])
         
         # Extract search content for debug logging
         extracted_search_content = self._extract_search_content(results)
@@ -293,14 +324,13 @@ class SearchAgent:
         # Format company info for state
         company_info = {
             "company_description": company_description_str,
-            "remote_work": remote_work,
             "work_context": work_context,
             "search_results": results,  # Store raw search results if needed
             "search_query": formatted_query,
             "search_source": f"fixture:{self.fixture_path}" if getattr(self, "fixture", None) is not None else "tavily",
         }
         
-        logger.info(f"Company info prepared - remote_work: {remote_work}, description_length: {len(company_description_str)}")
+        logger.info(f"Company info prepared - arrangement: {work_context['arrangement']}, description_length: {len(company_description_str)}")
         culture = "; ".join(work_context.get("culture_signals") or []) or NOT_STATED
         summary = (f"Work arrangement (from the ad and company pages): {work_context['arrangement']}. "
                    f"Location or country limits: {work_context.get('location_limits') or NOT_STATED}. "

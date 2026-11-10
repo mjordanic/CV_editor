@@ -17,12 +17,15 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.graph.message import add_messages
 
 import agents.critique as critique
+import agents.cv_writer as cv_writer
+import agents.document_writer as document_writer
 import agents.router as router
 from agents.router import RouterAgent, RouterResponse
 
 REPO = Path(__file__).resolve().parent.parent
 SAMPLE_CV = (REPO / "examples" / "sample_CV.txt").read_text(encoding="utf-8")
-PORTFOLIO = (REPO / "data" / "portfolio" / "portfolio.txt").read_text(encoding="utf-8")
+# The format example under examples/ (the app never reads it; the repo ships no live portfolio).
+PORTFOLIO = (REPO / "examples" / "sample_portfolio.txt").read_text(encoding="utf-8")
 
 # The SKILLS lines gpt-5-nano wrote into draft 5 of the recorded run.
 INVENTED_SKILLS = (
@@ -63,9 +66,8 @@ def _critique_agent(monkeypatch, *, score=78, instructions="", critical_issues="
     """CritiqueAgent whose critic answers with a fixed critique; counts the critic calls."""
     monkeypatch.setattr(critique, "write_to_debug", lambda *_, **__: None)
     agent = critique.CritiqueAgent.__new__(critique.CritiqueAgent)
-    agent.quality_threshold = 85
     agent.calls = 0
-    agent.llm = GroundingLLM(claims)
+    agent.llm = agent.grounding_llm = GroundingLLM(claims)
 
     def answer(**_):
         agent.calls += 1
@@ -96,16 +98,21 @@ def test_grounding_check_claims_become_removal_instructions(monkeypatch):
     out = agent.run_cv(_state(generated_cv=CV_WITH_INVENTED_SKILLS, cv_history=[]))
 
     assert out["cv_needs_refinement"] is True
-    instructions = out["cv_critique_improvement_instructions"]
-    assert "Remove these claims" in instructions
+    # the claims to remove travel separately from the critic's suggestions, so the writers' filter of
+    # suggestions against the user's earlier requests can never drop them
+    assert out["cv_claims_to_remove"] == CLAIMS
+    assert out["cv_critique_improvement_instructions"] in (None, "")
+    removal = document_writer.removal_instructions(out["cv_claims_to_remove"])
+    assert "Remove these claims" in removal
     for claim in CLAIMS:
-        assert claim in instructions
+        assert claim in removal
         assert claim in out["cv_critique"]["critical_issues"]
     assert out["cv_history"][-1]["unsupported_claims"] == CLAIMS
 
 
 def test_grounding_check_sees_only_the_candidates_material(monkeypatch):
-    """Evidence is the original CV, portfolio and the user's own messages; never the job ad."""
+    """Evidence about the candidate is the original CV, portfolio and the user's own messages; never the
+    job ad (which is evidence only for statements about the employer)."""
     agent = _critique_agent(monkeypatch)
     messages = add_messages([], [
         {"role": "assistant", "content": "What should I write?"},
@@ -114,11 +121,13 @@ def test_grounding_check_sees_only_the_candidates_material(monkeypatch):
     agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[], messages=messages,
                         job_description_info={"job_description": "Must know Airflow."}))
     prompt = agent.llm.prompts[0]
-    assert "Kubernetes" in prompt  # original CV
-    assert "RabbitMQ" in prompt  # portfolio (the paid re-run's critic called it invented without it)
-    assert "forklift licence" in prompt  # the user's own request counts as evidence
+    candidate_part, employer_part = prompt.split("**Job ad and company research**", 1)
+    assert "Kubernetes" in candidate_part  # original CV
+    assert "RabbitMQ" in candidate_part  # portfolio (the paid re-run's critic called it invented without it)
+    assert "forklift licence" in candidate_part  # the user's own request counts as evidence
     assert "What should I write?" not in prompt
-    assert "Must know Airflow" not in prompt
+    assert "Must know Airflow" not in candidate_part
+    assert "Must know Airflow" in employer_part.split("to check:**", 1)[0]
 
 
 def test_clean_draft_passes_and_a_failed_check_does_not_stop_the_session(monkeypatch):
@@ -131,12 +140,24 @@ def test_clean_draft_passes_and_a_failed_check_does_not_stop_the_session(monkeyp
     assert out["cv_needs_refinement"] is False
 
 
-def test_redraft_instructions_forbid_adding_what_the_candidate_lacks(monkeypatch):
+def test_redraft_instructions_forbid_adding_what_the_candidate_lacks(monkeypatch, tmp_path):
     """The recorded draft-6 critique asked for an 'Airflow DAGs' bullet the candidate never had."""
-    agent = _critique_agent(monkeypatch, score=72,
+    agent = _critique_agent(monkeypatch, score=72, critical_issues="Experience is thin.",
                             instructions="In the Experience section under TechCorp, add a bullet about building Airflow DAGs.")
     out = agent.run_cv(_state(generated_cv=SAMPLE_CV, cv_history=[]))
-    assert out["cv_critique_improvement_instructions"].endswith(critique.NO_NEW_CLAIMS_RULE)
+    # the writer appends the rule to every critique-driven redraft (after the preference filter)
+    writer = cv_writer.CVWriterAgent.__new__(cv_writer.CVWriterAgent)
+    writer.output_folder = str(tmp_path)
+    seen = []
+
+    def fake_generate(document, instructions, state, **_):
+        seen.append(instructions)
+        return "CV", ""
+
+    writer.generate_document = fake_generate
+    writer.run({**_state(), **out, "generated_cv": SAMPLE_CV})
+    assert "Airflow DAGs" in seen[0]
+    assert seen[0].rstrip().endswith(critique.NO_NEW_CLAIMS_RULE)
 
 
 def test_critic_prompt_forbids_proposing_absent_content():
@@ -151,7 +172,7 @@ def test_cover_letter_claims_are_checked_too(monkeypatch):
         cover_letter_history=[],
     ))
     assert out["cover_letter_needs_refinement"] is True
-    assert "cloud platforms (AWS, Azure, and GCP)" in out["cover_letter_critique_improvement_instructions"]
+    assert "cloud platforms (AWS, Azure, and GCP)" in out["cover_letter_claims_to_remove"]
     assert "cover letter to check" in agent.llm.prompts[0]
 
 
@@ -253,4 +274,4 @@ def test_session_runs_without_a_tavily_key(monkeypatch):
     monkeypatch.setattr(search, "write_to_debug", lambda *_, **__: None)
     agent = search.SearchAgent(model="ollama:gemma4:e4b")
     out = agent.run({"job_description_info": {"company_name": "Northwind Analytics"}, "messages": []})
-    assert out["company_info"]["remote_work"] == "NA"
+    assert out["company_info"]["work_context"]["arrangement"] == "not stated"
