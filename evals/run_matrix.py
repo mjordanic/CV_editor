@@ -5,7 +5,7 @@ are in `evals/matrix.json`. This makes paid model calls (never Tavily: every ad 
 
 Usage (from the repo root):
     .venv/bin/python -m evals.run_matrix --out RUNS_DIR --env-file PATH/.env [--matrix evals/matrix.json]
-        [--workers 4] [--only CASE_ID ...] [--total-cap 27] [--cost-cap 1.5] [--dry-run] [--estimate]
+        [--workers 4] [--only CASE_ID ...] [--total-cap 24] [--cost-cap 1.5] [--dry-run] [--estimate]
         [--repeats N] [--eval-name eval1 | --rescore K] [--truth-check]
 
 Each case gets RUNS_DIR/<case id>/ (see evals/README.md) and RUNS_DIR/<case id>.out (console log).
@@ -250,7 +250,7 @@ def main(argv=None) -> int:
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--only", nargs="+", help="run only these case ids")
-    parser.add_argument("--total-cap", type=float, default=27.0, help="start no new case past this many USD in total")
+    parser.add_argument("--total-cap", type=float, default=24.0, help="start no new case past this many USD in total")
     parser.add_argument("--cost-cap", type=float, default=1.5, help="per-session cap passed to run_case")
     parser.add_argument("--dry-run", action="store_true", help="print the commands, run nothing")
     parser.add_argument("--estimate", action="store_true", help="print the expected cost of the selected cases, run nothing")

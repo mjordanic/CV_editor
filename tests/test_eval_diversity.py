@@ -186,18 +186,18 @@ def test_the_estimate_of_the_whole_matrix_stays_under_the_default_cap(capsys):
     from evals import run_matrix
     assert run_matrix.main(["--out", "unused", "--estimate"]) == 0
     est = json.loads(capsys.readouterr().out)
-    parser_default = 27.0
+    parser_default = 24.0  # the captain's budget for the round
     assert est["cases"] == len(json.loads((REPO / "evals" / "matrix.json").read_text())["cases"])
     assert est["total_usd"] <= parser_default
     assert est["by_script"]["default"]["cases"] >= 72
     assert round(est["sessions"] + est["evaluations"] + est["truth_checks"], 2) == est["total_usd"]
 
 
-def test_the_default_total_cap_is_27():
+def test_the_default_total_cap_is_24():
     import inspect
 
     from evals import run_matrix
-    assert 'default=27.0' in inspect.getsource(run_matrix.main)
+    assert 'default=24.0' in inspect.getsource(run_matrix.main)
 
 
 # --- iterations ---------------------------------------------------------------------------------------
@@ -523,7 +523,7 @@ def test_a_session_out_of_credit_stops_at_once_and_is_marked_interrupted(tmp_pat
 
 
 def _matrix_case(cid):
-    return {"id": cid, "persona": "p11", "ad": "a7", "input_set": "all4",
+    return {"id": cid, "persona": "p12", "ad": "a7", "input_set": "all4",
             "inputs": ["cv", "portfolio", "cover_letter", "notes"], "model": "openai:gpt-6-luna", "rep": 1}
 
 

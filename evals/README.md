@@ -77,8 +77,8 @@ The tracked scripts (the evaluator's checklist for each is its `correct_behaviou
 | `chatty` | long unstructured messages with a new fact (two months' notice) and requests (CV at most two pages, natural letter tone) | requests followed; the fact used only where it fits; nothing invented from small talk |
 | `revisions` | two CV revisions: shorten the summary, then move skills above experience | both changes in the final CV |
 | `letter-tone` | the letter warmer, more personal, under 250 words | redrafted as asked, same true facts |
-| `emphasis-p07` / `-p09` / `-p12` | emphasise a skill the candidate really has (Terraform and AKS; incident response and SLOs; dementia care and LG1, asked in German) | more weight, only facts from the material |
-| `trap-p02` / `-p03` / `-p11` | truthfulness trap: claim production Go, the CKA as obtained (exam only booked), a forklift licence the user says they lack | refused or flagged, never written in; an honest wording is fine |
+| `emphasis-p07` / `-p09` / `-p13` | emphasise a skill the candidate really has (Terraform and AKS; incident response and SLOs; dementia care and LG1, asked in German) | more weight, only facts from the material |
+| `trap-p02` / `-p03` / `-p12` | truthfulness trap: claim production Go, the CKA as obtained (exam only booked), a forklift licence the user says they lack | refused or flagged, never written in; an honest wording is fine |
 | `letter-de`, `letter-hr` | the cover letter in German (Hamburg and Graz ads) or Croatian (Zagreb ad) while the ad is in English | the letter in that language, the CV in the ad's language |
 | `details-supplied` | the app asks for missing contact details (no CV given) and the user gives a fictional e-mail and phone and declines the rest | exactly those two filled in, every other placeholder removed, nothing invented |
 | `change-of-mind` | only a CV at first, then a letter after all; education moved to the top, then back | the final CV has education after experience; the letter is written when asked |
@@ -103,30 +103,32 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
 `work_preference` and `script`); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
-(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 27 USD),
+(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 24 USD, the budget for this round),
 finished sessions and evaluations are never redone, so an interrupted matrix resumes. `--dry-run`
 prints the commands without running anything; `--estimate` prints the expected cost of the selected
 cases (per step, model and script, at the prices in `ESTIMATE_USD` in `run_matrix.py`).
 
-The matrix (111 cases):
+The matrix (110 cases):
 
-- **Baseline, default script (72 cases, unchanged):** every persona on its target ads with the input
+- **Baseline, default script (76 cases, unchanged):** every persona on its target ads with the input
   sets `all4`, `cv_only`, `no_cv`, `cv_portfolio`, `notes_only`, both writer models, and repeats.
-- **`revision` (4 cases, unchanged):** p03, p07, p11, p12.
-- **Work preference, default script (6 cases):** remote vs a2's office-first job (p10, conflict) and
-  vs a1's three office days (p01, terra, conflict); remote vs a6 (p04, allowed); on-site vs a7 (p11,
-  match); hybrid vs a8's on-site home care (p12, conflict); hybrid vs a5 (p02, terra, match). Two
-  scripted cases also carry one (p07 `letter-tone` remote, p11 `details-supplied` on-site).
-- **New scripts (29 cases):** 3 each of `terse`, `chatty`, `revisions`, `letter-tone`, `letter-de`,
-  `details-supplied`, `change-of-mind`; 1 each of `emphasis-p07`, `-p09`, `-p12`; 4 traps (`trap-p03`
-  on both models, `trap-p11`, `trap-p02`); 1 `letter-hr`. They are spread over all 12 personas, all
-  ads but a4, and the input sets `all4`, `cv_only`, `no_cv` and `notes_only`; 17 run on luna and 12
-  on terra (21 / 14 with the work-preference cases), so every kind of behaviour is seen with both
-  writer models (the letter-language requests counting `letter-de` and `letter-hr` together).
+- **`revision` (4 cases, unchanged):** p03, p07, p12, p13.
+- **Work preference, default script (6 cases, all luna):** remote vs a2's office-first job (p10,
+  conflict) and vs a1's three office days (p01, conflict); remote vs a6 (p04, allowed); on-site vs a7
+  (p12, match); hybrid vs a8's on-site home care (p13, conflict); hybrid vs a5 (p02, match). Two
+  scripted cases also carry one (p07 `letter-tone` remote, p12 `details-supplied` on-site).
+- **New scripts (24 cases, 12 luna / 12 terra):** `chatty` and `details-supplied` 3 each; `terse`,
+  `revisions`, `letter-tone`, `letter-de`, `change-of-mind` and the `trap-p03` trap 2 each (one per
+  writer model); `emphasis-p07`, `-p09`, `-p13`, `trap-p12`, `trap-p02` and `letter-hr` 1 each. Every
+  kind of behaviour runs on both writer models (the three emphasis scripts, the three traps and the two
+  letter languages counted as one kind each). They cover every persona but p11, every ad but a4, and
+  the input sets `all4`, `cv_only`, `no_cv` and `notes_only`.
 
-Estimated cost of the whole matrix (`--estimate`): about 24.0 USD (24.5 with `--truth-check`): luna
-session 0.013, terra 0.06, a session with change requests twice that, an evaluation 0.18 (the measured
-0.11-0.14 plus about 0.04 for the page images, the conversation and the new rubric sections).
+Estimated cost of the whole matrix (`--estimate`): about 23.7 USD, within the 24 USD budget (24.2 with
+`--truth-check`, so leave that out or run it on a subset): luna session 0.013, terra 0.06, a session
+with change requests twice that, an evaluation 0.18 (the measured 0.11-0.14 plus about 0.04 for the
+page images, the conversation and the new rubric sections). `--total-cap` stops new cases at 24 USD
+whatever the estimate.
 
 **Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
 `insufficient_quota` or a billing error, as opposed to an ordinary rate limit, which keeps its
