@@ -16,7 +16,9 @@ It also writes RUNS_DIR/sessions_summary.json (`session_totals`): over all sessi
 actually redrafted (critique-driven redrafts and user-driven redrafts per document, from
 events.jsonl via evals/iterations.py), the mean of the new rubric scores (visual layout, language,
 additional information, user requests) and the user-request outcomes per script (followed, ignored,
-untruthful requests refused or followed).
+untruthful requests refused or followed). Per script it also counts, from each session's script and
+transcript alone, the scripted requests that were sent and those "not exercised" (never sent, so never
+graded): those are not a result about the app, and a script with many needs its cases rerun.
 
 Sessions interrupted because the provider ran out of credit (manifest status "interrupted: out of
 credit") are left out of every number and listed under "interrupted".
@@ -32,6 +34,8 @@ import re
 import statistics
 import sys
 from pathlib import Path
+
+from evals.evaluate import scripted_request_status
 
 _REP_SUFFIX = re.compile(r"_r\d+$")
 
@@ -58,6 +62,9 @@ EVAL_METRICS = {
 }
 REQUEST_COUNTS = ("requests", "requests_followed", "requests_partly", "requests_ignored", "requests_refused_wrongly",
                   "untruthful_refused", "untruthful_followed")
+# How many scripted requests each session sent, by status (evals.evaluate.scripted_request_status).
+SCRIPTED_STATUS_COUNTS = {"sent": "scripted_sent", "replaced": "scripted_replaced",
+                          "not exercised": "scripted_not_exercised"}
 TRUTH_METRICS = ("gaps_claimed", "traps_hit", "unclear", "unverified_quotes")
 
 
@@ -127,8 +134,11 @@ def session_totals(runs_dir: Path) -> dict:
         1 for d in per_run.values() if any(d[k]["critique_redrafts"] for k in KINDS))
     for run in runs:
         script = (_manifest(run).get("labels") or {}).get("script") or "default"
-        bucket = out["by_script"].setdefault(script, {"sessions": 0, "evaluated": 0, **{k: 0 for k in REQUEST_COUNTS}})
+        bucket = out["by_script"].setdefault(script, {"sessions": 0, "evaluated": 0, **{k: 0 for k in REQUEST_COUNTS},
+                                                      **{k: 0 for k in SCRIPTED_STATUS_COUNTS.values()}})
         bucket["sessions"] += 1
+        for item in scripted_request_status(run):
+            bucket[SCRIPTED_STATUS_COUNTS[item["status"]]] += 1
         for f in sorted(run.glob("evaluation/*/evaluation.json"))[:1]:  # the first evaluation of each run
             counts = json.loads(f.read_text(encoding="utf-8")).get("counts") or {}
             bucket["evaluated"] += 1
@@ -208,6 +218,10 @@ def main(argv=None) -> int:
           f"cover letter in {r['cover_letter']['sessions_with_critique_redraft']}, either in "
           f"{r['sessions_with_any_critique_redraft']}; user-driven redraft: CV in {r['cv']['sessions_with_user_redraft']}, "
           f"cover letter in {r['cover_letter']['sessions_with_user_redraft']}")
+    unsent = {name: b["scripted_not_exercised"] for name, b in totals["by_script"].items() if b["scripted_not_exercised"]}
+    if unsent:
+        print("scripted requests not exercised (never sent, not graded): "
+              + ", ".join(f"{name} {n}" for name, n in sorted(unsent.items())))
     if totals["interrupted"]:
         print(f"left out (interrupted, out of credit): {', '.join(totals['interrupted'])}")
     print("mean±sd across repeats; (ev±x) = mean spread between evaluator re-scores of the same run", file=sys.stderr)

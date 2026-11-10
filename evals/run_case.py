@@ -63,13 +63,18 @@ DEFAULT_SCRIPT = {
 #   "requests"                       list of {"id", "after": "cv" | "cover_letter", "text", "expect": "follow" |
 #                                    "refuse", "correct_behaviour"}: change requests sent once each, in order,
 #                                    after that document and its PDF exist ("cv": before the cover letter is
-#                                    asked for; "cover_letter": before the user exits)
+#                                    asked for; "cover_letter": before the user exits). Optional "unless_sent":
+#                                    a reply key (e.g. "cover_letter", "missing_details"): the request is the
+#                                    fallback for a wish that reply carries, sent only if that reply never was
+#                                    (the app wrote the letter without being asked for it, or never asked
+#                                    for the missing details), so the wish reaches the app either way
 #   "expectations"                   list of {"about": a script key (e.g. "first", "cover_letter",
 #                                    "missing_details"), "expect", "correct_behaviour"}: what the system should do
 #                                    with one of the ordinary replies
 #   "revision"                       legacy: one request sent after the CV (same as one "after": "cv" request)
 REQUEST_STAGES = ("cv", "cover_letter")
 EXPECT = ("follow", "refuse")
+REPLY_KEYS = ("first", "cover_letter", "exit", "clarify_job_ad", "missing_details")
 
 
 def script_requests(script: dict) -> list[dict]:
@@ -84,7 +89,7 @@ def script_requests(script: dict) -> list[dict]:
 
 def validate_script(script: dict) -> None:
     """Raise ValueError for a script the scripted user cannot follow."""
-    for key in ("first", "cover_letter", "exit", "clarify_job_ad", "missing_details"):
+    for key in REPLY_KEYS:
         if not isinstance(script.get(key), str) or not script[key].strip():
             raise ValueError(f"script key '{key}' must be a non-empty string")
     ids = set()
@@ -95,6 +100,8 @@ def validate_script(script: dict) -> None:
             raise ValueError(f"request '{r['id']}': after must be one of {REQUEST_STAGES}")
         if r.get("expect", "follow") not in EXPECT:
             raise ValueError(f"request '{r['id']}': expect must be one of {EXPECT}")
+        if r.get("unless_sent") is not None and r["unless_sent"] not in REPLY_KEYS:
+            raise ValueError(f"request '{r['id']}': unless_sent must be one of {REPLY_KEYS}")
         if r["id"] in ids or r["id"] in DEFAULT_SCRIPT or r["id"] in ("job_ad", "requests", "expectations"):
             raise ValueError(f"request id '{r['id']}' is repeated or clashes with a script key")
         ids.add(r["id"])
@@ -229,7 +236,8 @@ class ScriptedUser:
 
     Stages: the first message until a CV exists; then the "after": "cv" requests one per turn once the
     CV PDF exists; then the cover-letter message until a letter exists; then the "after":
-    "cover_letter" requests once its PDF exists; then exit. Every request sent is logged with the
+    "cover_letter" requests once its PDF exists; then exit. A request with "unless_sent" is dropped once
+    that ordinary reply has been sent (it carried the same wish). Every request sent is logged with the
     number of drafts of each document before it and at the next turn (did the app act on it?).
     """
 
@@ -266,8 +274,17 @@ class ScriptedUser:
         pdf = values.get(f"{kind}_pdf_path")
         return bool(pdf) and (self.workspace / pdf).is_file()
 
+    def _replaced(self, request: dict) -> bool:
+        """The request's wish already reached the app through the ordinary reply it stands in for."""
+        return bool(request.get("unless_sent") and self.used.get(request["unless_sent"]))
+
+    def unsent_requests(self) -> list[str]:
+        """Ids of the script's requests that were neither sent nor replaced by their ordinary reply."""
+        return [r["id"] for r in self.requests if not self.used.get(r["id"]) and not self._replaced(r)]
+
     def _next_request(self, stage: str, values: dict) -> str | None:
-        pending = [r for r in self.requests if r["after"] == stage and not self.used.get(r["id"])]
+        pending = [r for r in self.requests
+                   if r["after"] == stage and not self.used.get(r["id"]) and not self._replaced(r)]
         if not pending:
             return None
         if not self._pdf_exists(values, stage):
@@ -539,6 +556,7 @@ def main(argv=None) -> int:
         "work_preference_final": values.get("work_preference"),
         "redrafts": redrafts(run_dir),
         "requests_sent": [r["id"] for r in request_log],
+        "requests_not_sent": user.unsent_requests(),
         "requests_without_new_draft": [r["id"] for r in request_log if not r.get("new_draft")],
     }
     recorder.write_summary(**summary)

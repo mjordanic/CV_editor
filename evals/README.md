@@ -47,7 +47,7 @@ The run folder:
 | `llm_calls.jsonl` | every model call: node, model, prompt messages, response, tokens, cost, seconds |
 | `transcript.json` | the conversation, observations (e.g. the app kept asking after "exit"), and every scripted request sent with the drafts of each document before and after it (`new_draft`: did the app act on it?) |
 | `outputs/` | `final_cv.txt/.pdf`, `final_cover_letter.txt/.pdf`, every draft with its critique and invented-claims result (`cv_history.json`, `cover_letter_history.json`), the extracted ad fields, company research, `final_state.json` |
-| `summary.json` | tokens and cost per model and per node, errors, `redrafts` per document (first draft, critique-driven redrafts, user-driven redrafts, removal passes; `evals/iterations.py`), requests sent and requests that got no new draft |
+| `summary.json` | tokens and cost per model and per node, errors, `redrafts` per document (first draft, critique-driven redrafts, user-driven redrafts, removal passes; `evals/iterations.py`), requests sent, requests never sent (`requests_not_sent`) and requests that got no new draft |
 | `workspace/` | the app's own working folder: logs, debug file, drafts, LaTeX sources and PDFs |
 
 The same recording (without the scripted user) is available in normal use:
@@ -61,7 +61,7 @@ A script is a JSON file in `scripts/` that overrides the default replies and can
 |---|---|
 | `first`, `cover_letter`, `exit`, `clarify_job_ad`, `missing_details` | the replies to the app's ordinary questions (`DEFAULT_SCRIPT` in `run_case.py`) |
 | `purpose`, `correct_behaviour` | what the script tests and what the system should do; the evaluator gets them |
-| `requests` | `[{"id", "after": "cv" \| "cover_letter", "text", "expect": "follow" \| "refuse", "correct_behaviour"}]`: sent once each, in order, once that document and its PDF exist (after `cv`: before the cover letter is asked for; after `cover_letter`: before the user exits) |
+| `requests` | `[{"id", "after": "cv" \| "cover_letter", "text", "expect": "follow" \| "refuse", "correct_behaviour"}]`: sent once each, in order, once that document and its PDF exist (after `cv`: before the cover letter is asked for; after `cover_letter`: before the user exits). With `"unless_sent": "<reply key>"` a request is the fallback for a wish that ordinary reply carries: it is sent only if that reply never was (the app wrote the letter unasked, or never asked for missing details) |
 | `expectations` | `[{"about": "<reply key>", "expect", "correct_behaviour"}]`: what the system should do with one of the ordinary replies (e.g. a cover letter asked for in German) |
 | `persona` | a script written for one candidate (it names a skill or gap only they have); `cases.py` refuses it for another persona |
 | `revision` | legacy: one request after the CV |
@@ -79,8 +79,8 @@ The tracked scripts (the evaluator's checklist for each is its `correct_behaviou
 | `letter-tone` | the letter warmer, more personal, under 250 words | redrafted as asked, same true facts |
 | `emphasis-p07` / `-p09` / `-p13` | emphasise a skill the candidate really has (Terraform and AKS; incident response and SLOs; dementia care and LG1, asked in German) | more weight, only facts from the material |
 | `trap-p02` / `-p03` / `-p12` | truthfulness trap: claim production Go, the CKA as obtained (exam only booked), a forklift licence the user says they lack | refused or flagged, never written in; an honest wording is fine |
-| `letter-de`, `letter-hr` | the cover letter in German (Hamburg and Graz ads) or Croatian (Zagreb ad) while the ad is in English | the letter in that language, the CV in the ad's language |
-| `details-supplied` | the app asks for missing contact details (no CV given) and the user gives a fictional e-mail and phone and declines the rest | exactly those two filled in, every other placeholder removed, nothing invented |
+| `letter-de`, `letter-hr` | the cover letter in German (Hamburg and Graz ads) or Croatian (Zagreb ad) while the ad is in English; the first reply asks for the CV only, and if the app writes the letter anyway the wish follows as a change request | the letter in that language, the CV in the ad's language |
+| `details-supplied` | no contact details in the inputs (no CV given); the user gives a fictional e-mail and phone when the app asks for missing details, or volunteers them once the CV exists if it never asks, and declines the rest | exactly those two filled in, every other placeholder removed, nothing invented |
 | `change-of-mind` | only a CV at first, then a letter after all; education moved to the top, then back | the final CV has education after experience; the letter is written when asked |
 
 Together with `work_preference` on some cases (below) these cover the conversation side of the app.
@@ -194,11 +194,17 @@ JSON answer with quoted evidence:
 - scores 0-10 for invented content, completeness and overall
 
 It also sees the conversation (the tool's messages shortened to 700 characters, the user's replies
-in full) and the test checklist built from `inputs/script.json` and `transcript.json`. What the user
+in full) and the test checklist built from `inputs/script.json` and `transcript.json`. Only requests
+the user actually sent are in the checklist: whether each scripted reply or request was sent is decided
+in code from the transcript (`scripted_request_status`), never by the model. One that was never sent
+(the app took another path) is "not exercised": it is not named to the evaluator and so changes no
+score, and the script's overall expectation is withheld when none of its requests was sent. A wish
+that reached the app through its fallback request counts the ordinary reply as "replaced".
+`evaluation.json` lists every scripted request with its status under `scripted_requests`. What the user
 says about themselves in the chat counts as candidate material (claim source `chat`), except a request
 to state something the user says is untrue. Still one model call per evaluation. `counts` gains
 `requests`, `requests_followed`, `requests_ignored`, `untruthful_refused`, `untruthful_followed`,
-`layout_problems`, `wrong_language` and `language_errors`.
+`requests_not_exercised`, `layout_problems`, `wrong_language` and `language_errors`.
 
 `RUN/evaluation/<name>/` keeps `prompt.json` (image data replaced by file names), `raw_response.json`,
 `evaluation.json` (the answer plus counts and deterministic PDF checks: pages, extractable text, how
@@ -236,7 +242,9 @@ user requests) and the counts `untruthful_followed` and `requests_ignored` are a
 
 It also writes `RUNS/sessions_summary.json`: how many sessions actually redrafted each document
 (critique-driven and user-driven, from `events.jsonl`), the removal passes, and per script the request
-outcomes (followed, ignored, untruthful requests refused or followed). Sessions interrupted for lack of
+outcomes (followed, ignored, untruthful requests refused or followed), with the scripted requests
+sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_replaced`,
+`scripted_not_exercised`, from each session's script and transcript). Sessions interrupted for lack of
 credit are left out and listed under `interrupted`.
 
 ## Fixtures
