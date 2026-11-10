@@ -464,20 +464,6 @@ def test_grounding_check_has_its_own_model(monkeypatch):
     assert get_agent_config("grounding")["model"] != get_agent_config("cv_writer")["model"]
 
 
-def test_the_model_override_leaves_the_grounding_model_alone(monkeypatch):
-    from config.config_loader import get_agent_config
-
-    monkeypatch.delenv("CV_EDITOR_GROUNDING_MODEL", raising=False)
-    shipped = get_agent_config("grounding")["model"]
-    monkeypatch.setenv("CV_EDITOR_MODEL", "openai:gpt-6-luna")
-    assert get_agent_config("cv_writer")["model"] == "openai:gpt-6-luna"
-    assert get_agent_config("grounding")["model"] == shipped != "openai:gpt-6-luna"
-
-    monkeypatch.setenv("CV_EDITOR_GROUNDING_MODEL", "ollama:gemma4:e4b")
-    assert get_agent_config("grounding")["model"] == "ollama:gemma4:e4b"
-    assert get_agent_config("cv_writer")["model"] == "openai:gpt-6-luna"
-
-
 # --- the whole critic (quality review and fact check) is independent of the writers ---------------
 
 def _clear_model_overrides(monkeypatch):

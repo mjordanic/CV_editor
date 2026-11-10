@@ -245,7 +245,7 @@ def test_router_fallback_message_matches_what_just_ran(monkeypatch, repeated, ex
 
 # --- running against another model (e.g. a local Ollama model) -------------------------------------
 
-def test_model_override_replaces_every_configured_model(monkeypatch):
+def test_model_override_replaces_every_writer_side_model(monkeypatch):
     from config.config_loader import get_agent_config
 
     monkeypatch.setenv("CV_EDITOR_MODEL", "ollama:gemma4:e4b")
