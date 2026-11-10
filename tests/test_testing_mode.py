@@ -224,3 +224,105 @@ def test_plain_text_percent_and_dollar_are_escaped(line, expected):
     assert out.split("\\begin{document}\n", 1)[1].split("\n")[0] == expected
     assert "% 30% in the preamble stays" in out
     assert escape_text_specials(out) == out
+
+
+# --- testing mode end to end, offline -------------------------------------------------------
+class _FakeModels:
+    """Every chat model in the app: answers by schema, drives CV -> cover letter -> exit."""
+
+    def __init__(self):
+        self.router = ["collect_user_input", "draft_cv", "collect_user_input", "draft_cover_letter",
+                       "collect_user_input", "exit"]
+        self.prompts = []
+
+    def with_structured_output(self, schema):
+        from langchain_core.runnables import RunnableLambda
+        return RunnableLambda(lambda prompt, schema=schema: self._answer(schema, prompt))
+
+    def invoke(self, prompt):
+        return type("Msg", (), {"content": "YES"})()
+
+    def _answer(self, schema, prompt):
+        name = schema.__name__
+        self.prompts.append((name, prompt.to_string()))
+        if name == "JobDescriptionInfo":
+            return schema(company_name="Tessel Cargo Software", job_title="Backend Engineer", work_type="hybrid")
+        if name == "RouterResponse":
+            action = self.router.pop(0)
+            return schema(next_action=action, message_to_user=f"next: {action}",
+                          needs_user_input=action == "collect_user_input")
+        if name == "CVGenerationResponse":
+            return schema(cv_content="Jane Doe\nBackend developer, 5 years Python", notes="")
+        if name == "CoverLetterGenerationResponse":
+            return schema(cover_letter_content="Dear Tessel team, ...", notes="")
+        if name == "CritiqueResponse":
+            return schema(quality_score=90, content_quality_feedback="ok", ats_compatibility_feedback="ok",
+                          job_alignment_feedback="ok", improvement_instructions="", critical_issues="")
+        if name == "GroundingResponse":
+            return schema(unsupported_claims=[])
+        if name == "RemoteWorkResponse":
+            return schema(supports_remote="NA")
+        raise AssertionError(f"unexpected structured call: {name}")
+
+
+def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
+    import subprocess
+    from evals import run_case
+    from agents import (cover_letter_pdf_generator, cover_letter_writer, cv_pdf_generator, cv_writer,
+                        job_description, latex_fixer, rag_agent, router)
+
+    # restore everything run_case changes globally
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(subprocess, "run", subprocess.run)
+    monkeypatch.setattr(rag_agent, "_embeddings_for", rag_agent._embeddings_for)
+    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "dummy-no-calls")
+    monkeypatch.setenv("TAVILY_API_KEY", "dummy-no-calls")
+
+    fake = _FakeModels()
+    for module in (router, cv_writer, cover_letter_writer, critique, job_description, search, rag_agent,
+                   cv_pdf_generator, cover_letter_pdf_generator, latex_fixer):
+        monkeypatch.setattr(module, "init_chat_model", lambda *_, **__: fake)
+
+    def fake_compile(self, latex, output_name, max_fix_iterations=1):
+        path = Path(self.output_folder) / f"{output_name}.pdf"
+        path.write_text(latex, encoding="utf-8")
+        return str(path), 0, None
+
+    for gen in (cv_pdf_generator.CVPDFGenerator, cover_letter_pdf_generator.CoverLetterPDFGenerator):
+        monkeypatch.setattr(gen, "_build_latex_document", lambda self, template, text, style: text)
+        monkeypatch.setattr(gen, "_compile_latex", fake_compile)
+
+    fixtures = REPO / "evals" / "fixtures"
+    persona = fixtures / "personas" / "p07-samuel-cloud-gaps"
+    env = tmp_path / "empty.env"
+    env.write_text("", encoding="utf-8")
+    run_dir = tmp_path / "run"
+    code = run_case.main([
+        "--run-dir", str(run_dir), "--job-ad", str(fixtures / "ads" / "a5-backend-engineer" / "ad.md"),
+        "--search-fixture", str(fixtures / "ads" / "a5-backend-engineer" / "search_fixture.json"),
+        "--cv", str(persona / "cv.txt"), "--notes", str(persona / "notes.txt"),
+        "--env-file", str(env), "--label", "case=offline",
+    ])
+
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert code == 0, manifest["status"]
+    assert manifest["inputs_given"] == ["cv", "notes"]
+    assert manifest["inputs_omitted"] == ["portfolio", "cover_letter"]
+    assert sorted(p.name for p in (run_dir / "inputs").iterdir()) == [
+        "cv.txt", "job_ad.txt", "notes.txt", "script.json", "search_fixture.json"]
+    assert (run_dir / "outputs" / "final_cv.txt").read_text().startswith("Jane Doe")
+    assert (run_dir / "outputs" / "final_cover_letter.txt").exists()
+    transcript = json.loads((run_dir / "transcript.json").read_text())
+    assert [t["user"] for t in transcript["turns"]][0] == "<path to job ad>"
+    assert transcript["observations"] == []
+    events = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+    assert [e["router_decision"] for e in events if e.get("router_decision")][:2] == ["collect_user_input", "draft_cv"]
+    company = json.loads((run_dir / "outputs" / "company_info.json").read_text())
+    assert company["search_source"].startswith("fixture:")
+    # the notes reached the CV writer; the omitted cover letter did not
+    cv_prompt = next(p for n, p in fake.prompts if n == "CVGenerationResponse")
+    assert "Candidate's Own Notes" in cv_prompt and (persona / "notes.txt").read_text()[:40] in cv_prompt
+    config = json.loads((run_dir / "config.json").read_text())
+    assert "agents" in config and "OPENAI_API_KEY" not in json.dumps(config)

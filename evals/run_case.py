@@ -289,6 +289,16 @@ def main(argv=None) -> int:
 
     from langgraph.types import Command
     import langgraph_agent as la
+    import debug_utils
+    if not os.path.isfile(debug_utils.get_debug_file_path() or ""):
+        debug_utils.initialize_debug_file()  # app imported earlier from another folder: debug file here
+
+    import signal
+
+    def stop_on_sigterm(signum, frame):  # a stopped run still records what it did, with its status
+        raise RuntimeError("stopped by SIGTERM")
+
+    signal.signal(signal.SIGTERM, stop_on_sigterm)
 
     user = ScriptedUser(manifest["script"], str(workspace / "job_ad.txt"))
     transcript, status, values = [], "completed", {}
