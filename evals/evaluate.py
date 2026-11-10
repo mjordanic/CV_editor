@@ -13,6 +13,8 @@ quoted evidence:
   (d) CV standards       structure, length, contact details, chronology, language, artefacts
   (e) ATS screening      PDF text parseability, standard headings, keyword coverage, pass likelihood
   (f) cover letter       specificity, consistency with the CV, stale framing from the old letter
+  (g) work arrangement   remote / hybrid / on-site, location limits and culture used correctly and not
+                         invented; the candidate's preference stated only if given, conflicts not hidden
 
 Results go to RUN/evaluation/<name>/: prompt.json, raw_response.json, evaluation.json (the rubric
 answer plus deterministic PDF checks and counts), llm_calls.jsonl and summary.json (cost).
@@ -126,6 +128,24 @@ class CoverLetter(BaseModel):
     strengths: list[str]
 
 
+class WorkArrangement(BaseModel):
+    arrangement_in_sources: Literal["remote", "hybrid", "on-site", "not stated"] = Field(
+        description="What the job ad and company information say about how the job is done")
+    statements_in_outputs: list[str] = Field(
+        description="Quotes from the CV or cover letter about work arrangement, location, relocation, availability "
+                    "or the candidate's preference")
+    invented_or_wrong: list[str] = Field(
+        description="Quotes that state an arrangement, location limit, culture trait or candidate preference that the "
+                    "sources or the candidate's stated preference do not support, or that contradict them")
+    culture_used: list[str] = Field(description="Culture or values from the company information that the cover letter uses")
+    preference_handling: Literal["not_given_and_not_stated", "not_given_but_stated", "given_and_used_honestly",
+                                 "given_but_misstated", "given_and_not_mentioned"]
+    conflict_handling: Literal["no_conflict", "conflict_handled_honestly", "conflict_hidden_or_misstated"] = Field(
+        description="If the candidate's preference conflicts with the job's arrangement: do the outputs avoid "
+                    "misstating either side?")
+    score: int = Field(ge=0, le=10)
+
+
 class Evaluation(BaseModel):
     claims: list[Claim] = Field(description="Every factual claim about the candidate in both outputs")
     omissions: list[Omission]
@@ -133,6 +153,7 @@ class Evaluation(BaseModel):
     cv_standards: CVStandards
     ats: ATS
     cover_letter: CoverLetter
+    work_arrangement: WorkArrangement
     invented_content_score: int = Field(ge=0, le=10, description="10 = nothing invented or stretched, 0 = much invented")
     completeness_score: int = Field(ge=0, le=10, description="10 = every relevant fact used")
     overall_score: int = Field(ge=0, le=10)
@@ -150,6 +171,9 @@ inference are supported (e.g. "built a React app" supports "JavaScript"). A cour
 presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than \
 the material states is partly_supported (overstated).
 - Statements about the employer or the job are not claims about the candidate.
+- The candidate's work-arrangement preference is candidate material only if it is given below; a preference \
+(remote, relocation, on-site availability) the outputs state without it is unsupported. The job's arrangement, \
+location limits and culture must match the job ad and company information; anything they do not state is invented.
 - List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, \
 degree, certificate, language and notable achievement, in both documents. Quote briefly.
 - Quote evidence verbatim from the candidate material. Never invent quotes.
@@ -166,6 +190,9 @@ HUMAN_TEMPLATE = """# JOB AD
 The tool was given only these documents about the candidate:
 
 {candidate}
+
+# CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE
+{work_preference}
 
 # OUTPUT 1: CV (text)
 {cv}
@@ -252,6 +279,8 @@ def build_prompt(run_dir: Path) -> tuple[dict, dict]:
         "job_ad": (_read(inputs / "job_ad.txt") or "").strip(),
         "company": company_text(inputs / "search_fixture.json"),
         "candidate": "\n\n".join(candidate) or "(none)",
+        "work_preference": (_read(inputs / "work_preference.txt") or "").strip()
+        or "(not given: the candidate stated no preference)",
         "cv": cv or "(no CV was produced)",
         "cv_pdf": pdf_text(outputs / "final_cv.pdf") or "(no CV PDF was produced)",
         "cover_letter": cl or "(no cover letter was produced)",
@@ -275,6 +304,7 @@ def counts(ev: dict) -> dict:
         "must_haves": len(must),
         "must_haves_shown": sum(1 for r in must if r["shown_in_cv"] == "yes"),
         "gaps_overstated": sum(1 for r in reqs if r["gap_handling"] == "overstated"),
+        "work_arrangement_invented": len((ev.get("work_arrangement") or {}).get("invented_or_wrong") or []),
     }
 
 

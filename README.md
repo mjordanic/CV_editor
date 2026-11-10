@@ -55,6 +55,7 @@ uv run python langgraph_agent.py
 | Earlier cover letter | `data/CV/cover_letter.*` | `.txt`, `.md`, `.pdf` | cover letter writer (as the base letter), critique, invented-claims check |
 | Free-form notes | `data/CV/notes.*` | `.txt`, `.md`, `.pdf` | CV and cover letter writers, critique, invented-claims check |
 | Portfolio | `data/portfolio/portfolio.txt` | plain text, one item per paragraph | relevant items go to the writers (retrieval); the whole file goes to the critique and the invented-claims check |
+| Work-arrangement preference (remote, hybrid, on-site, no preference) | say it in the chat ("I only want remote jobs"); `--work-preference` in testing mode | writers state it only if you gave it; the program tells you when the job's arrangement conflicts with it |
 | Anything you say in the chat | typed or pasted during the session | text | the router passes change requests to the writers; the critique treats your own statements as facts about you |
 
 Features
@@ -177,7 +178,7 @@ Workflow Walkthrough
 
 1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|md|pdf)`, `data/CV/cover_letter.(txt|md|pdf)` and `data/CV/notes.(txt|md|pdf)`. If there is neither a CV nor notes there (or they have no text, e.g. a scanned PDF), it asks you to paste your CV (a rough draft is fine) or give a path to it.
 2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc. An empty answer or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked once to add details or reply `continue`.
-3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
+3. **Company research**: `SearchAgent` builds a Tavily query and summarizes the results with an LLM. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site), location or country limits and culture signals, shown on the console and given to the writers; anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that the job does not match, the assistant tells you.
 4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 6. **Generation**:

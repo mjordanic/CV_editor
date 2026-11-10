@@ -119,6 +119,10 @@ def prepare_run_folder(args) -> dict:
         }, indent=2), encoding="utf-8")
         search = {"mode": "none", "copied_to": "inputs/search_fixture.json"}
 
+    if args.work_preference:
+        # The candidate's own preference is candidate material: kept with the inputs, seen by the evaluator.
+        (inputs / "work_preference.txt").write_text(args.work_preference + "\n", encoding="utf-8")
+
     script = dict(DEFAULT_SCRIPT)
     if args.script:
         script.update(json.loads(Path(args.script).read_text(encoding="utf-8")))
@@ -136,6 +140,7 @@ def prepare_run_folder(args) -> dict:
         "search": search,
         "script": script,
         "model_override": args.model,
+        "work_preference": args.work_preference,
         "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
@@ -232,6 +237,8 @@ def main(argv=None) -> int:
     group.add_argument("--record-search", help="live Tavily search, saved to this fixture file")
     group.add_argument("--no-search", action="store_true", help="company research finds nothing (default)")
     parser.add_argument("--model", help="use this model for every agent (sets CV_EDITOR_MODEL)")
+    parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"],
+                        help="the candidate's own work-arrangement preference (default: not given)")
     parser.add_argument("--script", help="JSON with scripted replies overriding the defaults")
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--cost-cap", type=float, default=1.0, help="stop the run past this many USD (default 1.0)")
@@ -309,7 +316,7 @@ def main(argv=None) -> int:
         agent = la.MasterAgent()
         initial = {k: None for k in la.State.__annotations__}
         initial.update(messages=[], cv_refinement_count=0, cover_letter_refinement_count=0,
-                       cv_history=[], cover_letter_history=[])
+                       cv_history=[], cover_letter_history=[], work_preference=manifest["work_preference"])
         graph_input = initial
         for turn in range(int(manifest["script"].get("max_turns", 10)) + 1):
             question = stream_turn(agent.graph, graph_input, config, recorder)
@@ -346,6 +353,8 @@ def main(argv=None) -> int:
         "cover_letter_final_iteration": values.get("cover_letter_final_iteration"),
         "outputs": files,
         "observations": user.observations,
+        "work_context": (values.get("company_info") or {}).get("work_context"),
+        "work_preference_final": values.get("work_preference"),
     }
     recorder.write_summary(**summary)
     recorder.write_json("manifest.json", {

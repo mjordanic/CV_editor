@@ -6,6 +6,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
 
+from agents.work_context import describe as describe_work_context, with_preference
+
 logger = logging.getLogger(__name__)
 
 
@@ -191,8 +193,7 @@ class CritiqueAgent:
         info_parts = []
         if company_info.get("company_description"):
             info_parts.append(f"Description: {company_info['company_description']}")
-        if company_info.get("remote_work"):
-            info_parts.append(f"Remote Work Policy: {company_info['remote_work']}")
+        info_parts.append(describe_work_context(company_info, company_info.get("work_preference")))
         
         return "\n".join(info_parts) if info_parts else "No additional company information available."
     
@@ -237,6 +238,9 @@ class CritiqueAgent:
         if candidate_text.get("portfolio"):
             # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
             parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
+
+        if candidate_text.get("work_preference"):
+            parts.append(f"Candidate's Own Work-Arrangement Preference: {candidate_text['work_preference']}")
 
         if candidate_text.get("user_requests"):
             # What the user asked for in this session is the user's own statement, not an invention.
@@ -449,12 +453,13 @@ class CritiqueAgent:
             **(state.get("candidate_text") or {}),
             "portfolio": state.get("portfolio_text"),
             "user_requests": _user_requests(state.get("messages")),
+            "work_preference": state.get("work_preference"),
         }
         if kind == "cv":
             result = self.critique_cv(
                 cv_content=document,
                 job_description_info=state.get("job_description_info"),
-                company_info=state.get("company_info"),
+                company_info=with_preference(state.get("company_info"), state.get("work_preference")),
                 candidate_text=candidate_text
             )
         else:
@@ -462,7 +467,7 @@ class CritiqueAgent:
                 cover_letter_content=document,
                 cv_content=state.get("generated_cv"),  # Include CV for context
                 job_description_info=state.get("job_description_info"),
-                company_info=state.get("company_info"),
+                company_info=with_preference(state.get("company_info"), state.get("work_preference")),
                 candidate_text=candidate_text
             )
 

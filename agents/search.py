@@ -1,5 +1,5 @@
 from tavily import TavilyClient
-from typing import Optional, Literal
+from typing import Optional
 from datetime import datetime, timezone
 import os
 import json
@@ -7,8 +7,8 @@ import logging
 from langchain.chat_models import init_chat_model
 from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
+from agents.work_context import NOT_STATED, WORK_CONTEXT_PROMPT, WorkContext, remote_work_from
 
 logger = logging.getLogger(__name__)
 
@@ -63,19 +63,6 @@ COMPANY_DESCRIPTION_HUMAN_PROMPT = (
     "Here are the search results: \n\n{search_content}"
 )
 
-REMOTE_WORK_SYSTEM_PROMPT = (
-    "You are a helpful assistant that analyzes company information to determine if they support remote work."
-)
-
-REMOTE_WORK_HUMAN_PROMPT = (
-    "Based on the following search results, determine if the company supports remote work. "
-    "Look for information about remote work policies, work-from-home options, hybrid work arrangements, "
-    "or any mentions of remote positions. Return 'supports_remote' as 'yes' if remote work is clearly and fully supported, "
-    "'no' if it's clearly not supported (e.g., only on-site or hybrid positions), or 'NA' if the information is insufficient to conclude.\n\n"
-    "Search results:\n\n{search_content}"
-)
-
-
 def build_search_query(job_description_info: dict) -> str:
     """The Tavily query for the company named in the extracted job ad fields."""
     company_info_dict = {
@@ -91,14 +78,6 @@ def build_search_query(job_description_info: dict) -> str:
     company_info_str = "; ".join(info_parts) if info_parts else "No additional information provided"
     # limit the length of the company information because Tavily API has a limit of 400 characters
     return QUERY_TEMPLATE.format(company_information=company_info_str[:250])
-
-
-class RemoteWorkResponse(BaseModel):
-    """Response model for remote work detection."""
-    supports_remote: Literal["yes", "no", "NA"] = Field(
-        ...,
-        description="'yes' if company supports remote work, 'no' if not, 'NA' if cannot be determined"
-    )
 
 
 class SearchAgent:
@@ -234,44 +213,16 @@ class SearchAgent:
         
         return response
 
-    def is_remote(self, results: dict) -> Literal["yes", "no", "NA"]:
+    def extract_work_context(self, job_ad: str, results: dict) -> WorkContext:
         """
-        Determine if the company supports remote work based on search results.
-
-        Args:
-            results: Tavily response dictionary returned by `search_tavily`.
-
-        Returns:
-            Literal["yes", "no", "NA"]: Remote-work determination derived from LLM output.
+        Work arrangement, location limits and culture signals from the job ad and the search
+        results together (one model call). Fields neither text states are 'not stated'.
         """
-        logger.info("Determining remote work support from search results")
-        combined_content = self._extract_search_content(results)
-        
-        if not combined_content:
-            logger.warning("No search content for remote work detection - returning 'NA'")
-            return "NA"
-        
-        logger.debug(f"Extracted search content length for remote work: {len(combined_content)} characters")
-        
-        # Create prompt for remote work detection
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", REMOTE_WORK_SYSTEM_PROMPT),
-            ("human", REMOTE_WORK_HUMAN_PROMPT)
-        ])
-        
-        # Use structured output to ensure proper return type
-        structured_llm = self.llm.with_structured_output(RemoteWorkResponse)
-        chain = prompt | structured_llm
-        
-        llm_input = {"search_content": combined_content[:8000]}
-        logger.info("Calling LLM to determine remote work support...")
-        logger.debug(f"LLM input - search_content length: {len(llm_input['search_content'])} characters")
-        
-        response = chain.invoke(llm_input)
-        
-        logger.info(f"LLM response received - supports_remote: {response.supports_remote}")
-        
-        return response.supports_remote
+        chain = ChatPromptTemplate.from_messages([("human", WORK_CONTEXT_PROMPT)]) | self.llm.with_structured_output(WorkContext)
+        return chain.invoke({
+            "job_ad": (job_ad or "(no job ad text)")[:6000],
+            "search_content": self._extract_search_content(results or {})[:8000] or "(no search results)",
+        })
 
     def run(self, state):
         """
@@ -301,12 +252,19 @@ class SearchAgent:
         try:
             results = self.search_tavily(formatted_query) or {}
             company_description = self.process_search_results(results)
-            remote_work = self.is_remote(results)
         except Exception as e:
             logger.warning(f"Company research failed ({type(e).__name__}: {e}) - continuing without company information")
             results = {}
             company_description = "No information found about the company."
-            remote_work = "NA"
+        # Arrangement and culture come from the ad and the search results together, so a failed
+        # search still leaves what the ad says.
+        try:
+            work_context = self.extract_work_context(job_description_info.get("job_description") or "", results).model_dump()
+        except Exception as e:
+            logger.warning(f"Work arrangement extraction failed ({type(e).__name__}: {e}) - using the ad's work type only")
+            ad_type = job_description_info.get("work_type")
+            work_context = WorkContext(arrangement=ad_type if ad_type in ("remote", "hybrid", "on-site") else NOT_STATED).model_dump()
+        remote_work = remote_work_from(work_context["arrangement"])
         
         # Extract search content for debug logging
         extracted_search_content = self._extract_search_content(results)
@@ -324,9 +282,9 @@ class SearchAgent:
         debug_content += "-" * 80 + "\n"
         debug_content += company_description_str if company_description_str else "(no description)"
         debug_content += "\n\n"
-        debug_content += "REMOTE WORK DETERMINATION:\n"
+        debug_content += "WORK ARRANGEMENT AND CULTURE:\n"
         debug_content += "-" * 80 + "\n"
-        debug_content += remote_work if remote_work else "NA"
+        debug_content += json.dumps(work_context, ensure_ascii=False, indent=2)
         debug_content += "\n\n"
         
         write_to_debug(debug_content, "SEARCH AGENT DEBUG INFO")
@@ -336,18 +294,24 @@ class SearchAgent:
         company_info = {
             "company_description": company_description_str,
             "remote_work": remote_work,
+            "work_context": work_context,
             "search_results": results,  # Store raw search results if needed
             "search_query": formatted_query,
             "search_source": f"fixture:{self.fixture_path}" if getattr(self, "fixture", None) is not None else "tavily",
         }
         
         logger.info(f"Company info prepared - remote_work: {remote_work}, description_length: {len(company_description_str)}")
+        culture = "; ".join(work_context.get("culture_signals") or []) or NOT_STATED
+        summary = (f"Work arrangement (from the ad and company pages): {work_context['arrangement']}. "
+                   f"Location or country limits: {work_context.get('location_limits') or NOT_STATED}. "
+                   f"Culture signals: {culture}.")
+        logger.info(summary)  # shown on the console, like the job ad summary
         
         return {
             "company_info": company_info,
             "messages": state.get("messages", []) + [{
                 "role": "assistant",
-                "content": f"Company information retrieved. Remote work: {remote_work}"
+                "content": f"Company information retrieved. {summary}"
             }],
             "current_node": "search"
         }

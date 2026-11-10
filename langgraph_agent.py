@@ -140,6 +140,7 @@ class State(TypedDict, total=False):
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
     portfolio_text: str | None  # Full portfolio text (the critique checks drafts against it for unsupported claims)
+    work_preference: str | None  # The candidate's own remote / hybrid / on-site / no preference, only if they stated it
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
     cv_pdf_style: str | None  # User description for CV PDF appearance (style only)

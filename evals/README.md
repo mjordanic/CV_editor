@@ -76,6 +76,10 @@ JSON answer with quoted evidence:
 - **omissions**: relevant facts in the material that the outputs leave out
 - **fit**: every must-have and nice-to-have requirement: does the candidate have it, does the CV show it,
   and is a gap handled honestly
+- **work_arrangement**: what the ad and company pages say (remote / hybrid / on-site), every statement
+  about arrangement, location or the candidate's preference in the outputs, anything invented or wrong,
+  culture actually used, and whether a preference was stated only if the candidate gave one and a
+  conflict with the job was not hidden
 - **cv_standards**, **ats** (PDF text parseable, headings, keyword coverage, pass likelihood low/medium/high
   with reasons) and **cover_letter**
 - scores 0-10 for invented content, completeness and overall

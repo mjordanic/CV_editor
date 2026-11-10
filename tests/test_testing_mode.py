@@ -260,8 +260,9 @@ class _FakeModels:
                           job_alignment_feedback="ok", improvement_instructions="", critical_issues="")
         if name == "GroundingResponse":
             return schema(unsupported_claims=[])
-        if name == "RemoteWorkResponse":
-            return schema(supports_remote="NA")
+        if name == "WorkContext":
+            return schema(arrangement="on-site", location_limits="Antwerp office, 4 days a week",
+                          culture_signals=["small teams that own what they run"])
         raise AssertionError(f"unexpected structured call: {name}")
 
 
@@ -303,7 +304,7 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
         "--run-dir", str(run_dir), "--job-ad", str(fixtures / "ads" / "a5-backend-engineer" / "ad.md"),
         "--search-fixture", str(fixtures / "ads" / "a5-backend-engineer" / "search_fixture.json"),
         "--cv", str(persona / "cv.txt"), "--notes", str(persona / "notes.txt"),
-        "--env-file", str(env), "--label", "case=offline",
+        "--env-file", str(env), "--label", "case=offline", "--work-preference", "remote",
     ])
 
     manifest = json.loads((run_dir / "manifest.json").read_text())
@@ -311,7 +312,7 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     assert manifest["inputs_given"] == ["cv", "notes"]
     assert manifest["inputs_omitted"] == ["portfolio", "cover_letter"]
     assert sorted(p.name for p in (run_dir / "inputs").iterdir()) == [
-        "cv.txt", "job_ad.txt", "notes.txt", "script.json", "search_fixture.json"]
+        "cv.txt", "job_ad.txt", "notes.txt", "script.json", "search_fixture.json", "work_preference.txt"]
     assert (run_dir / "outputs" / "final_cv.txt").read_text().startswith("Jane Doe")
     assert (run_dir / "outputs" / "final_cover_letter.txt").exists()
     transcript = json.loads((run_dir / "transcript.json").read_text())
@@ -324,5 +325,81 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     # the notes reached the CV writer; the omitted cover letter did not
     cv_prompt = next(p for n, p in fake.prompts if n == "CVGenerationResponse")
     assert "Candidate's Own Notes" in cv_prompt and (persona / "notes.txt").read_text()[:40] in cv_prompt
+    # arrangement, culture and the stated preference reach the writers, with the conflict spelled out
+    assert "Work arrangement (from the ad and company pages): on-site" in cv_prompt
+    assert "Candidate's own work-arrangement preference (stated by the candidate): remote" in cv_prompt
+    assert "Preference conflict: You said you prefer remote work, but this job is on-site" in cv_prompt
+    assert manifest["work_preference"] == "remote" and manifest["work_context"]["arrangement"] == "on-site"
+    assert (run_dir / "inputs" / "work_preference.txt").read_text().strip() == "remote"
+    from evals.evaluate import build_prompt
+    assert build_prompt(run_dir)[0]["work_preference"] == "remote"
     config = json.loads((run_dir / "config.json").read_text())
     assert "agents" in config and "OPENAI_API_KEY" not in json.dumps(config)
+
+
+# --- work arrangement, culture and preference -------------------------------------------------
+def test_work_context_lines_never_assume_a_preference():
+    from agents.work_context import describe, preference_conflict
+    info = {"work_context": {"arrangement": "hybrid", "location_limits": "not stated", "culture_signals": []}}
+    text = describe(info, None)
+    assert "Work arrangement (from the ad and company pages): hybrid" in text
+    assert "Culture signals: not stated" in text
+    assert "preference: not given. Do not state any preference" in text
+    assert "Preference conflict" not in describe(info, "hybrid")
+    assert "Preference conflict" in describe(info, "remote")
+    assert preference_conflict("no preference", "on-site") is None
+    assert preference_conflict("remote", "not stated") is None
+
+
+def _search_agent(monkeypatch, llm, tmp_path):
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: llm)
+    monkeypatch.setattr(search, "write_to_debug", lambda *_, **__: None)
+    path = _fixture(tmp_path, [{"query": "*", "response": {"results": [{"content": "We are remote-first."}]}}])
+    return search.SearchAgent(fixture_path=path)
+
+
+def test_search_extracts_work_context_from_ad_and_pages(monkeypatch, tmp_path):
+    fake = _FakeModels()
+    fake.prompts.clear()
+    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results: "A company.")
+    agent = _search_agent(monkeypatch, fake, tmp_path)
+    out = agent.run({"job_description_info": {"company_name": "X", "job_description": "AD-TEXT: office in Antwerp"},
+                     "messages": []})
+    info = out["company_info"]
+    assert info["work_context"]["arrangement"] == "on-site" and info["remote_work"] == "no"
+    prompt = next(p for n, p in fake.prompts if n == "WorkContext")
+    assert "AD-TEXT: office in Antwerp" in prompt and "We are remote-first." in prompt
+    assert "Work arrangement (from the ad and company pages): on-site" in out["messages"][-1]["content"]
+
+
+def test_failed_extraction_falls_back_to_the_ads_work_type(monkeypatch, tmp_path):
+    class Broken:
+        def with_structured_output(self, schema):
+            raise RuntimeError("model down")
+
+    monkeypatch.setattr(search.SearchAgent, "process_search_results", lambda self, results: "A company.")
+    agent = _search_agent(monkeypatch, Broken(), tmp_path)
+    out = agent.run({"job_description_info": {"company_name": "X", "work_type": "unknown"}, "messages": []})
+    assert out["company_info"]["work_context"]["arrangement"] == "not stated"
+    assert out["company_info"]["remote_work"] == "NA"
+
+
+def test_router_keeps_a_preference_only_when_the_user_states_it(monkeypatch):
+    from langchain_core.runnables import RunnableLambda
+    from agents import router as router_module
+
+    replies = []
+
+    class FakeRouterLLM:
+        def with_structured_output(self, schema):
+            return RunnableLambda(lambda prompt: replies.pop(0))
+
+    monkeypatch.setattr(router_module, "init_chat_model", lambda *_, **__: FakeRouterLLM())
+    agent = router_module.RouterAgent(model="fake", temperature=None)
+    state = {"messages": [{"role": "user", "content": "I only want remote jobs. Write my CV."}],
+             "job_description_info": {"job_title": "X"}, "company_info": None}
+    replies.append(router_module.RouterResponse(next_action="draft_cv", message_to_user="", needs_user_input=False,
+                                                work_preference="remote"))
+    assert agent.run(state)["work_preference"] == "remote"
+    replies.append(router_module.RouterResponse(next_action="draft_cv", message_to_user="", needs_user_input=False))
+    assert "work_preference" not in agent.run(state)
