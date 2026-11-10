@@ -6,6 +6,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
 
+from agents.work_context import describe as describe_work_context, with_preference
+
 logger = logging.getLogger(__name__)
 
 
@@ -122,7 +124,7 @@ class GroundingResponse(BaseModel):
 # Appended to every critique-driven redraft instruction: a light critic sometimes proposes adding
 # what the job asks for even when the candidate does not have it.
 NO_NEW_CLAIMS_RULE = (
-    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, "
+    "Do NOT add any skill, tool, qualification or experience that is not in the candidate's original CV, notes, "
     "portfolio or the user's own requests, even if the job asks for it."
 )
 
@@ -191,8 +193,7 @@ class CritiqueAgent:
         info_parts = []
         if company_info.get("company_description"):
             info_parts.append(f"Description: {company_info['company_description']}")
-        if company_info.get("remote_work"):
-            info_parts.append(f"Remote Work Policy: {company_info['remote_work']}")
+        info_parts.append(describe_work_context(company_info, company_info.get("work_preference")))
         
         return "\n".join(info_parts) if info_parts else "No additional company information available."
     
@@ -230,9 +231,16 @@ class CritiqueAgent:
         else:
             parts.append("Original Cover Letter: Not provided")
         
+        if candidate_text.get("notes"):
+            # Free-form notes are the candidate's own statements, like the CV.
+            parts.append(f"Candidate's Own Notes:\n{candidate_text['notes']}")
+
         if candidate_text.get("portfolio"):
             # Without it the critic calls real portfolio projects hallucinations and asks to remove them.
             parts.append(f"Candidate Portfolio:\n{candidate_text['portfolio']}")
+
+        if candidate_text.get("work_preference"):
+            parts.append(f"Candidate's Own Work-Arrangement Preference: {candidate_text['work_preference']}")
 
         if candidate_text.get("user_requests"):
             # What the user asked for in this session is the user's own statement, not an invention.
@@ -445,12 +453,13 @@ class CritiqueAgent:
             **(state.get("candidate_text") or {}),
             "portfolio": state.get("portfolio_text"),
             "user_requests": _user_requests(state.get("messages")),
+            "work_preference": state.get("work_preference"),
         }
         if kind == "cv":
             result = self.critique_cv(
                 cv_content=document,
                 job_description_info=state.get("job_description_info"),
-                company_info=state.get("company_info"),
+                company_info=with_preference(state.get("company_info"), state.get("work_preference")),
                 candidate_text=candidate_text
             )
         else:
@@ -458,7 +467,7 @@ class CritiqueAgent:
                 cover_letter_content=document,
                 cv_content=state.get("generated_cv"),  # Include CV for context
                 job_description_info=state.get("job_description_info"),
-                company_info=state.get("company_info"),
+                company_info=with_preference(state.get("company_info"), state.get("work_preference")),
                 candidate_text=candidate_text
             )
 
@@ -472,9 +481,9 @@ class CritiqueAgent:
         unsupported = self.check_grounding(label if kind == "cv" else "cover letter", document, candidate_text)
         if unsupported:
             listed = "\n".join(f"- {claim}" for claim in unsupported)
-            critical_issues = _join(critical_issues, f"Claims the candidate's CV, portfolio and requests do not support:\n{listed}")
+            critical_issues = _join(critical_issues, f"Claims the candidate's own material (CV, cover letter, notes, portfolio, requests) does not support:\n{listed}")
             instructions = _join(instructions, (
-                f"Remove these claims, which the candidate's CV, portfolio and requests do not support "
+                f"Remove these claims, which the candidate's own material (CV, cover letter, notes, portfolio, requests) does not support "
                 f"(do not replace them with other claims the candidate cannot back):\n{listed}"
             ))
         if instructions:

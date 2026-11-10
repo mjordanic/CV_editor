@@ -39,11 +39,24 @@ cp examples/sample_CV.txt data/CV/CV.txt   # or put your own CV here as data/CV/
 uv run python langgraph_agent.py
 ```
 
-- **Your CV** goes in `data/CV/` as `CV.txt` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program (`examples/sample_CV_butcher.txt` is one for a job outside IT).
+- **Your CV** goes in `data/CV/` as `CV.txt`, `CV.md` or `CV.pdf`. An existing cover letter is optional (`data/CV/cover_letter.txt`, `.md` or `.pdf`). `examples/sample_CV.txt` is a made-up CV you can use to try the program (`examples/sample_CV_butcher.txt` is one for a job outside IT).
+- **Free-form notes** are optional: `data/CV/notes.txt` (or `.md`, `.pdf`) can hold anything about your career in any shape, such as a rough CV draft without structure, bullet notes, or caveats ("exam booked, not passed yet"). The writers use them as your own facts, like the CV, and the check for invented claims counts them as evidence. Notes alone are enough to start: without a CV the program builds one from your notes and portfolio.
 - **Your projects and past jobs** go in `data/portfolio/portfolio.txt`, one item per paragraph (separated by a blank line). Only that file is read. The one in the repository is a made-up example; replace it with your own.
 - **The job ad**: when asked, paste the ad text or a path to a file. `job_description/sample_job_ad.txt` is a made-up ad for trying it out (`job_description/sample_job_ad_butcher.txt` goes with the butcher CV).
 - **Costs**: right after startup the program makes paid OpenAI calls (it indexes your portfolio before you type anything), and every step after that makes paid OpenAI and Tavily calls.
 - The `data/` and `job_description/` folders are in `.gitignore`, so your own CV and ads are not committed by accident.
+- **Recording a session**: `uv run python langgraph_agent.py --trace-dir DIR` writes every step, every model call (prompt, response, tokens, cost) and every question and reply to `DIR` (see [Testing mode and evaluation](#testing-mode-and-evaluation)). API keys are never written.
+
+### What candidate information the program can take
+
+| Input | Where | Formats | Used by |
+|---|---|---|---|
+| CV | `data/CV/CV.*`, or pasted / a file path when asked (only if there is no CV and no notes) | `.txt`, `.md`, `.pdf` (text PDFs; scanned PDFs have no text) | CV and cover letter writers, critique, invented-claims check |
+| Earlier cover letter | `data/CV/cover_letter.*` | `.txt`, `.md`, `.pdf` | cover letter writer (as the base letter), critique, invented-claims check |
+| Free-form notes | `data/CV/notes.*` | `.txt`, `.md`, `.pdf` | CV and cover letter writers, critique, invented-claims check |
+| Portfolio | `data/portfolio/portfolio.txt` | plain text, one item per paragraph | relevant items go to the writers (retrieval); the whole file goes to the critique and the invented-claims check |
+| Work-arrangement preference (remote, hybrid, on-site, no preference) | say it in the chat ("I only want remote jobs"); `--work-preference` in testing mode | writers state it only if you gave it; the program tells you when the job's arrangement conflicts with it. Without one you count as open to any arrangement: remote, hybrid, on-site or relocation is never presented as a conflict or weakness, and no specific commitment (e.g. relocating to a named city) is invented |
+| Anything you say in the chat | typed or pasted during the session | text | the router passes change requests to the writers; the critique treats your own statements as facts about you |
 
 Features
 --------
@@ -163,9 +176,9 @@ System: [Generates CV with content and style changes]
 Workflow Walkthrough
 --------------------
 
-1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|pdf)` and `data/CV/cover_letter.(txt|pdf)`. If there is no CV there (or it has no text, e.g. a scanned PDF), it asks you to paste your CV or give a path to it.
+1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|md|pdf)`, `data/CV/cover_letter.(txt|md|pdf)` and `data/CV/notes.(txt|md|pdf)`. If there is neither a CV nor notes there (or they have no text, e.g. a scanned PDF), it asks you to paste your CV (a rough draft is fine) or give a path to it.
 2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc. An empty answer or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked once to add details or reply `continue`.
-3. **Company research**: `SearchAgent` builds a Tavily query, summarizes results with an LLM, and determines remote-work support.
+3. **Company research**: `SearchAgent` builds a Tavily query and summarizes the results with an LLM. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site), location or country limits and culture signals, shown on the console and given to the writers; anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that the job does not match, the assistant tells you; without a stated preference you are treated as open to the job's arrangement.
 4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 6. **Generation**:
@@ -209,6 +222,16 @@ The system uses a centralized YAML configuration file (`config/agent_models.yaml
 - **RAG Settings**: Configure vector similarity thresholds and relevance verification settings for experience retrieval.
 
 All agents load configuration at startup from the YAML file. No code changes needed to adjust models or workflow parameters.
+
+### Testing mode and evaluation
+
+`evals/` runs the program end to end from prepared inputs and scores the results with an independent model. See [evals/README.md](evals/README.md).
+
+- **Testing mode** (`python -m evals.run_case`): one session from files you give (any subset of CV, portfolio, earlier cover letter and notes, plus the job ad), with a scripted user answering the questions and prepared web-search results replacing live Tavily calls (`CV_EDITOR_SEARCH_FIXTURE`). Every run writes a folder with the exact inputs, the config and model of every agent, every graph step and router decision, every model call with prompt, response, tokens and cost, the critique scores and invented-claims results of every draft, the final texts and PDFs, timings and errors.
+- **Recording search results** (`python -m evals.search_fixtures record`, or `CV_EDITOR_SEARCH_RECORD=file.json` on a normal run): saves live Tavily answers in the fixture format, so a real company is searched once and replayed after that.
+- **Evaluator** (`python -m evals.evaluate RUN_DIR`): scores one run with `openai:gpt-6.1-sol` (configurable), blind to the model and inputs that produced it: invented content with quotes, completeness, fit to the ad, CV standards, automatic screening (ATS) and the cover letter.
+- **Fixtures** (`evals/fixtures/`): six anonymized or invented job ads, each with company pages and a search fixture, and ten fully fictional candidates. Every evaluation input is tracked here, so anyone can repeat the tests.
+- **Matrix** (`python -m evals.run_matrix --out DIR`): runs every case in `evals/matrix.json` (persona × ad × input set × model), then the evaluator on each, with a spending cap. Inputs come only from `evals/fixtures/`.
 
 ### Running with a local model (Ollama)
 
@@ -278,7 +301,7 @@ MIT, see [LICENSE](LICENSE). Made by Mislav Jordanic.
 TODO list
 ---------
 - ~~**PDF generation agent**: Add an agent that uses LaTeX to generate professional PDF versions of CVs and cover letters.~~ ✅ **Completed**: CVPDFGenerator and CoverLetterPDFGenerator implemented with customizable LaTeX templates.
-- **Enhanced candidate information system**: Currently, only the candidate's CV and cover letter can be uploaded. This should be improved to:
+- **Enhanced candidate information system**: The candidate's CV, cover letter, free-form notes and portfolio can be given (see [What candidate information the program can take](#what-candidate-information-the-program-can-take)). This should be improved to:
   - Accept any document type (portfolio, certificates, transcripts, etc.) and process them automatically
   - Create a more complete representation of the candidate's skills, aspirations, and experience
   - Allow candidates to input additional information via prompts

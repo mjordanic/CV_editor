@@ -7,6 +7,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from debug_utils import log_messages, get_logged_message_count
 
+from agents.work_context import describe as describe_work_context, with_preference
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +57,14 @@ ROUTER_SYSTEM_PROMPT = (
     "sentence that this program cannot do that, then ask what they would like to change in the CV or cover letter. "
     "Do not give a reason that suggests it could do it otherwise, and never offer anything that is not one of the "
     "available actions.\n"
-    "- If the user changes their mind within a message, follow their LAST stated wish."
+    "- If the user changes their mind within a message, follow their LAST stated wish.\n\n"
+    "WORK ARRANGEMENT:\n"
+    "- If the user says in their latest message whether they want remote, hybrid or on-site work (or that they have "
+    "no preference), put it in 'work_preference'. Never guess it from anything else.\n"
+    "- If the company information shows a 'Preference conflict', tell the user about it plainly in your next "
+    "message (once), in the user's words, without changing either side.\n"
+    "- If the user has not stated a preference, treat them as open to the job's arrangement: never raise the "
+    "arrangement, location or relocation as a problem or a reason not to apply."
 )
 
 ROUTER_HUMAN_PROMPT = (
@@ -218,6 +227,13 @@ class RouterResponse(BaseModel):
             "If True, show message_to_user and wait for response."
         ),
     )
+    work_preference: Literal["", "remote", "hybrid", "on-site", "no preference"] = Field(
+        default="",
+        description=(
+            "The user's own work-arrangement preference, ONLY if their latest message states it "
+            "(e.g. 'I only want remote jobs' -> 'remote'). Empty otherwise; never inferred."
+        ),
+    )
 
 
 class RouterAgent:
@@ -313,8 +329,7 @@ class RouterAgent:
                 parts.append(f"Description: {desc[:500]}...")  # Truncate for context
             else:
                 parts.append(f"Description: {str(desc)[:500]}...")
-        if company_info.get("remote_work"):
-            parts.append(f"Remote Work Policy: {company_info['remote_work']}")
+        parts.append(describe_work_context(company_info, company_info.get("work_preference")))
         
         return "\n".join(parts) if parts else "No company information available."
     
@@ -323,7 +338,7 @@ class RouterAgent:
         Summarize any user-provided documents for LLM conditioning.
 
         Args:
-            candidate_text: Dictionary of `cv` and `cover_letter` strings from `DocumentReaderAgent`.
+            candidate_text: Dictionary of `cv`, `cover_letter` and `notes` strings from `DocumentReaderAgent`.
 
         Returns:
             str: Short preview of available candidate materials or fallback notice.
@@ -349,6 +364,11 @@ class RouterAgent:
                 parts.append("Original Cover Letter: Not provided")
         else:
             parts.append("Original Cover Letter: Not provided")
+
+        if candidate_text.get("notes"):
+            parts.append(f"Candidate's Own Notes: {candidate_text['notes'][:300]}...")
+        else:
+            parts.append("Candidate's Own Notes: Not provided")
         
         return "\n".join(parts) if parts else "No original documents uploaded by the user."
     
@@ -548,7 +568,7 @@ class RouterAgent:
         # Extract state information
         messages = state.get("messages", [])
         job_description_info = state.get("job_description_info")
-        company_info = state.get("company_info")
+        company_info = with_preference(state.get("company_info"), state.get("work_preference"))
         candidate_text = state.get("candidate_text")
         generated_cv = state.get("generated_cv")
         generated_cover_letter = state.get("generated_cover_letter")
@@ -740,6 +760,11 @@ class RouterAgent:
             ],
         }
         
+        if response.work_preference and response.work_preference != state.get("work_preference"):
+            # Only what the user said; the writers state it honestly and the critique counts it as the user's own fact.
+            logger.info(f"User stated a work-arrangement preference: {response.work_preference}")
+            return_state["work_preference"] = response.work_preference
+
         # If limit reached, explicitly set needs_refinement to False in return state
         # Also clear critique instructions to prevent the LLM from seeing them in future iterations
         if state.get("cv_needs_refinement"):

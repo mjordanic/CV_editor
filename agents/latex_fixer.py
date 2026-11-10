@@ -1,5 +1,6 @@
 from typing import Optional
 import logging
+import re
 
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
@@ -99,3 +100,77 @@ class LatexFixer:
             return latex_source
 
 
+
+
+# Added to every generated document so that the PDF's text layer reads like the text version:
+# ATS parsers and pdf text extractors merge words on justified lines whose spaces TeX squeezed,
+# and split keywords at hyphenation points ("Kuber-\nnetes"). Ragged-right text without
+# hyphenation avoids both, and glyph-to-Unicode maps keep ligatures and accents searchable.
+_EXTRACTABLE_PREAMBLE = (
+    "% Plain text layer for ATS parsers (added by the CV editor)\n"
+    "\\IfFileExists{lmodern.sty}{\\usepackage{lmodern}}{}\n"
+    "\\ifdefined\\pdfgentounicode\\input{glyphtounicode}\\pdfgentounicode=1\\fi\n"
+)
+_EXTRACTABLE_BODY = "\\raggedright\\hyphenpenalty=10000\\exhyphenpenalty=10000\n"
+
+
+_DOCUMENTCLASS = re.compile(r"\\documentclass\s*(?:\[[^\]]*\])?\s*\{[^}]*\}")
+
+
+def ensure_text_extractable(latex: str) -> str:
+    """
+    Make a LaTeX document's PDF text extract cleanly (no merged or hyphen-split words).
+
+    Inserts a short preamble block right after \\documentclass, so any font package the document
+    loads still wins over lmodern, and ragged-right, no-hyphenation settings right after
+    \\begin{document}, unless the document already has them. Leaves text without a
+    \\documentclass or \\begin{document} unchanged.
+    """
+    marker = "\\begin{document}"
+    if not latex or marker not in latex or "\\pdfgentounicode" in latex:
+        return latex
+    head, body = latex.split(marker, 1)
+    match = _DOCUMENTCLASS.search(head)
+    if not match:
+        return latex
+    head = f"{head[:match.end()]}\n{_EXTRACTABLE_PREAMBLE}{head[match.end():].lstrip(chr(10))}"
+    return f"{head.rstrip()}\n{marker}\n{_EXTRACTABLE_BODY}{body.lstrip(chr(10))}"
+
+
+_UNESCAPED_DOLLAR = re.compile(r"(?<!\\)\$")
+_PERCENT_AFTER_NUMBER = re.compile(r"(?<=\d)(\s?)(?<!\\)%")
+_PLAIN_WORDS = re.compile(r"[^\W\d_]{2,}\s+[^\W\d_]{2,}|\d\s+[^\W\d_]{2,}|[^\W\d_]{2,}\s+\d")
+
+
+def escape_text_specials(latex: str) -> str:
+    """
+    Escape % and $ that the LaTeX writer left in plain text, which compile without an error but
+    silently change the PDF: "by 30% in 2024" drops everything after "30" (a comment), and
+    "$38,000 to $24,000" is set as math, losing the dollar signs and the spaces between words.
+
+    Only the document body is touched, and only cases that are plainly text: a % right after a
+    number, and a pair of $ around ordinary words with no LaTeX command inside (real math such as
+    $0$--$4\\,^\\circ$C is kept).
+    """
+    marker = "\\begin{document}"
+    if not latex or marker not in latex:
+        return latex
+    head, body = latex.split(marker, 1)
+    lines = []
+    for line in body.split("\n"):
+        if line.lstrip().startswith("%"):
+            lines.append(line)
+            continue
+        line = _PERCENT_AFTER_NUMBER.sub(lambda m: f"{m.group(1)}\\%", line)
+        positions = [m.start() for m in _UNESCAPED_DOLLAR.finditer(line)]
+        escape = set()
+        for a, b in zip(positions[::2], positions[1::2]):
+            inside = line[a + 1:b]
+            if "\\" not in inside and "^" not in inside and "_" not in inside and _PLAIN_WORDS.search(inside):
+                escape.update((a, b))
+        if len(positions) % 2 and line[positions[-1] + 1:positions[-1] + 2].isdigit():
+            escape.add(positions[-1])  # a lone currency sign, e.g. "budget of $40,000"
+        for pos in sorted(escape, reverse=True):
+            line = line[:pos] + "\\" + line[pos:]
+        lines.append(line)
+    return head + marker + "\n".join(lines)

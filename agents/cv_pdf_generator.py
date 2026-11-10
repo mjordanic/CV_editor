@@ -17,7 +17,7 @@ from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-from agents.latex_fixer import LatexFixer
+from agents.latex_fixer import LatexFixer, ensure_text_extractable, escape_text_specials
 from config.config_loader import load_config
 
 logger = logging.getLogger(__name__)
@@ -202,6 +202,7 @@ class CVPDFGenerator:
                 - Number of LaTeX fix attempts performed
                 - Last LaTeX error log (if compilation ultimately failed), otherwise None
         """
+        latex_content = escape_text_specials(ensure_text_extractable(latex_content))
         # Create temporary LaTeX file
         tex_file = os.path.join(self.temp_folder, f"{output_name}.tex")
         tex_filename = f"{output_name}.tex"  # Relative filename for pdflatex

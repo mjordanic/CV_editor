@@ -140,6 +140,7 @@ class State(TypedDict, total=False):
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
     relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
     portfolio_text: str | None  # Full portfolio text (the critique checks drafts against it for unsupported claims)
+    work_preference: str | None  # The candidate's own remote / hybrid / on-site / no preference, only if they stated it
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
     cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
@@ -466,12 +467,13 @@ class MasterAgent:
         except Exception as e:
             logger.warning(f"Could not generate graph visualization: {e}")
 
-    def run(self):
+    def run(self, trace_dir: str | None = None):
         """
         Stream the LangGraph workflow until completion or user exit.
 
         Args:
-            None
+            trace_dir: If set, record the session there (every graph step, model call with prompt,
+                response, tokens and cost, and every question and reply); see provenance.py.
 
         Returns:
             None
@@ -480,7 +482,14 @@ class MasterAgent:
         
         # Use a thread_id to maintain state across invocations
         thread_id = "main-thread"
-        config = {"configurable": {"thread_id": thread_id}}
+        recorder = None
+        if trace_dir:
+            from provenance import RunRecorder
+            recorder = RunRecorder(trace_dir)
+            config = recorder.graph_config(thread_id)
+            logger.info(f"Recording the session to {trace_dir}")
+        else:
+            config = {"configurable": {"thread_id": thread_id}}
         logger.debug(f"Using thread_id: {thread_id}")
         
         # Initial state
@@ -523,6 +532,24 @@ class MasterAgent:
                
         # This is a simplified version of the streaming loop that handles interrupt() calls
         # It uses the invoke() method to run the graph and handle interrupt() calls
+        if recorder is not None:
+            from provenance import stream_turn
+            try:
+                interrupt_value = stream_turn(self.graph, stream_input, config, recorder)
+                while interrupt_value:
+                    logger.info(f"\n\n{interrupt_value.get('message') or 'Please provide your input:'}")
+                    logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+                    human_input = read_multiline_input()
+                    recorder.event("user_reply", text=human_input)
+                    interrupt_value = stream_turn(self.graph, Command(resume=human_input), config, recorder)
+            except Exception as e:
+                recorder.record_error("session", e)
+                raise
+            finally:
+                recorder.write_json("final_state.json", self.graph.get_state(config).values)
+                recorder.write_summary()
+            return
+
         result = self.graph.invoke(stream_input, config)
         while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
             interrupt_data = result["__interrupt__"]    
@@ -570,7 +597,12 @@ if __name__ == "__main__":
         action="store_true",
         help="also redraw images/graph_visualization.png (needs the optional 'graph' extra)",
     )
+    parser.add_argument(
+        "--trace-dir",
+        metavar="DIR",
+        help="record the session in DIR: every step, model call (prompt, response, tokens, cost) and reply",
+    )
     args = parser.parse_args()
 
     agent = MasterAgent(draw_graph=args.draw_graph)
-    agent.run()
+    agent.run(trace_dir=args.trace_dir)
