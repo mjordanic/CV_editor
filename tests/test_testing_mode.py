@@ -523,11 +523,11 @@ def test_every_matrix_case_resolves_to_tracked_fixture_files():
         assert paths["persona_truth"].parent.name.split("-")[0] == case["persona"]
 
 
-def test_all_ten_personas_and_six_ads_are_tracked():
+def test_all_eleven_personas_and_six_ads_are_tracked():
     from evals.cases import FIXTURES
     personas = sorted(p.name.split("-")[0] for p in (FIXTURES / "personas").iterdir() if p.is_dir())
     ads = sorted(p.name.split("-")[0] for p in (FIXTURES / "ads").iterdir() if p.is_dir())
-    assert personas == [f"p{i:02d}" for i in range(1, 11)]
+    assert personas == [f"p{i:02d}" for i in range(1, 12)]
     assert ads == [f"a{i}" for i in range(1, 7)]
     for persona in (FIXTURES / "personas").iterdir():
         assert json.loads((persona / "persona.json").read_text())["fictional"] is True

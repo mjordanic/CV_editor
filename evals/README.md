@@ -108,7 +108,7 @@ search fixtures are built from written company pages; four are anonymized rewrit
 kind of content of one recorded web search (careers page values, review-site snippets, company
 profile, remote or hybrid policy) with the company, people, numbers and URLs invented and the text
 written fresh. No real ad text, search output or URL is in the repository; URLs use the reserved
-`.example` domain. `fixtures/personas/` holds ten fully fictional candidates, each with `cv.txt`, `portfolio.txt`, `cover_letter.txt`
+`.example` domain. `fixtures/personas/` holds eleven fully fictional candidates, each with `cv.txt`, `portfolio.txt`, `cover_letter.txt`
 (an old letter for an earlier job), `notes.txt` (rough free-form notes) and `persona.json` (the
 grader's ground truth: true skills, deliberate gaps, facts that appear in only one file, traps a
 writer may fall into, and the ads it targets). Never give `persona.json` to the CV editor.
@@ -125,3 +125,4 @@ writer may fall into, and the ads it targets). Never give `persona.json` to the 
 | p08 Oskar | long, messy CV with duplicates and qualified skills | a6 (also a5) |
 | p09 Nadia | strong match, SRE / platform | a3 |
 | p10 Tobias | partial match: modelling strong, production and MLOps weak | a2 (also a1) |
+| p11 Tiago | cross-discipline career changer: mechanical test engineer with Python and MATLAB test-data scripts, no production software | a1 (also a5) |
