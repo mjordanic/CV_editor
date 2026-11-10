@@ -1,0 +1,33 @@
+PROJECT: Shipment Event Streaming Pipeline (Lukovac Freight Hub, 2023)
+- Designed and built a streaming pipeline for shipment tracking events from courier partners.
+- Kafka topics fed by partner webhooks; Kafka Connect sink to Snowflake via Snowpipe Streaming.
+- Around 30 million events per day, end-to-end latency under 2 minutes at p95.
+- Added dead-letter topic and replay tooling so failed events can be re-processed without data loss.
+- Technologies: Kafka, Kafka Connect, Snowflake, Python, Terraform, AWS MSK.
+
+PROJECT: dbt Migration of the Warehouse (Lukovac Freight Hub, 2022-2023)
+- Migrated ~300 stored procedures into dbt models with tests and documentation.
+- Introduced incremental models and slim CI (state:modified) in GitHub Actions.
+- Cut nightly warehouse build from 5h10 to 1h35 and made lineage visible to analysts.
+- Technologies: dbt, Snowflake, SQL, GitHub Actions.
+
+PROJECT: Change Data Capture from Postgres (Lukovac Freight Hub, 2024)
+- Replaced hourly full-table extracts of the orders database with CDC using Debezium into Kafka.
+- Reduced load on the production database (replica CPU from ~70% to ~25% during loads).
+- Technologies: Debezium, Kafka, PostgreSQL, Airflow, Snowflake.
+
+PROJECT: Transaction Reconciliation Engine (Kovalent Pay, 2020-2021)
+- PySpark batch jobs on EMR matching bank settlement files against internal ledgers.
+- Reduced manual reconciliation work of the finance team from ~3 days to ~4 hours per month-end.
+- Technologies: PySpark, AWS EMR, S3, Glue Data Catalog, Redshift, Great Expectations.
+
+PROJECT: Open-source contribution - small fixes to an Airflow provider package (2023)
+- Fixed pagination bug and added tests in a community Airflow provider for a SaaS CRM API (2 merged PRs).
+- Technologies: Python, Airflow, pytest.
+
+EXPERIENCE: Senior Data Engineer at Lukovac Freight Hub d.o.o. (2022-Present)
+- Owns ingestion and orchestration for the data platform (Airflow, Snowflake, dbt, Kafka).
+- Mentors two mid-level engineers and runs data platform office hours.
+
+EXPERIENCE: Data Engineer at Kovalent Pay (2019-2022)
+- PySpark on EMR, Redshift warehouse design, data quality with Great Expectations.

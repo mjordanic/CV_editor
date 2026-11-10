@@ -1,0 +1,117 @@
+{
+  "run_dir": "runs/p10_a2_cv_only_chatty_terra_r1",
+  "labels": {
+    "persona": "p10",
+    "ad": "a2",
+    "model": "openai:gpt-6.1-terra",
+    "rep": "1",
+    "input_set": "cv_only",
+    "case": "p10_a2_cv_only_chatty_terra",
+    "script": "chatty"
+  },
+  "inputs_given": [
+    "cv"
+  ],
+  "inputs_omitted": [
+    "portfolio",
+    "cover_letter",
+    "notes"
+  ],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1780
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a2-ml-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a2-ml-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "hi!! ok so I've been looking at this job for a while and honestly I think it could be a really good fit for me. my notice period at my current place is two months, so I could start after that. could you do the CV first? I hate long CVs so please keep it to two pages max, and then the cover letter after that. oh and I'm not great at formal writing so the letter should sound natural, not stiff. thanks so much",
+    "cover_letter": "this looks good I think! now the letter please - remember, natural tone, and you can mention that I can start after my two months' notice",
+    "exit": "perfect, that's everything, thank you so much, bye!",
+    "clarify_job_ad": "hmm that's all they wrote in the ad unfortunately, nothing more",
+    "missing_details": "oh I don't really want my phone number out there, so just leave the contact bits you don't have out, thanks",
+    "max_turns": 10,
+    "purpose": "A chatty, unstructured user who mixes requests, a new fact (two months' notice) and small talk in long messages.",
+    "correct_behaviour": "The app picks out the requests (CV of at most two pages, a natural, not stiff, cover letter) and the fact (available after two months' notice), uses the fact only where it fits (the cover letter), and invents nothing from the small talk.",
+    "expectations": [
+      {
+        "about": "first",
+        "expect": "follow",
+        "correct_behaviour": "The CV is at most two pages and is written first."
+      },
+      {
+        "about": "cover_letter",
+        "expect": "follow",
+        "correct_behaviour": "The cover letter has a natural, not stiff tone and may say the candidate can start after two months' notice; it states nothing else about availability."
+      },
+      {
+        "about": "missing_details",
+        "expect": "follow",
+        "correct_behaviour": "No contact details are invented and no placeholder is left."
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6.1-terra",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:54:10+00:00",
+  "status": "completed",
+  "minutes": 1.99,
+  "cv_drafts": 1,
+  "cover_letter_drafts": 1,
+  "cv_final_iteration": 1,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "on-site",
+    "location_limits": "Hamburg, Germany; office-first. The company says teams agree a few flexible days, but does not state a required number of office days. Relocation support is offered.",
+    "culture_signals": [
+      "Team ownership and autonomy",
+      "Pragmatism, humility and candid feedback",
+      "Share context openly",
+      "Team first",
+      "Learn from mistakes and improve together",
+      "Learning culture with training, peer feedback and internal tech talks"
+    ],
+    "notes": "The ad describes the role as office-first; the company pages say the office is the default and teams agree a few flexible days."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:56:10+00:00",
+  "cost_usd": 0.049509
+}

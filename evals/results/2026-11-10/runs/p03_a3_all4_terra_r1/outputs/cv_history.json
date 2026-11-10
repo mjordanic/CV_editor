@@ -1,0 +1,78 @@
+[
+  {
+    "iteration": 1,
+    "content": "MARTA KOWAL-BRANDT\nQA Automation Engineer | CI/CD and Infrastructure\nmarta.kowalbrandt@example.com | +48 555 303 303 | gitlab.com/mkb-example\n\nPROFESSIONAL SUMMARY\nQA automation engineer with experience owning CI/CD pipelines and test infrastructure for three product teams. Built ephemeral environments using GitLab CI, Docker, Helm and Kubernetes, and improved pipeline performance and test reliability. Personal infrastructure projects include Terraform, k3s, GitOps, monitoring and TLS certificate management. Seeking a DevOps or platform engineering role.\n\nTECHNICAL SKILLS\nCI/CD and containers: GitLab CI, Jenkins, Docker, Docker Compose, Helm, Kubernetes\nInfrastructure and cloud: Terraform, k3s, Argo CD, Ansible (basic), Hetzner VPS; AWS EC2 and S3 (learning basics)\nMonitoring: Prometheus, Grafana, Loki\nNetworking and certificates: Traefik ingress, cert-manager for TLS\nLanguages and systems: Python, Bash, SQL, Java (test code), Linux, Git, PostgreSQL\nTesting: pytest, pytest-xdist, Playwright, Selenium, Postman\n\nPROFESSIONAL EXPERIENCE\n\nQA Automation Engineer, Test Infrastructure | Odrava Health Software | 2021–Present\n- Own GitLab CI pipelines for three product teams of approximately 25 developers, covering builds, unit, integration and end-to-end tests, and artifact publishing.\n- Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests; monthly CI runner costs fell by approximately 30%.\n- Built merge-request environments for application review and end-to-end testing, initially with Docker Compose and later with Helm on a shared Kubernetes cluster. Environments include PostgreSQL and seeded data and are destroyed after merge or 48 hours of inactivity.\n- Write Helm charts and work with namespace-level access; the platform team operates the shared Kubernetes cluster.\n- Maintain a pytest and Playwright end-to-end suite of approximately 900 tests. Built Grafana dashboards using CI results stored in PostgreSQL, helping teams reduce the flaky-test rate from 7% to below 1%.\n- Developed Bash and Python tooling to seed PostgreSQL test data.\n- Wrote internal CI documentation used in onboarding and mentored two QA interns in 2023.\n\nQA Engineer | Brightmill Software House | 2019–2021\n- Tested web and mobile applications manually and with automation across client projects.\n- Introduced the first automated regression suite for the largest client project using Selenium and Java; configured Jenkins for nightly runs. Previously, a full regression required two people for three days.\n- Rewrote a small part of the API tests in Python as practice.\n\nCustomer Support Specialist, Second Line | Brightmill Software House | 2018–2019\n- Investigated customer issues using logs and databases and reproduced bugs for developers.\n\nPERSONAL INFRASTRUCTURE PROJECT\n\nHomelab k3s Cluster with GitOps | 2024–2025\n- Built a three-node Raspberry Pi 5 k3s cluster, deploying applications from a Git repository with Argo CD.\n- Used Prometheus, Grafana and Loki for monitoring, Traefik for ingress and cert-manager for TLS.\n- Provisioned infrastructure for a personal Hetzner VPS with Terraform; also used basic Ansible.\n\nEDUCATION AND CERTIFICATION\nBEng, Computer Engineering | Silesian Lowlands University of Technology | 2018\nISTQB Foundation Level | 2019\nCertified Kubernetes Administrator (CKA): studying; exam booked for January 2027\n\nLANGUAGES\nPolish: Native | English: C1 | German: A2",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "This is a strong, well-structured CV with clear progression from QA automation into CI/CD and infrastructure work. The Professional Summary is targeted, and the experience section uses credible quantified outcomes: pipeline time reduced from 38 to 14 minutes, runner costs reduced by approximately 30%, and flaky tests reduced from 7% to below 1%. The document is also appropriately transparent about Kubernetes access, AWS learning status, and the CKA certification not yet being completed. The main weakness is that the CV presents the candidate primarily as a QA automation engineer transitioning toward DevOps, while the role seeks an infrastructure engineer who can design and operate cloud-connected systems. Evidence of technical leadership, system design, security awareness, and stakeholder engagement is present but understated.",
+      "ats_compatibility_feedback": "The CV is ATS-friendly: it uses standard section headings, conventional bullet points, readable text, and relevant keywords including Terraform, Kubernetes, Helm, GitLab CI, Docker, TLS, Prometheus, Grafana, Linux, AWS, and PostgreSQL. It should parse reliably and has a good AI-screening probability for junior or transition-level DevOps roles. For this specific vacancy, screening may be weaker because the document does not contain Terragrunt, mutual TLS/mTLS, cloud environment design, systems architecture, stakeholder engagement, or technical leadership in sufficiently explicit terms. Do not add unsupported keywords merely to match the advert: the candidate's information does not support strong Terraform, Terragrunt, mTLS, or production AWS experience.",
+      "job_alignment_feedback": "The document shows meaningful hands-on infrastructure engineering through merge-request environments, Helm deployments, Docker, Kubernetes namespace work, CI/CD ownership, observability, and a Terraform-managed Hetzner project. It also shows analytical thinking and clear communication through measurable pipeline improvements, dashboards, documentation, and mentoring. However, the candidate's material indicates gaps against several core requirements: strong Terraform and Terragrunt, production AWS or another major cloud, mTLS, broader systems architecture, production operations/on-call, and IoT, automotive, or remote-device integration. The CV should better emphasize the closest truthful evidence: infrastructure design within test environments, certificate management with cert-manager, network ingress with Traefik, platform observability, and collaboration with QA, product, and platform teams. The candidate has a credible junior-to-mid DevOps/platform profile, but the role appears to seek a more independently experienced cloud infrastructure contractor.",
+      "improvement_instructions": "1. In the Professional Summary, replace the final sentence, \"Seeking a DevOps or platform engineering role,\" with a more role-aligned but truthful statement such as: \"Transitioning into DevOps and platform engineering, with hands-on experience designing CI/CD workflows, ephemeral Kubernetes environments, infrastructure tooling, observability, and TLS-enabled ingress.\" This presents the relevant infrastructure scope without claiming production cloud ownership.\n\n2. In the Professional Summary, explicitly mention the strongest collaboration and communication evidence. For example, add: \"Documented CI workflows for onboarding and mentored two QA interns.\" This supports the advert's communication and technical leadership requirements using evidence already present in the candidate information.\n\n3. In the Odrava Health Software experience, revise the merge-request environment bullet to make the infrastructure design and operation scope clearer: \"Designed and maintained merge-request environments for application review and end-to-end testing, first with Docker Compose and later with Helm on a shared Kubernetes cluster; configured PostgreSQL, seeded data, namespace-level access, automatic cleanup after merge or 48 hours of inactivity, and integration with GitLab CI.\" This is more directly aligned with infrastructure engineering and environment operation.\n\n4. In the Odrava Health Software section, add a separate collaboration clause to the ephemeral-environment bullet or add a new bullet: \"Enabled QA and product teams to review features before merge and run end-to-end tests against isolated environments.\" This brings the existing stakeholder-engagement evidence into the CV rather than leaving it implicit.\n\n5. In the Odrava Health Software section, strengthen the observability and reliability bullet by changing it to: \"Built Grafana dashboards from CI results stored in PostgreSQL and used flaky-test data to help product teams reduce the failure rate from 7% to below 1%.\" This more clearly demonstrates observability, analytical thinking, and cross-team influence.\n\n6. In the Personal Infrastructure Project section, expand the Terraform bullet to state its exact scope: \"Provisioned infrastructure for a personal Hetzner VPS with Terraform and used basic Ansible for configuration tasks.\" Do not describe this as strong cloud infrastructure or production cloud operations, because the original information limits it to a personal VPS.\n\n7. In the Technical Skills section, change \"Terraform\" to \"Terraform (personal infrastructure project)\" and change \"AWS EC2 and S3 (learning basics)\" to \"AWS EC2 and S3 (free-tier learning)\". This preserves ATS keywords while making the experience level unmistakable and avoiding overstatement.\n\n8. In the Technical Skills section, change \"cert-manager for TLS\" to \"cert-manager for SSL/TLS certificate management\" and retain \"Traefik ingress\". This uses the advert's terminology where supported, without claiming mutual TLS, which is not evidenced in the candidate information.\n\n9. Add a short \"Selected Infrastructure Projects\" subsection between Professional Experience and Education containing the existing Merge-Request Ephemeral Environments, CI Pipeline Speed-up, and Flaky Test Dashboard projects from the candidate portfolio. Include one concise bullet and a technologies line for each. These projects are currently represented only partially, so adding them would make the CV's infrastructure focus more visible to both ATS and human reviewers.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Built merge-request environments ... with Helm on a shared Kubernetes cluster; personal infrastructure projects include Terraform, k3s, GitOps, monitoring and TLS certificate management."
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "shown",
+          "quote": "cert-manager for TLS; work with namespace-level access; environments are destroyed after merge or 48 hours of inactivity."
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Own GitLab CI pipelines for three product teams ...; wrote internal CI documentation used in onboarding and mentored two QA interns."
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "Reduced average pipeline time from 38 to 14 minutes ...; built Grafana dashboards ... helping teams reduce the flaky-test rate from 7% to below 1%."
+        },
+        {
+          "requirement": "AWS preferred; other major clouds acceptable",
+          "status": "shown",
+          "quote": "AWS EC2 and S3 (learning basics)."
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

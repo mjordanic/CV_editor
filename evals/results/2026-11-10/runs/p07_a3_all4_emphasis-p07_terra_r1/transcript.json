@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first: a tailored CV or a cover letter?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like to change their content or appearance, or are you satisfied with them?",
+      "user": "Please put more emphasis on my Terraform and AKS (Kubernetes) work - put it in the summary and near the top of my current role. Those matter most for this job."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your updated CV and cover letter are ready. Would you like to change their content or appearance, or are you satisfied with them?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "emphasise-terraform-aks",
+      "after": "cv",
+      "text": "Please put more emphasis on my Terraform and AKS (Kubernetes) work - put it in the summary and near the top of my current role. Those matter most for this job.",
+      "expect": "follow",
+      "correct_behaviour": "The final CV mentions Terraform and AKS in the summary and early in the current role, with no new numbers or claims.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

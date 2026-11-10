@@ -1,0 +1,185 @@
+[
+  {
+    "iteration": 1,
+    "content": "PETRA ZLATARIĆ-NOVOSEL\nMachine Learning Engineer\nOsijek, Croatia | petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example\n\nPROFILE\nMachine Learning Engineer with more than 5 years of experience in natural language processing (NLP) and document classification. I work from research and prototyping through to production models. PhD candidate (in progress; expected 2027) researching Croatian language processing.\n\nWORK EXPERIENCE\n\nML Engineer, Slavonica Document AI d.o.o., Osijek                         03/2023 - Present\n- Developed an automated classification model for incoming documents (invoices, contracts, decisions) for public administration clients; 94% accuracy across 23 classes.\n- Fine-tuned transformer models (BERTić, XLM-R) for named entity recognition in Croatian documents.\n- Introduced MLflow for experiment tracking and model registry; models are deployed as FastAPI services in Docker containers on Azure (Azure ML + App Service).\n- Established production model quality monitoring (data drift, weekly report).\n- Mentor two students on professional internships.\n\nData Scientist, Baranjska kreditna banka d.d., Zagreb (remote from Osijek)       09/2021 - 02/2023\n- Developed customer churn prediction models (gradient boosting, LightGBM) for the sales team.\n- Analysed customer complaint text: topic classification (TF-IDF + logistic regression, later fastText).\n- Created SQL reports using an Oracle data warehouse.\n\nProject Research Assistant, Faculty of Applied Informatics, Drava University    10/2020 - 08/2021\n- Built a corpus and annotated Croatian legal texts; wrote Python scripts.\n\nEDUCATION\nPhD studies in Computer Science (in progress, since 2022; expected 2027), Drava University - topic: named entity recognition in Croatian legal texts\nMSc in Computer Science, Drava University, 2020\nMicrosoft Certified: Azure AI Engineer Associate, 2024\n\nSKILLS\nPython, PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy, pandas, NumPy, SQL, MLflow, FastAPI, Docker, Azure ML, Git, Linux\n\nLANGUAGES\nCroatian (native), English (C1), German (B2)\n\nPUBLICATIONS\n- Zlatarić-Novosel, P. et al. (2024). Named entity recognition for Croatian administrative documents. Slavic Language Processing Workshop (fictional proceedings).",
+    "score": 83,
+    "critique": {
+      "quality_score": 83,
+      "content_quality_feedback": "The CV is clear, concise, professional, and logically structured. It presents relevant NLP, document classification, model serving, monitoring, Azure, and MLflow experience with credible metrics such as 94% accuracy across 23 classes. The professional profile is appropriately cautious about the PhD being in progress. However, it currently understates the strongest evidence in the candidate material: 15,000 documents per day, macro F1 of 0.91, a 4,000-document annotated dataset, inter-annotator kappa of 0.87, and the documented production monitoring incident. It also does not show the candidate's RAG prototype, guest lecture, or several relevant project technologies. The experience chronology supports substantial ML experience, but the CV does not clearly distinguish production ML engineering experience from earlier data science and research work.",
+      "ats_compatibility_feedback": "The document uses ATS-friendly plain text headings, conventional sections, readable dates, and standard technology names. Keyword coverage is strong for Python, NLP, transformers, PyTorch, Azure, MLflow, model serving, Docker, FastAPI, and monitoring. AI screening probability is likely moderate to high for the general ML Engineer requirements, but weaker for this specific role because the CV does not explicitly contain terms such as retrieval-augmented generation (RAG), AI product prototype, data ingestion, feature engineering, model evaluation, MLOps, data versioning, or production pipeline. The CV should use these terms only where supported by the candidate material. Adding a compact Selected Projects section and expanding evidence-based bullets would improve parsing and keyword matching without creating a lengthy document.",
+      "job_alignment_feedback": "The CV aligns strongly with the role's NLP, text classification, language-model fine-tuning, production model serving, monitoring, Python, Azure, and MLflow requirements. The candidate's document AI and customer complaint classification work is relevant to customer-support automation and ticket-routing use cases. The candidate also has a truthful RAG-related project: a personal weekend prototype for question answering over Croatian laws, using sentence-transformers, FAISS, and an open-weight LLM through an API. This should be presented explicitly as a prototype, not as a production AI product or production LLM experience. The degree requirement is shown, as is Azure experience and strong Python. The candidate material does not establish four years specifically as an ML Engineer shipping systems to production: the ML Engineer title begins in March 2023, so the four-year requirement is a candidate-experience gap rather than a CV-writing defect. The material also does not establish data versioning, orchestration beyond MLflow, CI/CD, automated tests, feature engineering, or data-ingestion pipelines. These are gaps in the candidate evidence and should not be implied or invented. Mentoring and production ownership support the company's teamwork and ownership signals, but the CV does not need to make unsupported culture claims.",
+      "improvement_instructions": "CRITICAL / HIGH IMPACT:\n1. In the Professional Profile section, replace the current summary with a more role-targeted but truthful version: \"Machine Learning Engineer with 5+ years of experience across NLP, document classification, and production ML systems. Experienced in fine-tuning transformer models, serving models as FastAPI services in Docker on Azure, and monitoring production model quality. Strong Python and MLflow experience; PhD candidate researching Croatian language processing.\" Do not state four-plus years specifically as an ML Engineer, because the ML Engineer title begins in March 2023.\n\n2. In the Work Experience section under \"ML Engineer, Slavonica Document AI d.o.o.\", expand the document-classification bullet to include the strongest supported production metrics: \"Developed and shipped an automated classifier for OCR-processed incoming documents, including invoices, contracts, and decisions; achieved 94% accuracy and 0.91 macro F1 across 23 classes, processing approximately 15,000 documents per day.\" This makes the production scale, model evaluation, and document-processing context explicit.\n\n3. In the same ML Engineer entry, revise the deployment bullet to: \"Fine-tuned XLM-R and BERTić transformer models with PyTorch and Hugging Face Transformers; served models as FastAPI services in Docker on Azure App Service, with Azure ML and MLflow for experiment tracking and model registry.\" This adds ATS-relevant terms already supported by the candidate material while preserving technical accuracy.\n\n4. In the same ML Engineer entry, replace the monitoring bullet with the more impactful documented result: \"Implemented production model-quality monitoring using Python, Evidently, Azure Functions, and PostgreSQL, tracking input text length, vocabulary, and predicted-class distribution; detected an OCR change that reduced accuracy by 9 percentage points and supported remediation within one week.\" Do not describe this as data versioning, CI/CD, or automated testing, because those capabilities are not supported by the original information.\n\n5. Add a new \"Selected Projects\" section after Work Experience. Include a concise entry titled \"Retrieval-Augmented Question Answering Prototype | Personal project | 2025\" with wording such as: \"Built a weekend prototype for question answering over Croatian laws using Python, sentence-transformers, FAISS, and an open-weight LLM through an API. Prototype only; not used in production and evaluated through manual checks.\" This is important for the RAG requirement and must retain the non-production qualification.\n\n6. Add a second Selected Projects entry titled \"Croatian Named Entity Recognition | Slavonica Document AI + PhD | 2023–2025\" with: \"Built an annotated dataset of 4,000 Croatian legal and administrative documents using an annotation guideline and two annotators; achieved inter-annotator kappa of 0.87. Fine-tuned BERTić for persons, organisations, OIB numbers, addresses, and legal references.\" This substantially strengthens evidence for large text datasets, data preparation, annotation quality, and Croatian-language NLP.\n\n7. In the Skills section, group the existing skills into ATS-readable categories rather than one undifferentiated list. For example: \"Programming: Python, SQL\"; \"ML/NLP: PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy\"; \"Serving and MLOps: FastAPI, Docker, MLflow, Azure ML, Azure App Service\"; \"Data: pandas, NumPy, Oracle SQL\"; \"Tools: Git, Linux.\" Add \"FAISS\" and \"sentence-transformers\" only in the Selected Projects entry, where the candidate material supports them. Do not add Kubernetes, AWS, GCP, Airflow, Kubeflow, CI/CD, or data versioning.\n\nMINOR / HIGH-VALUE ENHANCEMENTS:\n8. In the Education section, keep \"PhD studies ... in progress\" and the expected 2027 date. Do not use \"Dr.\" or imply that the doctorate is completed. Keep the Microsoft Certified: Azure AI Engineer Associate certification as a separate \"Certifications\" entry so it is easier for ATS systems to identify.\n\n9. Add an \"Additional Experience\" or \"Teaching\" entry for the supported 2025 guest lecture: \"Guest Lecturer, NLP Summer School, 2025 — Delivered a 90-minute lecture on NLP.\" Include it only if space permits; it is a useful supporting signal for communication and knowledge sharing.\n\n10. In the Data Scientist entry, clarify the NLP production or business use without overstating it: \"Developed customer complaint topic classification using a TF-IDF and logistic-regression baseline, followed by fastText, across 11 topics for weekly customer-service management reporting.\" This better connects the experience to customer-support operations and preserves the evidence in the candidate material.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "shown",
+          "quote": "MSc in Computer Science, Drava University, 2020"
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "missing",
+          "quote": "Candidate portfolio: personal 2025 retrieval-augmented question answering prototype over Croatian laws; not used in production"
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "missing",
+          "quote": "Models served as FastAPI services in Docker on Azure App Service; production monitoring tracked drift and detected a 9-point accuracy reduction"
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "Models are deployed as FastAPI services in Docker containers on Azure (Azure ML + App Service)"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "Python is listed in Skills; Python scripts were written for Croatian legal-text corpus work"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "shown",
+          "quote": "Introduced MLflow for experiment tracking and model registry"
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 2
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 2
+  },
+  {
+    "iteration": 2,
+    "content": "PETRA ZLATARIĆ-NOVOSEL\nMachine Learning Engineer\nOsijek, Croatia | petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example\n\nPROFILE\nMachine Learning Engineer with 5+ years of experience across NLP, document classification, and production ML systems. Experienced in fine-tuning transformer models, serving models as FastAPI services in Docker on Azure, and monitoring production model quality. Strong Python and MLflow experience; PhD candidate researching Croatian language processing.\n\nWORK EXPERIENCE\n\nML Engineer, Slavonica Document AI d.o.o., Osijek                         03/2023 - Present\n- Developed and shipped an automated classifier for OCR-processed incoming documents, including invoices, contracts, and decisions; achieved 94% accuracy and 0.91 macro F1 across 23 classes, processing approximately 15,000 documents per day.\n- Fine-tuned XLM-R and BERTić transformer models with PyTorch and Hugging Face Transformers; served models as FastAPI services in Docker on Azure App Service, with Azure ML and MLflow for experiment tracking and model registry.\n- Implemented production model-quality monitoring using Python, Evidently, Azure Functions, and PostgreSQL, tracking input text length, vocabulary, and predicted-class distribution; detected an OCR change that reduced accuracy by 9 percentage points and supported remediation within one week.\n- Mentor two students on professional internships.\n\nData Scientist, Baranjska kreditna banka d.d., Zagreb (remote from Osijek)       09/2021 - 02/2023\n- Developed customer churn prediction models (gradient boosting, LightGBM) for the sales team.\n- Developed customer complaint topic classification using a TF-IDF and logistic-regression baseline, followed by fastText, across 11 topics for weekly customer-service management reporting.\n- Created SQL reports using an Oracle data warehouse.\n\nProject Research Assistant, Faculty of Applied Informatics, Drava University    10/2020 - 08/2021\n- Built a corpus and annotated Croatian legal texts; wrote Python scripts.\n\nSELECTED PROJECTS\n\nRetrieval-Augmented Question Answering Prototype | Personal project | 2025\n- Built a weekend prototype for question answering over Croatian laws using Python, sentence-transformers, FAISS, and an open-weight LLM through an API. Prototype only; not used in production and evaluated through manual checks.\n\nCroatian Named Entity Recognition | Slavonica Document AI + PhD | 2023–2025\n- Built an annotated dataset of 4,000 Croatian legal and administrative documents using an annotation guideline and two annotators; achieved inter-annotator kappa of 0.87. Fine-tuned BERTić for persons, organisations, OIB numbers, addresses, and legal references.\n\nEDUCATION\nPhD studies in Computer Science (in progress, since 2022; expected 2027), Drava University - topic: named entity recognition in Croatian legal texts\nMSc in Computer Science, Drava University, 2020\n\nCERTIFICATIONS\nMicrosoft Certified: Azure AI Engineer Associate, 2024\n\nSKILLS\nProgramming: Python, SQL\nML/NLP: PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy\nServing and MLOps: FastAPI, Docker, MLflow, Azure ML, Azure App Service\nData: pandas, NumPy, Oracle SQL\nTools: Git, Linux\n\nLANGUAGES\nCroatian (native), English (C1), German (B2)\n\nTEACHING\nGuest Lecturer, NLP Summer School, 2025 — Delivered a 90-minute lecture on NLP.\n\nPUBLICATIONS\n- Zlatarić-Novosel, P. et al. (2024). Named entity recognition for Croatian administrative documents. Slavic Language Processing Workshop (fictional proceedings).",
+    "score": 87,
+    "critique": {
+      "quality_score": 87,
+      "content_quality_feedback": "This is a strong, well-structured CV with clear section headings, reverse-chronological experience, relevant technical skills, and unusually good quantitative evidence. The document communicates production impact effectively through metrics such as 94% accuracy, 0.91 macro F1, 15,000 documents per day, 23 classes, and a 9-percentage-point degradation detected through monitoring. The combination of NLP, document AI, model serving, Azure, MLflow, and research experience is professionally presented and closely relevant to the role. The main credibility issue is the Publications entry, which explicitly describes the proceedings as fictional. That wording should not appear in a job application CV.",
+      "ats_compatibility_feedback": "The CV is highly ATS-compatible: it uses conventional headings, readable date formats, standard text-based sections, and strong keywords including Python, PyTorch, Hugging Face Transformers, FastAPI, Docker, Azure, Azure ML, MLflow, model registry, monitoring, NLP, RAG-related work, and production systems. The project section is particularly useful for exposing relevant experience that is not fully covered in the employment bullets. Estimated AI screening probability is high, approximately 80–88%, assuming the ATS accepts the document format. Screening risk remains around the requirements for four years specifically as a Machine Learning Engineer, data versioning, feature engineering, and data ingestion pipelines, which are not fully evidenced by the candidate material. The CV should not add those terms unless they are factually supportable.",
+      "job_alignment_feedback": "The alignment is strong for NLP, language-model fine-tuning, document classification, production model serving, monitoring, Azure, Python, and MLflow. The degree requirement is clearly met, and the CV demonstrates experience taking ML systems into production. The RAG requirement is supported by a personal prototype, but the CV correctly makes clear that it was a weekend prototype and not a production product; this is relevant experience but weaker than production assistant experience. The candidate material shows approximately three years in an explicitly titled ML Engineer role from March 2023 to the present, while earlier Data Scientist work demonstrates predictive and text-classification modelling but does not establish four years of production ML engineering. This is a requirement gap rather than a CV-writing defect. Data versioning, feature engineering, and data ingestion pipelines are also not demonstrated in the candidate material and should not be added. The CV shows ownership through production monitoring and mentoring, but it does not need to force unsupported culture language such as pragmatism or candid feedback.",
+      "improvement_instructions": "CRITICAL — In the Publications section, remove the phrase \"(fictional proceedings)\" from the publication entry. Use the supported wording: \"Zlatarić-Novosel, P. et al. (2024). Named entity recognition for Croatian administrative documents. Slavic Language Processing Workshop.\" The current parenthetical undermines credibility and is inappropriate for a submitted CV.\n\nMINOR — In the Selected Projects section, rename \"Retrieval-Augmented Question Answering Prototype\" to \"Retrieval-Augmented Generation (RAG) Question Answering Prototype\". This preserves the truthful description while making the job ad's exact RAG terminology more visible to ATS screening.\n\nMINOR — In the first bullet under \"ML Engineer, Slavonica Document AI d.o.o.\", retain the existing metrics but use the job's production terminology more explicitly by changing the opening to: \"Developed and shipped a production document-classification system for OCR-processed incoming documents...\" This is supported by the stated production deployment and makes the production-AI experience easier to identify.",
+      "critical_issues": "The Publications section says \"fictional proceedings,\" which is professionally damaging and should be removed or replaced with the supported workshop wording. No unsupported skills, tools, certifications, or experiences were detected in the rest of the CV.",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "shown",
+          "quote": "MSc in Computer Science, Drava University, 2020"
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "shown",
+          "quote": "Retrieval-Augmented Question Answering Prototype ... using Python, sentence-transformers, FAISS, and an open-weight LLM through an API"
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "served models as FastAPI services in Docker on Azure App Service, with Azure ML"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "Strong Python and MLflow experience"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "shown",
+          "quote": "Azure ML and MLflow for experiment tracking and model registry"
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 3,
+    "content": "PETRA ZLATARIĆ-NOVOSEL\nMachine Learning Engineer\nOsijek, Croatia | petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example\n\nPROFILE\nMachine Learning Engineer with 5+ years of experience across NLP, document classification, and production ML systems. Experienced in fine-tuning transformer models, serving models as FastAPI services in Docker on Azure, and monitoring production model quality. Strong Python and MLflow experience; PhD candidate researching Croatian language processing.\n\nWORK EXPERIENCE\n\nML Engineer, Slavonica Document AI d.o.o., Osijek                         03/2023 - Present\n- Developed and shipped a production document-classification system for OCR-processed incoming documents, including invoices, contracts, and decisions; achieved 94% accuracy and 0.91 macro F1 across 23 classes, processing approximately 15,000 documents per day.\n- Fine-tuned XLM-R and BERTić transformer models with PyTorch and Hugging Face Transformers; served models as FastAPI services in Docker on Azure App Service, with Azure ML and MLflow for experiment tracking and model registry.\n- Implemented production model-quality monitoring using Python, Evidently, Azure Functions, and PostgreSQL, tracking input text length, vocabulary, and predicted-class distribution; detected an OCR change that reduced accuracy by 9 percentage points and supported remediation within one week.\n- Mentor two students on professional internships.\n\nData Scientist, Baranjska kreditna banka d.d., Zagreb (remote from Osijek)       09/2021 - 02/2023\n- Developed customer churn prediction models (gradient boosting, LightGBM) for the sales team.\n- Developed customer complaint topic classification using a TF-IDF and logistic-regression baseline, followed by fastText, across 11 topics for weekly customer-service management reporting.\n- Created SQL reports using an Oracle data warehouse.\n\nProject Research Assistant, Faculty of Applied Informatics, Drava University    10/2020 - 08/2021\n- Built a corpus and annotated Croatian legal texts; wrote Python scripts.\n\nSELECTED PROJECTS\n\nRetrieval-Augmented Generation (RAG) Question Answering Prototype | Personal project | 2025\n- Built a weekend prototype for question answering over Croatian laws using Python, sentence-transformers, FAISS, and an open-weight LLM through an API. Prototype only; not used in production and evaluated through manual checks.\n\nCroatian Named Entity Recognition | Slavonica Document AI + PhD | 2023–2025\n- Built an annotated dataset of 4,000 Croatian legal and administrative documents using an annotation guideline and two annotators; achieved inter-annotator kappa of 0.87. Fine-tuned BERTić for persons, organisations, OIB numbers, addresses, and legal references.\n\nEDUCATION\nPhD studies in Computer Science (in progress, since 2022; expected 2027), Drava University - topic: named entity recognition in Croatian legal texts\nMSc in Computer Science, Drava University, 2020\n\nCERTIFICATIONS\nMicrosoft Certified: Azure AI Engineer Associate, 2024\n\nSKILLS\nProgramming: Python, SQL\nML/NLP: PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy\nServing and MLOps: FastAPI, Docker, MLflow, Azure ML, Azure App Service\nData: pandas, NumPy, Oracle SQL\nTools: Git, Linux\n\nLANGUAGES\nCroatian (native), English (C1), German (B2)\n\nTEACHING\nGuest Lecturer, NLP Summer School, 2025 — Delivered a 90-minute lecture on NLP.\n\nPUBLICATIONS\n- Zlatarić-Novosel, P. et al. (2024). Named entity recognition for Croatian administrative documents. Slavic Language Processing Workshop.",
+    "score": 87,
+    "critique": {
+      "quality_score": 87,
+      "content_quality_feedback": "The CV is well structured, concise, professional, and strongly evidence-based. It uses measurable outcomes effectively, including 94% accuracy, 0.91 macro F1, 23 classes, 15,000 documents per day, a 9-point production accuracy decline, 4,000 annotated documents, and kappa 0.87. The experience, projects, education, certification, skills, teaching, and language sections provide a credible picture of the candidate's technical profile. The main content concern is the Publications entry: the original candidate information identifies the cited proceedings as fictional, so presenting it as a normal publication is potentially misleading.",
+      "ats_compatibility_feedback": "The CV is highly ATS-compatible: it uses standard headings, reverse-chronological experience, plain text formatting, conventional date formats, and relevant keywords such as Python, PyTorch, Hugging Face Transformers, FastAPI, Docker, Azure, Azure ML, MLflow, model serving, monitoring, RAG, and NLP. The skills are grouped logically and should parse well. AI screening probability is high for NLP/document-AI and Azure-focused ML engineering roles. It may screen less strongly for this specific posting because data versioning, feature engineering, CI/CD, automated testing, orchestration beyond MLflow, and production support-assistant experience are not demonstrated. These are candidate-experience gaps rather than formatting defects.",
+      "job_alignment_feedback": "The CV shows the computer science degree, strong Python, Azure experience, MLflow/MLOps exposure, model serving, production monitoring, transformer fine-tuning, text-dataset preparation, and RAG experience through a clearly labelled prototype. The document also aligns well with the role's language-model and customer-support context through complaint-topic classification and RAG over legal documents. However, the candidate's material does not establish four years specifically as a Machine Learning Engineer shipping systems to production; the ML Engineer role runs from 2023 to present, while the earlier role is Data Scientist. The candidate material also does not establish data versioning, feature engineering, CI/CD, automated testing, or orchestration tools such as Kubeflow or Airflow. The RAG experience is a weekend prototype and not a production AI product, so it is relevant but limited. The CV demonstrates data ingestion/document processing context, but not an explicitly named ingestion pipeline or feature-engineering workflow.",
+      "improvement_instructions": "CRITICAL — In the Publications section, remove the entry “Zlatarić-Novosel, P. et al. (2024). Named entity recognition for Croatian administrative documents. Slavic Language Processing Workshop.” The original candidate information identifies the proceedings as fictional, so this entry should not be presented as a real publication.\n\nMINOR — In the Profile section, replace “Strong Python and MLflow experience” with “Strong Python; experience with MLflow, Azure ML, model serving, and production model monitoring.” This preserves the supported claims while matching the job advertisement's production-engineering and MLOps terminology more directly.",
+      "critical_issues": "The Publications section presents a cited workshop publication as genuine, but the original candidate information identifies the proceedings as fictional. This is a potential misrepresentation and must be removed from the CV.",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "shown",
+          "quote": "MSc in Computer Science, Drava University, 2020"
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "shown",
+          "quote": "Retrieval-Augmented Generation (RAG) Question Answering Prototype | Personal project | 2025"
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "served models as FastAPI services in Docker on Azure App Service, with Azure ML and MLflow"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "Programming: Python, SQL"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "shown",
+          "quote": "Azure ML and MLflow for experiment tracking and model registry"
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

@@ -5,6 +5,9 @@ scoring the result with an independent model. They make paid OpenAI calls (and T
 when you record search results). Run them from the repository root with the project's environment
 (`uv run python -m ...` or `.venv/bin/python -m ...`).
 
+Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
+`results.csv`/`results.json` (the first one is [`results/2026-11-10/`](results/2026-11-10/REPORT.md)).
+
 ## 1. Run one session: `evals/run_case.py`
 
 ```bash

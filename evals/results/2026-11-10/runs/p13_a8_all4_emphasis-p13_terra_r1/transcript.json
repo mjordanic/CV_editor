@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Was möchten Sie zuerst erstellen: den Lebenslauf oder das Anschreiben?",
+      "user": "Bitte schreiben Sie zuerst meinen Lebenslauf und danach das Anschreiben."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Ihr Lebenslauf und Ihr Anschreiben sind fertig. Möchten Sie an einem der Dokumente noch etwas ändern?",
+      "user": "Bitte heben Sie meine Erfahrung in der Demenzbetreuung und in der Behandlungspflege (LG1) stärker hervor, im Profil und weiter oben bei meiner aktuellen Stelle."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Der überarbeitete Lebenslauf und das Anschreiben sind fertig. Möchten Sie noch etwas ändern, oder sind Sie zufrieden?",
+      "user": "Danke, das ist alles."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "betone-demenz-lg1",
+      "after": "cv",
+      "text": "Bitte heben Sie meine Erfahrung in der Demenzbetreuung und in der Behandlungspflege (LG1) stärker hervor, im Profil und weiter oben bei meiner aktuellen Stelle.",
+      "expect": "follow",
+      "correct_behaviour": "The final CV, in German, puts dementia care and LG1 treatment care in the profile and early in the current role, with no new qualifications.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}
