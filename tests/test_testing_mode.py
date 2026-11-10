@@ -203,3 +203,24 @@ def test_evaluator_input_is_blind_and_has_only_given_inputs(tmp_path):
     ev = {"claims": [{"document": "cv", "verdict": "unsupported"}], "omissions": [],
           "fit": {"requirements": [{"priority": "must_have", "shown_in_cv": "yes", "gap_handling": "not_a_gap"}]}}
     assert counts(ev)["cv_unsupported"] == 1 and counts(ev)["must_haves_shown"] == 1
+
+
+@pytest.mark.parametrize("line,expected", [
+    # found in evaluation runs: the rest of the line vanished, or the amounts became math
+    ("by approximately 30%. In personal projects, I built", "by approximately 30\\%. In personal projects, I built"),
+    ("bei höchstens 28 %. HACCP-Dokumentation", "bei höchstens 28 \\%. HACCP-Dokumentation"),
+    ("from approximately $38,000 to $24,000 per month", "from approximately \\$38,000 to \\$24,000 per month"),
+    ("a budget of $40,000.", "a budget of \\$40,000."),
+    # left alone: already escaped, real math, comments
+    ("cut costs by 30\\% and $5$", "cut costs by 30\\% and $5$"),
+    ("cold room ($0$--$4\\,^\\circ\\mathrm{C}$) checks", "cold room ($0$--$4\\,^\\circ\\mathrm{C}$) checks"),
+    ("Python $\\cdot$ SQL $\\cdot$ dbt", "Python $\\cdot$ SQL $\\cdot$ dbt"),
+    ("\\cvheader{A}{B}{C}{D}% layout comment", "\\cvheader{A}{B}{C}{D}% layout comment"),
+])
+def test_plain_text_percent_and_dollar_are_escaped(line, expected):
+    from agents.latex_fixer import escape_text_specials
+    doc = "\\documentclass{article}\n% 30% in the preamble stays\n\\begin{document}\n" + line + "\n\\end{document}"
+    out = escape_text_specials(doc)
+    assert out.split("\\begin{document}\n", 1)[1].split("\n")[0] == expected
+    assert "% 30% in the preamble stays" in out
+    assert escape_text_specials(out) == out
