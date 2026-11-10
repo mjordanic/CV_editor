@@ -3,7 +3,7 @@
 This report covers one evaluation round of the CV editor, an agent that reads a job ad and a
 candidate's material and writes a tailored CV and cover letter (text and PDF). A scripted user ran
 110 sessions with fictional candidates against anonymized job ads, and an independent model graded
-each session. All inputs, every model call, every draft and every grade are in this folder.
+each session. All inputs, every draft, every conversation and every grade are in this folder.
 
 ## Data and dating
 
@@ -289,15 +289,16 @@ practice and an unfinished data-engineering course, applying for a *senior* data
 | `results.csv`, `results.json` | one row per session: labels, cost, minutes, redrafts, claims flagged (first draft, all drafts, final), notices, every evaluator score and count, the evaluator's summary |
 | `ledger.tsv` | every cost as it was spent (session `app`, evaluation `eval`) |
 | `repeats_summary.json`, `sessions_summary.json` | output of `python -m evals.summarize`: per-case mean and spread, redraft totals and request outcomes per script |
-| `runs/<run_id>/` | per session: `manifest.json` (inputs given and omitted, model, status, cost), `config.json`, `transcript.json`, `summary.json`, `inputs/`, `outputs/` (final CV and letter as text and PDF, every draft with its critique and invented-claims result), and `evaluation/eval1/` (prompt, raw response, grade, page images, model call) |
-| `runs/<run_id>/events.jsonl.gz`, `llm_calls.jsonl.gz`, `evaluation/eval1/llm_calls.jsonl.gz` | the full traces: every graph step and every model call with prompt, response, tokens and cost, gzipped (about 109 MB uncompressed) |
+| `runs/<run_id>/` | per session: `manifest.json` (inputs given and omitted, model, status, cost), `config.json`, `transcript.json`, `summary.json`, `inputs/`, `outputs/` (final CV and letter as text and PDF, every draft with its critique and invented-claims result), and `evaluation/eval1/` (the evaluator's prompt, raw response, grade and page images) |
 
 The app's own working folder (`workspace/`, which repeats the outputs and holds LaTeX build files)
-is left out. Local paths in the records are rewritten as repository-relative paths (`runs/...`,
-`evals/...`).
+is left out. The full traces (`events.jsonl` with every graph step and `llm_calls.jsonl` with every
+model call, its prompt, response, tokens and cost) are kept outside the repository and are not
+published; `summary.json` gives each session's tokens and cost per model and per node. Local paths
+in the records are rewritten as repository-relative paths (`runs/...`, `evals/...`).
 
-**Publication check.** Before publishing, the whole tree, including the decompressed traces and
-the PDF streams, was searched. It contains:
+**Publication check.** Before publishing, the whole tree, including the PDF streams, was
+searched. It contains:
 
 - no API keys or key-shaped strings, and none of the environment's secret values;
 - no absolute local paths or user names;
