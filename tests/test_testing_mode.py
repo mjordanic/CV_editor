@@ -344,11 +344,54 @@ def test_work_context_lines_never_assume_a_preference():
     text = describe(info, None)
     assert "Work arrangement (from the ad and company pages): hybrid" in text
     assert "Culture signals: not stated" in text
-    assert "preference: not given. Do not state any preference" in text
+    assert "preference: not given. Treat the candidate as open to this job's arrangement" in text
     assert "Preference conflict" not in describe(info, "hybrid")
     assert "Preference conflict" in describe(info, "remote")
     assert preference_conflict("no preference", "on-site") is None
     assert preference_conflict("remote", "not stated") is None
+
+
+@pytest.mark.parametrize("preference", [None, "no preference"])
+@pytest.mark.parametrize("arrangement", ["remote", "hybrid", "on-site", "not stated"])
+def test_without_a_stated_preference_the_default_is_inclusive(preference, arrangement):
+    from agents.work_context import describe, preference_conflict
+    info = {"work_context": {"arrangement": arrangement, "location_limits": "Kraków office", "culture_signals": []}}
+    text = describe(info, preference)
+    # open to every arrangement, relocation included; never flagged as a conflict or weakness
+    assert "open to this job's arrangement (remote, hybrid, on-site or relocation)" in text
+    assert "Never present the arrangement or location as a conflict, gap or weakness" in text
+    assert "never narrow the candidate's options" in text
+    assert "Preference conflict" not in text and preference_conflict(preference, arrangement) is None
+    # honest: no specific commitment the candidate did not make; neutral open wording allowed
+    assert "Do not invent a specific commitment" in text and "willing to relocate to <place>" in text
+    assert "neutral, open wording" in text
+
+
+def test_the_inclusive_default_reaches_every_prompt_even_without_company_research():
+    from agents import cover_letter_writer, cv_writer, router
+    from agents.work_context import with_preference
+    info = with_preference(None, None)
+    assert info == {"work_preference": None}
+    for formatter in (cv_writer.CVWriterAgent._format_company_info, cover_letter_writer.CoverLetterWriterAgent._format_company_info,
+                      critique.CritiqueAgent._format_company_info, router.RouterAgent._format_company_info):
+        assert "Treat the candidate as open to this job's arrangement" in formatter(None, info)
+    assert "never raise the arrangement, location or relocation as a problem" in router.ROUTER_SYSTEM_PROMPT
+
+
+def test_a_stated_preference_replaces_the_open_default():
+    from agents.work_context import describe
+    info = {"work_context": {"arrangement": "on-site", "location_limits": "not stated", "culture_signals": []}}
+    text = describe(info, "remote")
+    assert "Treat the candidate as open" not in text
+    assert "Candidate's own work-arrangement preference (stated by the candidate): remote" in text
+    assert "Preference conflict" in text
+
+
+def test_evaluator_treats_a_missing_preference_as_open():
+    from evals.evaluate import SYSTEM_PROMPT, WorkArrangement
+    assert "candidate counts as open to the job's arrangement" in SYSTEM_PROMPT
+    allowed = WorkArrangement.model_fields["preference_handling"].annotation.__args__
+    assert {"not_given_and_kept_open", "not_given_but_narrowed", "not_given_but_stated"} <= set(allowed)
 
 
 def _search_agent(monkeypatch, llm, tmp_path):
@@ -403,3 +446,75 @@ def test_router_keeps_a_preference_only_when_the_user_states_it(monkeypatch):
     assert agent.run(state)["work_preference"] == "remote"
     replies.append(router_module.RouterResponse(next_action="draft_cv", message_to_user="", needs_user_input=False))
     assert "work_preference" not in agent.run(state)
+
+
+# --- tracked fixtures and the evaluation matrix ------------------------------------------------
+def _tracked_files() -> set[Path]:
+    import subprocess
+    out = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "evals"],
+                         cwd=REPO, capture_output=True, text=True, check=True).stdout
+    return {(REPO / p).resolve() for p in out.split("\0") if p}
+
+
+def test_every_matrix_case_resolves_to_tracked_fixture_files():
+    from evals.cases import load_matrix, resolve_case
+    tracked = _tracked_files()
+    cases = load_matrix()
+    assert cases and len({c["id"] for c in cases}) == len(cases)
+    for case in cases:
+        paths = resolve_case(case)
+        files = [paths["job_ad"], paths["search_fixture"], paths["persona_truth"], *paths["inputs"].values()]
+        assert paths["inputs"], case["id"]
+        for f in files:
+            assert f.resolve().is_relative_to((REPO / "evals" / "fixtures").resolve()), (case["id"], f)
+            assert f.resolve() in tracked, f"{case['id']}: {f} is not tracked (or ignored)"
+            assert f.read_text(encoding="utf-8").strip(), f"{case['id']}: {f} is empty"
+        # the ids the case uses match the folders it resolves to
+        assert paths["job_ad"].parent.name.split("-")[0] == case["ad"]
+        assert paths["persona_truth"].parent.name.split("-")[0] == case["persona"]
+
+
+def test_all_ten_personas_and_six_ads_are_tracked():
+    from evals.cases import FIXTURES
+    personas = sorted(p.name.split("-")[0] for p in (FIXTURES / "personas").iterdir() if p.is_dir())
+    ads = sorted(p.name.split("-")[0] for p in (FIXTURES / "ads").iterdir() if p.is_dir())
+    assert personas == [f"p{i:02d}" for i in range(1, 11)]
+    assert ads == [f"a{i}" for i in range(1, 7)]
+    for persona in (FIXTURES / "personas").iterdir():
+        assert json.loads((persona / "persona.json").read_text())["fictional"] is True
+
+
+def test_search_fixtures_have_the_recorded_shape_and_no_real_urls():
+    import re
+    from urllib.parse import urlparse
+    from evals.cases import FIXTURES
+    for fixture_file in sorted((FIXTURES / "ads").glob("*/search_fixture.json")):
+        fixture = json.loads(fixture_file.read_text(encoding="utf-8"))
+        assert fixture["fixture_version"] == 1 and fixture["company"]
+        response = fixture["searches"][0]["response"]
+        assert response["results"], fixture_file
+        for result in response["results"]:
+            assert result["content"].strip() and "url" in result and "title" in result
+            host = urlparse(result["url"] if "://" in result["url"] else "https://" + result["url"]).hostname or ""
+            # reserved test domains only: nothing points at a real site
+            assert re.search(r"\.(example|invalid)$", host), (fixture_file.parent.name, result["url"])
+
+
+def test_run_case_resolves_inputs_from_fixture_ids(tmp_path):
+    from argparse import Namespace
+    from evals import run_case
+    from evals.cases import find_ad, find_persona
+    args = Namespace(ad="a3", persona="p07", inputs="cv_only", job_ad=None, search_fixture=None, record_search=None,
+                     no_search=False, cv=None, portfolio=None, cover_letter=None, notes=None)
+    run_case.apply_fixture_defaults(args)
+    assert args.job_ad == str(find_ad("a3") / "ad.md")
+    assert args.search_fixture == str(find_ad("a3") / "search_fixture.json")
+    assert args.cv == str(find_persona("p07") / "cv.txt") and args.notes is None and args.portfolio is None
+
+    explicit = Namespace(**{**vars(args), "cv": None, "inputs": "cv,notes", "no_search": True, "search_fixture": None,
+                            "notes": str(tmp_path / "my_notes.txt")})
+    run_case.apply_fixture_defaults(explicit)
+    assert explicit.search_fixture is None  # --no-search wins over the ad's fixture
+    assert explicit.notes == str(tmp_path / "my_notes.txt")  # an explicit file wins over the persona's
+    with pytest.raises(ValueError):
+        run_case.apply_fixture_defaults(Namespace(**{**vars(args), "ad": None, "job_ad": None}))

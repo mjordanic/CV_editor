@@ -138,8 +138,12 @@ class WorkArrangement(BaseModel):
         description="Quotes that state an arrangement, location limit, culture trait or candidate preference that the "
                     "sources or the candidate's stated preference do not support, or that contradict them")
     culture_used: list[str] = Field(description="Culture or values from the company information that the cover letter uses")
-    preference_handling: Literal["not_given_and_not_stated", "not_given_but_stated", "given_and_used_honestly",
-                                 "given_but_misstated", "given_and_not_mentioned"]
+    preference_handling: Literal["not_given_and_kept_open", "not_given_but_stated", "not_given_but_narrowed",
+                                 "given_and_used_honestly", "given_but_misstated", "given_and_not_mentioned"] = Field(
+        description="not_given_and_kept_open: no preference given, and the outputs say nothing about it or use only "
+                    "neutral, open wording; not_given_but_stated: a specific preference or commitment was invented; "
+                    "not_given_but_narrowed: the outputs present the job's arrangement or location as a conflict or "
+                    "weakness, or narrow the candidate's options")
     conflict_handling: Literal["no_conflict", "conflict_handled_honestly", "conflict_hidden_or_misstated"] = Field(
         description="If the candidate's preference conflicts with the job's arrangement: do the outputs avoid "
                     "misstating either side?")
@@ -172,7 +176,11 @@ presented as professional work, a planned or booked exam presented as obtained, 
 the material states is partly_supported (overstated).
 - Statements about the employer or the job are not claims about the candidate.
 - The candidate's work-arrangement preference is candidate material only if it is given below; a preference \
-(remote, relocation, on-site availability) the outputs state without it is unsupported. The job's arrangement, \
+(remote, relocation, on-site availability) the outputs state without it is unsupported. Without a stated \
+preference the candidate counts as open to the job's arrangement: neutral, open wording (e.g. "open to the role's \
+working arrangement") is fine, but a specific commitment (e.g. "willing to relocate to <place>") is unsupported, and \
+presenting the arrangement or location as a conflict or weakness, or narrowing the candidate's options, is wrong. \
+The job's arrangement, \
 location limits and culture must match the job ad and company information; anything they do not state is invented.
 - List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, \
 degree, certificate, language and notable achievement, in both documents. Quote briefly.
@@ -280,7 +288,7 @@ def build_prompt(run_dir: Path) -> tuple[dict, dict]:
         "company": company_text(inputs / "search_fixture.json"),
         "candidate": "\n\n".join(candidate) or "(none)",
         "work_preference": (_read(inputs / "work_preference.txt") or "").strip()
-        or "(not given: the candidate stated no preference)",
+        or "(not given: the candidate stated no preference, so they count as open to the job's arrangement)",
         "cv": cv or "(no CV was produced)",
         "cv_pdf": pdf_text(outputs / "final_cv.pdf") or "(no CV PDF was produced)",
         "cover_letter": cl or "(no cover letter was produced)",

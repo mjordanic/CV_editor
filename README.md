@@ -55,7 +55,7 @@ uv run python langgraph_agent.py
 | Earlier cover letter | `data/CV/cover_letter.*` | `.txt`, `.md`, `.pdf` | cover letter writer (as the base letter), critique, invented-claims check |
 | Free-form notes | `data/CV/notes.*` | `.txt`, `.md`, `.pdf` | CV and cover letter writers, critique, invented-claims check |
 | Portfolio | `data/portfolio/portfolio.txt` | plain text, one item per paragraph | relevant items go to the writers (retrieval); the whole file goes to the critique and the invented-claims check |
-| Work-arrangement preference (remote, hybrid, on-site, no preference) | say it in the chat ("I only want remote jobs"); `--work-preference` in testing mode | writers state it only if you gave it; the program tells you when the job's arrangement conflicts with it |
+| Work-arrangement preference (remote, hybrid, on-site, no preference) | say it in the chat ("I only want remote jobs"); `--work-preference` in testing mode | writers state it only if you gave it; the program tells you when the job's arrangement conflicts with it. Without one you count as open to any arrangement: remote, hybrid, on-site or relocation is never presented as a conflict or weakness, and no specific commitment (e.g. relocating to a named city) is invented |
 | Anything you say in the chat | typed or pasted during the session | text | the router passes change requests to the writers; the critique treats your own statements as facts about you |
 
 Features
@@ -178,7 +178,7 @@ Workflow Walkthrough
 
 1. **Document ingestion**: `DocumentReaderAgent` loads `data/CV/CV.(txt|md|pdf)`, `data/CV/cover_letter.(txt|md|pdf)` and `data/CV/notes.(txt|md|pdf)`. If there is neither a CV nor notes there (or they have no text, e.g. a scanned PDF), it asks you to paste your CV (a rough draft is fine) or give a path to it.
 2. **Job description capture**: `JobDescriptionAgent` interrupts for pasted text or file path (e.g., `job_description/sample_job_ad.txt`), extracts company name, work type, requirements, etc. An empty answer or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked once to add details or reply `continue`.
-3. **Company research**: `SearchAgent` builds a Tavily query and summarizes the results with an LLM. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site), location or country limits and culture signals, shown on the console and given to the writers; anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that the job does not match, the assistant tells you.
+3. **Company research**: `SearchAgent` builds a Tavily query and summarizes the results with an LLM. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site), location or country limits and culture signals, shown on the console and given to the writers; anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that the job does not match, the assistant tells you; without a stated preference you are treated as open to the job's arrangement.
 4. **Experience Retrieval**: `ExperienceRetrievalAgent` searches your portfolio (`data/portfolio/portfolio.txt`) for projects relevant to the job description. It uses vector similarity (threshold defined in `config/agent_models.yaml`) and an LLM to verify relevance.
 5. **Routing decision**: `RouterAgent` considers chat history, existing outputs, and user feedback to pick the next node.
 6. **Generation**:
@@ -230,7 +230,8 @@ All agents load configuration at startup from the YAML file. No code changes nee
 - **Testing mode** (`python -m evals.run_case`): one session from files you give (any subset of CV, portfolio, earlier cover letter and notes, plus the job ad), with a scripted user answering the questions and prepared web-search results replacing live Tavily calls (`CV_EDITOR_SEARCH_FIXTURE`). Every run writes a folder with the exact inputs, the config and model of every agent, every graph step and router decision, every model call with prompt, response, tokens and cost, the critique scores and invented-claims results of every draft, the final texts and PDFs, timings and errors.
 - **Recording search results** (`python -m evals.search_fixtures record`, or `CV_EDITOR_SEARCH_RECORD=file.json` on a normal run): saves live Tavily answers in the fixture format, so a real company is searched once and replayed after that.
 - **Evaluator** (`python -m evals.evaluate RUN_DIR`): scores one run with `openai:gpt-6.1-sol` (configurable), blind to the model and inputs that produced it: invented content with quotes, completeness, fit to the ad, CV standards, automatic screening (ATS) and the cover letter.
-- **Fixtures** (`evals/fixtures/`): anonymized job ads with company pages and search fixtures, and fully fictional candidates, for anyone to repeat the tests.
+- **Fixtures** (`evals/fixtures/`): six anonymized or invented job ads, each with company pages and a search fixture, and ten fully fictional candidates. Every evaluation input is tracked here, so anyone can repeat the tests.
+- **Matrix** (`python -m evals.run_matrix --out DIR`): runs every case in `evals/matrix.json` (persona × ad × input set × model), then the evaluator on each, with a spending cap. Inputs come only from `evals/fixtures/`.
 
 ### Running with a local model (Ollama)
 

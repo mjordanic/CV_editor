@@ -62,7 +62,9 @@ ROUTER_SYSTEM_PROMPT = (
     "- If the user says in their latest message whether they want remote, hybrid or on-site work (or that they have "
     "no preference), put it in 'work_preference'. Never guess it from anything else.\n"
     "- If the company information shows a 'Preference conflict', tell the user about it plainly in your next "
-    "message (once), in the user's words, without changing either side."
+    "message (once), in the user's words, without changing either side.\n"
+    "- If the user has not stated a preference, treat them as open to the job's arrangement: never raise the "
+    "arrangement, location or relocation as a problem or a reason not to apply."
 )
 
 ROUTER_HUMAN_PROMPT = (

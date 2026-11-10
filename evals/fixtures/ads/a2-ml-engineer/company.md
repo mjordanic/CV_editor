@@ -6,4 +6,4 @@ Quillstone Payments is a fictional Hamburg-based fintech founded in 2013. It ser
 
 **Engineering:** product teams own their services end to end. The machine-learning group builds customer-support automation (assistants that answer merchant questions from help-centre content) and fraud models.
 
-**Careers page:** relocation support, a training budget and regular peer feedback.
+**Careers page:** an office-first company (working side by side most days, a few flexible days agreed by each team), relocation support, a training budget and regular peer feedback.

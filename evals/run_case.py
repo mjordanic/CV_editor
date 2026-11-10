@@ -16,12 +16,13 @@ The run folder gets everything needed to reconstruct the session:
     summary.json         tokens and cost per model and per node, errors
     workspace/           the app's working folder (its own logs, debug file, drafts and PDFs)
 
-Usage (from the repo root):
-    .venv/bin/python -m evals.run_case --run-dir RUN --job-ad AD.md --cv CV.txt --portfolio P.txt \\
-        --cover-letter CL.txt --notes NOTES.txt --search-fixture FIXTURE.json [--model openai:gpt-6-luna]
-
-Without --search-fixture, pass --no-search (company research finds nothing) or --record-search FILE
-(live Tavily, saved to FILE for later replays). This makes paid model calls; --cost-cap stops a run.
+Usage (from the repo root), with the tracked fixtures in evals/fixtures/:
+    .venv/bin/python -m evals.run_case --run-dir RUN --ad a3 --persona p03 [--inputs all4|cv_only|no_cv|cv,notes] \\
+        [--model openai:gpt-6-luna]
+--ad uses the ad's ad.md and search_fixture.json; --persona gives the chosen candidate files (default all four).
+Any file can be given explicitly instead (or to override one): --job-ad, --cv, --portfolio, --cover-letter,
+--notes, --search-fixture. Without an --ad and without --search-fixture, company research finds nothing,
+unless --record-search FILE (live Tavily, saved to FILE for later replays). This makes paid model calls; --cost-cap stops a run.
 """
 from __future__ import annotations
 
@@ -224,10 +225,32 @@ def _write_outputs(recorder, values: dict, workspace: Path) -> dict:
     return files
 
 
+def apply_fixture_defaults(args) -> None:
+    """Fill job ad, search fixture and candidate files from --ad / --persona; explicit paths win."""
+    from evals.cases import find_ad, find_persona, parse_inputs, INPUT_FILES
+    if args.ad:
+        ad = find_ad(args.ad)
+        args.job_ad = args.job_ad or str(ad / "ad.md")
+        if not (args.search_fixture or args.record_search or args.no_search):
+            args.search_fixture = str(ad / "search_fixture.json")
+    if args.persona:
+        persona = find_persona(args.persona)
+        for key in parse_inputs(args.inputs):
+            if not getattr(args, key):
+                setattr(args, key, str(persona / INPUT_FILES[key]))
+    elif args.inputs:
+        raise ValueError("--inputs needs --persona")
+    if not args.job_ad:
+        raise ValueError("give --ad or --job-ad")
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--run-dir", required=True, help="new (or empty) folder for this run's records")
-    parser.add_argument("--job-ad", required=True, help="job ad text file")
+    parser.add_argument("--ad", help="tracked fixture ad id (e.g. a3): its ad.md and search_fixture.json")
+    parser.add_argument("--persona", help="tracked fixture persona id (e.g. p03): its candidate files")
+    parser.add_argument("--inputs", help="with --persona: all4 (default), cv_only, no_cv, or e.g. cv,notes")
+    parser.add_argument("--job-ad", help="job ad text file (overrides --ad's ad.md)")
     parser.add_argument("--cv", help="candidate CV (.txt, .md or .pdf)")
     parser.add_argument("--portfolio", help="candidate portfolio (.txt; projects separated by blank lines)")
     parser.add_argument("--cover-letter", dest="cover_letter", help="candidate's earlier cover letter")
@@ -244,6 +267,10 @@ def main(argv=None) -> int:
     parser.add_argument("--cost-cap", type=float, default=1.0, help="stop the run past this many USD (default 1.0)")
     parser.add_argument("--label", action="append", help="key=value stored in manifest.json (repeatable)")
     args = parser.parse_args(argv)
+    try:
+        apply_fixture_defaults(args)
+    except ValueError as e:
+        parser.error(str(e))
     if not any(getattr(args, k) for k in ("cv", "notes")):
         print("note: no --cv and no --notes; the app will ask for a CV and the run will stop there", file=sys.stderr)
 
