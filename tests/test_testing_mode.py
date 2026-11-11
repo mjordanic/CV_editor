@@ -388,7 +388,7 @@ def test_a_provider_failure_interrupts_the_session_instead_of_failing_it(tmp_pat
     from evals.credit import INFRASTRUCTURE_STATUS
     code, run_dir = _run_case_offline(tmp_path, monkeypatch, _ProviderDown())
     manifest = json.loads((run_dir / "manifest.json").read_text())
-    assert code == 1 and manifest["status"] == INFRASTRUCTURE_STATUS
+    assert code == 1 and manifest["status"] == INFRASTRUCTURE_STATUS and manifest["degraded"] == []
 
 
 def test_a_completed_session_that_did_without_research_a_fact_check_or_a_pdf_says_so(tmp_path):

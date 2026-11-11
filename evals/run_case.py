@@ -153,7 +153,10 @@ def degradations(values: dict, workspace: Path) -> list[str]:
         unchecked |= any(d.get("grounding_checked") is False and not d.get("repeats_cv") for d in delivered)
         pdf = values.get(f"{kind}_pdf_path")
         pdf_failed |= bool(values.get(f"generated_{kind}")) and not (pdf and (workspace / pdf).is_file())
-    out += ["grounding_unchecked"] * unchecked + ["pdf_failed"] * pdf_failed
+    if unchecked:
+        out.append("grounding_unchecked")
+    if pdf_failed:
+        out.append("pdf_failed")
     return out
 
 
@@ -584,7 +587,7 @@ def main(argv=None) -> int:
         "cover_letter_final_iteration": values.get("cover_letter_final_iteration"),
         "outputs": files,
         "observations": user.observations,
-        "degraded": degradations(values, workspace),
+        "degraded": degradations(values, workspace) if status == "completed" else [],
         "work_context": (values.get("company_info") or {}).get("work_context"),
         "work_preference_final": values.get("work_preference"),
         "redrafts": redrafts(run_dir),
