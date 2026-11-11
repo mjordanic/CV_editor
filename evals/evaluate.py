@@ -345,8 +345,9 @@ GUARANTEED_PATHS = {
 ANSWER_FORMAT = """
 
 # ANSWER FORMAT
-Write the complete evaluation first, as one JSON string in full_evaluation_json. It must follow this JSON schema \
-exactly: every property is required and no other property is allowed.
+Write the complete evaluation first, as one JSON string in full_evaluation_json. The string holds standard JSON \
+(double-quoted keys and strings, escaped inside the string; true, false), not a Python literal, and follows this \
+JSON schema exactly: every property is required and no other property is allowed.
 {schema}
 Then fill the remaining fields with the same values as in that complete evaluation."""
 
