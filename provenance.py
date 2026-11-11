@@ -49,7 +49,7 @@ CACHE_WRITE_PER_1M = {
     "claude-haiku-5-5": 0.125,
 }
 # The Batch APIs (OpenAI /v1/batches, Anthropic Message Batches) charge half of every price above.
-BATCH_DISCOUNT = 0.5
+BATCH_PRICE_FACTOR = 0.5
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ class _LLMCallRecorder(BaseCallbackHandler):
         model = response_model or start.get("model")
         list_cost = cost_usd(model, usage["input_tokens"], usage["output_tokens"], usage["cached_tokens"])
         batched = bool(start.get("batch_id"))
-        cost = list_cost * BATCH_DISCOUNT if list_cost is not None and batched else list_cost
+        cost = list_cost * BATCH_PRICE_FACTOR if list_cost is not None and batched else list_cost
         self.recorder._llm_call({
             **{k: v for k, v in start.items() if k != "started_at" and not (k == "batch_id" and v is None)},
             "model": model,

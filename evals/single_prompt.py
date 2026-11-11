@@ -485,7 +485,7 @@ def main(argv=None) -> int:
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
-    from provenance import BATCH_DISCOUNT, RunRecorder
+    from provenance import BATCH_PRICE_FACTOR, RunRecorder
     from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
     from evals.run_case import _git, _package_versions
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
@@ -564,7 +564,7 @@ def main(argv=None) -> int:
         **manifest, **summary,
         "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "cost_usd": round(recorder.cost, 6),  # billed: the Batch price when the reply came from a batch
-        "cost_list_usd": round(recorder.cost / BATCH_DISCOUNT if batch else recorder.cost, 6),
+        "cost_list_usd": round(recorder.cost / BATCH_PRICE_FACTOR if batch else recorder.cost, 6),
     })
     recorder.event("run_end", **summary, cost_usd=round(recorder.cost, 6))
     print(json.dumps({"run_dir": str(run_dir), "status": status, "method": METHOD, "calls": calls,

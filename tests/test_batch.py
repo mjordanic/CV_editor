@@ -327,9 +327,34 @@ def test_a_changed_run_folder_is_not_written_with_a_stale_reply(tmp_path):
     _grade([str(run), "--eval-name", "eval1"], fake)
     (run / "outputs" / "final_cv.txt").write_text("a different CV")
     fake.finish("msgbatch_1", {_ids(fake)[0]: _message(_evaluation())})
+    (tmp_path / "ledger.tsv").write_text("")
     assert _grade([str(run), "--eval-name", "eval1", "--no-submit"], fake) == 1
     item = next(iter(_state(tmp_path / "batches" / "grading" / "state.json")["items"].values()))
     assert item["status"] == "request_changed" and not (run / "evaluation" / "eval1" / "evaluation.json").exists()
+    billed = (1000 * 2 + 5000 * 2.5 + 10000 * 10) / 1e6 / 2  # the answer was billed: in the ledger and the log
+    (row,) = [line.split("\t") for line in (tmp_path / "ledger.tsv").read_text().splitlines()]
+    assert row[1] == "eval:eval1-discarded" and float(row[2]) == pytest.approx(billed)
+    assert item["attempt_log"][-1]["cost_usd"] == pytest.approx(billed)
+    assert item["attempt_log"][-1]["cost_list_usd"] == pytest.approx(2 * billed)
+    assert _grade([str(run), "--eval-name", "eval1", "--resubmit-failed"], fake) == 1
+    assert len(fake.created) == 1  # an answered request is never sent again
+
+
+def test_a_reply_for_a_grading_finished_meanwhile_is_billed_not_written(tmp_path):
+    run = _case_run(tmp_path, "sp")
+    (tmp_path / "ledger.tsv").write_text("")
+    fake = FakeAnthropic()
+    _grade([str(run), "--eval-name", "eval1"], fake)
+    before = '{"finished": "elsewhere"}'
+    (run / "evaluation" / "eval1" / "evaluation.json").write_text(before)  # e.g. by the synchronous path
+    fake.finish("msgbatch_1", {_ids(fake)[0]: _message(_evaluation())})
+    assert _grade([str(run), "--eval-name", "eval1"], fake) == 0
+    item = next(iter(_state(tmp_path / "batches" / "grading" / "state.json")["items"].values()))
+    billed = (1000 * 2 + 5000 * 2.5 + 10000 * 10) / 1e6 / 2
+    assert item["status"] == "done" and item["attempt_log"][-1]["cost_usd"] == pytest.approx(billed)
+    assert [line.split("\t")[1] for line in (tmp_path / "ledger.tsv").read_text().splitlines()] == [
+        "eval:eval1-discarded"]
+    assert (run / "evaluation" / "eval1" / "evaluation.json").read_text() == before
 
 
 def test_a_matrix_plan_batches_sonnet_opus_haiku_and_the_trap_check_together(tmp_path):
@@ -652,3 +677,37 @@ def test_the_estimate_prices_batched_single_prompt_sessions_at_half(capsys):
     run_matrix.main(["--matrix", single, "--out", "unused", "--estimate", "--sp-batch"])
     b = json.loads(capsys.readouterr().out)
     assert b["sessions"] == pytest.approx(a["sessions"] / 2, abs=0.01)
+
+
+def test_an_unwritten_single_prompt_reply_is_priced_at_the_batch_rate(tmp_path):
+    from evals.batch import Outcome
+    from evals.batch_sp import discard
+    ledger = tmp_path / "ledger.tsv"
+    job = {"case_id": "case-1", "model": "openai:gpt-6.1-sol"}
+    cost = discard(job, Outcome("sp-c", "succeeded", {"status_code": 200, "body": _completion()}), ledger)
+    assert cost == {"cost_usd": pytest.approx(0.051), "cost_list_usd": pytest.approx(0.102)}
+    (row,) = [line.split("\t") for line in ledger.read_text().splitlines()]
+    assert row[:2] == ["case-1", "app-discarded"] and float(row[2]) == pytest.approx(0.051)
+
+
+def test_the_cap_counts_what_is_in_flight_at_each_check(tmp_path):
+    """The in-flight estimate is read from state.json at every check: a batch adopted after the check was set up
+    counts, and a request collected (its cost now in the ledger) no longer counts twice."""
+    from evals.batch import BatchStore
+    from evals.batch_sp import batch_estimate_usd, cap_check
+    model = "openai:gpt-6.1-sol"
+    est = batch_estimate_usd(model)
+    ledger = tmp_path / "ledger.tsv"
+    store = BatchStore(tmp_path / "state", "single_prompt")
+    store.items["c1"] = {"job": {"case_id": "c1", "model": model}, "status": "submitted"}
+    store.items["c2"] = {"job": {"case_id": "c2", "model": model}, "status": "submitted"}
+    allow = cap_check(store, SimpleNamespace(total_cap=2.5 * est), ledger)
+    job = {"case_id": "c3", "model": model}
+    assert not allow(job, [])  # 3 estimates > 2.5
+    store.items["c1"]["status"] = "expired"
+    store.items["c2"]["status"] = "ok"
+    ledger.write_text(f"c2\tapp\t{est:.6f}\t-\n")
+    assert allow(job, [])  # c2 counted once, from the ledger
+    assert not allow(job, [{"case_id": "c4", "model": model}])  # and the requests prepared in this pass
+    store.items["c5"] = {"job": {"case_id": "c5", "model": model}, "status": "submitted"}
+    assert not allow(job, [])  # adopted after cap_check was set up

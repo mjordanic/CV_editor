@@ -37,7 +37,7 @@ Anthropic calls go through the official `anthropic` SDK:
 OpenAI graders keep the LangChain `with_structured_output` path (temperature: provider default, not set).
 
 Costs use provenance.PRICES_PER_1M plus the cache-write prices in provenance.CACHE_WRITE_PER_1M;
-Batch results cost half (BATCH_DISCOUNT).
+Batch results cost half (BATCH_PRICE_FACTOR).
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from provenance import BATCH_DISCOUNT  # noqa: F401 - re-exported: Batch results cost half
+from provenance import BATCH_PRICE_FACTOR  # noqa: F401 - re-exported: Batch results cost half
 
 ANTHROPIC_MODELS = ("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5")
 PROVIDERS = ("anthropic", "openai")
@@ -249,7 +249,7 @@ def anthropic_cost(model: str, usage: dict, batch: bool = False) -> float | None
     p_write = CACHE_WRITE_PER_1M.get(model.split(":", 1)[-1], p_in * 1.25)
     usd = (usage.get("input_tokens", 0) * p_in + usage.get("cache_creation_input_tokens", 0) * p_write
            + usage.get("cache_read_input_tokens", 0) * p_hit + usage.get("output_tokens", 0) * p_out) / 1e6
-    return usd * (BATCH_DISCOUNT if batch else 1.0)
+    return usd * (BATCH_PRICE_FACTOR if batch else 1.0)
 
 
 def _usage_dict(usage: Any) -> dict:

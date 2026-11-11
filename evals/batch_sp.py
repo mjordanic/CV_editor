@@ -19,8 +19,9 @@ half price instead of being made synchronously:
 State: RUNS_DIR/batches/sp_openai/state.json and the uploaded input files (evals/batch.py: written before every
 submission, so re-running run_matrix collects and never submits a case twice). A request the API did not answer
 (failed line, expired, cancelled, batch validation failure) is sent once more in a follow-up batch (evals/batch.py's
-retry rule), then listed; --batch-resubmit-failed sends it again after that. A request whose inputs changed between
-submission and collection is not run (request_changed). An answer that does not parse is a finished session with
+retry rule), then listed; --batch-resubmit-failed sends it again after that (only such unanswered requests). A request
+whose inputs changed between submission and collection is not run (request_changed; its billed reply is in the ledger,
+settled by hand). An answer that does not parse is a finished session with
 failure "parse_error", never re-asked, as in the synchronous path (one call per case).
 
 Times and cost: the manifest's "batch" block has the batch id, custom id, attempt, and submitted / ended / collected
@@ -28,7 +29,7 @@ times (run_matrix submits the SP batch in the same run, before the app sessions 
 the billed (Batch) cost and "cost_list_usd" the list price of the same call, for the cost comparison with the app.
 
 Caps: a case is submitted only while the ledger's spend plus the Batch-price estimate of every request in flight
-(run_matrix.sp_session_usd x BATCH_DISCOUNT) stays within --total-cap and the stage's cap.
+(run_matrix.sp_session_usd x BATCH_PRICE_FACTOR) stays within --total-cap and the stage's cap.
 """
 from __future__ import annotations
 
@@ -38,9 +39,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from evals.batch import (FAILED, IN_FLIGHT, RETRY, Adapter, BatchStore, Job, Outcome, Prepared, make_custom_id, now,
-                         run_round)
-from provenance import BATCH_DISCOUNT
+from evals.batch import (FAILED, IN_FLIGHT, RETRY, SUBMITTING, UNANSWERED, Adapter, BatchStore, Job, Outcome, Prepared,
+                         make_custom_id, now, run_round)
+from provenance import BATCH_PRICE_FACTOR
 
 REPO = Path(__file__).resolve().parent.parent
 ENDPOINT = "/v1/chat/completions"
@@ -168,7 +169,7 @@ def apply(job: dict, item: dict, outcome: Outcome, batch: dict, state_dir: Path,
     if outcome.kind != "succeeded":
         return {"status": outcome.kind, "error": outcome.error}
     if batch_request(job["argv"])["request_sha256"] != item.get("request_sha256"):
-        return {"status": "request_changed",
+        return {"status": "request_changed", **discard(job, outcome, ledger),
                 "error": "the case's request rebuilt now differs from the one submitted (inputs or code changed)"}
     result_file = state_dir / "results" / f"{job['custom_id']}.json"
     result_file.parent.mkdir(parents=True, exist_ok=True)
@@ -185,7 +186,8 @@ def apply(job: dict, item: dict, outcome: Outcome, batch: dict, state_dir: Path,
                        cwd=str(REPO), stdout=f, stderr=subprocess.STDOUT)
     manifest = run_dir / "manifest.json"
     if not manifest.exists():
-        return {"status": "session_error", "error": f"the session wrote no manifest (see {log})"}
+        return {"status": "session_error", **discard(job, outcome, ledger),
+                "error": f"the session wrote no manifest (see {log})"}
     data = json.loads(manifest.read_text())
     _record(ledger, job["case_id"], "app", data.get("cost_usd") or 0)
     if not _session_done(run_dir):
@@ -195,32 +197,41 @@ def apply(job: dict, item: dict, outcome: Outcome, batch: dict, state_dir: Path,
             "session_status": data.get("status")}
 
 
+def discard(job: dict, outcome: Outcome, ledger: Path) -> dict:
+    """The billed cost of an answer whose session is not written (Job.discard), priced from the reply's usage at the
+    Batch rate; its ledger row is "app-discarded"."""
+    from evals.run_matrix import _record
+    from provenance import cost_usd
+    body = (outcome.payload or {}).get("body") or {}
+    usage = body.get("usage") or {}
+    list_cost = cost_usd(body.get("model") or job["model"], usage.get("prompt_tokens", 0),
+                         usage.get("completion_tokens", 0),
+                         (usage.get("prompt_tokens_details") or {}).get("cached_tokens", 0)) or 0.0
+    cost = list_cost * BATCH_PRICE_FACTOR
+    _record(ledger, job["case_id"], "app-discarded", cost)
+    return {"cost_usd": round(cost, 6), "cost_list_usd": round(list_cost, 6)}
+
+
 def batch_estimate_usd(model: str) -> float:
     from evals.run_matrix import sp_session_usd
-    return sp_session_usd(model) * BATCH_DISCOUNT
+    return sp_session_usd(model) * BATCH_PRICE_FACTOR
 
 
 def cap_check(store: BatchStore, opts, ledger: Path):
-    """allow(job): submit only while spend + in-flight estimates stay within the total and stage caps."""
+    """allow(job, pending): submit only while spend + the estimates of the requests in flight now (state.json) and of
+    those prepared in this pass stay within the total and stage caps."""
     from evals.run_matrix import spent
-    in_flight = [i["job"] for i in store.items.values() if i["status"] == IN_FLIGHT]
-    committed = {"total": sum(batch_estimate_usd(j["model"]) for j in in_flight), "stage": {}}
-    for j in in_flight:
-        stage = j.get("stage")
-        committed["stage"][stage] = committed["stage"].get(stage, 0.0) + batch_estimate_usd(j["model"])
     stage_caps = getattr(opts, "stage_caps", None) or {}
 
-    def allow(job: dict) -> bool:
-        est = batch_estimate_usd(job["model"])
-        if spent(ledger) + committed["total"] + est > opts.total_cap:
+    def allow(job: dict, pending: list[dict]) -> bool:
+        committed = [*(i["job"] for i in store.items.values() if i["status"] in (IN_FLIGHT, SUBMITTING)), *pending,
+                     job]
+        if spent(ledger) + sum(batch_estimate_usd(j["model"]) for j in committed) > opts.total_cap:
             return False
         stage = job.get("stage")
-        if stage in stage_caps and (spent(ledger, opts.stage_ids[stage]) + committed["stage"].get(stage, 0.0) + est
-                                    > stage_caps[stage]):
-            return False
-        committed["total"] += est
-        committed["stage"][stage] = committed["stage"].get(stage, 0.0) + est
-        return True
+        return stage not in stage_caps or (
+            spent(ledger, opts.stage_ids[stage])
+            + sum(batch_estimate_usd(j["model"]) for j in committed if j.get("stage") == stage) <= stage_caps[stage])
     return allow
 
 
@@ -238,7 +249,8 @@ def sp_batch_round(cases: list[dict], opts, client=None, sleep=None, log=print) 
     jobs = sp_jobs(cases, opts)
     job = Job(custom_id=sp_custom_id, is_done=lambda j: _session_done(Path(j["run_dir"])), prepare=prepare,
               apply=lambda j, item, outcome, batch: apply(j, item, outcome, batch, state_dir, ledger),
-              allow=cap_check(store, opts, ledger))
+              allow=cap_check(store, opts, ledger),
+              discard=lambda j, outcome: discard(j, outcome, ledger))
     s = run_round(store, OpenAIBatches(state_dir, client), jobs, job,
                   resubmit_failed=getattr(opts, "batch_resubmit_failed", False),
                   wait=getattr(opts, "batch_wait", False), poll_seconds=getattr(opts, "batch_poll_seconds", 60.0),
@@ -251,8 +263,10 @@ def sp_batch_round(cases: list[dict], opts, client=None, sleep=None, log=print) 
 
 def pending_note(status: str | None) -> str:
     """run_matrix's line for an SP case whose session the batch has not produced yet."""
-    if status in FAILED:
+    if status in UNANSWERED:
         return f"OpenAI batch request {status} (re-submit with --batch-resubmit-failed)"
+    if status in FAILED:
+        return f"OpenAI batch request {status} (answered; settle by hand, see the batch state)"
     if status == IN_FLIGHT:
         return "session in the OpenAI batch (run again to collect, or add --batch-wait)"
     if status == RETRY:

@@ -53,7 +53,7 @@ if str(REPO) not in sys.path:
 
 from evals.batch import (RETRY, Adapter, BatchStore, Job, Outcome, PendingSubmission, Prepared,  # noqa: E402
                          canonical_sha256, format_summary, make_custom_id, parse_adopt, run_round, summary)
-from provenance import BATCH_DISCOUNT  # noqa: E402
+from provenance import BATCH_PRICE_FACTOR  # noqa: E402
 
 EVALUATION, TRUTH = "evaluation", "truth_check"
 RESULT_FILE = {EVALUATION: "evaluation.json", TRUTH: "truth_check.json"}
@@ -215,8 +215,8 @@ def _write(job: dict, request, ctx: dict, result, extra: dict, ledger: Path | No
     from provenance import RunRecorder
     recorder = RunRecorder(_out_dir(job))
     log_attempts(recorder, result, request, node=NODE[job["kind"]])
-    label = f"eval:{job['name']}" if job["kind"] == EVALUATION else "truth"
-    cost = {"cost_usd": result.cost_usd, "cost_list_usd": round(result.cost_usd / BATCH_DISCOUNT, 6)}
+    label = _label(job)
+    cost = {"cost_usd": result.cost_usd, "cost_list_usd": round(result.cost_usd / BATCH_PRICE_FACTOR, 6)}
     extra = {**extra, "cost_list_usd": cost["cost_list_usd"]}  # the grader record: billed and list price
     try:
         if job["kind"] == EVALUATION:
@@ -250,18 +250,31 @@ def apply(job: dict, item: dict, outcome: Outcome, batch: dict, ledger: Path | N
         return {"status": outcome.kind, "error": outcome.error}
     request, ctx = build(job, reuse_pages=True)
     if canonical_sha256(request.anthropic_params()) != item.get("request_sha256"):
-        return {"status": "request_changed",
+        return {"status": "request_changed", **discard(job, outcome, ledger),
                 "error": "the request rebuilt now differs from the one submitted (run folder or rubric changed)"}
     result = result_from_message(request, outcome.payload, batch_id=batch["batch_id"])
     for a in result.attempts:
         a.update(custom_id=outcome.custom_id, result_type=outcome.kind, attempt=attempt_no)
     if result.status == PARSE_ERROR and attempt_no < MAX_ATTEMPTS:
-        _ledger(ledger, job, f"{'eval:' + job['name'] if job['kind'] == EVALUATION else 'truth'}-attempt{attempt_no}",
-                result.cost_usd)
+        _ledger(ledger, job, f"{_label(job)}-attempt{attempt_no}", result.cost_usd)
         return {"status": RETRY, "error": result.attempts[-1].get("parse_error"), "cost_usd": result.cost_usd,
                 "carry": {"attempts": earlier + result.attempts, "ledger_usd": recorded + result.cost_usd}}
     combined = GradingResult(result.status, result.answer, earlier + result.attempts, result.grader)
     return _write(job, request, ctx, combined, extra, ledger, recorded)
+
+
+def discard(job: dict, outcome: Outcome, ledger: Path | None = None) -> dict:
+    """The billed cost of an answer that is not written (Job.discard), priced from its usage at the Batch rate."""
+    from evals.grader import _usage_dict, anthropic_cost
+    message = outcome.payload
+    cost = anthropic_cost(getattr(message, "model", None) or job["model"],
+                          _usage_dict(getattr(message, "usage", None)), batch=True) or 0.0
+    _ledger(ledger, job, f"{_label(job)}-discarded", cost)
+    return {"cost_usd": cost, "cost_list_usd": round(cost / BATCH_PRICE_FACTOR, 6)}
+
+
+def _label(job: dict) -> str:
+    return f"eval:{job['name']}" if job["kind"] == EVALUATION else "truth"
 
 
 def _ledger(ledger: Path | None, job: dict, kind: str, cost: float) -> None:
@@ -272,7 +285,8 @@ def _ledger(ledger: Path | None, job: dict, kind: str, cost: float) -> None:
 
 def grading_job(ledger: Path | None = None) -> Job:
     return Job(custom_id=grading_custom_id, is_done=is_done, prepare=prepare,
-               apply=lambda job, item, outcome, batch: apply(job, item, outcome, batch, ledger))
+               apply=lambda job, item, outcome, batch: apply(job, item, outcome, batch, ledger),
+               discard=lambda job, outcome: discard(job, outcome, ledger))
 
 
 # --------------------------------------------------------------------------------------------- the command

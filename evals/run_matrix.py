@@ -77,7 +77,7 @@ from pathlib import Path
 
 from evals.cases import DEFAULT_MATRIX, load_matrix, matrix_total_cap, resolve_case
 from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
-from provenance import BATCH_DISCOUNT, cost_usd
+from provenance import BATCH_PRICE_FACTOR, cost_usd
 
 REPO = Path(__file__).resolve().parent.parent
 _LOCK = threading.Lock()
@@ -118,8 +118,8 @@ DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 # Claude grader records) at ~16k input and ~12k output tokens per grading (the measured 10k output plus room for
 # thinking; the ATS score adds no input, as the CV's PDF text was already in the prompt, and its answer replaces
 # the earlier ATS section of about the same length); the trap check at ~5k input and ~1.5k output. The plan rounds
-# them as below. The Batch API takes BATCH_DISCOUNT off every grading line; sessions run on OpenAI interactively,
-# so Batch does not change them.
+# them as below. The Batch API charges BATCH_PRICE_FACTOR x list price on every grading line; sessions run on OpenAI
+# interactively, so Batch does not change them.
 GRADER_PRICES_PER_1M = {"claude-sonnet-5-5": (2.00, 10.00), "claude-opus-5-5": (4.00, 20.00),
                         "claude-haiku-5-5": (0.10, 0.50)}  # input, output
 GRADING_TOKENS = (16_000, 12_000)
@@ -340,7 +340,7 @@ def estimate(cases: list[dict], opts) -> dict:
         if method == "single_prompt":
             session = p["single_prompt"].get(model, max(p["single_prompt"].values()))
             if getattr(opts, "sp_batch", False):
-                session *= 1 - BATCH_DISCOUNT
+                session *= BATCH_PRICE_FACTOR
         else:
             session = p["session"].get(model, max(p["session"].values()))
         if case.get("script"):
@@ -388,10 +388,10 @@ def case_lines(case: dict) -> dict:
 
 
 def _batch(lines: dict, app_batched: float = 0.0) -> float:
-    """Total of a set of lines with Batch grading: every line but the app sessions at BATCH_DISCOUNT off, and the
-    part `app_batched` of the app line (single-prompt sessions with --sp-batch) too."""
-    return (lines["app"] - app_batched + app_batched * (1 - BATCH_DISCOUNT)
-            + sum(v for k, v in lines.items() if k != "app") * (1 - BATCH_DISCOUNT))
+    """Total of a set of lines with Batch grading: every line but the app sessions at BATCH_PRICE_FACTOR x list price,
+    and the part `app_batched` of the app line (single-prompt sessions with --sp-batch) too."""
+    return (lines["app"] - app_batched + app_batched * BATCH_PRICE_FACTOR
+            + sum(v for k, v in lines.items() if k != "app") * BATCH_PRICE_FACTOR)
 
 
 def estimate_stages(cases: list[dict], meta: dict, sp_batch: bool = False) -> dict:
@@ -423,7 +423,8 @@ def estimate_stages(cases: list[dict], meta: dict, sp_batch: bool = False) -> di
                     for a, v in sorted(by_arm.items())},
            "stages": {st: {**finish(v), "plan_usd": stages.get(st, {}).get("plan_usd"),
                            "cap_usd": stages.get(st, {}).get("cap_usd")} for st, v in by_stage.items()},
-           "total": finish(total), "unit_usd": AB_UNIT_USD, "batch_discount": BATCH_DISCOUNT, "sp_batch": sp_batch}
+           "total": finish(total), "unit_usd": AB_UNIT_USD, "batch_price_factor": BATCH_PRICE_FACTOR,
+           "sp_batch": sp_batch}
     if set(by_stage) == set(stages):  # the whole matrix: compare with the plan's total and the total cap
         out["total"].update(plan_usd=meta.get("plan_usd"), cap_usd=(meta.get("caps") or {}).get("total"))
     for row in [*out["stages"].values(), out["total"]]:
@@ -459,11 +460,11 @@ def format_estimate_table(est: dict) -> str:
         lines.append(compare("total", t))
     if est.get("sp_batch"):
         lines.append("Standard: every grading and session at list price. Batch: the gradings, trap checks and "
-                     f"single-prompt sessions (--sp-batch) at {BATCH_DISCOUNT:.0%} off (the app's sessions run "
+                     f"single-prompt sessions (--sp-batch) at {1 - BATCH_PRICE_FACTOR:.0%} off (the app's sessions run "
                      "interactively, at the same price).")
     else:
         lines.append("Standard: every grading at list price. Batch: the gradings and trap checks at "
-                     f"{BATCH_DISCOUNT:.0%} off (the sessions run interactively, at the same price; --sp-batch "
+                     f"{1 - BATCH_PRICE_FACTOR:.0%} off (the sessions run interactively, at the same price; --sp-batch "
                      "prices the single-prompt sessions at the Batch rate too).")
     return "\n".join(lines)
 

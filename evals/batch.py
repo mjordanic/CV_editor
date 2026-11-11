@@ -27,11 +27,13 @@ error, cost).
 
 Item statuses: submitted (in flight); retry (waiting for its follow-up batch); ok (written to its run folder); done
 (already finished on disk, e.g. by the synchronous path; never overwritten); and the final failures, each listed by
-the round: errored, expired, canceled (still unanswered after both attempts; --resubmit-failed sends them again),
-parse_error and refused (answered and written as the synchronous path writes a failed grading), request_changed (the
-request rebuilt at collection is not the one submitted: inputs or code changed in between; nothing written;
---resubmit-failed), session_error (batch_sp: the session on the reply failed), collect_error (writing the result
-raised; see its error; --resubmit-failed).
+the round: errored, expired, canceled (still unanswered after both attempts; --resubmit-failed sends them again,
+the only statuses it sends), parse_error and refused (answered and written as the synchronous path writes a failed
+grading), request_changed (the request rebuilt at collection is not the one submitted: inputs or code changed in
+between; nothing written), session_error (batch_sp: the session on the reply failed), collect_error (writing the
+result raised; see its error). An answered request is never sent again: request_changed, session_error and
+collect_error are settled by hand (see the error), and the cost of every answered reply is in the attempt log and,
+through the job's apply, in the ledger.
 """
 from __future__ import annotations
 
@@ -51,7 +53,7 @@ RETRY = "retry"
 FINISHED = ("ok", "done")
 UNANSWERED = ("errored", "expired", "canceled")  # the provider sent nothing to the model: not billed
 FAILED = (*UNANSWERED, "parse_error", "refused", "request_changed", "session_error", "collect_error")
-RESUBMITTABLE = (*UNANSWERED, "request_changed", "collect_error")  # by --resubmit-failed (never an answered request)
+RESUBMITTABLE = UNANSWERED  # by --resubmit-failed (never an answered request)
 MAX_ATTEMPTS = 2  # as evals.grader.MAX_ATTEMPTS: one follow-up attempt
 CUSTOM_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")  # Anthropic's rule; OpenAI accepts any unique string
 
@@ -169,7 +171,11 @@ class Job:
     # (job, item, outcome, batch entry) -> {"status", ...}; item["attempt"] is this attempt's number (1, 2, ...) and
     # item.get("carry") what an earlier attempt of it returned under "carry"
     apply: Callable[[dict, dict, Outcome, dict], dict]
-    allow: Callable[[dict], bool] = lambda job: True  # e.g. a cost cap; checked before preparing a new request
+    # e.g. a cost cap; checked before preparing a new request, with the jobs prepared in this pass but not yet submitted
+    allow: Callable[[dict, list[dict]], bool] = lambda job, pending: True
+    # (job, succeeded outcome) -> {"cost_usd", "cost_list_usd"}: records in the ledger the billed cost of an
+    # answer that is not written (its item already finished on disk, its request changed, its session failed)
+    discard: Callable[[dict, Outcome], dict] = lambda job, outcome: {}
     max_attempts: int = MAX_ATTEMPTS
 
 
@@ -218,7 +224,10 @@ def collect(store: BatchStore, adapter: Adapter, jobs_by_id: dict, job: Job, log
                 continue
             spec = jobs_by_id.get(outcome.custom_id) or item["job"]
             if job.is_done(spec):
-                store.set_status(outcome.custom_id, "done", note="finished on disk before the batch was collected")
+                cost = job.discard(spec, outcome) if outcome.kind == "succeeded" else {}
+                _log_attempt(item, outcome, b, "done", cost)
+                store.set_status(outcome.custom_id, "done", note="finished on disk before the batch was collected",
+                                 **cost)
             else:
                 _settle(store, job, spec, item, outcome, b)
             store.save()
@@ -240,14 +249,18 @@ def _settle(store: BatchStore, job: Job, spec: dict, item: dict, outcome: Outcom
     except Exception as e:  # noqa: BLE001 - one result that cannot be written must not block the rest
         result = {"status": "collect_error", "error": f"{type(e).__name__}: {e}"[:500]}
     status = result.pop("status")
+    _log_attempt(item, outcome, b, status, result)
+    if status == RETRY or (status in UNANSWERED and item.get("attempt", 1) < job.max_attempts):
+        status = RETRY  # a follow-up batch sends it once more
+    store.set_status(outcome.custom_id, status, **result)
+
+
+def _log_attempt(item: dict, outcome: Outcome, b: dict, status: str, result: dict) -> None:
     item.setdefault("attempt_log", []).append({
         "attempt": item.get("attempt", 1), "batch_id": b["batch_id"], "custom_id": outcome.custom_id,
         "result_type": outcome.kind, "status": status, "submitted_at": b.get("submitted_at"),
         "ended_at": b.get("ended_at"), "collected_at": now(),
         **{k: result[k] for k in ("error", "cost_usd", "cost_list_usd") if result.get(k) is not None}})
-    if status == RETRY or (status in UNANSWERED and item.get("attempt", 1) < job.max_attempts):
-        status = RETRY  # a follow-up batch sends it once more
-    store.set_status(outcome.custom_id, status, **result)
 
 
 def _submit(store: BatchStore, adapter: Adapter, group: list[Prepared], log: Callable) -> None:
@@ -338,7 +351,7 @@ def _submit_new(store: BatchStore, adapter: Adapter, jobs: list[dict], job: Job,
                                            "updated_at": now()}
             store.save()
             continue
-        if not job.allow(j):
+        if not job.allow(j, [p.job for p in [*unit, *(q for c in chunks.values() for q in c)]]):
             continue
         p = job.prepare(j)
         if unit and (p.unit != unit[0].unit or p.group != unit[0].group):
@@ -387,7 +400,7 @@ def format_summary(s: dict) -> str:
         lines.append(f"in flight: {b['key']} {b['batch_id']} ({b['requests']} requests) "
                      f"{b.get('provider_status') or ''}")
     if s["failed"]:
-        lines.append("failed (unanswered ones can be sent again with --resubmit-failed):")
+        lines.append("failed (unanswered ones can be sent again with --resubmit-failed; the rest by hand):")
         lines += [f"  {f['custom_id']}: {f['status']}: {str(f.get('error') or '')[:200]}" for f in s["failed"]]
     if s["in_flight"]:
         lines.append("run the same command again to collect (or add --wait)")

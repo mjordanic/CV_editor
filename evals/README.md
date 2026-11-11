@@ -354,7 +354,8 @@ uv run python -m evals.batch_grade --jobs FILE --status | --dry-run      # no ca
 - **The same retry rule** (`MAX_ATTEMPTS = 2`). An answer that does not parse, and a request the API did not
   answer (`errored`, `expired`, `canceled`: not billed), go out once more in a follow-up batch; every answered
   attempt ends up in `llm_calls.jsonl` and `raw_response.json`, as after `send()`'s re-ask. A refusal is recorded
-  and final, never re-routed. What still fails is listed; `--resubmit-failed` sends only unanswered ones again.
+  and final, never re-routed. What still fails is listed; `--resubmit-failed` sends only unanswered ones again
+  (`request_changed` and `collect_error` were answered and billed: they are settled by hand, never re-sent).
 - **One window.** One run submits every due grading of its jobs; the batches split only between cases, so a case's
   arms and its Sonnet, Opus, Haiku and trap-check gradings are always in the same batch.
 - **Durable.** `<runs>/batches/grading/state.json` records each request's `custom_id` (stable: grading name, run
@@ -516,7 +517,7 @@ billed, and `cost_list_usd` is the list price, which every single-prompt manifes
 `batch_id`, `cost_list_usd` and, in both paths, the provider's `response_metadata` (`finish_reason`, `service_tier`,
 `system_fingerprint`, model). An answer that does not parse is a finished `parse_error` session, never re-asked,
 as without Batch. A request the API did not answer goes out once more in a follow-up batch, then is listed
-(`--batch-resubmit-failed`).
+(`--batch-resubmit-failed` sends only such unanswered requests again; answered ones are settled by hand).
 
 ## 8. Analysis notebook: `evals/analysis/analysis.ipynb`
 
