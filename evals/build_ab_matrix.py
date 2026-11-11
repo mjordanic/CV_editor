@@ -16,7 +16,8 @@ Stages 1-2 (evals/matrix_ab_stage12.json), 147 sessions:
            second time (eval2), by Opus once (opus1) and by Haiku twice (haiku1, haiku2).
     core   the other 33 cases x A, C, E, graded once by Sonnet; the 4 extra repeat cases get a second writer run
            (graded once) and their first-run sessions a second Sonnet grading; Opus grades the first-run sessions
-           of the 6 check cases. 111 sessions.
+           of the 6 check cases. 111 sessions. Haiku was dropped as a re-grader after the pilot (option O1 off), so
+           the core has no Haiku grading.
     The 6 check cases come from the 6 of the 7 non-pilot personas a seeded draw picks, two per input set; the 4
     extra repeat cases are the check cases with cv_only and no_cv (the 6 pilot repeats are all all4). Every session
     gets the ground-truth trap check (truth1). So: 10 repeat cases (30 re-graded first runs), 12 Opus cases (36
@@ -66,9 +67,12 @@ GRADERS = {
     "trap": "anthropic:claude-haiku-5-5",     # the ground-truth trap check (evals/score_truth.py)
 }
 # The plan's prices (section 3) and caps (+25%, rounded up to a dollar), per stage. Caps are on that stage's own
-# spend in the ledger; "total" caps the whole ledger of the runs folder.
-PLAN_USD_12 = {"pilot": {"standard": 15.74, "batch": 8.81}, "core": {"standard": 29.88, "batch": 17.85},
-               "total": {"standard": 45.62, "batch": 26.66}}
+# spend in the ledger; "total" caps the whole ledger of the runs folder. The pilot keeps the figures it ran under
+# (it spent 6.78 USD). The core is re-priced from the pilot's measured unit costs (run_matrix.AB_UNIT_USD,
+# 2026-11-11; it was 29.88 / 17.85 before) and keeps its caps. Its Batch figure has the sessions on direct OpenAI
+# calls and the gradings through Anthropic's Batch API.
+PLAN_USD_12 = {"pilot": {"standard": 15.74, "batch": 8.81}, "core": {"standard": 20.67, "batch": 11.73},
+               "total": {"standard": 36.41, "batch": 20.54}}
 CAPS_12 = {"pilot": {"standard": 20.0, "batch": 12.0}, "core": {"standard": 38.0, "batch": 23.0},
            "total": {"standard": 57.0, "batch": 34.0}}
 PLAN_USD_3 = {"stage3": {"standard": 23.51, "batch": 14.58}, "total": {"standard": 23.51, "batch": 14.58}}

@@ -86,7 +86,8 @@ def test_stage12_pilot_check_repeat_and_opus_cases_follow_the_plan():
     models = {"sonnet": SONNET, "opus": OPUS, "haiku": HAIKU}
     assert all(g["model"] == models[g["grader"]] for c in cases for g in c["gradings"])
     assert all(c["truth"] == {"name": "truth1", "grader": "trap", "model": HAIKU} for c in cases)
-    # the pilot's 18 first runs carry the calibration; the core holds the other 12 re-grades and 18 Opus gradings
+    # the pilot's 18 first runs carry the calibration; the core holds the other 12 re-grades and 18 Opus gradings,
+    # and no Haiku grading (Haiku was dropped as a re-grader after the pilot)
     core = [g for c in cases if c["stage"] == "core" for g in c["gradings"]]
     assert Counter(g["name"] for g in core if g["name"] != "eval1") == {"eval2": 12, "opus1": 18}
 
@@ -132,24 +133,22 @@ def _estimate(path, stages=None):
     return run_matrix.estimate_stages(cases, meta)
 
 
-def test_the_estimate_reproduces_the_plans_totals():
+def test_the_estimate_reprices_the_pilot_to_its_spend_and_matches_the_core_plan():
     est = _estimate(STAGE12)
-    assert (est["total"]["standard"], est["total"]["batch"]) == (45.62, 26.66)
-    assert (est["stages"]["pilot"]["standard"], est["stages"]["pilot"]["batch"]) == (15.74, 8.81)
-    assert (est["stages"]["core"]["standard"], est["stages"]["core"]["batch"]) == (29.88, 17.85)
-    for row in (est["total"], *est["stages"].values()):
-        assert row["standard"] == row["plan_usd"]["standard"] and row["batch"] == row["plan_usd"]["batch"]
-        assert row["within_cap"]
+    # at the pilot's measured unit costs, the pilot's own sessions and gradings come to what it spent (6.78 Batch)
+    assert est["stages"]["pilot"]["batch"] == 6.78 and est["stages"]["pilot"]["plan_usd"]["batch"] == 8.81
+    core = est["stages"]["core"]
+    assert (core["standard"], core["batch"]) == (20.67, 11.73) == tuple(core["plan_usd"].values())
+    assert core["within_cap"] and est["total"]["within_cap"]
     assert est["total"]["cap_usd"] == {"standard": 57.0, "batch": 34.0}
-    a = est["arms"]["A"]
-    assert a["sessions"] == 49 and a["app"] == pytest.approx(1.323) and a["grading"] == pytest.approx(7.35)
-    assert a["regrades"] == pytest.approx(1.5) and a["opus"] == pytest.approx(3.6)
-    assert a["haiku"] == pytest.approx(0.096) and a["trap"] == pytest.approx(0.098) and a["standard"] == 13.97
-    assert (est["arms"]["C"]["standard"], est["arms"]["E"]["standard"]) == (13.13, 18.52)
-    assert est["arms"]["E"]["app"] == pytest.approx(5.88)
+    a = est["arms"]["A"]  # 49 sessions: 37 Sonnet eval1, 10 eval2, 12 opus1, 6 x2 haiku, 49 trap checks
+    assert a["sessions"] == 49 and a["app"] == pytest.approx(49 * 0.0286) and a["grading"] == pytest.approx(49 * 0.093)
+    assert a["regrades"] == pytest.approx(10 * 0.093) and a["opus"] == pytest.approx(12 * 0.352)
+    assert a["haiku"] == pytest.approx(12 * 0.0098) and a["trap"] == pytest.approx(49 * 0.001)
+    assert a["batch"] == pytest.approx(49 * 0.0286 + (49 * 0.093 + 10 * 0.093 + 12 * 0.352 + 12 * 0.0098
+                                                      + 49 * 0.001) / 2, abs=0.01)  # sessions direct
     s3 = _estimate(STAGE3)
-    assert (s3["total"]["standard"], s3["total"]["batch"]) == (23.51, 14.58)
-    assert (s3["arms"]["B"]["standard"], s3["arms"]["D"]["standard"]) == (12.24, 11.27)
+    assert (s3["total"]["standard"], s3["total"]["batch"]) == (20.03, 12.84)
 
 
 def test_the_estimate_of_a_selection_has_no_total_cap_line_and_the_stage_caps():
@@ -158,21 +157,16 @@ def test_the_estimate_of_a_selection_has_no_total_cap_line_and_the_stage_caps():
     assert est["stages"]["pilot"]["cap_usd"] == {"standard": 20.0, "batch": 12.0}
 
 
-def test_the_unit_prices_follow_the_token_prices():
+def test_the_unit_prices_are_the_pilots_measured_means():
     from evals import run_matrix
-    from provenance import price_for
     u = run_matrix.AB_UNIT_USD
-    assert u["single_prompt"] == {"gpt-6-luna": 0.01, "gpt-6.1-terra": 0.06, "gpt-6.1-sol": 0.12}
-    assert run_matrix.ESTIMATE_USD["single_prompt"] == u["single_prompt"]
-    for model, (p_in, p_out) in run_matrix.GRADER_PRICES_PER_1M.items():
-        tokens = run_matrix.GRADING_TOKENS
-        assert u["grading"][model] == pytest.approx((tokens[0] * p_in + tokens[1] * p_out) / 1e6, abs=0.005)
-        known = price_for(model)  # the Claude grader's prices, once provenance has them
-        if known is not None:
-            assert known[0] == p_in and p_out in known
-    t = run_matrix.TRAP_TOKENS
-    p_in, p_out = run_matrix.GRADER_PRICES_PER_1M["claude-haiku-5-5"]
-    assert u["trap"]["claude-haiku-5-5"] == pytest.approx((t[0] * p_in + t[1] * p_out) / 1e6, abs=0.001)
+    assert u["multi_agent"]["gpt-6-luna"] == 0.0286
+    assert u["single_prompt"] == {"gpt-6-luna": 0.0028, "gpt-6.1-sol": 0.0439,
+                                  "gpt-6.1-terra": 0.06}  # terra: not in the pilot, 6k in / 10k out
+    # the gradings were measured through the Batch API (half price): the units are list price
+    assert u["grading"] == pytest.approx({"claude-sonnet-5-5": 0.093, "claude-opus-5-5": 0.352,
+                                          "claude-haiku-5-5": 0.0098})
+    assert u["trap"] == pytest.approx({"claude-haiku-5-5": 0.001})
     with pytest.raises(ValueError, match="no price"):
         run_matrix.sp_session_usd("openai:unknown-model")
 
@@ -181,11 +175,11 @@ def test_estimate_prints_the_plans_table(capsys):
     from evals import run_matrix
     assert run_matrix.main(["--matrix", str(STAGE12), "--out", "unused", "--estimate"]) == 0
     out = capsys.readouterr().out
-    assert "| A MA-luna |" in out and "| total" in out and "Haiku calibration" in out
-    assert "total: 147 sessions, $45.62 standard / $26.66 Batch (plan $45.62 / $26.66); cap $57.00 / $34.00: within" in out
+    assert "| A MA-luna" in out and "| total" in out and "Haiku calibration" in out
+    assert "stage core: 111 sessions, $20.67 standard / $11.73 Batch (plan $20.67 / $11.73); cap $38.00 / $23.00: within" in out
     assert run_matrix.main(["--matrix", str(STAGE12), "--out", "unused", "--estimate", "--stage", "core", "--json"]) == 0
     est = json.loads(capsys.readouterr().out)
-    assert est["total"]["sessions"] == 111 and est["total"]["standard"] == 29.88
+    assert est["total"]["sessions"] == 111 and est["total"]["standard"] == 20.67
 
 
 # --- run_matrix on a staged matrix --------------------------------------------------------------------

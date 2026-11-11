@@ -56,21 +56,26 @@ Paired by case (6 pairs; the two runs averaged first):
 No contrast is significant at this size: Holm-adjusted p ≥ 0.25. The notebook's tables are in
 [`evals/analysis/output/2026-11-11/`](../../analysis/output/2026-11-11/).
 
-**Trap check (`truth1`).** The raw counts are:
+**Trap check (`truth1`).** The counts are:
 
 | arm | gaps claimed | traps hit |
 |---|---|---|
-| MA-luna | 3 | 2 |
-| SP-luna | 1 | 1 |
-| SP-sol | 0 | 2 |
+| MA-luna | 3 | 0 |
+| SP-luna | 1 | 0 |
+| SP-sol | 0 | 0 |
 
-Every hit's quote was found in the PDF text. Five of these hits are p01's trap T6, "attributing Debezium/CDC when
-portfolio and notes are omitted". In `all4` the portfolio and the notes do mention Debezium, so these hits are not
-errors: the check does not know which input set a session had. Without T6 the real hits are:
+Every hit's quote was found in the PDF text. The hits are:
 - **MA-luna, 3:** the PLC gap of p11 twice (setpoint changes in TIA Portal written as PLC work), and p11's
   "production software" gap once.
 - **SP-luna, 1:** p11's "production software" gap.
 - **SP-sol, 0.**
+
+As collected, the check also counted 5 traps hit (MA-luna 2, SP-luna 1, SP-sol 2), all p01's trap T6, "attributing
+Debezium/CDC when portfolio and notes are omitted". In `all4` the portfolio and the notes do state Debezium, so these
+were not errors: the check did not know which input set a session had. T6 is now conditional in `persona.json`
+(`when_omitted`), and its verdicts were dropped from the six p01 checks without a model call
+(`python -m evals.score_truth RUN --refilter`; each check lists `"not_applicable": ["T6"]`, and its
+`raw_response.json` keeps the original answer).
 
 ## Grader calibration (plan section 6, pass thresholds fixed before the pilot)
 

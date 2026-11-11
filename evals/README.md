@@ -132,7 +132,7 @@ The matrix (110 cases):
 
 Estimated cost of the whole matrix (`--estimate`): about 20.4 USD, within the 24 USD budget (20.6 with
 `--truth-check`): luna session 0.013, terra 0.06, a session with change requests twice that, an evaluation
-0.15 (one Claude Sonnet 5.5 grading, as the staged matrices price it) and a trap check 0.002 (Claude Haiku
+0.15 (one Claude Sonnet 5.5 grading) and a trap check 0.002 (Claude Haiku
 5.5). `--total-cap` stops new cases at 24 USD whatever the estimate.
 
 **Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
@@ -438,6 +438,12 @@ downgraded to `unclear` and counted in `unverified_quotes`. `RUN/evaluation/<nam
 has every item, the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, the cost and the
 same `grader` record as an evaluation.
 
+Some traps only exist for some input sets ("attributing Debezium/CDC when portfolio and notes are omitted"). Such a
+trap is written as `{"text": ..., "when_omitted": ["portfolio", "notes"]}` (or `"when_given"`), and the check asks
+only about the traps that apply to the session's inputs (the manifest's `inputs_given`); the others are listed
+under `not_applicable`. Ids stay the persona's (T6 is T6 in every input set). `--refilter` re-applies the conditions
+to a check already on disk, with no model call (used on the 2026-11-11 pilot's p01 checks).
+
 ## 6. Spread across repeats: `evals/summarize.py`
 
 ```bash
@@ -558,13 +564,15 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   - breakdowns by input set, ad and persona, plus cost and latency;
   - the grader's ATS score (`ats`, 0-10; rounds graded before it, such as 2026-11-10, have none)
     next to the claims the grader flags, so a high ATS score bought by cheating shows;
-  - grader calibration, when two graders graded the same sessions;
+  - grader calibration: the primary grader (`PRIMARY_GRADER`) against its calibration partner (`SECOND_GRADER`,
+    Opus by default; `None` skips it), with the plan's section-6 checks, their thresholds and pass/fail on the
+    composite score (`evals/analysis/calibration.py`; the claim audit is only counted, a person reads it);
   - power and sample sizes.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
   cell to choose the data.
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
   are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
-  `tests/test_analysis_load.py`.
+  `tests/test_analysis_load.py`; the calibration checks in `tests/test_analysis_calibration.py`.
 
 ## 9. The staged comparison (experiment plan, stages 1-3)
 
@@ -575,7 +583,8 @@ and a test runs it):
   **C** SP-luna and **E** SP-sol on the 39 matched cases (p01-p13 on their primary ad x `all4`,
   `cv_only`, `no_cv`), in two stages. **pilot** (36): the 6 pilot cases (p01/a1, p03/a3, p04/a6, p11/a1,
   p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (111): the other 33 cases x 3 arms, plus a
-  second writer run of the 4 extra repeat cases.
+  second writer run of the 4 extra repeat cases. Haiku was dropped as a re-grader after the pilot (option O1
+  off): the core has no Haiku grading.
 - **`matrix_ab_stage3.json`**, 78 sessions, run only if the core run calls for it: **B** MA-terra and
   **D** SP-terra on the 39 cases.
 
@@ -609,16 +618,14 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
 - **`--estimate`** prints the plan's cost table: per arm, app sessions, Sonnet grading, re-gradings,
   Opus, Haiku and trap check at standard rates, the total and the total with Batch grading (50% off
   every grading line; the sessions run interactively on OpenAI), then each stage and the total against
-  the plan's figures and caps. Unit prices (`AB_UNIT_USD` in `run_matrix.py`): app sessions the measured
-  2026-11-10 means (luna 0.027, terra 0.085); single-prompt sessions 6k input and 10k output tokens at
-  provenance's prices, rounded up to a cent (luna 0.01, terra 0.06, sol 0.12); a grading 16k input and
-  12k output tokens (Sonnet 0.15, Opus 0.30, Haiku 0.008; the ATS score needs no extra input, the CV's PDF
-  text was already in the prompt, and its answer replaces the earlier ATS section of about the same
-  length); the trap check 0.002. Stages 1-2: **45.62 USD
-  standard, 26.66 USD with Batch** (pilot 15.74 / 8.81, core 29.88 / 17.85); stage 3: 23.51 / 14.58.
-  With `--sp-batch` the Batch column also halves the single-prompt sessions: stages 1-2 **23.47 USD**
-  (pilot 8.03, core 15.44), stage 3 **13.41 USD**. The app's sessions stay interactive, and the cost comparison between arms uses list
-  prices (`cost_list_usd`).
+  the plan's figures and caps. Unit prices (`AB_UNIT_USD` in `run_matrix.py`) are the stage-1 pilot's
+  measured means (`evals/results/2026-11-11`): app session luna 0.0286; single-prompt sessions luna 0.0028,
+  sol 0.0439; gradings, measured through the Batch API and stored at list price, Sonnet 0.093, Opus 0.352,
+  Haiku 0.0098; trap check 0.001. Not in the pilot: the terra app session (the 2026-11-10 mean, 0.085) and a
+  terra single call (6k input and 10k output tokens at provenance's prices, a ceiling: 0.06). At these units
+  the pilot comes to 6.78 USD with Batch, what it spent. Core (111 sessions): **20.67 USD standard, 11.73 USD
+  with Batch grading** (sessions on direct OpenAI calls); stage 3: 20.03 / 12.84. `--sp-batch` would also
+  halve the single-prompt sessions (core 10.87), but the core runs them as direct calls. The cost comparison between arms uses list prices (`cost_list_usd`).
 - **Caps** (the plan's +25%): each stage's own spend (its sessions' rows in `ledger.tsv`) and the whole
   ledger. Stages 1-2: pilot 20 / 12, core 38 / 23, total **57 / 34** (standard / Batch); stage 3: 30 / 19,
   run into the same folder, so its total cap (87 / 53) includes stages 1-2. The standard caps apply when

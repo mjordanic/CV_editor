@@ -20,11 +20,20 @@ The persona comes from the run's manifest.json (labels.persona, as run_matrix se
 --persona (an id such as p12, a folder, or a persona.json path). Results go to
 RUN/evaluation/<name>/truth_check.json, with llm_calls.jsonl and summary.json (cost).
 
+Conditional traps: a trap in persona.json is a string, or {"text", "when_omitted": [...], "when_given": [...]} for a
+mistake that only exists for some input sets (e.g. p01's "attributing Debezium/CDC when portfolio and notes are
+omitted": in all4 the portfolio states it). The check asks only about the traps that apply to the session's inputs
+(manifest.json "inputs_given"); the others are listed under "not_applicable" in truth_check.json. Item ids are
+numbered over all of the persona's items, so a trap keeps its id in every input set.
+
 Usage:
     .venv/bin/python -m evals.score_truth RUN_DIR [--grader-model anthropic:claude-haiku-5-5] [--name truth1]
         [--persona p12] [--effort medium] [--env-file .env]
+    .venv/bin/python -m evals.score_truth RUN_DIR --refilter [--name truth1]
 This makes one paid model call per check (one more if the answer does not parse). Out of credit or a
-reached spend limit: no retry, exit code 75 (evals/credit.py).
+reached spend limit: no retry, exit code 75 (evals/credit.py). --refilter makes no call: it re-applies the trap
+conditions to a check already on disk (made before the conditions existed), drops the verdicts of traps that do not
+apply and recounts.
 """
 from __future__ import annotations
 
@@ -124,19 +133,43 @@ def load_persona(ref: str | Path) -> tuple[Path, dict]:
     return path, json.loads(path.read_text(encoding="utf-8"))
 
 
+def _manifest(run_dir: Path) -> dict:
+    path = run_dir / "manifest.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+
+
 def persona_for_run(run_dir: Path) -> str | None:
     """The persona id the run was made for, from manifest.json labels."""
-    manifest = run_dir / "manifest.json"
-    if not manifest.is_file():
-        return None
-    labels = json.loads(manifest.read_text(encoding="utf-8")).get("labels") or {}
-    return labels.get("persona") or None
+    return (_manifest(run_dir).get("labels") or {}).get("persona") or None
 
 
-def items_from_persona(persona: dict) -> list[dict]:
+def inputs_for_run(run_dir: Path) -> list[str] | None:
+    """The candidate inputs the session was given (manifest.json "inputs_given"); None when not recorded."""
+    return _manifest(run_dir).get("inputs_given")
+
+
+def trap_applies(trap: str | dict, inputs_given: list[str] | None) -> bool:
+    """A trap is a string (it always applies) or {"text", "when_omitted": [...], "when_given": [...]}: it applies
+    only when every input in when_omitted was left out and every input in when_given was given. With the inputs
+    unknown (None), every trap applies."""
+    if isinstance(trap, str) or inputs_given is None:
+        return True
+    given = set(inputs_given)
+    return not given & set(trap.get("when_omitted") or []) and set(trap.get("when_given") or []) <= given
+
+
+def items_from_persona(persona: dict, inputs_given: list[str] | None = None) -> list[dict]:
+    """The gaps (G1, ...) and the traps (T1, ...) that apply to a session with these inputs. Ids are numbered over
+    all of the persona's items, so a trap keeps its id whatever the input set."""
     items = [{"id": f"G{i}", "kind": "gap", "item": g} for i, g in enumerate(persona.get("deliberate_gaps") or [], 1)]
-    items += [{"id": f"T{i}", "kind": "trap", "item": t} for i, t in enumerate(persona.get("traps") or [], 1)]
+    items += [{"id": f"T{i}", "kind": "trap", "item": t if isinstance(t, str) else t["text"]}
+              for i, t in enumerate(persona.get("traps") or [], 1) if trap_applies(t, inputs_given)]
     return items
+
+
+def not_applicable(persona: dict, inputs_given: list[str] | None) -> list[str]:
+    """Ids of the traps left out for a session with these inputs."""
+    return [f"T{i}" for i, t in enumerate(persona.get("traps") or [], 1) if not trap_applies(t, inputs_given)]
 
 
 def build_values(items: list[dict], cv: str | None, cover_letter: str | None) -> dict:
@@ -217,10 +250,11 @@ def build_truth_check(run_dir: Path, grader, persona: str | Path | None = None):
     persona_path, truth = load_persona(ref)
     cv, cv_text = delivered_text(run_dir / "outputs", "final_cv")
     cl, cl_text = delivered_text(run_dir / "outputs", "final_cover_letter")
-    items = items_from_persona(truth)
+    inputs_given = inputs_for_run(run_dir)
+    items = items_from_persona(truth, inputs_given)
     request = build_check_request(grader, build_values(items, cv, cl))
     return request, {"persona_path": persona_path, "truth": truth, "items": items, "cv": cv, "cover_letter": cl,
-                     "plain_texts": [cv_text, cl_text]}
+                     "plain_texts": [cv_text, cl_text], "not_applicable": not_applicable(truth, inputs_given)}
 
 
 def write_check_prompt(recorder, request) -> None:
@@ -244,7 +278,8 @@ def finish_truth_check(name: str, request, result, ctx: dict, recorder, extra: d
     counts = {**count(rows), "cost_usd": result.cost_usd}
     record = {"checker_model": request.grader.name, "name": name, "grader": grading, "persona": ctx["truth"].get("id"),
               "persona_file": str(ctx["persona_path"]), "outputs": {"cv": cv is not None, "cover_letter": cl is not None},
-              "items": rows, "counts": counts, "cost_usd": counts["cost_usd"]}
+              "not_applicable": ctx.get("not_applicable", []), "items": rows, "counts": counts,
+              "cost_usd": counts["cost_usd"]}
     recorder.write_json("truth_check.json", record)
     recorder.write_summary(status="ok", grading=grading)
     return record
@@ -273,6 +308,23 @@ def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1",
     return finish_truth_check(name, request, result, ctx, recorder)
 
 
+def refilter(run_dir: Path, name: str = "truth1", persona: str | Path | None = None) -> dict:
+    """Re-apply the persona's trap conditions to a check already on disk, without a model call: drop the verdicts of
+    the traps that do not apply to the session's inputs, recount, and rewrite truth_check.json. For checks made
+    before the conditions existed (they asked about every trap)."""
+    path = run_dir / "evaluation" / name / "truth_check.json"
+    record = json.loads(path.read_text(encoding="utf-8"))
+    _, truth = load_persona(persona or persona_for_run(run_dir) or record["persona"])
+    skipped = not_applicable(truth, inputs_for_run(run_dir))
+    rows = [r for r in record["items"] if r["id"] not in skipped]
+    if len(rows) == len(record["items"]):
+        return record  # every verdict applies: the file stays as it is
+    counts = {**count(rows), "cost_usd": record["counts"].get("cost_usd")}
+    record.update(not_applicable=skipped, items=rows, counts=counts)
+    path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")  # as RunRecorder writes it
+    return record
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("run_dir", type=Path)
@@ -282,7 +334,14 @@ def main(argv=None) -> int:
     parser.add_argument("--name", default="truth1", help="subfolder under RUN/evaluation (truth2 for a re-check)")
     parser.add_argument("--persona", help="persona id, folder or persona.json (default: the run's manifest label)")
     parser.add_argument("--env-file", help=".env file with the API keys (read, never copied)")
+    parser.add_argument("--refilter", action="store_true",
+                        help="no model call: re-apply the trap conditions to the existing check --name of RUN_DIR")
     args = parser.parse_args(argv)
+    if args.refilter:
+        record = refilter(args.run_dir.resolve(), args.name, args.persona)
+        print(json.dumps({"run_dir": str(args.run_dir), "name": args.name,
+                          "not_applicable": record.get("not_applicable", []), "counts": record["counts"]}))
+        return 0
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")
     from evals.credit import EXIT_OUT_OF_CREDIT, OutOfCredit

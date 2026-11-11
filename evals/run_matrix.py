@@ -90,7 +90,7 @@ OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new 
 # Expected cost per step in USD for a matrix without stages (evals/matrix.json), from the measured partial runs
 # (2026-11): a gpt-6-luna session about 0.013, a gpt-6.1-terra session about 0.06. A script with change requests
 # redrafts more: its session is estimated at twice the default session. "eval" is one Claude Sonnet 5.5 grading and
-# "truth" one Claude Haiku 5.5 trap check, as AB_UNIT_USD below prices them.
+# "truth" one Claude Haiku 5.5 trap check (older figures than AB_UNIT_USD below, which the staged matrices use).
 # A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex): the prompt
 # is the app's writer and LaTeX rules, both LaTeX templates and the case's inputs, job ad and search results (about
 # 4-7k tokens on these fixtures); the answer is both documents as text and as LaTeX plus notes (about 4-5k tokens) and
@@ -112,23 +112,24 @@ ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval":
                 "single_prompt": {m: sp_session_usd(m) for m in ("gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol")}}
 DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 
-# Staged comparison matrices: the experiment plan's unit prices (cv-eval-plan section 3), standard rates.
-# App sessions: the measured means of the 2026-11-10 default-script sessions (62 luna, 20 terra). Single-prompt
-# sessions: sp_session_usd. Gradings: Anthropic list prices per 1M tokens (GRADER_PRICES_PER_1M, the prices the
-# Claude grader records) at ~16k input and ~12k output tokens per grading (the measured 10k output plus room for
-# thinking; the ATS score adds no input, as the CV's PDF text was already in the prompt, and its answer replaces
-# the earlier ATS section of about the same length); the trap check at ~5k input and ~1.5k output. The plan rounds
-# them as below. The Batch API charges BATCH_PRICE_FACTOR x list price on every grading line; sessions run on OpenAI
-# interactively, so Batch does not change them.
-GRADER_PRICES_PER_1M = {"claude-sonnet-5-5": (2.00, 10.00), "claude-opus-5-5": (4.00, 20.00),
-                        "claude-haiku-5-5": (0.10, 0.50)}  # input, output
-GRADING_TOKENS = (16_000, 12_000)
-TRAP_TOKENS = (5_000, 1_500)
+# Staged comparison matrices: unit prices at standard rates, the stage-1 pilot's measured means
+# (evals/results/2026-11-11: 12 sessions per arm, 54 Sonnet, 18 Opus and 36 Haiku gradings, 36 trap checks).
+# The sessions were direct OpenAI calls. The gradings and trap checks went through Anthropic's Batch API, so their
+# measured Batch means are divided by BATCH_PRICE_FACTOR here; the estimate's Batch column multiplies them back.
+# The Batch API charges BATCH_PRICE_FACTOR x list price on every grading line; sessions run on OpenAI interactively,
+# so Batch does not change them. gpt-6.1-terra was not in the pilot: its app session is the
+# 2026-11-10 measured mean (20 sessions), and a single call is sp_session_usd (6k input and 10k output
+# tokens, a ceiling: the pilot's single calls averaged 5.4k input and 3.8-5.0k output). Haiku grades only in the
+# pilot (dropped as a re-grader).
+PILOT_BATCH_USD = {"claude-sonnet-5-5": 0.0465, "claude-opus-5-5": 0.176, "claude-haiku-5-5": 0.0049,
+                   "trap": 0.0005}
 AB_UNIT_USD = {
-    "multi_agent": {"gpt-6-luna": 0.027, "gpt-6.1-terra": 0.085},
-    "single_prompt": {m: sp_session_usd(m) for m in ("gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol")},
-    "grading": {"claude-sonnet-5-5": 0.15, "claude-opus-5-5": 0.30, "claude-haiku-5-5": 0.008},
-    "trap": {"claude-haiku-5-5": 0.002},
+    "multi_agent": {"gpt-6-luna": 0.0286, "gpt-6.1-terra": 0.085},
+    "single_prompt": {"gpt-6-luna": 0.0028, "gpt-6.1-sol": 0.0439,
+                      "gpt-6.1-terra": sp_session_usd("gpt-6.1-terra")},
+    "grading": {m: PILOT_BATCH_USD[m] / BATCH_PRICE_FACTOR
+                for m in ("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5")},
+    "trap": {"claude-haiku-5-5": PILOT_BATCH_USD["trap"] / BATCH_PRICE_FACTOR},
 }
 # Paths whose content is the app (and the single-prompt arm) a frozen comparison runs on.
 APP_PATHS = ("agents", "langgraph_agent.py", "config", "templates", "evals/run_case.py", "evals/single_prompt.py")

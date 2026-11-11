@@ -49,6 +49,18 @@ COUNTS = ("claims", "cv_unsupported", "cv_partly", "cl_unsupported", "cl_partly"
           "must_haves_shown", "gaps_overstated", "work_arrangement_invented", "requests", "requests_followed",
           "requests_partly", "requests_ignored", "requests_refused_wrongly", "untruthful_refused",
           "untruthful_followed", "layout_problems", "wrong_language", "language_errors")
+# The composite of the plan's section 6: the mean of these sub-scores (the calibration checks use it, being steadier
+# than the one overall grade). Every grading row gets it as "composite", None if any of them is missing.
+COMPOSITE = ["invented_content_score", "completeness_score", "fit", "cv_standards", "cover_letter", "visual_layout",
+             "language_quality"]
+
+
+def composite(row: dict) -> float | None:
+    """Mean of the COMPOSITE sub-scores of one grading row, None if any is missing."""
+    values = [row.get(c) for c in COMPOSITE]
+    if any(not isinstance(v, (int, float)) or isinstance(v, bool) for v in values):
+        return None
+    return statistics.fmean(values)
 
 
 def runs_dir_of(path: str | Path) -> Path:
@@ -147,6 +159,7 @@ def _eval_fields(path: Path | None) -> dict:
     }
     for col, keys in SCORES.items():
         row[col] = _dig(evaluation, keys)
+    row["composite"] = composite(row)
     for c in COUNTS:
         value = counts.get(c)
         row[f"n_{c}"] = value if isinstance(value, (int, float)) and not isinstance(value, bool) else None

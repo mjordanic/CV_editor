@@ -207,6 +207,64 @@ def test_truth_check_needs_a_persona(tmp_path):
     assert record["persona"] == "p13" and record["counts"]["missing_from_answer"] == record["counts"]["gaps"] + record["counts"]["traps"]
 
 
+def _p01_run(tmp_path, inputs_given=None) -> Path:
+    """A p01 session whose CV names Debezium (the pilot's all4 sessions did: the portfolio and notes state it)."""
+    run = _run_with_outputs(tmp_path, "Lena Varga-Holm\nCDC pipelines with Debezium and Kafka Connect\n", "Dear team",
+                            persona="p01")
+    manifest = {"labels": {"persona": "p01"}}
+    if inputs_given is not None:
+        manifest["inputs_given"] = inputs_given
+    (run / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return run
+
+
+DEBEZIUM_HIT = {"id": "T6", "verdict": "claimed_as_met", "document": "cv", "quote": "CDC pipelines with Debezium",
+                "note": ""}
+
+
+def test_truth_check_skips_a_conditional_trap_the_input_set_does_not_meet(tmp_path):
+    """p01 T6 ("Debezium/CDC when portfolio and notes are omitted") fired in every all4 pilot session, where the
+    portfolio and notes do state Debezium. It is only asked when both are left out, and keeps its id T6."""
+    from evals.score_truth import score_truth
+    all4 = _p01_run(tmp_path / "all4", ["cv", "portfolio", "cover_letter", "notes"])
+    stub = _StubChecker([DEBEZIUM_HIT])
+    record = score_truth(all4, llm=stub)
+    assert "Debezium/CDC" not in "\n".join(m.content for m in stub.messages)
+    assert record["not_applicable"] == ["T6"] and "T6" not in {r["id"] for r in record["items"]}
+    assert record["counts"]["traps"] == 5 and record["counts"]["traps_hit"] == 0
+
+    cv_only = _p01_run(tmp_path / "cv_only", ["cv"])
+    stub = _StubChecker([DEBEZIUM_HIT])
+    record = score_truth(cv_only, llm=stub)
+    assert "T6: Attributing Debezium/CDC" in "\n".join(m.content for m in stub.messages)
+    assert record["not_applicable"] == [] and record["counts"]["traps"] == 6 and record["counts"]["traps_hit"] == 1
+
+
+def test_trap_conditions_on_given_inputs():
+    from evals.cases import find_persona
+    from evals.score_truth import trap_applies
+    visa = json.loads((find_persona("p04") / "persona.json").read_text(encoding="utf-8"))["traps"][5]
+    assert visa["when_given"] == ["notes"]
+    assert trap_applies(visa, ["cv", "notes"]) and not trap_applies(visa, ["cv"])
+    assert trap_applies(visa, None) and trap_applies("an unconditional trap", ["cv"])
+
+
+def test_refilter_drops_collected_verdicts_of_traps_that_do_not_apply(tmp_path):
+    """The pilot's checks asked about every trap; --refilter re-applies the conditions with no model call."""
+    from evals.score_truth import main, refilter, score_truth
+    run = _p01_run(tmp_path)  # no inputs_given: every trap is asked, as before the conditions existed
+    before = score_truth(run, llm=_StubChecker([DEBEZIUM_HIT]))
+    assert before["counts"]["traps_hit"] == 1 and before["not_applicable"] == []
+    (run / "manifest.json").write_text(json.dumps({"labels": {"persona": "p01"},
+                                                   "inputs_given": ["cv", "portfolio", "cover_letter", "notes"]}))
+    assert main([str(run), "--refilter"]) == 0
+    after = json.loads((run / "evaluation" / "truth1" / "truth_check.json").read_text(encoding="utf-8"))
+    assert after["not_applicable"] == ["T6"] and [r["id"] for r in after["items"]][-1] == "T5"
+    assert after["counts"]["traps"] == 5 and after["counts"]["traps_hit"] == 0
+    assert after["counts"]["gaps"] == before["counts"]["gaps"] and after["cost_usd"] == before["cost_usd"]
+    assert refilter(run) == after  # idempotent
+
+
 def test_quote_matching_ignores_case_spacing_and_typography():
     from evals.score_truth import quote_found
     docs = ["Ich habe den „Führerschein Klasse B“ – seit 2020.", None]
