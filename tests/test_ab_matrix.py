@@ -37,11 +37,11 @@ def test_stage12_resolves_and_has_the_plans_sessions():
     from evals.cases import INPUT_SETS, resolve_case
     m = _load(STAGE12)
     cases = m["cases"]
-    assert len(cases) == 147 and len({c["id"] for c in cases}) == 147
-    assert Counter(c["stage"] for c in cases) == {"pilot": 36, "core": 111}
-    assert Counter(c["arm"] for c in cases) == {"A": 49, "C": 49, "E": 49}
+    assert len(cases) == 186 and len({c["id"] for c in cases}) == 186
+    assert Counter(c["stage"] for c in cases) == {"pilot": 36, "core": 150}
+    assert Counter(c["arm"] for c in cases) == {"A": 49, "C": 49, "E": 49, "F": 39}
     arms = {"A": ("multi_agent", "openai:gpt-6-luna"), "C": ("single_prompt", "openai:gpt-6-luna"),
-            "E": ("single_prompt", "openai:gpt-6.1-sol")}
+            "E": ("single_prompt", "openai:gpt-6.1-sol"), "F": ("single_prompt", "openai:gpt-6-astra")}
     for c in cases:
         resolve_case(c)
         assert (c["method"], c["model"]) == arms[c["arm"]] and not c.get("script") and not c.get("work_preference")
@@ -50,11 +50,21 @@ def test_stage12_resolves_and_has_the_plans_sessions():
         assert c["id"].endswith(f"_{c['case']}_r{c['rep']}")
         truth = json.loads(resolve_case(c)["persona_truth"].read_text())
         assert truth["primary_ad"].split("-", 1)[0] == c["ad"]
-    # the 39 matched cases, each in all three arms
+    # the 39 matched cases, each in all four arms
     first = [c for c in cases if c["rep"] == 1]
     assert {(c["persona"], c["input_set"]) for c in first} == {
         (f"p{i:02d}", s) for i in range(1, 14) for s in ("all4", "cv_only", "no_cv")}
-    assert Counter(c["case"] for c in first) == dict.fromkeys({c["case"] for c in first}, 3)
+    assert Counter(c["case"] for c in first) == dict.fromkeys({c["case"] for c in first}, 4)
+
+
+def test_sp_astra_runs_once_on_all_39_cases_in_the_core_graded_once_by_sonnet():
+    m = _load(STAGE12)
+    astra = [c for c in m["cases"] if c["arm"] == "F"]
+    assert m["arms"]["F"]["name"] == "SP-astra" and len({c["case"] for c in astra}) == 39
+    assert all(c["stage"] == "core" and c["rep"] == 1 and _names(c) == ["eval1"] for c in astra)
+    assert {c["case"] for c in astra} >= set(m["design"]["pilot"])  # the pilot cases too
+    # the pilot, already run, is unchanged: arms A, C, E only
+    assert {c["arm"] for c in m["cases"] if c["stage"] == "pilot"} == {"A", "C", "E"}
 
 
 def test_stage12_pilot_check_repeat_and_opus_cases_follow_the_plan():
@@ -71,31 +81,34 @@ def test_stage12_pilot_check_repeat_and_opus_cases_follow_the_plan():
     assert d["opus"] == d["pilot"] + d["check"]
     # writer runs: 2 for the repeat cases, 1 otherwise; second runs are graded once by Sonnet
     reps = Counter((c["case"], c["arm"]) for c in cases)
-    assert all(n == (2 if case in d["repeat"] else 1) for (case, _), n in reps.items())
+    assert all(n == (2 if case in d["repeat"] and arm != "F" else 1) for (case, arm), n in reps.items())
     for c in cases:
         if c["rep"] == 2:
             assert _names(c) == ["eval1"]
-    for c in (c for c in cases if c["rep"] == 1):
+    for c in (c for c in cases if c["rep"] == 1 and c["arm"] != "F"):
         assert _names(c, "sonnet") == (["eval1", "eval2"] if c["case"] in d["repeat"] else ["eval1"])
         assert _names(c, "opus") == (["opus1"] if c["case"] in d["opus"] else [])
         assert _names(c, "haiku") == (["haiku1", "haiku2"] if c["case"] in d["pilot"] else [])
     # the plan's totals: 30 re-graded first runs, Opus on 36, Haiku x2 on 18, the trap check on every session
     graded = Counter((g["grader"], g["name"]) for c in cases for g in c["gradings"])
-    assert graded == {("sonnet", "eval1"): 147, ("sonnet", "eval2"): 30, ("opus", "opus1"): 36,
+    assert graded == {("sonnet", "eval1"): 186, ("sonnet", "eval2"): 30, ("opus", "opus1"): 36,
                       ("haiku", "haiku1"): 18, ("haiku", "haiku2"): 18}
     models = {"sonnet": SONNET, "opus": OPUS, "haiku": HAIKU}
     assert all(g["model"] == models[g["grader"]] for c in cases for g in c["gradings"])
     assert all(c["truth"] == {"name": "truth1", "grader": "trap", "model": HAIKU} for c in cases)
-    # the pilot's 18 first runs carry the calibration; the core holds the other 12 re-grades and 18 Opus gradings
+    # the pilot's 18 first runs carry the calibration; the core holds the other 12 re-grades and 18 Opus gradings,
+    # and no Haiku grading (Haiku was dropped as a re-grader after the pilot)
     core = [g for c in cases if c["stage"] == "core" for g in c["gradings"]]
     assert Counter(g["name"] for g in core if g["name"] != "eval1") == {"eval2": 12, "opus1": 18}
 
 
 def test_each_cases_sessions_are_back_to_back_in_a_shuffled_arm_order():
     cases = _load(STAGE12)["cases"]
-    assert [c["stage"] for c in cases] == ["pilot"] * 36 + ["core"] * 111  # the pilot first
-    blocks = [c["case"] for i, c in enumerate(cases) if i == 0 or cases[i - 1]["case"] != c["case"]]
-    assert len(blocks) == len(set(blocks)) == 39  # one contiguous block per matched case
+    assert [c["stage"] for c in cases] == ["pilot"] * 36 + ["core"] * 150  # the pilot first
+    for stage in ("pilot", "core"):
+        staged = [c for c in cases if c["stage"] == stage]
+        blocks = [c["case"] for i, c in enumerate(staged) if i == 0 or staged[i - 1]["case"] != c["case"]]
+        assert len(blocks) == len(set(blocks)) == (6 if stage == "pilot" else 39)  # one block per case and stage
     arm_orders = {tuple(c["arm"] for c in cases if c["case"] == case and c["rep"] == 1) for case in blocks}
     assert len(arm_orders) > 1  # not always the same arm first
 
@@ -132,24 +145,23 @@ def _estimate(path, stages=None):
     return run_matrix.estimate_stages(cases, meta)
 
 
-def test_the_estimate_reproduces_the_plans_totals():
+def test_the_estimate_reprices_the_pilot_to_its_spend_and_matches_the_core_plan():
     est = _estimate(STAGE12)
-    assert (est["total"]["standard"], est["total"]["batch"]) == (45.62, 26.66)
-    assert (est["stages"]["pilot"]["standard"], est["stages"]["pilot"]["batch"]) == (15.74, 8.81)
-    assert (est["stages"]["core"]["standard"], est["stages"]["core"]["batch"]) == (29.88, 17.85)
-    for row in (est["total"], *est["stages"].values()):
-        assert row["standard"] == row["plan_usd"]["standard"] and row["batch"] == row["plan_usd"]["batch"]
-        assert row["within_cap"]
-    assert est["total"]["cap_usd"] == {"standard": 57.0, "batch": 34.0}
-    a = est["arms"]["A"]
-    assert a["sessions"] == 49 and a["app"] == pytest.approx(1.323) and a["grading"] == pytest.approx(7.35)
-    assert a["regrades"] == pytest.approx(1.5) and a["opus"] == pytest.approx(3.6)
-    assert a["haiku"] == pytest.approx(0.096) and a["trap"] == pytest.approx(0.098) and a["standard"] == 13.97
-    assert (est["arms"]["C"]["standard"], est["arms"]["E"]["standard"]) == (13.13, 18.52)
-    assert est["arms"]["E"]["app"] == pytest.approx(5.88)
+    # at the pilot's measured unit costs, the pilot's own sessions and gradings come to what it spent (6.78 Batch)
+    assert est["stages"]["pilot"]["batch"] == 6.78 and est["stages"]["pilot"]["plan_usd"]["batch"] == 8.81
+    core = est["stages"]["core"]
+    assert (core["standard"], core["batch"]) == (46.18, 35.40) == tuple(core["plan_usd"].values())
+    assert core["within_cap"] and est["total"]["within_cap"]
+    assert est["total"]["cap_usd"] == {"standard": 78.0, "batch": 56.0}
+    a = est["arms"]["A"]  # 49 sessions: 37 Sonnet eval1, 10 eval2, 12 opus1, 6 x2 haiku, 49 trap checks
+    assert a["sessions"] == 49 and a["app"] == pytest.approx(49 * 0.0286) and a["grading"] == pytest.approx(49 * 0.093)
+    assert a["regrades"] == pytest.approx(10 * 0.093) and a["opus"] == pytest.approx(12 * 0.352)
+    assert a["haiku"] == pytest.approx(12 * 0.0098) and a["trap"] == pytest.approx(49 * 0.001)
+    f = est["arms"]["F"]
+    assert f["sessions"] == 39 and f["app"] == pytest.approx(39 * 0.56) and f["opus"] == f["regrades"] == 0
+    assert f["batch"] == pytest.approx(39 * 0.56 + (39 * 0.093 + 39 * 0.001) / 2, abs=0.01)  # sessions direct
     s3 = _estimate(STAGE3)
-    assert (s3["total"]["standard"], s3["total"]["batch"]) == (23.51, 14.58)
-    assert (s3["arms"]["B"]["standard"], s3["arms"]["D"]["standard"]) == (12.24, 11.27)
+    assert (s3["total"]["standard"], s3["total"]["batch"]) == (20.03, 12.84)
 
 
 def test_the_estimate_of_a_selection_has_no_total_cap_line_and_the_stage_caps():
@@ -158,21 +170,16 @@ def test_the_estimate_of_a_selection_has_no_total_cap_line_and_the_stage_caps():
     assert est["stages"]["pilot"]["cap_usd"] == {"standard": 20.0, "batch": 12.0}
 
 
-def test_the_unit_prices_follow_the_token_prices():
+def test_the_unit_prices_are_the_pilots_measured_means():
     from evals import run_matrix
-    from provenance import price_for
     u = run_matrix.AB_UNIT_USD
-    assert u["single_prompt"] == {"gpt-6-luna": 0.01, "gpt-6.1-terra": 0.06, "gpt-6.1-sol": 0.12}
-    assert run_matrix.ESTIMATE_USD["single_prompt"] == u["single_prompt"]
-    for model, (p_in, p_out) in run_matrix.GRADER_PRICES_PER_1M.items():
-        tokens = run_matrix.GRADING_TOKENS
-        assert u["grading"][model] == pytest.approx((tokens[0] * p_in + tokens[1] * p_out) / 1e6, abs=0.005)
-        known = price_for(model)  # the Claude grader's prices, once provenance has them
-        if known is not None:
-            assert known[0] == p_in and p_out in known
-    t = run_matrix.TRAP_TOKENS
-    p_in, p_out = run_matrix.GRADER_PRICES_PER_1M["claude-haiku-5-5"]
-    assert u["trap"]["claude-haiku-5-5"] == pytest.approx((t[0] * p_in + t[1] * p_out) / 1e6, abs=0.001)
+    assert u["multi_agent"]["gpt-6-luna"] == 0.0286
+    assert u["single_prompt"] == {"gpt-6-luna": 0.0028, "gpt-6.1-sol": 0.0439, "gpt-6.1-terra": 0.06,
+                                  "gpt-6-astra": 0.56}  # terra and astra: not in the pilot, 6k in / 10k out
+    # the gradings were measured through the Batch API (half price): the units are list price
+    assert u["grading"] == pytest.approx({"claude-sonnet-5-5": 0.093, "claude-opus-5-5": 0.352,
+                                          "claude-haiku-5-5": 0.0098})
+    assert u["trap"] == pytest.approx({"claude-haiku-5-5": 0.001})
     with pytest.raises(ValueError, match="no price"):
         run_matrix.sp_session_usd("openai:unknown-model")
 
@@ -181,11 +188,12 @@ def test_estimate_prints_the_plans_table(capsys):
     from evals import run_matrix
     assert run_matrix.main(["--matrix", str(STAGE12), "--out", "unused", "--estimate"]) == 0
     out = capsys.readouterr().out
-    assert "| A MA-luna |" in out and "| total" in out and "Haiku calibration" in out
-    assert "total: 147 sessions, $45.62 standard / $26.66 Batch (plan $45.62 / $26.66); cap $57.00 / $34.00: within" in out
+    assert "| A MA-luna" in out and "| total" in out and "Haiku calibration" in out
+    assert "| F SP-astra |" in out
+    assert "stage core: 150 sessions, $46.18 standard / $35.40 Batch (plan $46.18 / $35.40); cap $58.00 / $45.00: within" in out
     assert run_matrix.main(["--matrix", str(STAGE12), "--out", "unused", "--estimate", "--stage", "core", "--json"]) == 0
     est = json.loads(capsys.readouterr().out)
-    assert est["total"]["sessions"] == 111 and est["total"]["standard"] == 29.88
+    assert est["total"]["sessions"] == 150 and est["total"]["standard"] == 46.18
 
 
 # --- run_matrix on a staged matrix --------------------------------------------------------------------
@@ -241,7 +249,7 @@ def test_a_pilot_first_run_gets_its_named_gradings_and_the_trap_check(tmp_path, 
     commands = []
     _fake_subprocess(monkeypatch, commands)
     opts = _opts(tmp_path, cases)
-    assert opts.total_cap == 57.0 and opts.stage_caps == {"pilot": 20.0, "core": 38.0}
+    assert opts.total_cap == 78.0 and opts.stage_caps == {"pilot": 20.0, "core": 58.0}
     assert run_matrix.run_one(case, opts) == (case["id"], "ok")
     graded = [(c[2], c[c.index("--eval-name" if "--eval-name" in c else "--name") + 1],
                c[c.index("--grader-model") + 1]) for c in commands[1:]]
@@ -262,7 +270,7 @@ def test_sessions_only_runs_no_grading_and_resumes(tmp_path, monkeypatch):
     commands = []
     _fake_subprocess(monkeypatch, commands)
     opts = _opts(tmp_path, cases, sessions_only=True)
-    assert opts.total_cap == 34.0 and opts.stage_caps == {"pilot": 12.0, "core": 23.0}
+    assert opts.total_cap == 56.0 and opts.stage_caps == {"pilot": 12.0, "core": 45.0}
     assert run_matrix.run_one(case, opts) == (case["id"], "session done (not graded)")
     assert [c[2] for c in commands] == [run_matrix.session_command(case, Path("x"), None, 1)[2]]
     assert run_matrix.run_one(case, opts)[1] == "skip (session done)" and len(commands) == 1
@@ -285,7 +293,7 @@ def test_the_stage_cap_counts_only_that_stages_spend(tmp_path, monkeypatch):
     assert run_matrix.run_one(pilot[1], opts)[1] == "skip (stage pilot cap reached)"
     assert run_matrix.run_one(core, opts)[1] == "ok"  # the core has its own cap
     with open(tmp_path / "ledger.tsv", "a") as f:
-        f.write(f"{core['id']}\tapp\t40\tt\n")
+        f.write(f"{core['id']}\tapp\t57.6\tt\n")  # core under its 58 cap, total over 78
     assert run_matrix.run_one(next(c for c in cases if c["stage"] == "core" and c is not core), opts)[1] == \
         "skip (total cap reached)"
 
