@@ -253,6 +253,7 @@ def test_the_trap_check_keeps_native_structured_output_and_a_fenced_answer_parse
     fenced = "```json\n" + json.dumps(_evaluation()) + "\n```"
     assert parse_answer(fenced, Evaluation)[0]["overall_score"] == 5
     assert parse_answer("Here it is: " + json.dumps(_evaluation()), Evaluation)[0] is None
+    assert parse_answer(fenced + "\nLet me know if you need more.", Evaluation)[0] is None
 
 
 def test_rubric_hashes_tell_the_modes_apart():

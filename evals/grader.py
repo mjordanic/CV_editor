@@ -287,7 +287,7 @@ def parse_answer(text: str | None, schema: type[BaseModel]) -> tuple[dict | None
     if not text:
         return None, "empty answer"
     text = text.strip()
-    if text.startswith("```"):  # a schema given in the prompt can come back in a ```json fence
+    if text.startswith("```") and text.endswith("```"):  # a schema given in the prompt can come back in a ```json fence
         text = text.split("\n", 1)[-1].rsplit("```", 1)[0]
     try:
         return schema.model_validate(json.loads(text)).model_dump(mode="json"), None
