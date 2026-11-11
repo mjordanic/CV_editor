@@ -352,7 +352,7 @@ scores (overall, invented content, completeness, fit, CV standards, cover letter
 mean and standard deviation across repeats (each run counts once, as the mean of its evaluations) and
 `eval_sd`, the mean spread between evaluator re-scores of the same run. It prints a table and writes
 `RUNS/repeats_summary.json`. The new rubric scores (visual layout, language, additional information,
-user requests) and the counts `untruthful_followed` and `requests_ignored` are among the metrics.
+user requests, ATS) and the counts `untruthful_followed` and `requests_ignored` are among the metrics.
 
 It also writes `RUNS/sessions_summary.json`: how many sessions actually redrafted each document
 (critique-driven and user-driven, from `events.jsonl`), the removal passes, and per script the request
