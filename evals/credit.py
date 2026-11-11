@@ -1,7 +1,8 @@
 """Out-of-credit handling for testing mode, the evaluator and the matrix.
 
 When the OpenAI account runs out of credit, every further call fails with HTTP 429 and the error code
-`insufficient_quota` (or a billing error). That is not an ordinary rate limit: waiting and retrying
+`insufficient_quota` (or a billing error). Anthropic answers a used-up balance with "Your credit balance is
+too low" (or a `billing_error`), and a reached spend cap with `enforced_spend_limit_reached`. That is not an ordinary rate limit: waiting and retrying
 cannot help, and a session that goes on would only produce degraded, unscorable output. So:
 
 - `is_out_of_credit(error)` tells the two apart (code `insufficient_quota` / billing codes, or the
@@ -26,11 +27,13 @@ from langchain_core.callbacks import BaseCallbackHandler
 EXIT_OUT_OF_CREDIT = 75  # EX_TEMPFAIL: try again later (after a top-up)
 INTERRUPTED_STATUS = "interrupted: out of credit"
 
+# OpenAI codes, then Anthropic's: billing_error (HTTP 402) and enforced_spend_limit_reached (a workspace or
+# organisation spend cap); an exhausted Anthropic prepaid balance says "Your credit balance is too low".
 _CREDIT_CODES = {"insufficient_quota", "billing_hard_limit_reached", "billing_not_active", "account_deactivated",
-                 "credit_balance_too_low", "insufficient_credits"}
+                 "credit_balance_too_low", "insufficient_credits", "billing_error", "enforced_spend_limit_reached"}
 _CREDIT_PHRASES = ("insufficient_quota", "exceeded your current quota", "check your plan and billing",
                    "billing hard limit", "billing_hard_limit", "credit balance", "insufficient credit",
-                   "out of credit", "billing details")
+                   "out of credit", "billing details", "spend limit")
 
 
 class OutOfCredit(BaseException):
@@ -39,7 +42,7 @@ class OutOfCredit(BaseException):
 
 def _codes(exc: Any) -> list[str]:
     out = []
-    for attr in ("code", "type"):
+    for attr in ("code", "type", "error_code"):
         value = getattr(exc, attr, None)
         if isinstance(value, str):
             out.append(value)

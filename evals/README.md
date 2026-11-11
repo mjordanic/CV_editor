@@ -1,8 +1,9 @@
 # Testing mode and evaluation
 
 Tools for running the CV editor end to end from prepared inputs, recording everything it did, and
-scoring the result with an independent model. They make paid OpenAI calls (and Tavily calls only
-when you record search results). Run them from the repository root with the project's environment
+scoring the result with an independent model. They make paid OpenAI calls, paid Anthropic calls when
+a Claude model grades (`ANTHROPIC_API_KEY` in `.env`), and Tavily calls only when you record search
+results. Run them from the repository root with the project's environment
 (`uv run python -m ...` or `.venv/bin/python -m ...`).
 
 Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
@@ -164,8 +165,11 @@ In replay the answer for the same query is used, else the first one.
 ## 4. Score a run: `evals/evaluate.py`
 
 ```bash
-uv run python -m evals.evaluate runs/p03_a3_all4 [--model openai:gpt-6.1-sol] [--name eval1]
+uv run python -m evals.evaluate runs/p03_a3_all4 [--grader-model anthropic:claude-sonnet-5-5] [--eval-name eval1] \
+    [--grading-mode document-only|conversation] [--effort medium]
 ```
+
+(`--model` and `--name` still work as the old spellings of `--grader-model` and `--eval-name`.)
 
 The evaluator sees the job ad, the company information from the search fixture, the candidate
 documents that were given (omitted ones are absent), and the final CV and cover letter as text and
@@ -197,8 +201,19 @@ JSON answer with quoted evidence:
   followed_untruthful
 - scores 0-10 for invented content, completeness and overall
 
-It also sees the conversation (the tool's messages shortened to 700 characters, the user's replies
-in full) and the test checklist built from `inputs/script.json` and `transcript.json`. Only requests
+**Grading modes.** `--grading-mode document-only` (the default, and the mode of the method
+comparison) shows the grader the documents and the inputs above plus a fixed block, *the user's
+instructions to the writing tool*, in place of the chat: the script's replies quoted verbatim (for the
+default script: "Please write my CV first, then the cover letter.", the reply declining missing contact
+details, the reply about the job ad) and "The user made no other requests." It never shows the app's
+messages, the transcript, the manifest, the method or the writer model, so a multi-agent session and a
+single-prompt session of the same case get the same block, and their requests differ only in the output
+sections (`tests/test_grader.py` checks this). The block is built by `user_instructions()` from
+`inputs/script.json`; a scripted change request is added, with its expected behaviour, only if it was
+sent (the rule below). `--grading-mode conversation` is the 2026-11-10 mode, described next.
+
+In conversation mode the evaluator also sees the conversation (the tool's messages shortened to 700
+characters, the user's replies in full) and the test checklist built from `inputs/script.json` and `transcript.json`. Only requests
 the user actually sent are in the checklist: whether each scripted reply or request was sent is decided
 in code from the transcript (`scripted_request_status`), never by the model. One that was never sent
 (the app took another path) is "not exercised": it is not named to the evaluator and so changes no
@@ -210,25 +225,111 @@ to state something the user says is untrue. Still one model call per evaluation.
 `requests`, `requests_followed`, `requests_ignored`, `untruthful_refused`, `untruthful_followed`,
 `requests_not_exercised`, `layout_problems`, `wrong_language` and `language_errors`.
 
-`RUN/evaluation/<name>/` keeps `prompt.json` (image data replaced by file names), `raw_response.json`,
-`evaluation.json` (the answer plus counts and deterministic PDF checks: pages, extractable text, how
-much of the text version is in the PDF, and the layout measurements), `pages/` (the images) and the cost. Score the same run again with `--name eval2` to measure evaluator consistency.
+`RUN/evaluation/<name>/` keeps `prompt.json` (the exact request, image data replaced by file names),
+`raw_response.json` (every attempt: answer text, usage, stop reason), `evaluation.json` (the answer plus
+counts and deterministic PDF checks: pages, extractable text, how much of the text version is in the
+PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (the images) and the cost.
+`evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
+returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
+templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
+cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids and
+`batch_id` (set when the grading came from a batch).
+
+Grade the same session several times under different names, side by side: `eval1` and `eval2` (the
+primary grader twice, for its noise), `opus1` (`--grader-model anthropic:claude-opus-5-5`), `haiku1`
+(`--grader-model anthropic:claude-haiku-5-5`). An existing `RUN/evaluation/<name>/` is never overwritten.
 The company text and the PDF checks use the app's own functions (`agents.search.search_result_texts`,
 `agents/pdf_text_check.py`), so the evaluator sees the same page text the writer had.
+
+### Graders: `evals/grader.py`
+
+| grader | role | prices per 1M tokens (input / cache write / cache hit / output) |
+|---|---|---|
+| `anthropic:claude-sonnet-5-5` | primary grader (default of `evaluate.py`) | $2 / $2.50 / $0.10 / $10 |
+| `anthropic:claude-opus-5-5` | second grader on a fixed subset | $4 / $5 / $0.20 / $20 |
+| `anthropic:claude-haiku-5-5` | trap check (default of `score_truth.py`), cheap re-grader | $0.10 / $0.125 / $0.01 / $0.50 |
+| `openai:<model>` | the earlier LangChain path, e.g. `openai:gpt-6.1-sol` | `provenance.PRICES_PER_1M` |
+
+Batch halves every price. The Anthropic prices are in `provenance.PRICES_PER_1M` and
+`provenance.CACHE_WRITE_PER_1M` (Haiku's apply to prompts up to 100k tokens). Claude graders go through
+the official `anthropic` SDK:
+
+- **Pinned model.** Only the three ids above are accepted; the id the API returns is recorded per call.
+- **Structured output.** `output_config.format` with a JSON schema made from the pydantic answer model
+  (`json_schema_for`: every object closed and every field required; numeric limits such as the 0-10
+  score ranges are not part of the API's schema subset, so the answer is validated against the pydantic
+  model in code). Forced tool use is not used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
+  (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
+  not retried.
+- **Thinking and effort.** Thinking is adaptive (it cannot be turned off on these models); the effort is
+  set explicitly, `medium` by default (`--effort low|medium|high|xhigh|max`).
+- **Temperature.** Not settable: Opus 5.5 rejects any `temperature`, and Sonnet 5.5 and Haiku 5.5 reject
+  non-default values, so nothing is sent and the record says `temperature: not settable`. Repeat
+  gradings (`eval1`/`eval2`) measure the noise instead. OpenAI graders run at the provider default.
+- **Images.** PNG page images as Anthropic `image` blocks (base64).
+- **Caching.** Breakpoints after the system prompt and after the shared block (job ad, company text,
+  candidate material, work preference, user's instructions), which is identical for every arm of a
+  case: grade a case's arms back to back.
+- **No silent fallback.** No server-side `fallbacks`: a refusal is recorded (`stop_reason`,
+  `stop_details`), `summary.json` says `refused`, nothing is written to `evaluation.json` and the exit
+  code is 1. Re-grade it or report it.
+- **Out of credit.** A used-up Anthropic balance ("credit balance is too low", `billing_error`) or a
+  reached spend cap (`enforced_spend_limit_reached`) stops the grading like an OpenAI quota error:
+  `interrupted: out of credit`, exit code 75 (`evals/credit.py`).
+
+### Building a grading without sending it (for Batch)
+
+Every grading is built first and sent second, so a batch submitter can take the request and leave the
+sending out:
+
+```python
+from evals.evaluate import build_grading_request, finish_evaluation, write_prompt
+from evals.grader import result_from_message, send
+from provenance import RunRecorder
+
+out_dir = run_dir / "evaluation" / "eval1"
+request, checks, images = build_grading_request(run_dir, "anthropic:claude-sonnet-5-5", out_dir, "document-only")
+params = request.anthropic_params()   # the Messages API params of one batch request (no "stream")
+recorder = RunRecorder(out_dir)
+write_prompt(recorder, request, "document-only", images)
+
+# synchronous: result = send(request, recorder, node="evaluator")
+# from a batch: one succeeded result's message, keyed by your custom_id
+result = result_from_message(request, message, batch_id=batch.id)   # prices at the Batch rate
+from evals.grader import log_attempts
+log_attempts(recorder, result, request, node="evaluator")            # llm_calls.jsonl and summary totals
+record = finish_evaluation(run_dir, "eval1", request, result, checks, "document-only", recorder)
+```
+
+- `build_grading_request(run_dir, grader, out_dir, mode)` renders the page images into `out_dir/pages/`
+  and returns `(GradingRequest, checks, images)`; no model call. `grader` is a `"provider:model"` string
+  or a `GraderSpec` (`parse_grader(name, effort)`).
+- `GradingRequest` holds `grader`, `system`, `shared_text`, `document_text`, `images`, `schema`,
+  `max_tokens` and `rubric_sha256`. `anthropic_params()` is the Messages API params dict;
+  `langchain_messages()` the OpenAI form; `loggable()` the request for `prompt.json`; `prompt_hash()`.
+- `result_from_message(request, message, seconds, batch_id)` reads one Anthropic `Message` (streamed or
+  from a batch) into a `GradingResult` (`status` ok / parse_error / refused, `answer`, `attempts`,
+  `cost_usd`, `record()`). A batch has no automatic second attempt: re-submit a `parse_error`.
+- `finish_evaluation(...)` writes `raw_response.json`, `evaluation.json` and `summary.json`, exactly as a
+  synchronous grading does, and raises `GradingFailed` after recording a refusal or a parse error.
+- The trap check has the same shape: `score_truth.build_check_request(grader, values)`.
 
 ## 5. Check against the persona's ground truth: `evals/score_truth.py`
 
 ```bash
-uv run python -m evals.score_truth runs/p12_a7_all4_luna_r1 [--model openai:gpt-6-luna] [--name truth1] [--persona p12]
+uv run python -m evals.score_truth runs/p12_a7_all4_luna_r1 [--grader-model anthropic:claude-haiku-5-5] [--name truth1] [--persona p12]
 ```
 
-A second signal that does not depend on the evaluator. One call to a cheap model reads the final CV
+A second signal that does not depend on the evaluator. One call to a cheap model (Claude Haiku 5.5 by
+default, through the same grader layer; any `provider:model` above works) reads the final CV
 and cover letter and answers, for every `deliberate_gaps` and `traps` entry of the run's `persona.json`
 (found from the manifest's `persona` label, or `--persona`): `claimed_as_met` (the gap is claimed or
 the trap is hit, with a verbatim quote), `not_claimed` or `unclear`. Each quote is then looked up in
 the outputs in code (case, spacing, quotes and dashes ignored); a claim whose quote is not there is
 downgraded to `unclear` and counted in `unverified_quotes`. `RUN/evaluation/<name>/truth_check.json`
-has every item and the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, and the cost.
+has every item, the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, the cost and the
+same `grader` record as an evaluation.
 
 ## 6. Spread across repeats: `evals/summarize.py`
 

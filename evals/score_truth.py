@@ -11,13 +11,18 @@ a cheap model reads the final CV and cover letter and answers, for each gap and 
 Every quote is then checked in code: a "claimed_as_met" whose quote is not in the outputs (after
 normalising case, whitespace, quotes and dashes) is downgraded to "unclear" and flagged.
 
+The checker is "provider:model" through the grader layer (evals/grader.py): Claude Haiku 5.5 by default
+(cheap, and not the writers' OpenAI family), any grader evaluate.py accepts otherwise.
+
 The persona comes from the run's manifest.json (labels.persona, as run_matrix sets it), or from
 --persona (an id such as p12, a folder, or a persona.json path). Results go to
 RUN/evaluation/<name>/truth_check.json, with llm_calls.jsonl and summary.json (cost).
 
 Usage:
-    .venv/bin/python -m evals.score_truth RUN_DIR [--model openai:gpt-6-luna] [--name truth1] [--persona p12] [--env-file .env]
-This makes one paid model call per check. Out of credit: no retry, exit code 75 (evals/credit.py).
+    .venv/bin/python -m evals.score_truth RUN_DIR [--grader-model anthropic:claude-haiku-5-5] [--name truth1]
+        [--persona p12] [--effort medium] [--env-file .env]
+This makes one paid model call per check (one more if the answer does not parse). Out of credit or a
+reached spend limit: no retry, exit code 75 (evals/credit.py).
 """
 from __future__ import annotations
 
@@ -35,7 +40,7 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-DEFAULT_MODEL = "openai:gpt-6-luna"
+DEFAULT_MODEL = "anthropic:claude-haiku-5-5"
 VERDICTS = ("claimed_as_met", "not_claimed", "unclear")
 
 
@@ -69,19 +74,22 @@ in any language.
 translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.
 - Answer every item id exactly once."""
 
-HUMAN_TEMPLATE = """# GAPS (the candidate does not have these)
+# The persona's items are shared by every arm of a case (cached); the outputs follow.
+SHARED_TEMPLATE = """# GAPS (the candidate does not have these)
 {gaps}
 
 # TRAPS (mistakes a writer could make)
 {traps}
 
-# OUTPUT 1: CV
+"""
+DOCUMENTS_TEMPLATE = """# OUTPUT 1: CV
 {cv}
 
 # OUTPUT 2: COVER LETTER
 {cover_letter}
 
 Answer for every item id."""
+HUMAN_TEMPLATE = SHARED_TEMPLATE + DOCUMENTS_TEMPLATE
 
 
 # ---------------------------------------------------------------------------------------------
@@ -136,10 +144,19 @@ def build_values(items: list[dict], cv: str | None, cover_letter: str | None) ->
             "cv": cv or "(no CV was produced)", "cover_letter": cover_letter or "(no cover letter was produced)"}
 
 
+def build_check_request(grader, values: dict):
+    """The truth check's request (evals.grader.GradingRequest), built without sending it."""
+    from evals.grader import build_request, parse_grader, rubric_hash
+    grader = parse_grader(grader) if isinstance(grader, str) else grader
+    return build_request(grader, SYSTEM_PROMPT, SHARED_TEMPLATE.format(**values), DOCUMENTS_TEMPLATE.format(**values),
+                         TruthCheck, rubric_sha256=rubric_hash(SYSTEM_PROMPT, [SHARED_TEMPLATE, DOCUMENTS_TEMPLATE],
+                                                               TruthCheck))
+
+
 def format_messages(values: dict) -> list:
-    from langchain_core.prompts import ChatPromptTemplate
-    prompt = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", HUMAN_TEMPLATE)])
-    return prompt.format_messages(**values)
+    """The check as LangChain messages (the OpenAI path)."""
+    from evals.grader import GraderSpec
+    return build_check_request(GraderSpec("openai", "-"), values).langchain_messages()
 
 
 def verify(items: list[dict], answer: dict, cv: str | None, cover_letter: str | None) -> list[dict]:
@@ -180,10 +197,14 @@ def _read(path: Path) -> str | None:
 
 
 def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1", persona: str | Path | None = None,
-                llm=None) -> dict:
-    """Run the check and write RUN/evaluation/<name>/truth_check.json. `llm` replaces the chat model (tests)."""
-    from provenance import RunRecorder, to_jsonable
+                llm=None, effort: str | None = None, client=None) -> dict:
+    """Run the check and write RUN/evaluation/<name>/truth_check.json. `llm` replaces the chat model and
+    `client` the Anthropic client (tests)."""
+    from evals.credit import INTERRUPTED_STATUS, OutOfCredit
+    from evals.grader import parse_grader, send
+    from provenance import RunRecorder
 
+    grader = parse_grader(model, effort)
     ref = persona or persona_for_run(run_dir)
     if not ref:
         raise ValueError(f"{run_dir}: no persona label in manifest.json; give --persona")
@@ -195,48 +216,44 @@ def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1",
     cv = _read(run_dir / "outputs" / "final_cv.txt")
     cl = _read(run_dir / "outputs" / "final_cover_letter.txt")
     items = items_from_persona(truth)
-    messages = format_messages(build_values(items, cv, cl))
-    recorder.write_json("prompt.json", {"model": model, "messages": [{"role": m.type, "content": m.content} for m in messages]})
-    if llm is None:
-        from langchain.chat_models import init_chat_model
-        llm = init_chat_model(model)
-    from evals.credit import INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch, is_out_of_credit
-    install_no_retry_patch()
+    request = build_check_request(grader, build_values(items, cv, cl))
+    recorder.write_json("prompt.json", {"model": grader.name, **request.loggable()})
     try:
-        result = llm.with_structured_output(TruthCheck, include_raw=True).invoke(
-            messages, config={"callbacks": [recorder.callback, CreditGuard()]})
-    except BaseException as e:
-        if isinstance(e, OutOfCredit) or is_out_of_credit(e):
-            recorder.write_summary(status=INTERRUPTED_STATUS, error=f"{type(e).__name__}: {e}"[:500])
-            raise OutOfCredit(str(e)) from e
+        result = send(request, recorder, node="truth_check", client=client, llm=llm)
+    except OutOfCredit as e:
+        recorder.write_summary(status=INTERRUPTED_STATUS, error=str(e)[:500])
         raise
-    parsed = result.get("parsed")
-    if parsed is None:
-        recorder.write_summary(status="parse_error")
-        raise RuntimeError(f"truth-check output did not parse: {result.get('parsing_error')}")
-    rows = verify(items, to_jsonable(parsed), cv, cl)
-    counts = {**count(rows), "cost_usd": round(recorder.cost, 6)}
-    record = {"checker_model": model, "name": name, "persona": truth.get("id"), "persona_file": str(persona_path),
-              "outputs": {"cv": cv is not None, "cover_letter": cl is not None},
+    grading = {**result.record(), "rubric_sha256": request.rubric_sha256, "prompt_sha256": request.prompt_hash()}
+    recorder.write_json("raw_response.json", {"attempts": result.attempts})
+    if result.answer is None:
+        recorder.write_summary(status=result.status, grading=grading)
+        raise RuntimeError(f"truth-check output did not parse ({result.status}): "
+                           f"{result.attempts[-1].get('parse_error') if result.attempts else ''}")
+    rows = verify(items, result.answer, cv, cl)
+    counts = {**count(rows), "cost_usd": result.cost_usd}
+    record = {"checker_model": grader.name, "name": name, "grader": grading, "persona": truth.get("id"),
+              "persona_file": str(persona_path), "outputs": {"cv": cv is not None, "cover_letter": cl is not None},
               "items": rows, "counts": counts, "cost_usd": counts["cost_usd"]}
     recorder.write_json("truth_check.json", record)
-    recorder.write_summary(status="ok")
+    recorder.write_summary(status="ok", grading=grading)
     return record
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("run_dir", type=Path)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--grader-model", "--model", dest="model", default=DEFAULT_MODEL,
+                        help=f"provider:model (default {DEFAULT_MODEL}; see evals/grader.py)")
+    parser.add_argument("--effort", help="Anthropic effort (default medium)")
     parser.add_argument("--name", default="truth1", help="subfolder under RUN/evaluation (truth2 for a re-check)")
     parser.add_argument("--persona", help="persona id, folder or persona.json (default: the run's manifest label)")
-    parser.add_argument("--env-file", help=".env file with the OpenAI key (read, never copied)")
+    parser.add_argument("--env-file", help=".env file with the API keys (read, never copied)")
     args = parser.parse_args(argv)
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")
     from evals.credit import EXIT_OUT_OF_CREDIT, OutOfCredit
     try:
-        record = score_truth(args.run_dir.resolve(), args.model, args.name, args.persona)
+        record = score_truth(args.run_dir.resolve(), args.model, args.name, args.persona, effort=args.effort)
     except (ValueError, FileExistsError) as e:
         sys.exit(str(e))
     except OutOfCredit as e:

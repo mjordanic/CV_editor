@@ -31,19 +31,33 @@ expectation is withheld when none of its requests was sent and limited to the se
 evaluation.json lists every scripted request with its status under "scripted_requests" and counts the
 unsent ones in counts.requests_not_exercised.
 
-The evaluator also sees the conversation (the app's messages shortened, the user's replies in full)
-and, from the test script, what each user request expects. What the user says about themselves in the
-chat is candidate material (source "chat").
+Two grading modes:
+  document-only  (default, the mode of the method comparison) the grader sees the documents (text, PDF text,
+                 page images, layout measurements), the inputs, and a fixed user-instructions block built from
+                 the script (user_instructions), never the chat, the app's messages, the manifest, the method or
+                 the writer model. Every arm of a default-script case gets the same block.
+  conversation   (the 2026-11-10 round) the grader also sees the conversation (the app's messages shortened,
+                 the user's replies in full) and, from the test script, what each user request expects. What
+                 the user says about themselves in the chat is candidate material (source "chat").
 
-Results go to RUN/evaluation/<name>/: prompt.json, raw_response.json, evaluation.json (the rubric
-answer plus deterministic PDF checks and counts), llm_calls.jsonl, summary.json (cost) and pages/
-(the PNG page images the evaluator saw).
+The grader is "provider:model" (evals/grader.py): anthropic:claude-sonnet-5-5 (default), anthropic:claude-opus-5-5,
+anthropic:claude-haiku-5-5 or an OpenAI model such as openai:gpt-6.1-sol. build_grading_request() builds the
+whole request without sending it (Batch grading reuses it); evaluate() sends it and writes the results.
+
+Results go to RUN/evaluation/<name>/ (eval1, eval2, opus1, haiku1, ...; an existing folder is never
+overwritten): prompt.json, raw_response.json, evaluation.json (the rubric answer, the grader record -
+provider, model requested and returned, effort, temperature, grading mode, rubric and prompt hashes,
+tokens, cost, stop reason - plus deterministic PDF checks and counts), llm_calls.jsonl, summary.json
+(cost) and pages/ (the PNG page images the evaluator saw).
 
 Usage:
-    .venv/bin/python -m evals.evaluate RUN_DIR [--model openai:gpt-6.1-sol] [--name eval1] [--env-file .env]
-This makes one paid model call per evaluation (text and page images in the same call). If the
-provider reports no credit left, nothing is retried, summary.json says "interrupted: out of credit"
-and the exit code is 75 (evals/credit.py).
+    .venv/bin/python -m evals.evaluate RUN_DIR [--grader-model anthropic:claude-sonnet-5-5] [--eval-name eval1]
+        [--grading-mode document-only|conversation] [--effort medium] [--env-file .env]
+(--model and --name are the old spellings of --grader-model and --eval-name.)
+This makes one paid model call per evaluation (text and page images in the same call), and at most one
+more if the answer does not parse. If the provider reports no credit left or a reached spend limit,
+nothing is retried, summary.json says "interrupted: out of credit" and the exit code is 75
+(evals/credit.py). A refusal or an unparseable answer is recorded in summary.json and exits 1.
 """
 from __future__ import annotations
 
@@ -59,7 +73,7 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-DEFAULT_MODEL = "openai:gpt-6.1-sol"
+DEFAULT_MODEL = "anthropic:claude-sonnet-5-5"
 INPUT_LABELS = {
     "cv": "CANDIDATE'S CV",
     "portfolio": "CANDIDATE'S PORTFOLIO (projects and past work)",
@@ -254,12 +268,13 @@ class Evaluation(BaseModel):
     summary: str = Field(description="Three to five sentences: the main strengths and problems")
 
 
-SYSTEM_PROMPT = """You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover \
+_SYSTEM_INTRO = """You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover \
 letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents \
 given to you. You do not know how the documents were produced and you must not guess.
 
 Rules:
-- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that \
+"""
+_RULES_COMMON = """- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that \
 is not in that material is unsupported, even if it is plausible or the job asks for it. Rephrasing and obvious \
 inference are supported (e.g. "built a React app" supports "JavaScript"). A course, side project or homelab \
 presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than \
@@ -276,18 +291,35 @@ location limits and culture must match the job ad and company information; anyth
 degree, certificate, language and notable achievement, in both documents. Quote briefly.
 - Quote evidence verbatim from the candidate material. Never invent quotes.
 - For omissions, list only facts that would help this application (not every detail).
-- What the user said about themselves in the conversation is candidate material too (source "chat"), except when \
+"""
+_RULES_CONVERSATION = """- What the user said about themselves in the conversation is candidate material too (source "chat"), except when \
 the user asks to state something they themselves say is untrue, or that their material contradicts: such a request \
 must not be followed, and following it makes the claim unsupported.
 - A user request in the conversation changes what is correct: a CV or letter in another language, shorter, reordered \
 or in another tone is right if the user asked for it. The test checklist gives the expected behaviour of the \
 requests the test made; judge every request against it. Grade only requests the user actually made in the \
 conversation shown: a wish that is not in the user's replies was never asked and changes nothing.
-- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
+"""
+_RULES_DOCUMENT_ONLY = """- The user's instructions below are everything the user told the writing tool. Anything the user says about \
+themselves there is candidate material too (source "chat"), except when the user asks to state something they \
+themselves say is untrue, or that their material contradicts: such a request must not be followed, and following it \
+makes the claim unsupported.
+- You see the documents and the user's instructions, not the conversation. A user instruction changes what is \
+correct: a CV or letter in another language, shorter, reordered or in another tone is right if the user asked for \
+it. Grade user_requests against the user's instructions only, with the expected behaviour where it is given, and \
+judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking \
+for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.
+"""
+_RULES_END = """- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
 the visual layout from both.
 - Be calibrated: use the full score ranges; 10 is rare."""
 
-HUMAN_TEMPLATE = """# JOB AD
+SYSTEM_PROMPT = _SYSTEM_INTRO + _RULES_COMMON + _RULES_CONVERSATION + _RULES_END
+SYSTEM_PROMPT_DOCUMENT_ONLY = _SYSTEM_INTRO + _RULES_COMMON + _RULES_DOCUMENT_ONLY + _RULES_END
+
+# The prompt is the shared part (identical for every arm of a case and every re-grade: the cache
+# breakpoint goes after it) followed by this session's documents.
+SHARED_TEMPLATE = """# JOB AD
 {job_ad}
 
 # COMPANY INFORMATION (web search results the writing tool had)
@@ -301,7 +333,8 @@ The tool was given only these documents about the candidate:
 # CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE
 {work_preference}
 
-# OUTPUT 1: CV (text)
+"""
+_OUTPUTS_TEMPLATE = """# OUTPUT 1: CV (text)
 {cv}
 
 # OUTPUT 1b: TEXT EXTRACTED FROM THE CV PDF
@@ -313,20 +346,45 @@ The tool was given only these documents about the candidate:
 # OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF
 {cover_letter_pdf}
 
-# CONVERSATION BETWEEN THE USER AND THE WRITING TOOL
-(The tool's messages are shortened; the user's replies are complete.)
-{conversation}
-
-# TEST CHECKLIST: THE USER'S REQUESTS AND THE CORRECT BEHAVIOUR
-{checklist}
-
-# LAYOUT MEASUREMENTS OF THE PDFS
+"""
+_LAYOUT_TEMPLATE = """# LAYOUT MEASUREMENTS OF THE PDFS
 {layout}
 
 # PAGE IMAGES
 {images_note}
 
 Evaluate both outputs against the rubric."""
+DOCUMENTS_TEMPLATE = _OUTPUTS_TEMPLATE + """# CONVERSATION BETWEEN THE USER AND THE WRITING TOOL
+(The tool's messages are shortened; the user's replies are complete.)
+{conversation}
+
+# TEST CHECKLIST: THE USER'S REQUESTS AND THE CORRECT BEHAVIOUR
+{checklist}
+
+""" + _LAYOUT_TEMPLATE
+HUMAN_TEMPLATE = SHARED_TEMPLATE + DOCUMENTS_TEMPLATE
+
+# Document-only mode: the user's instructions (the same words for every arm of a case) take the place of
+# the conversation and the checklist, and sit in the shared part.
+SHARED_TEMPLATE_DOCUMENT_ONLY = SHARED_TEMPLATE + """# THE USER'S INSTRUCTIONS TO THE WRITING TOOL
+{user_instructions}
+
+"""
+DOCUMENTS_TEMPLATE_DOCUMENT_ONLY = _OUTPUTS_TEMPLATE + _LAYOUT_TEMPLATE
+
+CONVERSATION, DOCUMENT_ONLY = "conversation", "document-only"
+GRADING_MODES = (DOCUMENT_ONLY, CONVERSATION)
+DEFAULT_MODE = DOCUMENT_ONLY
+_MODE_PROMPTS = {CONVERSATION: (SYSTEM_PROMPT, SHARED_TEMPLATE, DOCUMENTS_TEMPLATE),
+                 DOCUMENT_ONLY: (SYSTEM_PROMPT_DOCUMENT_ONLY, SHARED_TEMPLATE_DOCUMENT_ONLY,
+                                 DOCUMENTS_TEMPLATE_DOCUMENT_ONLY)}
+
+
+def rubric_sha256(mode: str = DEFAULT_MODE) -> str:
+    """Hash of the rubric a grading in this mode uses (system prompt, templates, answer schema)."""
+    from evals.grader import rubric_hash
+    system, shared, documents = _MODE_PROMPTS[mode]
+    return rubric_hash(system, [shared, documents], Evaluation)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -472,6 +530,35 @@ def _checklist_text(items: list[dict], script: dict, not_exercised: int = 0) -> 
                                  "should be followed, untruthful ones refused)")
 
 
+# The default user's words, in the order the tool may hear them (evals.run_case.DEFAULT_SCRIPT); a script may
+# reword a reply, and its own wording is used then.
+_INSTRUCTION_REPLIES = (("first", "The user's request"),
+                        ("missing_details", "If the tool asks for contact details the candidate's material lacks"),
+                        ("clarify_job_ad", "If the tool asks about the job ad"))
+
+
+def user_instructions(run_dir: Path) -> str:
+    """The user-instructions block of document-only grading. It quotes the script's replies (the default
+    script's words unless a script rewords them) and never shows the app's messages, the manifest or the
+    method, so every arm of a default-script case gets the same block. A scripted change request is added,
+    with the test's expected behaviour, only when it was sent (scripted_request_status, as in conversation
+    mode); a default-script run has none."""
+    from evals.run_case import DEFAULT_SCRIPT
+    script = {**DEFAULT_SCRIPT, **_load_json(run_dir / "inputs" / "script.json")}
+    lines = [f'- {label}: "{script[key]}"' for key, label in _INSTRUCTION_REPLIES if script.get(key)]
+    status = scripted_request_status(run_dir)
+    sent = [i for i in status if i["status"] == SENT]
+    not_exercised = sum(1 for i in status if i["status"] == NOT_EXERCISED)
+    if not sent:
+        return "\n".join(lines) + "\nThe user made no other requests." + (
+            "\n(Some of the test's planned requests were never sent. They are not part of this evaluation and "
+            "must not change any score.)" if not_exercised else "")
+    items = [{"user_said": i["user_said"], "expect": i["expect"], "correct_behaviour": i["correct_behaviour"]}
+             for i in sent]
+    return ("\n".join(lines) + "\nThe user also made these requests; the test's expected behaviour is given for each:\n"
+            + _checklist_text(items, _load_json(run_dir / "inputs" / "script.json"), not_exercised))
+
+
 def _layout_text(layout: dict) -> str:
     out = []
     for key, label in (("cv_pdf", "CV PDF"), ("cover_letter_pdf", "Cover letter PDF")):
@@ -510,7 +597,8 @@ def _images_note(images: dict | None, layout: dict) -> str:
 
 
 def build_prompt(run_dir: Path, images: dict | None = None) -> tuple[dict, dict]:
-    """The evaluator's input (no model, input-set or run identifiers) and the deterministic checks."""
+    """The evaluator's input (no model, input-set or run identifiers) and the deterministic checks. The
+    values cover both grading modes; the mode's templates decide which are shown."""
     inputs = run_dir / "inputs"
     outputs = run_dir / "outputs"
     candidate = []
@@ -547,6 +635,7 @@ def build_prompt(run_dir: Path, images: dict | None = None) -> tuple[dict, dict]
                                   sum(1 for i in status if i["status"] == NOT_EXERCISED)),
         layout=_layout_text(layout),
         images_note=_images_note(images, layout),
+        user_instructions=user_instructions(run_dir),
     )
     return values, checks
 
@@ -591,92 +680,126 @@ def request_counts(ev: dict) -> dict:
     }
 
 
-def format_messages(values: dict, images: dict | None = None) -> list:
-    """The system and human messages sent to the evaluator model; page images go in the human message
+def _image_paths(images: dict | None) -> list[Path]:
+    return [Path(p) for p in (*((images or {}).get("cv") or []), *((images or {}).get("cover_letter") or []))]
+
+
+def prompt_parts(values: dict, mode: str = DEFAULT_MODE) -> tuple[str, str, str]:
+    """(system prompt, shared text, documents text) of a grading in `mode`."""
+    if mode not in GRADING_MODES:
+        raise ValueError(f"grading mode '{mode}': one of {', '.join(GRADING_MODES)}")
+    system, shared, documents = _MODE_PROMPTS[mode]
+    return system, shared.format(**values), documents.format(**values)
+
+
+def format_messages(values: dict, images: dict | None = None, mode: str = CONVERSATION) -> list:
+    """The system and human messages for a LangChain (OpenAI) evaluator; page images go in the human message
     after the text, as base64 PNG image parts."""
-    import base64
-
-    from langchain_core.messages import HumanMessage, SystemMessage
-    text = HUMAN_TEMPLATE.format(**values)
-    paths = [*((images or {}).get("cv") or []), *((images or {}).get("cover_letter") or [])]
-    if not paths:
-        return [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=text)]
-    content = [{"type": "text", "text": text}]
-    for path in paths:
-        data = base64.b64encode(Path(path).read_bytes()).decode("ascii")
-        content.append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{data}", "detail": "high"}})
-    return [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=content)]
+    from evals.grader import GraderSpec, build_request
+    system, shared, documents = prompt_parts(values, mode)
+    return build_request(GraderSpec("openai", "-"), system, shared, documents, Evaluation,
+                         _image_paths(images)).langchain_messages()
 
 
-def _loggable(content):
-    """Message content for prompt.json: image data replaced by a short marker."""
-    if isinstance(content, list):
-        return [part if part.get("type") != "image_url" else {"type": "image_url", "image_url": "<png, see pages/>"}
-                for part in content]
-    return content
-
-
-def evaluate(run_dir: Path, model: str, name: str) -> dict:
-    from langchain.chat_models import init_chat_model
-    from provenance import RunRecorder, to_jsonable
-
-    out_dir = run_dir / "evaluation" / name
-    if out_dir.exists() and any(out_dir.iterdir()):
-        sys.exit(f"{out_dir} exists; choose another --name")
-    recorder = RunRecorder(out_dir)
+def build_grading_request(run_dir: Path, grader, out_dir: Path, mode: str = DEFAULT_MODE):
+    """Everything one grading of `run_dir` sends, built without any model call: renders the page images
+    into out_dir/pages/ and returns (evals.grader.GradingRequest, deterministic checks, images).
+    `grader` is a GraderSpec or a "provider:model" string. evaluate() sends the request; Batch grading
+    submits request.anthropic_params() instead and reads the reply with evals.grader.result_from_message."""
+    from evals.grader import build_request, parse_grader
+    grader = parse_grader(grader) if isinstance(grader, str) else grader
     images = page_images(run_dir, out_dir)
     values, checks = build_prompt(run_dir, images)
-    messages = format_messages(values, images)
-    recorder.write_json("prompt.json", {"model": model, "images": {k: [p.name for p in v] for k, v in images.items()},
-                                        "messages": [{"role": m.type, "content": _loggable(m.content)} for m in messages]})
-    from evals.credit import INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch, is_out_of_credit
-    install_no_retry_patch()
-    llm = init_chat_model(model)
-    chain = llm.with_structured_output(Evaluation, include_raw=True)
-    try:
-        result = chain.invoke(messages, config={"callbacks": [recorder.callback, CreditGuard()]})
-    except BaseException as e:
-        if isinstance(e, OutOfCredit) or is_out_of_credit(e):
-            recorder.write_summary(status=INTERRUPTED_STATUS, error=f"{type(e).__name__}: {e}"[:500])
-            raise OutOfCredit(str(e)) from e
-        raise
-    raw = result.get("raw")
-    recorder.write_json("raw_response.json", {
-        "content": getattr(raw, "content", None),
-        "additional_kwargs": getattr(raw, "additional_kwargs", None),
-        "response_metadata": getattr(raw, "response_metadata", None),
-        "usage_metadata": getattr(raw, "usage_metadata", None),
-        "parsing_error": str(result.get("parsing_error")) if result.get("parsing_error") else None,
-    })
-    parsed = result.get("parsed")
-    if parsed is None:
-        recorder.write_summary(status="parse_error")
-        raise RuntimeError(f"evaluator output did not parse: {result.get('parsing_error')}")
-    ev = to_jsonable(parsed)
+    system, shared, documents = prompt_parts(values, mode)
+    request = build_request(grader, system, shared, documents, Evaluation, _image_paths(images),
+                            rubric_sha256=rubric_sha256(mode))
+    return request, checks, images
+
+
+class GradingFailed(RuntimeError):
+    """The grader's answer did not parse after the allowed attempts, or the grader refused."""
+
+
+def write_prompt(recorder, request, mode: str, images: dict) -> None:
+    recorder.write_json("prompt.json", {"model": request.grader.name, "grading_mode": mode, **request.loggable(),
+                                        "images": {k: [Path(p).name for p in v] for k, v in images.items()}})
+
+
+def finish_evaluation(run_dir: Path, name: str, request, result, checks: dict, mode: str, recorder,
+                      extra: dict | None = None) -> dict:
+    """Write raw_response.json, evaluation.json and summary.json for one finished grading (`result` is an
+    evals.grader.GradingResult from send() or from a batch reply). Raises GradingFailed after recording
+    a refusal or an unparseable answer."""
+    recorder.write_json("raw_response.json", {"attempts": result.attempts})
+    grading = {**result.record(), "grading_mode": mode, "rubric_sha256": request.rubric_sha256,
+               "prompt_sha256": request.prompt_hash(), **(extra or {})}
+    if result.answer is None:
+        recorder.write_summary(status=result.status, grading=grading)
+        why = "the grader refused" if result.status == "refused" else "evaluator output did not parse"
+        raise GradingFailed(f"{why}: {result.attempts[-1].get('parse_error') if result.attempts else ''}")
+    ev = result.answer
     scripted = scripted_request_status(run_dir)
-    record = {"evaluator_model": model, "name": name, "evaluation": ev, "counts": counts(ev, scripted),
-              "scripted_requests": scripted, "pdf_checks": checks, "cost_usd": round(recorder.cost, 6)}
+    record = {"evaluator_model": request.grader.name, "name": name, "grading_mode": mode, "grader": grading,
+              "evaluation": ev, "counts": counts(ev, scripted), "scripted_requests": scripted,
+              "pdf_checks": checks, "cost_usd": result.cost_usd}
     recorder.write_json("evaluation.json", record)
-    recorder.write_summary(status="ok")
+    recorder.write_summary(status="ok", grading=grading)
     return record
+
+
+def evaluate(run_dir: Path, model: str, name: str, mode: str = DEFAULT_MODE, effort: str | None = None,
+             client=None) -> dict:
+    """Grade one run folder into RUN/evaluation/<name>/ (never overwritten). `client` replaces the
+    Anthropic client (tests)."""
+    from evals.credit import INTERRUPTED_STATUS, OutOfCredit
+    from evals.grader import parse_grader, send
+    from provenance import RunRecorder
+
+    grader = parse_grader(model, effort)
+    if mode not in GRADING_MODES:
+        raise ValueError(f"grading mode '{mode}': one of {', '.join(GRADING_MODES)}")
+    out_dir = run_dir / "evaluation" / name
+    if out_dir.exists() and any(out_dir.iterdir()):
+        sys.exit(f"{out_dir} exists; choose another --eval-name")
+    recorder = RunRecorder(out_dir)
+    request, checks, images = build_grading_request(run_dir, grader, out_dir, mode)
+    write_prompt(recorder, request, mode, images)
+    try:
+        result = send(request, recorder, node="evaluator", client=client)
+    except OutOfCredit as e:
+        recorder.write_summary(status=INTERRUPTED_STATUS, error=str(e)[:500])
+        raise
+    return finish_evaluation(run_dir, name, request, result, checks, mode, recorder)
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("run_dir", type=Path)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--name", default="eval1", help="subfolder under RUN/evaluation (use eval2 for a re-score)")
-    parser.add_argument("--env-file", help=".env file with the OpenAI key (read, never copied)")
+    parser.add_argument("--grader-model", "--model", dest="model", default=DEFAULT_MODEL,
+                        help=f"provider:model (default {DEFAULT_MODEL}; see evals/grader.py)")
+    parser.add_argument("--eval-name", "--name", dest="name", default="eval1",
+                        help="subfolder under RUN/evaluation: eval1, eval2, opus1, haiku1, ... (never overwritten)")
+    parser.add_argument("--grading-mode", choices=GRADING_MODES, default=DEFAULT_MODE,
+                        help="document-only (default): documents and a fixed user-instructions block, no chat; "
+                             "conversation: the app's messages and the test checklist, as before")
+    parser.add_argument("--effort", help="Anthropic effort (default medium)")
+    parser.add_argument("--env-file", help=".env file with the API keys (read, never copied)")
     args = parser.parse_args(argv)
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")
     from evals.credit import EXIT_OUT_OF_CREDIT, OutOfCredit
     try:
-        record = evaluate(args.run_dir.resolve(), args.model, args.name)
+        record = evaluate(args.run_dir.resolve(), args.model, args.name, args.grading_mode, args.effort)
+    except ValueError as e:
+        sys.exit(str(e))
     except OutOfCredit as e:
         print(f"out of credit: the evaluation was interrupted ({e})", file=sys.stderr)
         return EXIT_OUT_OF_CREDIT
-    print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "counts": record["counts"],
+    except GradingFailed as e:
+        print(f"grading failed: {e}", file=sys.stderr)
+        return 1
+    print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "grader": args.model,
+                      "grading_mode": args.grading_mode, "counts": record["counts"],
                       "overall": record["evaluation"]["overall_score"],
                       "ats": record["evaluation"]["ats"]["pass_likelihood"], "cost_usd": record["cost_usd"]}))
     return 0
