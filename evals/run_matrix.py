@@ -90,7 +90,7 @@ OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new 
 # Expected cost per step in USD for a matrix without stages (evals/matrix.json), from the measured partial runs
 # (2026-11): a gpt-6-luna session about 0.013, a gpt-6.1-terra session about 0.06. A script with change requests
 # redrafts more: its session is estimated at twice the default session. "eval" is one Claude Sonnet 5.5 grading and
-# "truth" one Claude Haiku 5.5 trap check, as AB_UNIT_USD below prices them.
+# "truth" one Claude Haiku 5.5 trap check (older figures than AB_UNIT_USD below, which the staged matrices use).
 # A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex): the prompt
 # is the app's writer and LaTeX rules, both LaTeX templates and the case's inputs, job ad and search results (about
 # 4-7k tokens on these fixtures); the answer is both documents as text and as LaTeX plus notes (about 4-5k tokens) and

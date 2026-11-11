@@ -132,7 +132,7 @@ The matrix (110 cases):
 
 Estimated cost of the whole matrix (`--estimate`): about 20.4 USD, within the 24 USD budget (20.6 with
 `--truth-check`): luna session 0.013, terra 0.06, a session with change requests twice that, an evaluation
-0.15 (one Claude Sonnet 5.5 grading, as the staged matrices price it) and a trap check 0.002 (Claude Haiku
+0.15 (one Claude Sonnet 5.5 grading) and a trap check 0.002 (Claude Haiku
 5.5). `--total-cap` stops new cases at 24 USD whatever the estimate.
 
 **Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
@@ -564,13 +564,15 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   - breakdowns by input set, ad and persona, plus cost and latency;
   - the grader's ATS score (`ats`, 0-10; rounds graded before it, such as 2026-11-10, have none)
     next to the claims the grader flags, so a high ATS score bought by cheating shows;
-  - grader calibration, when two graders graded the same sessions;
+  - grader calibration: the primary grader (`PRIMARY_GRADER`) against its calibration partner (`SECOND_GRADER`,
+    Opus by default; `None` skips it), with the plan's section-6 checks, their thresholds and pass/fail on the
+    composite score (`evals/analysis/calibration.py`; the claim audit is only counted, a person reads it);
   - power and sample sizes.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
   cell to choose the data.
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
   are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
-  `tests/test_analysis_load.py`.
+  `tests/test_analysis_load.py`; the calibration checks in `tests/test_analysis_calibration.py`.
 
 ## 9. The staged comparison (experiment plan, stages 1-3)
 

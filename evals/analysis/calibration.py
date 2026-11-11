@@ -23,7 +23,6 @@ import statistics
 import numpy as np
 
 from . import load, stats
-from .load import COMPOSITE
 
 SD_MAX = 0.3            # check 1: composite grader SD
 WITHIN_1_MIN = 0.9      # check 2: overall scores within one point
