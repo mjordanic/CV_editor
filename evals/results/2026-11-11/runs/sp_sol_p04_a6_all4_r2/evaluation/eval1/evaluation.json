@@ -1,0 +1,544 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9113,
+      "output_tokens": 7112,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14467
+    },
+    "cost_usd": 0.045396,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "756d47e8c5dd0022aaf87c81770ff45d11aa8e0e9d6d16edd76762eab8252d6a",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p04_a6_all4_r2-abfda23433",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "eval1-sp_sol_p04_a6_all4_r2-abfda23433",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.090792
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Software Development Intern, Harbourline Media, May 2024 - Aug 2024",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Software Development Intern - Harbourline Media, Dublin (May 2024 - Aug 2024)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Resolved accessibility audit findings across 20+ components",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "on 20+ components",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Lighthouse accessibility score of 100",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Lighthouse accessibility score 100",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Teaching Assistant, one semester, ~30 students",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "teaching assistant for 1st year web dev lab, 1 semester (spring 2025), helped ~30 students",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Second place at student hackathon 2024, frontend, team of three, 24h",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "2nd place at a student hackathon (2024), team of 3",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "professional frontend experience through freelance work and a React internship",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Frontend Developer (part-time, freelance)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "third-party API integration through projects",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "caching data from public weather and tide APIs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Vercel, Figma, Chart.js",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Git/GitHub, Jest, React Testing Library, Storybook, Figma",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "friend who uses a screen reader showed me the barriers",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "a friend who uses a screen reader showed me how hard many websites are for her to use",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My backend experience comes from projects",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "no backend job experience, only my own projects",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "automated unit testing",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Wrote unit tests with Jest and React Testing Library",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My portfolio and GitHub links are included above",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "github.com/aiyana-bt-example | aiyana-bt.example.com",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Stamp 1G visa: can work full time in Ireland",
+        "source": "notes",
+        "source_quote": "can work full time in Ireland, no sponsorship needed",
+        "relevance": "low",
+        "why_it_matters": "Ad allows remote only in AT/DE/HR/SI, so it is a limited fit anyway"
+      },
+      {
+        "fact": "Hackathon, only in CV",
+        "source": "notes",
+        "source_quote": "2nd place at a student hackathon",
+        "relevance": "low",
+        "why_it_matters": "Already used in CV"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years professional React/TypeScript",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Software Development Intern | Harbourline Media May 2024 - Aug 2024",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Node.js backend and SQL",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Developed a Node.js/Express API ... PostgreSQL",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Semantic HTML, responsive, accessibility",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Accessibility: WCAG 2.1, keyboard navigation, ARIA labels",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated testing and Git",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Jest, React Testing Library, Storybook, Git/GitHub",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Web security fundamentals",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Firebase Authentication through a group project",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fluent English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English: native",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Next.js",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Next.js, React and Tailwind CSS",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Storybook / design systems",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "documented it with Storybook stories",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "AWS / Docker",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Playwright / E2E",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps (2+ years, E2E, NestJS, cloud) are not faked; the letter openly says backend experience comes from projects.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Barista and TA roles take space",
+        "Page 2 about half empty"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "EXPERIENCE",
+        "PROJECTS",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "Resolvedaccessibilityauditfindingsacross20+components",
+        "Builtareusable,keyboard-andscreen-reader-friendlyimagegalleryforarticlepagesanddocumented"
+      ],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "Jest",
+        "accessibility WCAG",
+        "Next.js",
+        "Git",
+        "Storybook",
+        "semantic HTML",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "Jest",
+        "accessibility WCAG",
+        "Next.js",
+        "Git",
+        "Storybook",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "responsive layouts"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean sections and most keywords present, but two bullets extract with merged words, which hurts keyword search on those lines."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company specifics are modest",
+        "Teaching assistant sentence slightly filler"
+      ],
+      "strengths": [
+        "Honest about backend experience",
+        "Links accessibility to WCAG 2.2 AA",
+        "Concrete evidence"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "WCAG 2.2 AA commitment"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 about half empty"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formulaic phrasing"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "hackathon",
+        "teaching assistant",
+        "volunteer"
+      ],
+      "notes_facts_ignored": [
+        "visa status"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No placeholders in documents",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Truthful, well-structured CV and letter that stay within the material and honestly flag the backend gap. The candidate is junior against a 2+ year requirement, so fit is limited; the CV shows accessibility, React, TypeScript and Node strengths well. Minor issues: merged words in the ATS text and half-empty page 2."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3321,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2211,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 177.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 57.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 312.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 62.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.045396,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

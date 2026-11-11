@@ -1,0 +1,816 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9592,
+      "output_tokens": 14331,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14054
+    },
+    "cost_usd": 0.004133,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "8190b2d4b49037be5de560a17e1ac95e90361242b216fb5fa79fa9944d93c88d",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku1-ma_luna_p11_a1_all4_r1-631399a740",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku1-ma_luna_p11_a1_all4_r1-631399a740",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.008266
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Data Engineering headline and DATA ENGINEERING PROJECTS section",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "none",
+        "evidence_quote": "",
+        "note": "The material shows test-lab reporting tools and a local learning project, not data engineering work."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "practical exposure to containerised local development",
+        "kind": "skill_or_tool",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Followed a tutorial to run it with Docker Compose.",
+        "note": "Docker use came from a followed tutorial on a laptop-only project, not work experience."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I have taken ownership of making test-data workflows more dependable and reusable",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+        "note": "Packaging and reuse are supported; the ownership framing goes beyond the material."
+      },
+      {
+        "document": "cv",
+        "claim": "reduced report preparation from about three days to half a day per test",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "report preparation went from about 3 days to half a day per test",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Dashboard used by approximately 15 engineers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Used by about 15 engineers in validation and design.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Technologies: Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "happy to commute to Lisbon for the hybrid arrangement",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "happy to commute to Lisbon for hybrid",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Ok with a junior or mid title and some salary drop",
+        "source": "notes",
+        "source_quote": "ok with a junior/mid title and some salary drop",
+        "relevance": "medium",
+        "why_it_matters": "The ad is for a Senior role; this tells the user a title expectation that neither output addresses."
+      },
+      {
+        "fact": "Git used only since 2025, in personal repos; no CI/CD or cloud experience",
+        "source": "notes",
+        "source_quote": "Git only since 2025, personal repos",
+        "relevance": "low",
+        "why_it_matters": "Context on the Git and open-source claims, which the letter stretches."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Experience designing and operating production data platforms or cloud warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Query the plant's SQL Server test-results database for trend analysis",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dimensional data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good professional English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent)",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "The CV does not fake cloud, dimensional modelling or platform experience, but the data engineering framing overstates the test-lab tooling.",
+      "score": 3
+    },
+    "cv_standards": {
+      "score": 7,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Projects section sits before experience, so the first thing read is the data engineering framing",
+        "Headline overstates the candidate's data engineering background"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFILE",
+        "DATA ENGINEERING PROJECTS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "PROFESSIONAL DEVELOPMENT",
+        "TECHNICAL SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Google Cloud",
+        "BigQuery",
+        "Docker",
+        "CI/CD",
+        "Git",
+        "data modelling",
+        "dimensional modelling",
+        "query optimisation",
+        "data quality",
+        "English",
+        "Portuguese"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "SQL",
+        "Docker",
+        "Git",
+        "English",
+        "Portuguese",
+        "data quality"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [
+        "Data Engineering headline and section used to match the ad title"
+      ],
+      "unsupported_keywords": [
+        "Data Engineering as a job or project label"
+      ],
+      "score": 6,
+      "reason": "Clean, well-sectioned extracted text, but the data engineering label is not supported by the candidate's material and the ad's core requirements are largely absent."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Docker and ownership claims are stretched beyond the material",
+        "Says 'fluent professional English' twice"
+      ],
+      "strengths": [
+        "Concrete metrics from the CV",
+        "Uses company values of ownership and reducing complexity",
+        "Clear hybrid commute statement from the notes"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [
+        "I am happy to commute to Lisbon for the hybrid arrangement"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "ownership",
+        "reducing unnecessary complexity"
+      ],
+      "preference_handling": "given_and_used_honestly",
+      "conflict_handling": "no_conflict",
+      "score": 8
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV page 2 holds only the skills and languages block"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Some sentences in the letter are heavy with abstract nouns"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "6 of 9 modules completed",
+        "trained three apprentices",
+        "happy to commute to Lisbon",
+        "IT created and owns the table"
+      ],
+      "notes_facts_ignored": [
+        "ok with a junior or mid title",
+        "Git only since 2025"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [
+        "Docker and ownership framing stretched beyond the notes"
+      ],
+      "score": 7
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both the CV and the cover letter are present.",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 6,
+    "completeness_score": 6,
+    "overall_score": 6,
+    "summary": "The CV is clean and well laid out, with strong metrics from real test-lab work. Its main problem is the data engineering framing, which dresses test-lab tooling and a tutorial project as data engineering experience. The cover letter stretches Docker exposure and ownership, while the candidate's real gaps in cloud, dimensional modelling and platform work are left honest but not addressed. Fit for this senior role is low."
+  },
+  "counts": {
+    "claims": 7,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 2,
+    "omissions_high": 0,
+    "must_haves": 5,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 4047,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2277,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12",
+          "LMRoman9"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 9.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 50.0,
+          "right": 49.2,
+          "top": 48.3,
+          "bottom": 48.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 20.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 64.2,
+          "right": 64.5,
+          "top": 67.0,
+          "bottom": 352.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 58.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.004133,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Data Engineering headline and DATA ENGINEERING PROJECTS section",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "The material shows test-lab reporting tools and a local learning project, not data engineering work."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "practical exposure to containerised local development",
+            "kind": "skill_or_tool",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose.",
+            "note": "Docker use came from a followed tutorial on a laptop-only project, not work experience."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "I have taken ownership of making test-data workflows more dependable and reusable",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+            "note": "Packaging and reuse are supported; the ownership framing goes beyond the material."
+          },
+          {
+            "document": "cv",
+            "claim": "reduced report preparation from about three days to half a day per test",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "report preparation went from about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Dashboard used by approximately 15 engineers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Used by about 15 engineers in validation and design.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Technologies: Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server.",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "happy to commute to Lisbon for the hybrid arrangement",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "happy to commute to Lisbon for hybrid",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Mechanical engineer with 12 years of experience",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mechanical engineer with 12 years of experience in product design",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Technologies: Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "approximately 2 GB of data per week from six test rigs",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "about 2 GB per week from 6 rigs",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "reduced report preparation from about three days to half a day per test",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "report preparation went from about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "four other test engineers now use it",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "used by 4 other test engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Dashboard used by approximately 15 engineers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Used by about 15 engineers in validation and design.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "proposed adjuster rail bracket reduced warranty returns by 40%",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "the redesigned adjuster rail bracket I proposed cut warranty returns for that part by 40%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Data Engineering headline and DATA ENGINEERING PROJECTS section",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "The material shows test-lab reporting tools and a local learning project, not data engineering work; the framing presents them as data engineering experience, and the course is still in progress."
+          },
+          {
+            "document": "cv",
+            "claim": "Trained three apprentices in rig safety and test setup (2022-2024)",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "trained 3 apprentices on rig safety and test setup, 2022-2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "LabVIEW program reducing test setup from about two hours to 30 minutes",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cover_letter",
+            "evidence_quote": "cut test setup time from about two hours to 30 minutes",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Online Data Engineering Course, in progress, 6 of 9 modules completed",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "finished 6 of 9 modules, no certificate yet",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a small Flask API over SQLite (Bike-Sharing Trips API, 2025)",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Small Flask API over a public bike-sharing open dataset loaded into SQLite",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "I developed a reusable Python data-processing workflow",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "the table was created and managed by IT",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "IT owns the database",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "practical exposure to containerised local development",
+            "kind": "skill_or_tool",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose.",
+            "note": "Docker use came from a followed tutorial on a laptop-only project, not work experience; the letter presents it as practical exposure without saying so."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "I have taken ownership of making test-data workflows more dependable and reusable",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+            "note": "Packaging and reuse are supported; the ownership framing goes beyond the material."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "happy to commute to Lisbon for the hybrid arrangement",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "happy to commute to Lisbon for hybrid",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "12 years of engineering experience and fluent professional English",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "English (fluent)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "native Portuguese",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Portuguese (native)",
+            "note": ""
+          }
+        ]
+      },
+      {
+        "field": "fit.requirements",
+        "guaranteed": [
+          {
+            "requirement": "Experience designing and operating production data platforms or cloud warehouses at scale",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+            "priority": "must_have",
+            "candidate_has_it": "partial",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Query the plant's SQL Server test-results database for trend analysis",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Dimensional data modelling",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Google Cloud or comparable cloud",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Good professional English",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "English (fluent)",
+            "gap_handling": "not_a_gap"
+          }
+        ],
+        "full": [
+          {
+            "requirement": "Experience designing and operating production data platforms or cloud warehouses at scale",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+            "priority": "must_have",
+            "candidate_has_it": "partial",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Query the plant's SQL Server test-results database for trend analysis",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Dimensional data modelling",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Google Cloud or comparable cloud (warehouse, serverless, containers)",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Curiosity about data architecture and open-source practices",
+            "priority": "must_have",
+            "candidate_has_it": "partial",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Built a small Flask API over a public bike-sharing dataset loaded into SQLite",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Good professional English",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "English (fluent)",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Portuguese",
+            "priority": "nice_to_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Portuguese (native)",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Airflow, dbt, CI/CD",
+            "priority": "nice_to_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          }
+        ]
+      },
+      {
+        "field": "ats.reason",
+        "guaranteed": "Clean, well-sectioned extracted text, but the data engineering label is not supported by the candidate's material and the ad's core requirements are largely absent.",
+        "full": "The text is clean and well sectioned, but the data engineering label is not supported by the material and lowers the score."
+      }
+    ]
+  }
+}

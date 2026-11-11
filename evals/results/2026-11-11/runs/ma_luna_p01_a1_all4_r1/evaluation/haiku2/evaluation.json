@@ -1,0 +1,571 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku2",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9766,
+      "output_tokens": 14442,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14456
+    },
+    "cost_usd": 0.004171,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "8fd22cba062dcc628187e6e5b0c9e631bec70adf703a1be796c386c2a2568bf9",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku2-ma_luna_p01_a1_all4_r1-2eb3fa7f87",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku2-ma_luna_p01_a1_all4_r1-2eb3fa7f87",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.008342
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Senior Data Engineer - Lukovac Freight Hub d.o.o., 03/2022 - present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Senior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "~140 Airflow DAGs loading into Snowflake",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "dbt (420+ models), nightly runtime 5h10 to 1h35",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "dbt (420+ models)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Introduced data contracts, incidents ~9/month to ~2/month",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "cutting broken-pipeline incidents from ~9/month to ~2/month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kafka pipeline ~30M shipment-tracking events/day, p95 latency under 2 minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "end-to-end latency under 2 minutes at p95",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Replaced hourly extracts from PostgreSQL with Debezium CDC into Kafka and Snowflake",
+        "kind": "project",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Replaced hourly full-table extracts of the orders database with CDC using Debezium into Kafka.",
+        "note": "Portfolio shows Debezium into Kafka; the Snowflake target for the CDC work is not stated in the CDC project."
+      },
+      {
+        "document": "cv",
+        "claim": "Replica CPU reduced from ~70% to ~25% during loads",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced the Snowflake bill from about $38k/month to $24k/month",
+        "kind": "number_or_metric",
+        "verdict": "partly_supported",
+        "source": "notes",
+        "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+        "note": "Amounts are supported by the notes, but the notes give no currency; the dollar sign is added by the tool."
+      },
+      {
+        "document": "cv",
+        "claim": "On-call rotation one week in six",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "on-call rotation for data platform, 1 week in 6",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "AWS Certified Data Engineer - Associate (May 2024)",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reconciliation jobs on AWS EMR, ~1.2 TB/day, manual work from ~3 days to ~4 hours per month-end",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Reduced manual reconciliation work of the finance team from ~3 days to ~4 hours per month-end.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Redshift warehouse, star schema, 30+ fact and dimension tables",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Designed the Redshift warehouse schema (star schema, 30+ fact/dimension tables)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "More than 400 transformations migrated to dbt",
+        "kind": "number_or_metric",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Migrated ~300 stored procedures into dbt models",
+        "note": "Material says ~300 stored procedures migrated and 420+ dbt models in total; 400 transformations merges two different counts."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Kafka streaming pipeline processing around 30 million events daily",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~30M shipment-tracking events/day",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Nine years in data engineering",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Data engineer with 9 years of experience",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Contributed fixes and tests to an open-source Airflow provider",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Fixed pagination bug and added tests in a community Airflow provider",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Gave talk Data contracts without the hype at a regional data meetup in 2024",
+        "source": "notes",
+        "source_quote": "gave a talk Data contracts without the hype at a regional data meetup 2024",
+        "relevance": "medium",
+        "why_it_matters": "Shows community presence and speaking on the data contracts work the letter discusses."
+      },
+      {
+        "fact": "AWS Certified Data Engineer - Associate, May 2024",
+        "source": "notes",
+        "source_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+        "relevance": "low",
+        "why_it_matters": "Used on the CV but not in the letter, where the cloud gap is discussed; it would help the cloud point."
+      },
+      {
+        "fact": "Taught SQL for beginners at a local women-in-tech meetup, about 4 evenings per year since 2021",
+        "source": "notes",
+        "source_quote": "teach SQL for beginners at a local women-in-tech meetup",
+        "relevance": "low",
+        "why_it_matters": "Shows SQL communication skill, relevant to the job's work with analysts."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Designing and operating production data platforms or cloud warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Own the ingestion layer of the company data platform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Advanced Python and SQL including query optimisation on large datasets",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Python, SQL, Bash",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dimensional modelling",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "using dimensional modelling and a star schema",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud (managed warehouse, serverless, containers)",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM), Docker",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good professional English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (C1)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Graph modelling",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Curiosity about open-source practices",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Open-source contribution — Airflow provider package (2023)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Portuguese",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "The CV shows the closest real cloud experience (AWS, Snowflake) and does not claim Google Cloud. The letter addresses the cloud gap honestly but repetitively.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 7,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second CV page holds only a few lines (last page 13.6 percent filled)",
+        "Snowflake saving states dollar amounts that the notes do not give in a currency"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFILE",
+        "EXPERIENCE",
+        "SELECTED PROJECTS & OPEN-SOURCE",
+        "EDUCATION",
+        "CERTIFICATION",
+        "SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "Rijeka03/2022 - present (date merged into employer line)"
+      ],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Snowflake",
+        "Kafka",
+        "Google Cloud",
+        "BigQuery",
+        "Docker",
+        "CI/CD",
+        "Git",
+        "data quality",
+        "dimensional modelling",
+        "data platform",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Snowflake",
+        "Kafka",
+        "Docker",
+        "Git",
+        "data quality",
+        "dimensional modelling",
+        "data platform",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "CI/CD (CI checks and GitHub Actions appear only as separate terms)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 6,
+      "reason": "The text is clean and well sectioned, and most important skills are searchable. The merged date line and the lack of any cloud wording beyond AWS and Snowflake lower the score."
+    },
+    "cover_letter": {
+      "score": 5,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": false,
+      "issues": [
+        "The paragraph on AWS and Snowflake repeats the same sentence nearly word for word",
+        "More than 400 transformations conflicts with the 300 stored procedures in the portfolio",
+        "Text is long and repetitive for one page"
+      ],
+      "strengths": [
+        "Uses the ad's terms: shared platform, reusable frameworks, data contracts",
+        "Uses Halden Pay values Together, Ownership and Pace from the careers page",
+        "Keeps the cloud gap honest"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [
+        "open to remote, EU time zones"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Together, Ownership and Pace values"
+      ],
+      "preference_handling": "given_and_not_mentioned",
+      "conflict_handling": "no_conflict",
+      "score": 6
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV second page is nearly empty"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [
+        "Long trailing whitespace on CV page 2"
+      ],
+      "score": 6
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Duplicated sentence in the cover letter: My experience is with AWS and Snowflake rather than Google Cloud"
+      ],
+      "score": 6
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "AWS certification",
+        "Snowflake cost reduction",
+        "On-call rotation",
+        "Debezium CDC work"
+      ],
+      "notes_facts_ignored": [
+        "Talk on data contracts",
+        "SQL teaching at a meetup"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [
+        "Snowflake amounts shown in dollars, currency not in the notes"
+      ],
+      "score": 6
+    },
+    "user_requests": {
+      "requests": [],
+      "score": 10
+    },
+    "invented_content_score": 6,
+    "completeness_score": 6,
+    "overall_score": 6,
+    "summary": "The CV is clean, well organised and mostly grounded, with strong quantified results and a correct certification. It has a few stretches: Debezium into Snowflake, the dollar currency on the Snowflake saving, and a dbt count that does not match the portfolio. The cover letter repeats one paragraph almost word for word and merges the dbt count. Layout is clean except for the almost empty second CV page, and the cloud gap is handled honestly."
+  },
+  "counts": {
+    "claims": 16,
+    "cv_unsupported": 0,
+    "cv_partly": 2,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 5,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 0,
+    "requests_followed": 0,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3489,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2698,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12",
+          "LMRoman9"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 9.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 51.5,
+          "right": 49.9,
+          "top": 49.7,
+          "bottom": 56.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 13.6,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 13.6% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 60.8,
+          "right": 59.1,
+          "top": 63.4,
+          "bottom": 312.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 62.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.004171,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

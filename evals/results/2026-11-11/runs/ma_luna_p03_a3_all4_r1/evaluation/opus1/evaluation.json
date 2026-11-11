@@ -1,0 +1,833 @@
+{
+  "evaluator_model": "anthropic:claude-opus-5-5",
+  "name": "opus1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-opus-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-opus-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 10228,
+      "output_tokens": 16919,
+      "cache_creation_input_tokens": 14116,
+      "cache_read_input_tokens": 0
+    },
+    "cost_usd": 0.224936,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "eb16c224d7892d21d8dc691739ec6dea66ac02af6af13ab6d7e5bf35cddbba22",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "opus1-ma_luna_p03_a3_all4_r1-bcf78e92d2",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "opus1-ma_luna_p03_a3_all4_r1-bcf78e92d2",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.449872
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "QA automation engineer with 7 years of experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "QA automation engineer with 7 years of experience",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Owns ... and mentors junior QA engineers",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "notes",
+        "evidence_quote": "mentored 2 QA interns in 2023",
+        "note": "A one-off 2023 mentoring of interns is turned into ongoing mentoring of junior engineers."
+      },
+      {
+        "document": "cv",
+        "claim": "namespace-level Kubernetes deployments",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "I have namespace-level access, I write helm charts for test envs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Currently preparing for the Certified Kubernetes Administrator (CKA) exam",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "studying for CKA (Certified Kubernetes Administrator). exam booked for Jan 2027. NOT passed yet",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "documents internal platform usage for onboarding",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "I wrote the internal \"how our CI works\" doc, people use it in onboarding",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "GitLab CI, Jenkins, Docker, Docker Compose, Helm",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "CI/CD: GitLab CI, Jenkins, Docker, Docker Compose, Helm",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "k3s, Argo CD, GitOps",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Three Raspberry Pi 5 nodes running k3s; all apps deployed from a Git repository with Argo CD.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Terraform (personal Hetzner VPS infrastructure project)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Infrastructure for a small VPS on Hetzner provisioned with Terraform (personal account).",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Prometheus, Grafana, Loki, Traefik ingress, cert-manager, TLS certificate management",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Prometheus + Grafana + Loki for monitoring, Traefik ingress, cert-manager for TLS.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python, Bash, Java (test code), SQL, PostgreSQL",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Languages: Python, Bash, Java (test code), SQL",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "pytest, Playwright, Selenium, Postman",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Testing: pytest, Playwright, Selenium, Postman",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Linux, Git, Ansible (basic)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Ansible (basic)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "AWS free tier (EC2 and S3 basics); no professional cloud-platform experience",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "no AWS/GCP/Azure at work. only personal Hetzner VPS + free tier AWS for learning (EC2, S3 basics)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "QA Automation Engineer (Test Infrastructure) | Odrava Health Software | 2021–Present",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "QA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021 - now",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "GitLab CI/CD pipelines for three product teams (~25 developers)",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Own the GitLab CI pipelines for 3 product teams (~25 developers)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced average pipeline time from 38 to 14 minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Cut average pipeline time from 38 to 14 minutes",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "monthly CI runner costs decreased by about 30%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "monthly CI runner cost down about 30%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Designed and operated merge-request ephemeral environments ... automated cleanup after merge or 48 hours",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Environments are destroyed automatically after merge or 48h of inactivity.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "suite of approximately 900 tests; flaky-test rate from 7% to below 1%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Maintain the pytest + Playwright e2e suite (~900 tests); flaky rate down from 7% to under 1%.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a Python and PostgreSQL pipeline-results collection workflow and Grafana dashboards",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Collected test results from CI into PostgreSQL and built Grafana dashboards",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Wrote Bash and Python tooling to seed PostgreSQL test data",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Wrote Bash and Python tooling for test data seeding into PostgreSQL.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "mentored two QA interns in 2023",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "mentored 2 QA interns in 2023",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "QA Engineer | Brightmill Software House | 2019–2021",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "QA Engineer | Brightmill Software House, Wroclaw | 2019 - 2021",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Introduced a Java and Selenium automated regression suite; Jenkins nightly jobs",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Introduced Selenium + Java automated regression suite for the biggest client project.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Customer Support Specialist (2nd line) | Brightmill | 2018–2019",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Customer Support Specialist (2nd line) | Brightmill Software House | 2018 - 2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Homelab k3s Cluster with GitOps | Personal | 2024–2025",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "PROJECT: Homelab k3s Cluster with GitOps (personal, 2024-2025)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BEng, Computer Engineering | Silesian Lowlands University of Technology | 2018",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "BEng Computer Engineering, Silesian Lowlands University of Technology, 2018",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "ISTQB Foundation Level | 2019",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "ISTQB Foundation Level cert, 2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "CKA preparation | Exam scheduled for January 2027",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "exam booked for Jan 2027. NOT passed yet",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Polish (native), English (C1), German (A2)",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Polish (native), English (C1), German (A2)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Over the past seven years in QA engineering",
+        "kind": "date_or_duration",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "QA automation engineer with 7 years of experience",
+        "note": "One of the seven years was customer support, not QA engineering; minor stretch."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Average pipeline time 38 -> 14 minutes; monthly CI runner cost down about 30%.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "helped bring the flaky-test rate in a suite of approximately 900 tests from 7% to below 1%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "(~900 tests); flaky rate down from 7% to under 1%",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "designed short-lived environments deployed with Helm to a shared Kubernetes cluster",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "deployed via Helm to the shared Kubernetes cluster from GitLab CI",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "three product teams of approximately 25 developers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "3 product teams (~25 developers)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "documenting internal practices for onboarding",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "people use it in onboarding",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "three-node k3s homelab ... Argo CD ... Prometheus, Grafana and Loki, Traefik and cert-manager ... Hetzner VPS with Terraform",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Three Raspberry Pi 5 nodes running k3s",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "AWS free tier for basic EC2 and S3 learning exercises",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "free tier AWS for learning (EC2, S3 basics)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "my professional infrastructure experience has been primarily with GitLab CI, Kubernetes, and personal Hetzner infrastructure",
+        "kind": "other",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Infrastructure for a small VPS on Hetzner provisioned with Terraform (personal account).",
+        "note": "Lists personal Hetzner work under 'professional' experience; contradictory wording."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "currently preparing for the CKA exam",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "studying for CKA",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Linux-based environments",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Other: Linux, Git",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Joined two incident calls as observer",
+        "source": "notes",
+        "source_quote": "did join 2 incident calls as observer",
+        "relevance": "low",
+        "why_it_matters": "Small honest signal of operations exposure for an 'operate' role."
+      },
+      {
+        "fact": "Completed Terraform Associate practice tests",
+        "source": "notes",
+        "source_quote": "did the \"Terraform Associate\" practice tests but didnt take exam",
+        "relevance": "low",
+        "why_it_matters": "Shows Terraform study effort for a Terraform-heavy role."
+      },
+      {
+        "fact": "Career goal of moving to DevOps/platform role",
+        "source": "cv",
+        "source_quote": "QA Automation Engineer -> DevOps",
+        "relevance": "medium",
+        "why_it_matters": "The CV headline dropped the DevOps direction, so the word DevOps appears nowhere in the CV."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design/operation",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Designed and operated merge-request ephemeral environments using Docker Compose and later Helm on a shared Kubernetes cluster",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "AWS or other major cloud",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Cloud learning: AWS free tier (EC2 and S3 basics); no professional cloud-platform experience",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Terraform (personal Hetzner VPS infrastructure project)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Systems architecture and system design",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Designed and operated merge-request ephemeral environments",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Networking incl. mTLS and SSL/TLS",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "configured Traefik ingress and cert-manager for TLS certificate management in a personal k3s environment",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Practical security awareness",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "partial",
+          "evidence_quote": "cert-manager, TLS certificate management",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Leading technical topics and bringing stakeholders along",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Own and improve GitLab CI/CD pipelines for three product teams",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Analytical thinking and clear communication",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Reduced average pipeline time from 38 to 14 minutes by profiling workflows",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Backend/full-stack background (JVM preferred)",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Java (test code)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Systems: Linux, Git, Ansible (basic)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Observability/monitoring",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Set up Prometheus, Grafana and Loki for monitoring",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps (no professional cloud, Terraform only personal, no Terragrunt, no mTLS, no IoT) are handled honestly: personal projects are labelled personal and the lack of professional cloud experience is stated outright. The candidate is a weak fit for a senior contractor role and the CV does not hide that.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 6,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [
+        "Duplicated sentence in summary: 'Owns CI/CD and test-environment improvements for three product teams, documents ... for onboarding' appears twice",
+        "'( 25 developers)' in PDF: the '~' was lost"
+      ],
+      "issues": [
+        "Summary is long and repeats itself",
+        "Headline 'QA Automation Engineer' gives no DevOps direction for a DevOps role",
+        "Flaky-test 7% to below 1% result repeated in experience and projects"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "SELECTED INFRASTRUCTURE PROJECTS",
+        "EDUCATION",
+        "CERTIFICATIONS AND PROFESSIONAL DEVELOPMENT",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "( 25 developers)"
+      ],
+      "important_requirements": [
+        "DevOps / cloud infrastructure engineer",
+        "AWS",
+        "Terraform",
+        "Terragrunt",
+        "Infrastructure as Code",
+        "mTLS / SSL/TLS",
+        "networking",
+        "security",
+        "system design",
+        "observability/monitoring",
+        "Kubernetes",
+        "Linux",
+        "IoT",
+        "JVM/Java"
+      ],
+      "covered_in_searchable_wording": [
+        "AWS",
+        "Terraform",
+        "Infrastructure as Code",
+        "TLS",
+        "observability/monitoring",
+        "Kubernetes",
+        "Linux",
+        "Java"
+      ],
+      "missed_but_candidate_has": [
+        "DevOps (career direction in source CV headline)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, well-sectioned, ordered extraction with supported keywords; only the lost '~' and the absence of 'DevOps' anywhere hurt searchability, plus the duplicated summary sentence."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Barely uses company information; only 'connecting vehicle systems with cloud services' from the ad",
+        "Repeats 'three product teams' and onboarding documentation",
+        "'my professional infrastructure experience has been primarily with ... personal Hetzner infrastructure' is self-contradictory",
+        "Does not address the contractor/leadership aspects or explain motivation for the career switch"
+      ],
+      "strengths": [
+        "Honest about AWS being only free-tier learning",
+        "Concrete metrics",
+        "Clearly separates professional and homelab work"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV page 2 only about one-third filled",
+        "Homelab project split across pages 1 and 2"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [
+        "Dense summary paragraph"
+      ],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Summary sentence duplicated verbatim-almost: 'Owns CI/CD and test-environment improvements for three product teams' twice",
+        "Summary mixes third-person 'Owns' with otherwise noun-phrase style",
+        "Letter: 'my professional infrastructure experience has been primarily with ... personal Hetzner infrastructure'"
+      ],
+      "score": 7
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "CKA exam booked Jan 2027, not passed",
+        "No professional cloud; AWS free tier EC2/S3",
+        "Namespace-level Kubernetes access",
+        "Wrote internal CI onboarding doc",
+        "Mentored 2 QA interns in 2023",
+        "ISTQB Foundation 2019"
+      ],
+      "notes_facts_ignored": [
+        "Terraform Associate practice tests",
+        "Observer on 2 incident calls"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [
+        "'mentors junior QA engineers' overstates mentoring 2 interns in 2023"
+      ],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both a CV and a cover letter were produced.",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 8,
+    "overall_score": 7,
+    "summary": "Honest, well-grounded CV and letter that clearly label homelab work as personal and state the lack of professional cloud experience, with accurate metrics from the CV and portfolio. The main flaws are a duplicated sentence in the summary, a stretched 'mentors junior QA engineers', the lost '~' in the PDF, and a headline without any DevOps direction. The cover letter is generic about Corvale and contains a confusing professional/personal sentence. Layout is clean, and the work arrangement is handled neutrally."
+  },
+  "counts": {
+    "claims": 41,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 2,
+    "omissions_high": 0,
+    "must_haves": 9,
+    "must_haves_shown": 7,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 4553,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2364,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 50.7,
+          "right": 50.0,
+          "top": 49.7,
+          "bottom": 61.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 33.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 60.8,
+          "right": 59.1,
+          "top": 63.4,
+          "bottom": 347.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 58.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.224936,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

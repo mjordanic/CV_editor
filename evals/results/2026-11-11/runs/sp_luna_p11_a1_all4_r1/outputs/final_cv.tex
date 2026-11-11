@@ -1,0 +1,72 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor,linkcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.25em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\LARGE\bfseries\color{primarycolor} Tiago Ferrão-Lindqvist}\\[0.25em]
+{\large Test \& Validation Engineer | Python, SQL \& Test Data}\\[0.25em]
+Setúbal, Portugal | \href{mailto:tiago.ferraolindqvist@example.com}{tiago.ferraolindqvist@example.com} | +351 555 010 311 | \href{https://linkedin.com/in/tfl-example}{linkedin.com/in/tfl-example}
+\end{center}
+\vspace{-0.5em}
+
+\section*{Professional Summary}
+Mechanical engineer with 12 years of experience in product design and test and validation of automotive and industrial components. Develops Python tools to process test-rig data, check channels against specifications and generate reports, including a nightly workflow handling approximately 2 GB of data per week across six rigs. Experience querying SQL Server, writing results to an IT-created staging table and creating Power BI reporting for engineering users. Currently transitioning toward data engineering and completing an online data engineering course.
+
+\section*{Experience}
+\textbf{Test \& Validation Engineer, Corvane Automotive Components — Setúbal} \hfill \textit{Mar 2019–Present}
+\begin{itemize}
+\item Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms across six servo-hydraulic and electric test rigs; write reports sent to OEM customers.
+\item Developed Python scripts using pandas, NumPy, Matplotlib and npTDMS to parse TDMS and CSV rig output, check channels against test specifications and generate standard report figures; reduced report preparation from approximately three days to half a day per test.
+\item Run the processing workflow nightly on a lab PC using Windows Task Scheduler; it writes summary results to an IT-created staging table in the plant's SQL Server database. Packaged as an internal tool now used by four other test engineers.
+\item Query the main test-results database in SQL Server for trend analysis across three product generations; the queries are read-only.
+\item Created a Power BI dashboard using the staging table to show pass/fail trends and cycles to failure by product generation; used by approximately 15 validation and design engineers.
+\item Correlate rig results with ANSYS Mechanical FEA and lead 8D root-cause analysis on field failures; proposed a redesigned adjuster rail bracket that cut warranty returns for that part by 40\%.
+\item Maintain MATLAB/Simulink models of the adjuster drive used to select rig load profiles.
+\item Trained three apprentices in rig safety and test setup (2022–2024).
+\end{itemize}
+
+\textbf{Mechanical Design Engineer, Halvik Pumps — Porto} \hfill \textit{Sep 2014–Feb 2019}
+\begin{itemize}
+\item Designed centrifugal pump casings and impellers in SolidWorks and prepared production drawings with GD\&T; owned DFMEA for two product lines.
+\item Performed structural FEA of casings in ANSYS; supported a change from grey cast iron to ductile iron for one casing family, saving 12\% in material cost.
+\item Supported conversion of the pump performance test bench to a Siemens S7 PLC-controlled setup, adjusting setpoints and timers in TIA Portal under the automation engineer's supervision.
+\item Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time from approximately two hours to 30 minutes.
+\end{itemize}
+
+\section*{Selected Project}
+\textbf{Bike-sharing trips API | Personal learning project, 2025}
+\begin{itemize}
+\item Built a small Flask API with three read-only endpoints over a public bike-sharing dataset loaded into SQLite. Runs on a personal laptop; followed a tutorial to run it with Docker Compose. Used Python, Flask, SQLite, Docker Compose and Git.
+\end{itemize}
+
+\section*{Education}
+\textbf{MSc Mechanical Engineering, Sado Valley Polytechnic} \hfill 2014\\
+Thesis: Fatigue life prediction of welded brackets under variable-amplitude loading
+
+\section*{Professional Development}
+Online Data Engineering course — in progress; six of nine modules completed.
+
+\section*{Skills}
+\textbf{Data processing and reporting:} Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server, SQL, Power BI, Excel/VBA\\
+\textbf{Engineering and testing:} MATLAB/Simulink, ANSYS Mechanical, SolidWorks, CATIA V5, LabVIEW, Minitab, design of experiments (DOE), GD\&T, DFMEA, 8D problem solving\\
+\textbf{Personal learning project tools:} Flask, SQLite, Docker Compose, Git
+
+\section*{Languages}
+Portuguese (native), English (fluent), Spanish (good)
+\end{document}
