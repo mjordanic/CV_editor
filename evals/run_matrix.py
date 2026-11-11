@@ -19,6 +19,11 @@ re-scored. --dry-run prints the commands without running anything.
 --truth-check also runs evals/score_truth.py (truth1) after the evaluations.
 --estimate prints the expected cost of the selected cases (ESTIMATE_USD below) and runs nothing.
 
+A case with "method": "single_prompt" (evals/matrix_single_prompt.json) runs evals/single_prompt.py
+(exactly one model call writes both documents as text and LaTeX; pdflatex makes the PDFs) instead of the multi-agent session; the
+ledger, caps, resume, evaluation and out-of-credit handling are the same. --total-cap defaults to the
+matrix file's "total_cap" (12 USD for the single-prompt matrix), else 24.
+
 Out of credit: when a session or an evaluation exits with code 75 (the provider reported no credit
 left, evals/credit.py), no new case or step starts; cases already running finish their current step
 (and stop at their own first credit error). The matrix then prints the finished / unfinished /
@@ -39,7 +44,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from evals.cases import DEFAULT_MATRIX, load_matrix, resolve_case
+from evals.cases import DEFAULT_MATRIX, load_matrix, matrix_total_cap, resolve_case
 from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
 
 REPO = Path(__file__).resolve().parent.parent
@@ -52,8 +57,15 @@ OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new 
 # $2/1M input) and answers four more rubric sections (about 2k more output tokens at $10/1M): about
 # +0.04, so 0.18 at the high end. A script with change requests redrafts more: its session is
 # estimated at twice the default session. The truth check is one short luna call.
+# A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex).
+# gpt-6.1-sol at $2 / $10 per 1M tokens: the prompt is the app's writer and LaTeX rules, both LaTeX templates
+# and the case's inputs, job ad and search results (about 4-7k tokens on these fixtures, ~0.015); the answer is
+# both documents as text and as LaTeX plus notes (about 4-5k tokens) and reasoning (up to about 5k): up to
+# about 10k output tokens, ~0.10. So 0.12 at the high end.
 ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval": 0.18, "truth": 0.005,
-                "scripted_session_factor": 2.0}
+                "scripted_session_factor": 2.0,
+                "single_prompt": {"gpt-6.1-sol": 0.12}}
+DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 
 
 def spent(ledger: Path) -> float:
@@ -99,7 +111,8 @@ def eval_names(opts) -> list[str]:
 
 def session_command(case: dict, run_dir: Path, env_file: str | None, cost_cap: float) -> list[str]:
     paths = resolve_case(case)  # fails early if a fixture is missing
-    cmd = [sys.executable, "-m", "evals.run_case", "--run-dir", str(run_dir), "--ad", case["ad"],
+    module = "evals.single_prompt" if case.get("method") == "single_prompt" else "evals.run_case"
+    cmd = [sys.executable, "-m", module, "--run-dir", str(run_dir), "--ad", case["ad"],
            "--persona", case["persona"], "--inputs", ",".join(paths["inputs"]), "--model", case["model"],
            "--cost-cap", str(cost_cap)]
     if env_file:
@@ -111,6 +124,10 @@ def session_command(case: dict, run_dir: Path, env_file: str | None, cost_cap: f
     for key in ("persona", "ad", "model", "rep", "input_set"):
         cmd += ["--label", f"{key}={case.get(key)}"]
     cmd += ["--label", f"case={base_id(case['id'])}", "--label", f"script={case.get('script') or 'default'}"]
+    if case.get("method"):
+        cmd += ["--label", f"method={case['method']}"]
+    if case.get("baseline"):
+        cmd += ["--label", f"baseline={case['baseline']}"]
     return cmd
 
 
@@ -209,11 +226,15 @@ def estimate(cases: list[dict], opts) -> dict:
     """Expected cost of the selected cases at ESTIMATE_USD: per step kind, per model and per script."""
     p = ESTIMATE_USD
     total = {"sessions": 0.0, "evaluations": 0.0, "truth_checks": 0.0}
-    by_model, by_script = {}, {}
+    by_model, by_script, by_method = {}, {}, {}
     n_evals = len(eval_names(opts))
     for case in cases:
         model = case["model"].split(":", 1)[-1]
-        session = p["session"].get(model, max(p["session"].values()))
+        method = case.get("method") or "multi_agent"
+        if method == "single_prompt":
+            session = p["single_prompt"].get(model, max(p["single_prompt"].values()))
+        else:
+            session = p["session"].get(model, max(p["session"].values()))
         if case.get("script"):
             session *= p["scripted_session_factor"]
         cost = session + n_evals * p["eval"] + (p["truth"] if opts.truth_check else 0)
@@ -221,6 +242,7 @@ def estimate(cases: list[dict], opts) -> dict:
         total["evaluations"] += n_evals * p["eval"]
         total["truth_checks"] += p["truth"] if opts.truth_check else 0
         by_model[model] = by_model.get(model, 0) + cost
+        by_method[method] = by_method.get(method, 0) + cost
         key = case.get("script") or "default"
         by_script.setdefault(key, {"cases": 0, "usd": 0.0})
         by_script[key]["cases"] += 1
@@ -229,7 +251,8 @@ def estimate(cases: list[dict], opts) -> dict:
     return {"cases": len(cases), "total_usd": r(sum(total.values())), **{k: r(v) for k, v in total.items()},
             "by_model": {k: r(v) for k, v in sorted(by_model.items())},
             "by_script": {k: {"cases": v["cases"], "usd": r(v["usd"])} for k, v in sorted(by_script.items())},
-            "prices": p}
+            "by_method": {k: r(v) for k, v in sorted(by_method.items())},
+            "total_cap": getattr(opts, "total_cap", None), "prices": p}
 
 
 def select_cases(cases: list[dict], only: list[str] | None, repeats: int = 1) -> list[dict]:
@@ -243,6 +266,12 @@ def select_cases(cases: list[dict], only: list[str] | None, repeats: int = 1) ->
     return expand_repeats(selected, repeats)
 
 
+def default_total_cap(matrix: str | Path) -> float:
+    """The matrix file's "total_cap", else DEFAULT_TOTAL_CAP (the 24 USD budget of the main round)."""
+    cap = matrix_total_cap(matrix)
+    return DEFAULT_TOTAL_CAP if cap is None else cap
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--matrix", default=str(DEFAULT_MATRIX))
@@ -250,7 +279,8 @@ def main(argv=None) -> int:
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--only", nargs="+", help="run only these case ids")
-    parser.add_argument("--total-cap", type=float, default=24.0, help="start no new case past this many USD in total")
+    parser.add_argument("--total-cap", type=float, default=None,
+                        help="start no new case past this many USD in total (default: the matrix's total_cap, else 24)")
     parser.add_argument("--cost-cap", type=float, default=1.5, help="per-session cap passed to run_case")
     parser.add_argument("--dry-run", action="store_true", help="print the commands, run nothing")
     parser.add_argument("--estimate", action="store_true", help="print the expected cost of the selected cases, run nothing")
@@ -261,6 +291,8 @@ def main(argv=None) -> int:
     parser.add_argument("--truth-check", action="store_true", help="also run evals.score_truth (truth1) on each run")
     opts = parser.parse_args(argv)
 
+    if opts.total_cap is None:
+        opts.total_cap = default_total_cap(opts.matrix)
     cases = select_cases(load_matrix(opts.matrix), opts.only, opts.repeats)
     if opts.estimate:
         print(json.dumps(estimate(cases, opts), indent=2))

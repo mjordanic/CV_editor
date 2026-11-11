@@ -104,9 +104,10 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 ```
 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
-`work_preference` and `script`); every case must resolve to tracked files in `fixtures/` and `scripts/`
+`work_preference`, `script`, and `method`/`baseline` for single-prompt cases, section 7); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
-(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default 24 USD, the budget for this round),
+(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default: the matrix file's
+`total_cap`, else 24 USD, the budget for this round),
 finished sessions and evaluations are never redone, so an interrupted matrix resumes. `--dry-run`
 prints the commands without running anything; `--estimate` prints the expected cost of the selected
 cases (per step, model and script, at the prices in `ESTIMATE_USD` in `run_matrix.py`).
@@ -249,6 +250,67 @@ outcomes (followed, ignored, untruthful requests refused or followed), with the 
 sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_replaced`,
 `scripted_not_exercised`, from each session's script and transcript). Sessions interrupted for lack of
 credit are left out and listed under `interrupted`.
+
+## 7. Single-prompt baseline: `evals/single_prompt.py`
+
+Does the multi-agent app beat one strong model given everything at once? **Topology: exactly one model
+call per case** (default `openai:gpt-6.1-sol`) and nothing else: no router, critic, grounding check,
+redraft, LaTeX conversion, LaTeX repair or re-conversion call. The multi-agent default-script session it
+is compared with makes a median of 22 model calls on three models.
+
+```bash
+# one case
+uv run python -m evals.single_prompt --run-dir ../runs-sp/p03_a3_all4 --ad a3 --persona p03 --inputs all4 \
+    [--model openai:gpt-6.1-sol] --env-file PATH/.env
+# the 39-case matrix: cost first, then the run (same ledger, caps, resume and out-of-credit stop as section 2)
+uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --estimate
+uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --env-file PATH/.env
+# side by side with the main round's runs
+uv run python -m evals.summarize ../runs-sp --with ../runs
+```
+
+**The prompt** holds what the multi-agent session gets: the candidate files of the input set (omitted
+ones are absent, exactly as in `run_case`), the job ad as published, and the company search results of
+the ad's search fixture, read with the app's `agents.search.search_result_texts` (the same text the
+app's company research and the evaluator read). It also holds the app's two LaTeX templates
+(`templates/cv_template.tex`, `cover_letter_template.tex`). The instructions are the app's own, imported,
+not copied: the goal sentences of both writer system prompts, `TRUTHFULNESS_PROTOCOL`, the writers'
+fresh-draft ("creative liberty") instructions and general guidelines, the output-language and
+work-arrangement rules, and the LaTeX formatters' rules (`CV_LATEX_SYSTEM_PROMPT`,
+`COVER_LETTER_LATEX_SYSTEM_PROMPT`: copy the text word for word, escape specials). The default script
+declines missing contact details, so the prompt says the candidate declined them and asks for no
+placeholders. The answer has five fields: the CV as plain text and as full LaTeX, the same for the
+letter, and notes. The prompt as sent is in `RUN/prompt.json`.
+
+**PDFs, no model:** each document's LaTeX goes through the app's deterministic helpers
+(`ensure_text_extractable`, `escape_text_specials`) and pdflatex (twice, as in the app). If it does not
+compile, the manifest records it (`compile_failures`, `pdfs.<kind>.compile_error`) and the PDF is made
+from the plain text by a fixed built-in layout (`fallback_latex`: escaped text, paragraphs as in the
+text, characters the fonts lack left out and listed), marked `"source": "fallback_layout"` and listed in
+`fallback_pdfs`, so the content can still be graded and the report can separate fallbacks from PDFs the
+model's LaTeX made. The model's LaTeX is kept as `outputs/final_cv.tex` and `final_cover_letter.tex`.
+
+**The run folder** has `run_case`'s layout, so `evals/evaluate.py` grades it unchanged; the plain text
+versions are `final_*.txt`, so its text-vs-PDF checks work as for the app. The grader stays blind: it reads
+`inputs/`, `outputs/`, `transcript.json` and `inputs/script.json` (the default script), never the manifest,
+so it sees neither the method nor the model. There is no conversation, so `transcript.json` has no turns
+and the grader's conversation section says none was recorded (the baseline's default-script
+conversation only asks for the two documents). The manifest has `"method": "single_prompt"`, the labels
+`method` and `baseline`, and `"calls": 1` (every model call made, from `llm_calls.jsonl`; a test fails if
+any other call happens). `summarize.py` writes `methods_summary.json` with every metric split by method
+(runs without a method are `multi_agent`) and, per single-prompt run, the pair with its baseline run and
+the difference (`paired_mean_diff`).
+
+**`matrix_single_prompt.json`** (39 cases, ids `sp_<persona>_<ad>_<input set>_sol_r1`): every persona
+p01-p13 on its primary ad with the input sets `all4`, `cv_only` and `no_cv`. Each case's `baseline` is
+the main matrix's default-script gpt-6-luna session with the same persona, ad and inputs (rep 1, no work
+preference). Scripted-user cases are out of scope: a single prompt cannot hold a conversation, and
+`cases.py` refuses a single-prompt case with a script. The file's `total_cap` (12 USD) is run_matrix's
+default `--total-cap` for it.
+
+Estimated cost (`--estimate`): **11.70 USD** for the 39 cases: 0.12 per call (a 4-7k token prompt at
+$2/1M, and up to about 10k output tokens at $10/1M: both documents as text and LaTeX, notes and
+reasoning) plus 0.18 per evaluation.
 
 ## Fixtures
 

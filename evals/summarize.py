@@ -20,11 +20,18 @@ untruthful requests refused or followed). Per script it also counts, from each s
 transcript alone, the scripted requests that were sent and those "not exercised" (never sent, so never
 graded): those are not a result about the app, and a script with many needs its cases rerun.
 
+It also writes RUNS_DIR/methods_summary.json (`method_summary`): the metrics split by method (the
+manifest's "method": "single_prompt" from evals/single_prompt.py, else "multi_agent") and, for every
+single-prompt run with a "baseline" label, the pair: its scores next to those of the multi-agent run it
+is compared with. `--with OTHER_RUNS_DIR` (repeatable) adds the runs of other folders to this split, e.g.
+the single-prompt runs folder next to the main round's.
+
 Sessions interrupted because the provider ran out of credit (manifest status "interrupted: out of
 credit") are left out of every number and listed under "interrupted".
 
 Usage:
     .venv/bin/python -m evals.summarize RUNS_DIR [--out RUNS_DIR/repeats_summary.json] [--only-repeated]
+        [--with OTHER_RUNS_DIR ...]
 """
 from __future__ import annotations
 
@@ -172,6 +179,70 @@ def summarize(runs_dir: Path) -> dict:
     return out
 
 
+def method_of(run: Path) -> str:
+    """single_prompt (evals/single_prompt.py) or multi_agent (evals/run_case.py, whose manifest has no method)."""
+    manifest = _manifest(run)
+    return manifest.get("method") or (manifest.get("labels") or {}).get("method") or "multi_agent"
+
+
+def _run_means(run: Path) -> dict:
+    """{metric: mean over the run's evaluations}."""
+    return {m: round(statistics.fmean(v), 3) for m, v in read_run(run).items() if v}
+
+
+def method_summary(runs_dirs: list[Path]) -> dict:
+    """The metrics split by method over every (not interrupted) run of the folders, and the like-for-like pairs:
+    each single-prompt run with a "baseline" label next to that multi-agent run (when it is in the folders)."""
+    runs = [r for d in runs_dirs for r in run_folders(d)[0]]
+    by_method: dict[str, dict] = {}
+    for run in runs:
+        bucket = by_method.setdefault(method_of(run), {"runs": 0, "evaluated": 0, "values": {}})
+        bucket["runs"] += 1
+        means = _run_means(run)
+        bucket["evaluated"] += bool(means)
+        for m, v in means.items():
+            bucket["values"].setdefault(m, []).append(v)
+    methods = {
+        method: {"runs": b["runs"], "evaluated": b["evaluated"],
+                 "metrics": {m: {"n": len(v), "mean": round(statistics.fmean(v), 3), "sd": _sd(v)}
+                             for m, v in sorted(b["values"].items(), key=lambda kv: _metric_order(kv[0]))}}
+        for method, b in sorted(by_method.items())
+    }
+    by_name = {r.name: r for r in runs}
+    pairs = []
+    for run in runs:
+        baseline = (_manifest(run).get("labels") or {}).get("baseline")
+        if method_of(run) != "single_prompt" or not baseline:
+            continue
+        other = by_name.get(baseline)
+        pair = {"single_prompt": run.name, "multi_agent": baseline, "found": other is not None,
+                "single_prompt_metrics": _run_means(run), "multi_agent_metrics": _run_means(other) if other else {}}
+        pair["diff"] = {m: round(v - pair["multi_agent_metrics"][m], 3) for m, v in pair["single_prompt_metrics"].items()
+                        if m in pair["multi_agent_metrics"]}
+        pairs.append(pair)
+    paired = [p for p in pairs if p["diff"]]
+    mean_diff = {}
+    for m in {m for p in paired for m in p["diff"]}:
+        values = [p["diff"][m] for p in paired if m in p["diff"]]
+        mean_diff[m] = {"n": len(values), "mean": round(statistics.fmean(values), 3), "sd": _sd(values)}
+    return {"methods": methods, "pairs": pairs,
+            "paired_mean_diff": dict(sorted(mean_diff.items(), key=lambda kv: _metric_order(kv[0])))}
+
+
+def format_methods(summary: dict, metrics=("overall", "invented_content", "completeness", "fit", "cv_unsupported",
+                                          "visual_layout")) -> str:
+    rows = [["method", "runs", *metrics]]
+    for method, data in summary["methods"].items():
+        cell = lambda s: "-" if not s else f"{s['mean']:g}" + (f"±{s['sd']:g}" if s["sd"] is not None else "")  # noqa: E731
+        rows.append([method, str(data["runs"]), *(cell(data["metrics"].get(m)) for m in metrics)])
+    if summary["paired_mean_diff"]:
+        d = summary["paired_mean_diff"]
+        n = max(s["n"] for s in d.values())
+        rows.append([f"pairs: sp-ma (n={n})", "", *(f"{d[m]['mean']:+g}" if m in d else "-" for m in metrics)])
+    widths = [max(len(r[i]) for r in rows) for i in range(len(rows[0]))]
+    return "\n".join("  ".join(c.ljust(w) for c, w in zip(r, widths)).rstrip() for r in rows)
+
+
 def _metric_order(name: str) -> int:
     order = [*EVAL_METRICS, *(f"truth_{m}" for m in TRUTH_METRICS)]
     return order.index(name) if name in order else len(order)
@@ -203,6 +274,8 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, help="JSON file to write (default RUNS_DIR/repeats_summary.json)")
     parser.add_argument("--only-repeated", action="store_true",
                         help="only cases with two or more runs or a run with two or more evaluations")
+    parser.add_argument("--with", dest="with_dirs", type=Path, action="append", default=[],
+                        help="another runs folder whose runs join the split by method (repeatable)")
     args = parser.parse_args(argv)
     summary = summarize(args.runs_dir)
     if args.only_repeated:
@@ -222,6 +295,11 @@ def main(argv=None) -> int:
     if unsent:
         print("scripted requests not exercised (never sent, not graded): "
               + ", ".join(f"{name} {n}" for name, n in sorted(unsent.items())))
+    methods = method_summary([args.runs_dir, *args.with_dirs])
+    (args.runs_dir / "methods_summary.json").write_text(json.dumps(methods, indent=2), encoding="utf-8")
+    if len(methods["methods"]) > 1 or "single_prompt" in methods["methods"]:
+        print("\nby method (mean±sd over runs; pairs: single-prompt minus its multi-agent baseline)")
+        print(format_methods(methods))
     if totals["interrupted"]:
         print(f"left out (interrupted, out of credit): {', '.join(totals['interrupted'])}")
     print("mean±sd across repeats; (ev±x) = mean spread between evaluator re-scores of the same run", file=sys.stderr)
