@@ -8,6 +8,7 @@ Usage (from the repo root):
         [--workers 4] [--only CASE_ID ...] [--total-cap 24] [--cost-cap 1.5] [--dry-run] [--estimate]
         [--repeats N] [--eval-name eval1 | --rescore K] [--truth-check]
         [--stage NAME ...] [--sessions-only] [--gradings-out FILE]
+        [--sp-batch [--batch-wait] [--batch-resubmit-failed] [--batch-adopt KEY=ID] [--batch-forget-pending]]
 
 Each case gets RUNS_DIR/<case id>/ (see evals/README.md) and RUNS_DIR/<case id>.out (console log).
 RUNS_DIR/ledger.tsv records the cost of every session, evaluation and truth check; no new case starts
@@ -40,6 +41,19 @@ haiku1/haiku2) and a trap check ("truth"). On such a matrix:
     app_head and app_dirty. When the matrix names a frozen commit, no session starts if the app's files (APP_PATHS)
     differ from it. Sessions of the app (multi_agent) run as before, through evals/run_case.py.
 
+OpenAI Batch for the single-prompt arms (evals/batch_sp.py):
+    --sp-batch                  the single-prompt sessions' one call goes through OpenAI's Batch API (half price): each
+                                run submits the SP cases not yet submitted (within the caps, at Batch-price estimates)
+                                and collects ended batches, running each collected case's session on its reply (same
+                                PDFs, fallback layout, manifest; priced at the Batch rate). An SP case still in a batch
+                                is reported and graded on a later run. Multi-agent sessions run as before. State:
+                                RUNS_DIR/batches/sp_openai/. Synchronous stays the default.
+    --batch-wait                poll until every batch has ended and its sessions are written, then go on to grading.
+    --batch-resubmit-failed     an unanswered request (errored, expired, cancelled) goes out once more in a follow-up
+                                batch by itself (the synchronous retry rule); this sends it again after that.
+    --batch-adopt KEY=ID, --batch-forget-pending   settle a submission an interrupted run left unrecorded.
+    With --estimate, --sp-batch prices the single-prompt sessions at the Batch rate.
+
 Out of credit: when a session or an evaluation exits with code 75 (the provider reported no credit
 left, evals/credit.py), no new case or step starts; cases already running finish their current step
 (and stop at their own first credit error). The matrix then prints the finished / unfinished /
@@ -63,7 +77,7 @@ from pathlib import Path
 
 from evals.cases import DEFAULT_MATRIX, load_matrix, matrix_total_cap, resolve_case
 from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
-from provenance import cost_usd
+from provenance import BATCH_PRICE_FACTOR, cost_usd
 
 REPO = Path(__file__).resolve().parent.parent
 _LOCK = threading.Lock()
@@ -104,13 +118,12 @@ DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 # Claude grader records) at ~16k input and ~12k output tokens per grading (the measured 10k output plus room for
 # thinking; the ATS score adds no input, as the CV's PDF text was already in the prompt, and its answer replaces
 # the earlier ATS section of about the same length); the trap check at ~5k input and ~1.5k output. The plan rounds
-# them as below. The Batch API takes BATCH_DISCOUNT off every grading line; sessions run on OpenAI interactively,
-# so Batch does not change them.
+# them as below. The Batch API charges BATCH_PRICE_FACTOR x list price on every grading line; sessions run on OpenAI
+# interactively, so Batch does not change them.
 GRADER_PRICES_PER_1M = {"claude-sonnet-5-5": (2.00, 10.00), "claude-opus-5-5": (4.00, 20.00),
                         "claude-haiku-5-5": (0.10, 0.50)}  # input, output
 GRADING_TOKENS = (16_000, 12_000)
 TRAP_TOKENS = (5_000, 1_500)
-BATCH_DISCOUNT = 0.5
 AB_UNIT_USD = {
     "multi_agent": {"gpt-6-luna": 0.027, "gpt-6.1-terra": 0.085},
     "single_prompt": {m: sp_session_usd(m) for m in ("gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol")},
@@ -260,6 +273,9 @@ def run_one(case: dict, opts) -> tuple[str, str]:
     stage, stage_caps = case.get("stage"), getattr(opts, "stage_caps", None) or {}
     if stage in stage_caps and spent(ledger, opts.stage_ids[stage]) > stage_caps[stage]:
         return cid, f"skip (stage {stage} cap reached)"
+    if not session_done and getattr(opts, "sp_batch", False) and case.get("method") == "single_prompt":
+        from evals.batch_sp import pending_note
+        return cid, pending_note((getattr(opts, "sp_batch_status", None) or {}).get(cid))
     if not session_done:
         shutil.rmtree(run_dir, ignore_errors=True)  # an unfinished or interrupted session is redone from scratch
         with open(log, "w") as f:
@@ -323,6 +339,8 @@ def estimate(cases: list[dict], opts) -> dict:
         method = case.get("method") or "multi_agent"
         if method == "single_prompt":
             session = p["single_prompt"].get(model, max(p["single_prompt"].values()))
+            if getattr(opts, "sp_batch", False):
+                session *= BATCH_PRICE_FACTOR
         else:
             session = p["session"].get(model, max(p["session"].values()))
         if case.get("script"):
@@ -342,7 +360,8 @@ def estimate(cases: list[dict], opts) -> dict:
             "by_model": {k: r(v) for k, v in sorted(by_model.items())},
             "by_script": {k: {"cases": v["cases"], "usd": r(v["usd"])} for k, v in sorted(by_script.items())},
             "by_method": {k: r(v) for k, v in sorted(by_method.items())},
-            "total_cap": getattr(opts, "total_cap", None), "prices": p}
+            "total_cap": getattr(opts, "total_cap", None), "prices": p,
+            "sp_batch": bool(getattr(opts, "sp_batch", False))}
 
 
 LINES = ("app", "grading", "regrades", "opus", "haiku", "trap")
@@ -368,18 +387,24 @@ def case_lines(case: dict) -> dict:
     return lines
 
 
-def _batch(lines: dict) -> float:
-    """Total of a set of lines with Batch grading: every line but the app sessions at BATCH_DISCOUNT off."""
-    return lines["app"] + sum(v for k, v in lines.items() if k != "app") * (1 - BATCH_DISCOUNT)
+def _batch(lines: dict, app_batched: float = 0.0) -> float:
+    """Total of a set of lines with Batch grading: every line but the app sessions at BATCH_PRICE_FACTOR x list price,
+    and the part `app_batched` of the app line (single-prompt sessions with --sp-batch) too."""
+    return (lines["app"] - app_batched + app_batched * BATCH_PRICE_FACTOR
+            + sum(v for k, v in lines.items() if k != "app") * BATCH_PRICE_FACTOR)
 
 
-def estimate_stages(cases: list[dict], meta: dict) -> dict:
+def estimate_stages(cases: list[dict], meta: dict, sp_batch: bool = False) -> dict:
     """The plan's cost table for the selected cases of a staged matrix: per arm and per stage, every line at
-    standard rates, the total and the total with Batch grading, beside the plan's figures and the caps."""
+    standard rates, the total and the total with Batch grading (and, with sp_batch, the single-prompt sessions
+    through OpenAI's Batch API), beside the plan's figures and the caps."""
     def add(acc: dict, case: dict) -> None:
         acc["sessions"] = acc.get("sessions", 0) + 1
-        for k, v in case_lines(case).items():
+        lines = case_lines(case)
+        for k, v in lines.items():
             acc[k] = acc.get(k, 0.0) + v
+        if sp_batch and (case.get("method") or "multi_agent") == "single_prompt":
+            acc["app_batched"] = acc.get("app_batched", 0.0) + lines["app"]
 
     by_arm, by_stage, total = {}, {}, {}
     for case in cases:
@@ -390,7 +415,7 @@ def estimate_stages(cases: list[dict], meta: dict) -> dict:
     def finish(acc: dict) -> dict:
         row = {"sessions": acc.get("sessions", 0), **{k: round(acc.get(k, 0.0), 4) for k in LINES}}
         row["standard"] = round(sum(acc.get(k, 0.0) for k in LINES), 2)
-        row["batch"] = round(_batch({k: acc.get(k, 0.0) for k in LINES}), 2)
+        row["batch"] = round(_batch({k: acc.get(k, 0.0) for k in LINES}, acc.get("app_batched", 0.0)), 2)
         return row
 
     stages = meta.get("stages") or {}
@@ -398,7 +423,8 @@ def estimate_stages(cases: list[dict], meta: dict) -> dict:
                     for a, v in sorted(by_arm.items())},
            "stages": {st: {**finish(v), "plan_usd": stages.get(st, {}).get("plan_usd"),
                            "cap_usd": stages.get(st, {}).get("cap_usd")} for st, v in by_stage.items()},
-           "total": finish(total), "unit_usd": AB_UNIT_USD, "batch_discount": BATCH_DISCOUNT}
+           "total": finish(total), "unit_usd": AB_UNIT_USD, "batch_price_factor": BATCH_PRICE_FACTOR,
+           "sp_batch": sp_batch}
     if set(by_stage) == set(stages):  # the whole matrix: compare with the plan's total and the total cap
         out["total"].update(plan_usd=meta.get("plan_usd"), cap_usd=(meta.get("caps") or {}).get("total"))
     for row in [*out["stages"].values(), out["total"]]:
@@ -432,8 +458,14 @@ def format_estimate_table(est: dict) -> str:
     lines += [compare(f"stage {st}", r) for st, r in est["stages"].items()]
     if t.get("plan_usd") or t.get("cap_usd"):
         lines.append(compare("total", t))
-    lines.append("Standard: every grading at list price. Batch: the gradings and trap checks at "
-                 f"{BATCH_DISCOUNT:.0%} off (the sessions run interactively, at the same price).")
+    if est.get("sp_batch"):
+        lines.append("Standard: every grading and session at list price. Batch: the gradings, trap checks and "
+                     f"single-prompt sessions (--sp-batch) at {1 - BATCH_PRICE_FACTOR:.0%} off (the app's sessions run "
+                     "interactively, at the same price).")
+    else:
+        lines.append("Standard: every grading at list price. Batch: the gradings and trap checks at "
+                     f"{1 - BATCH_PRICE_FACTOR:.0%} off (the sessions run interactively, at the same price; --sp-batch "
+                     "prices the single-prompt sessions at the Batch rate too).")
     return "\n".join(lines)
 
 
@@ -524,6 +556,32 @@ def configure_staged(opts, meta: dict, cases: list[dict]) -> None:
     opts.cap_mode = mode
 
 
+def _sp_batch_step(cases: list[dict], opts) -> int | None:
+    """--sp-batch: submit / collect the single-prompt cases' calls before the pool runs; an exit code to stop with."""
+    from evals.batch import PendingSubmission, format_summary
+    from evals.batch_sp import sp_batch_round
+    from evals.credit import OutOfCredit
+    sp_cases = [c for c in cases if c.get("method") == "single_prompt"]
+    if not sp_cases:
+        opts.sp_batch_status = {}
+        return None
+    from dotenv import load_dotenv
+    load_dotenv(opts.env_file or REPO / ".env")  # OPENAI_API_KEY for /v1/files and /v1/batches, as the sessions read it
+    try:
+        summary = sp_batch_round(sp_cases, opts, log=lambda m: print(f"sp batch: {m}", flush=True))
+    except PendingSubmission as e:
+        print(str(e).replace("--adopt", "--batch-adopt").replace("--forget-pending", "--batch-forget-pending"),
+              file=sys.stderr)
+        return 2
+    except OutOfCredit as e:
+        print(f"OUT OF CREDIT while submitting the OpenAI batch: {e}", flush=True)
+        return EXIT_OUT_OF_CREDIT
+    opts.sp_batch_status = summary["status"]
+    print("sp batch: " + format_summary(summary).replace("--resubmit-failed", "--batch-resubmit-failed")
+          .replace("\n", "\nsp batch: "), flush=True)
+    return None
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--matrix", default=str(DEFAULT_MATRIX))
@@ -546,6 +604,15 @@ def main(argv=None) -> int:
                         help="run the sessions and no grading (grade them with the Batch grader); Batch caps apply")
     parser.add_argument("--gradings-out", help="staged matrix: write the grading jobs of the selection to this JSON file")
     parser.add_argument("--json", action="store_true", help="with --estimate on a staged matrix: print JSON, not the table")
+    parser.add_argument("--sp-batch", action="store_true",
+                        help="single-prompt sessions through OpenAI's Batch API (evals/batch_sp.py); synchronous otherwise")
+    parser.add_argument("--batch-wait", action="store_true", help="with --sp-batch: poll until every batch is collected")
+    parser.add_argument("--batch-poll-seconds", type=float, default=60.0)
+    parser.add_argument("--batch-resubmit-failed", action="store_true",
+                        help="with --sp-batch: send again the requests the API did not answer")
+    parser.add_argument("--batch-adopt", action="append", help="with --sp-batch: KEY=BATCH_ID of an unrecorded submission")
+    parser.add_argument("--batch-forget-pending", action="store_true",
+                        help="with --sp-batch: drop an unrecorded submission that was never created")
     opts = parser.parse_args(argv)
 
     meta = load_meta(opts.matrix)
@@ -561,7 +628,7 @@ def main(argv=None) -> int:
         opts.total_cap = default_total_cap(opts.matrix)
     if opts.estimate:
         if staged:
-            est = estimate_stages(cases, meta)
+            est = estimate_stages(cases, meta, opts.sp_batch)
             print(json.dumps(est, indent=2) if opts.json else format_estimate_table(est))
         else:
             print(json.dumps(estimate(cases, opts), indent=2))
@@ -578,7 +645,10 @@ def main(argv=None) -> int:
     if opts.dry_run:
         for case in cases:
             run_dir = Path(opts.out) / case["id"]
-            print(" ".join(session_command(case, run_dir, opts.env_file, opts.cost_cap, opts.app_labels)))
+            command = " ".join(session_command(case, run_dir, opts.env_file, opts.cost_cap, opts.app_labels))
+            if opts.sp_batch and case.get("method") == "single_prompt":
+                command = f"[OpenAI batch {case['model']}] {command} --batch-result <the batch reply>"
+            print(command)
             if opts.sessions_only:
                 continue
             for name, model in case_gradings(case, opts):
@@ -599,6 +669,10 @@ def main(argv=None) -> int:
     Path(opts.out).mkdir(parents=True, exist_ok=True)
     ledger = Path(opts.out) / "ledger.tsv"
     OUT_OF_CREDIT.clear()
+    if opts.sp_batch:
+        code = _sp_batch_step(cases, opts)
+        if code is not None:
+            return code
     results = {}
     with ThreadPoolExecutor(opts.workers) as pool:
         for cid, status in pool.map(lambda c: run_one(c, opts), cases):

@@ -37,7 +37,7 @@ Anthropic calls go through the official `anthropic` SDK:
 OpenAI graders keep the LangChain `with_structured_output` path (temperature: provider default, not set).
 
 Costs use provenance.PRICES_PER_1M plus the cache-write prices in provenance.CACHE_WRITE_PER_1M;
-Batch results cost half (BATCH_DISCOUNT).
+Batch results cost half (BATCH_PRICE_FACTOR).
 """
 from __future__ import annotations
 
@@ -52,6 +52,8 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from provenance import BATCH_PRICE_FACTOR  # noqa: F401 - re-exported: Batch results cost half
+
 ANTHROPIC_MODELS = ("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5")
 PROVIDERS = ("anthropic", "openai")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
@@ -60,7 +62,6 @@ TEMPERATURE_NOT_SETTABLE = "not settable"
 TEMPERATURE_PROVIDER_DEFAULT = "provider default (not set)"
 MAX_TOKENS = 64000  # the evaluation answer alone is ~10k tokens; thinking shares this budget
 MAX_ATTEMPTS = 2  # one re-ask after an unparseable answer; never after a refusal or an API error
-BATCH_DISCOUNT = 0.5
 HAIKU_LONG_PROMPT_TOKENS = 100_000  # Haiku 5.5 list prices apply up to here; longer prompts cost more
 
 OK, PARSE_ERROR, REFUSED = "ok", "parse_error", "refused"
@@ -248,7 +249,7 @@ def anthropic_cost(model: str, usage: dict, batch: bool = False) -> float | None
     p_write = CACHE_WRITE_PER_1M.get(model.split(":", 1)[-1], p_in * 1.25)
     usd = (usage.get("input_tokens", 0) * p_in + usage.get("cache_creation_input_tokens", 0) * p_write
            + usage.get("cache_read_input_tokens", 0) * p_hit + usage.get("output_tokens", 0) * p_out) / 1e6
-    return usd * (BATCH_DISCOUNT if batch else 1.0)
+    return usd * (BATCH_PRICE_FACTOR if batch else 1.0)
 
 
 def _usage_dict(usage: Any) -> dict:

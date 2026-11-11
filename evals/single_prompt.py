@@ -42,19 +42,29 @@ openai:gpt-6-luna, openai:gpt-6.1-terra and openai:gpt-6.1-sol. The model is bui
 (`temperature=None`, the model's default: gpt-6-luna accepts no other). An answer that does not parse is a failed
 session (`"failure": "parse_error"`, status `error: ...`, exit 1); it is not retried and is graded as it is.
 
+OpenAI Batch (evals/batch_sp.py, `run_matrix --sp-batch`): the same call can go through /v1/batches at half price.
+`batch_request()` builds the case's prompt and captures, offline, the exact HTTP request the synchronous call would
+send (the LangChain model on a mock transport: same model, messages, structured-output schema and settings, so the
+batch line's body is byte for byte the synchronous body). When the batch has ended, `--batch-result FILE` runs this
+same session with the batch's reply replayed through the same LangChain call (again on a mock transport, nothing
+sent): parsing, PDFs, fallback layout, manifest and records are the synchronous path's. The manifest then has
+`"batch"` (provider, batch id, custom id) and the call is priced at the Batch rate (llm_calls.jsonl `batch_id`).
+
 Usage (from the repo root; this makes one paid model call per case):
     .venv/bin/python -m evals.single_prompt --run-dir RUN --ad a3 --persona p03 [--inputs all4|cv_only|no_cv]
-        [--model openai:gpt-6.1-sol] [--env-file PATH/.env] [--cost-cap 1.0]
+        [--model openai:gpt-6.1-sol] [--env-file PATH/.env] [--cost-cap 1.0] [--batch-result FILE]
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -169,10 +179,11 @@ def transcript_record() -> dict:
             "observations": [], "requests": [], "user_instructions": user_instructions()}
 
 
-def init_model(model: str):
-    """The one call's model, built as the app builds its writers (the model's default temperature)."""
+def init_model(model: str, **client_kwargs):
+    """The one call's model, built as the app builds its writers (the model's default temperature).
+    `client_kwargs` only reach the HTTP client (the Batch path's offline transport), never the request."""
     from config.config_loader import local_model_kwargs
-    return init_chat_model(model, temperature=None, **local_model_kwargs(model))
+    return init_chat_model(model, temperature=None, **local_model_kwargs(model), **client_kwargs)
 
 
 def check_model(model: str) -> None:
@@ -251,15 +262,96 @@ class AnswerNotParsed(RuntimeError):
     """The one call returned an answer that is not the five fields: a failed session, never retried."""
 
 
-def generate(llm, messages: list, callbacks: list) -> SinglePromptResponse:
-    """The one model call of the case (no retries: a second call would change the topology)."""
+def generate(llm, messages: list, callbacks: list, batch_id: str | None = None) -> SinglePromptResponse:
+    """The one model call of the case (no retries: a second call would change the topology). `batch_id`: the
+    reply comes from that OpenAI batch (the recorder prices it at the Batch rate)."""
     chain = llm.with_structured_output(SinglePromptResponse, include_raw=True)
-    result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": {"langgraph_node": GENERATION_NODE},
-                                            "run_name": GENERATION_NODE})
+    metadata = {"langgraph_node": GENERATION_NODE, **({"batch_id": batch_id} if batch_id else {})}
+    result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": metadata, "run_name": GENERATION_NODE})
     parsed = result.get("parsed") if isinstance(result, dict) else result
     if parsed is None:
         raise AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}")
     return parsed
+
+
+# ---------------------------------------------------------------------------------------------- OpenAI Batch
+OFFLINE_KEY = "offline-no-request-is-sent"  # the mock transports below never reach the network
+
+
+class RequestChanged(RuntimeError):
+    """The request this run would send is not the one the batch answered (inputs or code changed since)."""
+
+
+def body_sha256(body: bytes | str) -> str:
+    """Hash of a request body exactly as sent (bytes)."""
+    return hashlib.sha256(body.encode("utf-8") if isinstance(body, str) else body).hexdigest()
+
+
+def _offline_model(model: str, handler):
+    """The run's model with every HTTP request going to `handler` (an httpx MockTransport): nothing is sent."""
+    import httpx
+    from openai import DefaultHttpxClient
+    if not model.startswith("openai:"):
+        raise ValueError(f"--model {model}: the Batch path is for OpenAI models")
+    return init_model(model, api_key=OFFLINE_KEY, max_retries=0,
+                      http_client=DefaultHttpxClient(transport=httpx.MockTransport(handler)))
+
+
+def capture_request(model: str, messages: list) -> dict:
+    """The HTTP request the synchronous call sends, captured offline: {"method", "url" (path), "body" (text)}."""
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        raise ConnectionAbortedError("captured, not sent")
+
+    try:
+        generate(_offline_model(model, handler), messages, [])
+    except Exception:  # noqa: BLE001 - the transport stops every call; the request is in `seen`
+        pass
+    if len(seen) != 1:
+        raise RuntimeError(f"expected one captured request, got {len(seen)}")
+    req = seen[0]
+    return {"method": req.method, "url": req.url.path, "body": req.content.decode("utf-8")}
+
+
+def replay_model(model: str, response: dict, request_sha256: str):
+    """The run's model answering from a batch reply ({"status_code", "request_id", "body"}): the same LangChain call
+    as the synchronous path, on a mock transport that checks the request is the one the batch answered."""
+    import httpx
+
+    def handler(request):
+        if body_sha256(request.content) != request_sha256:
+            raise RequestChanged("this run's request differs from the one the batch answered")
+        return httpx.Response(response.get("status_code", 200), json=response["body"],
+                              headers={"x-request-id": response.get("request_id") or ""})
+
+    return _offline_model(model, handler)
+
+
+def prompt_messages(run_dir: Path, inputs_given: list[str], work_preference: str | None) -> list:
+    """The single prompt of a prepared run folder (its inputs/)."""
+    from evals.evaluate import company_text
+    inputs = run_dir / "inputs"
+    given = read_given_inputs(inputs, inputs_given)
+    return build_messages(given, (inputs / "job_ad.txt").read_text(encoding="utf-8"),
+                          company_text(inputs / "search_fixture.json"), work_preference)
+
+
+def batch_request(argv) -> dict:
+    """The case's request for an OpenAI Batch input line, built without a model call or an API key: the inputs are
+    prepared in a temporary folder exactly as main() prepares them, and the HTTP request the synchronous call would
+    send is captured. Returns {"model", "method", "url", "body" (the exact body text), "request_sha256"}."""
+    from evals.run_case import apply_fixture_defaults, prepare_run_folder
+    args = parse_args(argv)
+    check_model(args.model)
+    apply_fixture_defaults(args)
+    with tempfile.TemporaryDirectory(prefix="sp_batch_") as tmp:
+        args.run_dir = str(Path(tmp) / "run")
+        manifest = prepare_run_folder(args)
+        messages = prompt_messages(Path(manifest["run_dir"]), manifest["inputs_given"], args.work_preference)
+    captured = capture_request(args.model, messages)
+    return {"model": args.model, **captured, "request_sha256": body_sha256(captured["body"])}
 
 
 # ---------------------------------------------------------------------------------------------- PDFs (no model)
@@ -362,6 +454,8 @@ def parse_args(argv=None):
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--cost-cap", type=float, default=1.0, help="recorded in the manifest; a run is one call (default 1.0)")
     parser.add_argument("--label", action="append", help="key=value stored in manifest.json (repeatable)")
+    parser.add_argument("--batch-result", help="JSON file with this case's OpenAI Batch reply (evals/batch_sp.py): "
+                                               "run the session on it instead of calling the model")
     args = parser.parse_args(argv)
     # The attributes run_case's folder preparation reads: no script, no recorded search, no file overrides.
     for key in ("job_ad", "cv", "portfolio", "cover_letter", "notes", "search_fixture", "record_search", "script",
@@ -378,25 +472,28 @@ def main(argv=None) -> int:
     apply_fixture_defaults(args)
     if not any(getattr(args, k) for k in ("cv", "notes")):
         print("note: no --cv and no --notes; the single prompt has only the portfolio and earlier letter", file=sys.stderr)
+    batch = json.loads(Path(args.batch_result).read_text(encoding="utf-8")) if args.batch_result else None
     manifest = prepare_run_folder(args)
     run_dir = Path(manifest["run_dir"])
     manifest.update(method=METHOD, labels={**manifest["labels"], "method": METHOD}, model=args.model,
                     model_override=args.model, script=None)
+    if batch:
+        manifest["batch"] = {k: batch.get(k) for k in ("provider", "batch_id", "custom_id", "url", "request_sha256",
+                                                        "attempt", "submitted_at", "ended_at", "collected_at")}
     for key in ("critic_model_override", "grounding_model_override"):
         manifest.pop(key, None)
     from dotenv import load_dotenv
     load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
-    from provenance import RunRecorder
+    from provenance import BATCH_PRICE_FACTOR, RunRecorder
     from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
-    from evals.evaluate import company_text
     from evals.run_case import _git, _package_versions
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
     install_no_retry_patch()
     callbacks = [recorder.callback, CreditGuard()]
     recorder.write_json("config.json", {
         "method": METHOD, "topology": "exactly one model call per case; PDFs by pdflatex and a fixed fallback layout",
-        "generation": {"model": args.model, "calls": 1, "retries": 0},
+        "generation": {"model": args.model, "calls": 1, "retries": 0, "batch": manifest.get("batch")},
         "templates": {k: str(p.relative_to(REPO)) for k, p in TEMPLATES.items()},
         "code": {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
                  "dirty": bool(_git("status", "--porcelain"))},
@@ -405,16 +502,20 @@ def main(argv=None) -> int:
     recorder.write_json("manifest.json", {**manifest, "status": "running"})
     recorder.event("run_start", manifest=manifest)
 
-    inputs = run_dir / "inputs"
-    given = read_given_inputs(inputs, manifest["inputs_given"])
-    messages = build_messages(given, (inputs / "job_ad.txt").read_text(encoding="utf-8"),
-                              company_text(inputs / "search_fixture.json"), args.work_preference)
+    messages = prompt_messages(run_dir, manifest["inputs_given"], args.work_preference)
     recorder.write_json("prompt.json", [{"role": m.type, "content": m.content} for m in messages])
 
     status, response, pdfs, failure = "completed", None, {}, None
     t0 = time.time()
     try:
-        response = generate(init_model(args.model), messages, callbacks)
+        if batch:
+            if body_sha256(capture_request(args.model, messages)["body"]) != batch["request_sha256"]:
+                raise RequestChanged("this run's request differs from the one the batch answered "
+                                     "(inputs or code changed since it was submitted)")
+            llm = replay_model(args.model, batch["response"], batch["request_sha256"])
+            response = generate(llm, messages, callbacks, batch_id=batch["batch_id"])
+        else:
+            response = generate(init_model(args.model), messages, callbacks)
         recorder.event("generation", model=args.model, **{f"{f}_chars": len(getattr(response, f)) for f in
                                                           ("cv_content", "cv_latex", "cover_letter_content",
                                                            "cover_letter_latex")})
@@ -462,7 +563,8 @@ def main(argv=None) -> int:
     recorder.write_json("manifest.json", {
         **manifest, **summary,
         "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "cost_usd": round(recorder.cost, 6),
+        "cost_usd": round(recorder.cost, 6),  # billed: the Batch price when the reply came from a batch
+        "cost_list_usd": round(recorder.cost / BATCH_PRICE_FACTOR if batch else recorder.cost, 6),
     })
     recorder.event("run_end", **summary, cost_usd=round(recorder.cost, 6))
     print(json.dumps({"run_dir": str(run_dir), "status": status, "method": METHOD, "calls": calls,
