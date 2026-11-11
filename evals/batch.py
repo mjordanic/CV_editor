@@ -248,6 +248,11 @@ def _settle(store: BatchStore, job: Job, spec: dict, item: dict, outcome: Outcom
         result = job.apply(spec, item, outcome, b)
     except Exception as e:  # noqa: BLE001 - one result that cannot be written must not block the rest
         result = {"status": "collect_error", "error": f"{type(e).__name__}: {e}"[:500]}
+        if outcome.kind == "succeeded":
+            try:
+                result.update(job.discard(spec, outcome))
+            except Exception as d:  # noqa: BLE001
+                result["error"] += f"; not priced: {type(d).__name__}: {d}"[:200]
     status = result.pop("status")
     _log_attempt(item, outcome, b, status, result)
     if status == RETRY or (status in UNANSWERED and item.get("attempt", 1) < job.max_attempts):

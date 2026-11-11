@@ -340,6 +340,28 @@ def test_a_changed_run_folder_is_not_written_with_a_stale_reply(tmp_path):
     assert len(fake.created) == 1  # an answered request is never sent again
 
 
+def test_a_billed_reply_that_cannot_be_written_is_still_costed(tmp_path, monkeypatch):
+    from evals import batch_grade
+    run = _case_run(tmp_path, "sp")
+    (tmp_path / "ledger.tsv").write_text("")
+    fake = FakeAnthropic()
+    _grade([str(run), "--eval-name", "eval1"], fake)
+    fake.finish("msgbatch_1", {_ids(fake)[0]: _message(_evaluation())})
+
+    def unreadable(job, reuse_pages=False):
+        raise OSError("run folder unreadable")
+    monkeypatch.setattr(batch_grade, "build", unreadable)
+    assert _grade([str(run), "--eval-name", "eval1"], fake) == 1
+    item = next(iter(_state(tmp_path / "batches" / "grading" / "state.json")["items"].values()))
+    billed = (1000 * 2 + 5000 * 2.5 + 10000 * 10) / 1e6 / 2
+    assert item["status"] == "collect_error" and "run folder unreadable" in item["error"]
+    assert item["attempt_log"][-1]["cost_usd"] == pytest.approx(billed)
+    (row,) = [line.split("\t") for line in (tmp_path / "ledger.tsv").read_text().splitlines()]
+    assert row[1] == "eval:eval1-discarded" and float(row[2]) == pytest.approx(billed)
+    assert _grade([str(run), "--eval-name", "eval1", "--resubmit-failed"], fake) == 1
+    assert len(fake.created) == 1  # answered: never sent again
+
+
 def test_a_reply_for_a_grading_finished_meanwhile_is_billed_not_written(tmp_path):
     run = _case_run(tmp_path, "sp")
     (tmp_path / "ledger.tsv").write_text("")
