@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from debug_utils import write_to_debug
 
 from agents.work_context import describe as describe_work_context, with_preference
+from agents.letter_cv_check import CV_REPEAT_INSTRUCTION, MAX_CV_SHARE, cv_share, session_cvs
 
 logger = logging.getLogger(__name__)
 
@@ -437,6 +438,11 @@ class CritiqueAgent:
                 }],
             }
 
+        if kind == "cover_letter":
+            share = cv_share(document, session_cvs(state))
+            if share >= MAX_CV_SHARE:
+                return self._reject_cv_repeat(state, document, history, cycle_start, share)
+
         candidate_text = candidate_material(state)
         company_info = with_preference(state.get("company_info"), state.get("work_preference"))
         if kind == "cv":
@@ -574,6 +580,50 @@ class CritiqueAgent:
 
         logger.info(f"CritiqueAgent._run({kind}) completed successfully")
         return state_updates
+
+    def _reject_cv_repeat(self, state, document: str, history: list, cycle_start: int, share: float):
+        """
+        A cover letter draft that repeats the CV is a defect in itself: it goes back for a redraft
+        (within the usual redraft budget) without the critic or the grounding check, and it is
+        never chosen as the final letter while a draft without the CV exists (see best_draft).
+        """
+        logger.info(f"Cover letter draft repeats the CV ({share:.0%} of its 5-grams) - rejected before the critic")
+        critique_dict = {
+            "quality_score": None,
+            "repeats_cv": True,
+            "cv_share": round(share, 3),
+            "improvement_instructions": CV_REPEAT_INSTRUCTION,
+            "critical_issues": "The draft repeats the CV.",
+            "unsupported_claims": [],
+            "grounding_checked": False,
+            "requirements": [],
+            "defects": None,
+        }
+        previous = history[-1] if len(history) > cycle_start else None
+        return {
+            "current_node": "critique_cover_letter",
+            "cover_letter_critique": critique_dict,
+            "cover_letter_history": history + [{
+                "iteration": len(history) + 1,
+                "content": document,
+                "score": None,
+                "critique": critique_dict,
+                "unsupported_claims": [],
+                "grounding_checked": False,
+                "defects": None,
+                "repeats_cv": True,
+            }],
+            "cover_letter_needs_refinement": True,
+            "cover_letter_needs_critique": False,
+            "cover_letter_critique_improvement_instructions": CV_REPEAT_INSTRUCTION,
+            "cover_letter_claims_to_remove": None,
+            "cover_letter_previous_defect_count": previous.get("defects") if previous else None,
+            "messages": state.get("messages", []) + [{
+                "role": "assistant",
+                "content": "**Cover Letter Check:**\nThis draft repeats your CV before the letter. "
+                           "The cover letter will be redrafted without it.",
+            }],
+        }
 
 
 EMPLOYER_CLAIM_PREFIX = "About the employer: "
