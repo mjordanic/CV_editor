@@ -248,7 +248,7 @@ counts and deterministic PDF checks: pages, extractable text, how much of the te
 PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (the images) and the cost.
 `evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
 returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
-templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
+templates and answer schema; so it differs between Claude and OpenAI graders), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
 cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids,
 `batch_id` (set when the grading came from a batch) and `packages` (package and pdflatex versions, as in `config.json`).
 
@@ -276,6 +276,18 @@ the official `anthropic` SDK:
   (`json_schema_for`: every object closed and every field required; numeric limits such as the 0-10
   score ranges are not part of the API's schema subset, so the answer is validated against the pydantic
   model in code). Forced tool use is not used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Compact answer for the evaluation.** The full `Evaluation` schema (103 properties) is over the API's
+  compiled-grammar limit (400 "The compiled grammar is too large"; a 46-property schema was accepted, 55 were
+  rejected), so a Claude grader answers a `CompactEvaluation` (40 properties) natively instead. Its first field,
+  `full_evaluation_json`, is the complete evaluation as a JSON string; the full `Evaluation` schema is at the end
+  of the cached system prompt. The fields after it are schema-guaranteed: all 12 scores, the summary, the claims,
+  the fit requirements, the ATS reason and keyword lists, the invented work-arrangement statements and the user
+  requests. They are authoritative: `evaluation.json`'s `evaluation` is the parsed full copy with every
+  guaranteed field written over it (`GUARANTEED_PATHS`), so readers find every score at its usual place.
+  `full_evaluation` records whether the full copy parsed (if not: its error and the raw string, and the
+  grading still succeeds on the guaranteed part, with the omissions, layout and language counts left empty)
+  and every guaranteed field the full copy states differently (`disagreements`; `load.py` columns
+  `full_eval_parsed`, `n_full_disagreements`). OpenAI graders still answer the full `Evaluation` natively.
 - **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
   (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
   not retried.

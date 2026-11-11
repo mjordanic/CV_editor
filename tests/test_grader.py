@@ -13,8 +13,24 @@ from tests.test_eval_diversity import CLEAN_PAGE, _evaluation, make_pdf
 
 
 # --- stubs --------------------------------------------------------------------------------------------
+def _compact(ev: dict, **overrides) -> dict:
+    """The CompactEvaluation a Claude grader answers for the full evaluation `ev`: the full copy as a JSON string
+    and the guaranteed fields copied from it (`overrides` replaces some)."""
+    from evals.evaluate import GUARANTEED_PATHS
+    answer = {"full_evaluation_json": json.dumps(ev)}
+    for name, path in GUARANTEED_PATHS.items():
+        node = ev
+        for key in path:
+            node = node[key]
+        answer[name] = node
+    return {**answer, **overrides}
+
+
 def _message(answer, *, model="claude-sonnet-5-5", stop_reason="end_turn", usage=None, stop_details=None):
+    """A Claude reply; a full evaluation dict is sent as the CompactEvaluation answer a Claude grader gives."""
     from anthropic.types import Message
+    if isinstance(answer, dict) and "fit" in answer:
+        answer = _compact(answer)
     text = answer if isinstance(answer, str) else json.dumps(answer)
     return Message.model_validate({
         "id": "msg_test", "type": "message", "role": "assistant", "model": model,
@@ -159,7 +175,7 @@ def test_the_user_instructions_quote_the_default_script_and_replace_the_chat(tmp
     request = _request(ma, tmp_path, "document-only")
     assert "# THE USER'S INSTRUCTIONS" in request.shared_text and block in request.shared_text
     assert "CONVERSATION" not in request.user_text and "TEST CHECKLIST" not in request.user_text
-    assert request.system == SYSTEM_PROMPT_DOCUMENT_ONLY and "conversation shown" not in request.system
+    assert request.system.startswith(SYSTEM_PROMPT_DOCUMENT_ONLY) and "conversation shown" not in request.system
 
 
 def test_a_scripted_request_that_was_sent_is_listed_and_an_unsent_one_is_not(tmp_path):
@@ -194,14 +210,17 @@ def test_grader_names_are_pinned_and_effort_is_explicit():
 def test_the_anthropic_request_is_batch_ready_structured_and_cached(tmp_path):
     from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
 
-    from evals.evaluate import Evaluation
+    from evals.evaluate import SYSTEM_PROMPT_DOCUMENT_ONLY, CompactEvaluation, Evaluation
     from evals.grader import json_schema_for
     run = _case_run(tmp_path, "ma")
     params = _request(run, tmp_path, "document-only", "anthropic:claude-opus-5-5").anthropic_params()
     assert set(params) <= set(MessageCreateParamsNonStreaming.__annotations__) and "stream" not in params
     assert params["model"] == "claude-opus-5-5" and params["max_tokens"] >= 32000
     assert params["thinking"] == {"type": "adaptive"} and params["output_config"]["effort"] == "medium"
-    assert params["output_config"]["format"] == {"type": "json_schema", "schema": json_schema_for(Evaluation)}
+    # native structured output with the compact schema; the full Evaluation schema is in the cached system prompt
+    assert params["output_config"]["format"] == {"type": "json_schema", "schema": json_schema_for(CompactEvaluation)}
+    system = params["system"][0]["text"]
+    assert system.startswith(SYSTEM_PROMPT_DOCUMENT_ONLY) and json.dumps(json_schema_for(Evaluation)) in system
     for key in ("temperature", "top_p", "top_k", "fallbacks", "tool_choice", "tools"):
         assert key not in params
     assert params["system"][0]["cache_control"] == {"type": "ephemeral"}
@@ -214,7 +233,15 @@ def test_the_answer_schema_fits_structured_outputs():
     from evals.evaluate import Evaluation
     from evals.grader import json_schema_for
     from evals.score_truth import TruthCheck
-    for model in (Evaluation, TruthCheck):
+    from evals.evaluate import CompactEvaluation
+
+    def properties(node):
+        if isinstance(node, dict):
+            return len(node.get("properties", {})) + sum(properties(v) for v in node.values())
+        return sum(properties(v) for v in node) if isinstance(node, list) else 0
+    # the API rejects a strict schema over a compiled-grammar size: 46 properties were accepted, 55 rejected
+    assert properties(json_schema_for(CompactEvaluation)) <= 45 and properties(json_schema_for(TruthCheck)) <= 45
+    for model in (Evaluation, CompactEvaluation, TruthCheck):
         schema = json_schema_for(model)
         dumped = json.dumps(schema)
         for key in ('"minimum"', '"maximum"', '"minLength"', '"default"'):
@@ -253,7 +280,9 @@ def test_evaluate_with_claude_records_the_grader_tokens_and_cost(tmp_path):
     g = record["grader"]
     assert (g["provider"], g["model_requested"], g["model_returned"]) == ("anthropic", "claude-sonnet-5-5", "claude-sonnet-5-5")
     assert (g["effort"], g["temperature"], g["grading_mode"], g["status"]) == ("medium", "not settable", "document-only", "ok")
-    assert g["rubric_sha256"] == ev_mod.rubric_sha256("document-only") and g["prompt_sha256"]
+    assert g["rubric_sha256"] == ev_mod.rubric_sha256("document-only", "anthropic") and g["prompt_sha256"]
+    assert g["rubric_sha256"] != ev_mod.rubric_sha256("document-only")  # an OpenAI grader answers another schema
+    assert record["evaluation"] == _evaluation() and record["full_evaluation"] == {"parsed": True, "disagreements": []}
     assert g["usage"] == {"input_tokens": 1000, "output_tokens": 10000, "cache_creation_input_tokens": 5000,
                           "cache_read_input_tokens": 0}
     # 1000 x $2 + 5000 x $2.50 (cache write) + 10000 x $10, per million
@@ -267,6 +296,36 @@ def test_evaluate_with_claude_records_the_grader_tokens_and_cost(tmp_path):
     summary = json.loads((out / "summary.json").read_text())
     assert summary["status"] == "ok" and summary["cost_usd"] == pytest.approx(record["cost_usd"])
     assert json.loads((out / "evaluation.json").read_text()) == record
+
+
+def test_the_guaranteed_fields_win_and_a_broken_full_copy_never_fails_the_grading(tmp_path):
+    from evals import evaluate as ev_mod
+    from evals.analysis.load import _eval_fields
+    full = _evaluation()
+    claim = {"document": "cv", "claim": "Led a team", "kind": "responsibility_or_achievement",
+             "verdict": "unsupported", "source": "none", "evidence_quote": "", "note": "not in the material"}
+    # the full copy says overall 7 and no claims; the guaranteed fields say 5 and one unsupported claim
+    answer = _compact(full, overall_score=5, claims=[claim])
+    answer["full_evaluation_json"] = json.dumps({**full, "overall_score": 7})
+    record = ev_mod.evaluate(_case_run(tmp_path / "a", "ma"), "anthropic:claude-sonnet-5-5", "eval1",
+                             client=_Client(_message(answer)))
+    assert record["evaluation"]["overall_score"] == 5 and record["evaluation"]["claims"] == [claim]
+    assert record["counts"]["cv_unsupported"] == 1 and record["counts"]["layout_problems"] == 2  # rest from full copy
+    assert record["full_evaluation"]["parsed"] is True
+    assert {d["field"]: (d["guaranteed"], d["full"]) for d in record["full_evaluation"]["disagreements"]} == \
+        {"claims": ([claim], []), "overall_score": (5, 7)}
+    # a full copy that does not validate is kept raw and flagged; the grading still succeeds on the guaranteed part
+    broken = _compact(full)
+    broken["full_evaluation_json"] = '{"claims": [], "overall_score": "high"'
+    run = _case_run(tmp_path / "b", "ma")
+    record = ev_mod.evaluate(run, "anthropic:claude-sonnet-5-5", "eval1", client=_Client(_message(broken)))
+    fc = record["full_evaluation"]
+    assert fc["parsed"] is False and fc["raw"] == broken["full_evaluation_json"] and "invalid JSON" in fc["error"]
+    assert record["evaluation"]["overall_score"] == 5 and record["evaluation"]["ats"]["score"] == 6
+    assert record["counts"]["layout_problems"] is None and record["counts"]["omissions_high"] is None
+    row = _eval_fields(run / "evaluation" / "eval1" / "evaluation.json")
+    assert row["overall_score"] == 5 and row["ats"] == 6 and row["full_eval_parsed"] is False
+    assert row["n_full_disagreements"] == 0 and row["n_layout_problems"] is None
 
 
 def test_gradings_are_stored_side_by_side_and_never_overwritten(tmp_path):
