@@ -1,7 +1,17 @@
 {
-  "purpose": "The app asks for contact details it lacks (no CV was given) and the user supplies some (fictional) and declines the rest.",
+  "purpose": "The candidate's inputs have no contact details (no CV is given). If the app asks for them, the user supplies some (fictional) and declines the rest; if it never asks, the user volunteers the same details once the CV exists, so the details reach the app either way.",
   "correct_behaviour": "The supplied e-mail and phone number appear exactly as given; every other placeholder is removed cleanly; nothing else is invented.",
   "missing_details": "My email is applicant.inbox@example.com and my phone number is +44 7700 900123. Please leave out anything else, such as LinkedIn or a street address.",
+  "requests": [
+    {
+      "id": "contact-details",
+      "after": "cv",
+      "unless_sent": "missing_details",
+      "expect": "follow",
+      "text": "Please add my contact details to the CV and the cover letter: my email is applicant.inbox@example.com and my phone number is +44 7700 900123. Please leave out anything else, such as LinkedIn or a street address.",
+      "correct_behaviour": "The final PDFs show applicant.inbox@example.com and +44 7700 900123 exactly, no other invented contact detail, and no placeholder such as [EMAIL] or [LINKEDIN]."
+    }
+  ],
   "expectations": [
     {
       "about": "missing_details",

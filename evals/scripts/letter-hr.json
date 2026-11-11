@@ -1,7 +1,19 @@
 {
-  "purpose": "The user asks for the cover letter in Croatian while the ad is in English (a store in Zagreb).",
+  "purpose": "The user asks for the cover letter in Croatian while the ad is in English (a store in Zagreb). The first reply asks for the CV only, so the Croatian wish can come with the request for the letter; if the app writes the letter anyway, the wish is sent as a change request once the letter exists, so it reaches the app either way.",
   "correct_behaviour": "The cover letter is written in correct, natural Croatian; the CV stays in English; no new facts.",
+  "first": "Please write my CV first. Once it is done, I will tell you what I need for the cover letter.",
   "cover_letter": "Thank you. Now please write the cover letter in Croatian - the store manager is local and prefers Croatian.",
+  "max_turns": 12,
+  "requests": [
+    {
+      "id": "letter-in-croatian",
+      "after": "cover_letter",
+      "unless_sent": "cover_letter",
+      "expect": "follow",
+      "text": "Thank you. Please rewrite the cover letter in Croatian - the store manager is local and prefers Croatian. The CV stays as it is.",
+      "correct_behaviour": "The final cover letter is entirely in Croatian, fluent and professional; the CV stays in English."
+    }
+  ],
   "expectations": [
     {
       "about": "cover_letter",

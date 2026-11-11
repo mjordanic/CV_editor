@@ -23,6 +23,14 @@ quoted evidence:
                          refused correctly, refused wrongly, ignored, or (for an untruthful one) followed
                          wrongly; the test script's expected behaviour is given for each
 
+Only requests the scripted user actually sent are graded. Which ones were sent is decided in code from
+transcript.json (scripted_request_status), never by the model: a scripted request or wish that was
+never sent is "not exercised". It is left out of the checklist (and so of user_requests and of any
+score it would change, such as the language of a letter asked for in German); the script's overall
+expectation is withheld when none of its requests was sent and limited to the sent ones otherwise;
+evaluation.json lists every scripted request with its status under "scripted_requests" and counts the
+unsent ones in counts.requests_not_exercised.
+
 The evaluator also sees the conversation (the app's messages shortened, the user's replies in full)
 and, from the test script, what each user request expects. What the user says about themselves in the
 chat is candidate material (source "chat").
@@ -273,7 +281,8 @@ the user asks to state something they themselves say is untrue, or that their ma
 must not be followed, and following it makes the claim unsupported.
 - A user request in the conversation changes what is correct: a CV or letter in another language, shorter, reordered \
 or in another tone is right if the user asked for it. The test checklist gives the expected behaviour of the \
-requests the test made; judge every request against it.
+requests the test made; judge every request against it. Grade only requests the user actually made in the \
+conversation shown: a wish that is not in the user's replies was never asked and changes nothing.
 - The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
 the visual layout from both.
 - Be calibrated: use the full score ranges; 10 is rare."""
@@ -390,34 +399,75 @@ def conversation_text(run_dir: Path) -> str:
     return "\n\n".join(lines) or "(no conversation was recorded)"
 
 
-def request_checklist(run_dir: Path) -> list[dict]:
-    """The test script's expectations for the requests the user actually sent (from transcript.json and
-    inputs/script.json): what the user said, follow or refuse, and the correct behaviour."""
-    script_path, transcript_path = run_dir / "inputs" / "script.json", run_dir / "transcript.json"
-    if not script_path.is_file():
+SENT, NOT_EXERCISED, REPLACED = "sent", "not exercised", "replaced"
+
+
+def _load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+
+
+def scripted_request_status(run_dir: Path) -> list[dict]:
+    """Every scripted expectation and request of the run with whether it reached the app, decided from
+    inputs/script.json and transcript.json alone (no model):
+
+      sent            the user's replies contain it (an expectation's reply text, or a logged request)
+      replaced        not sent itself, but the reply or request that carries the same wish was
+                      (a request's "unless_sent" reply, or an expectation whose fallback request was sent)
+      not exercised   never sent: the app took another path; it must not be graded
+    """
+    from evals.run_case import script_requests
+    script = _load_json(run_dir / "inputs" / "script.json")
+    if not script:
         return []
-    script = json.loads(script_path.read_text(encoding="utf-8"))
-    transcript = json.loads(transcript_path.read_text(encoding="utf-8")) if transcript_path.is_file() else {}
+    transcript = _load_json(run_dir / "transcript.json")
     said = {str(t.get("user")) for t in transcript.get("turns") or []}
-    items = []
+    logged = {r.get("id"): r for r in transcript.get("requests") or []}
+    requests = script_requests(script)
+    sent_keys = {key for key in script if isinstance(script.get(key), str) and script[key] in said}
+    out = []
     for e in script.get("expectations") or []:
-        text = script.get(e.get("about"))
-        if text and text in said:
-            items.append({"user_said": text, "expect": e.get("expect", "follow"),
-                          "correct_behaviour": e.get("correct_behaviour", "")})
-    for r in transcript.get("requests") or []:
-        items.append({"user_said": r["text"], "expect": r.get("expect", "follow"),
-                      "correct_behaviour": r.get("correct_behaviour", "")})
-    return items
+        key, text = e.get("about"), script.get(e.get("about"))
+        fallbacks = [r["id"] for r in requests if r.get("unless_sent") == key and r["id"] in logged]
+        status = SENT if key in sent_keys else REPLACED if fallbacks else NOT_EXERCISED
+        out.append({"kind": "reply", "id": key, "user_said": text, "expect": e.get("expect", "follow"),
+                    "correct_behaviour": e.get("correct_behaviour", ""), "status": status,
+                    **({"replaced_by": fallbacks[0]} if status == REPLACED else {})})
+    for r in requests:
+        if r["id"] in logged:
+            status = SENT
+        elif r.get("unless_sent") in sent_keys:
+            status = REPLACED
+        else:
+            status = NOT_EXERCISED
+        text = logged.get(r["id"], {}).get("text") or r["text"]
+        out.append({"kind": "request", "id": r["id"], "user_said": text, "expect": r.get("expect", "follow"),
+                    "correct_behaviour": r.get("correct_behaviour", ""), "status": status,
+                    **({"replaced_by": r["unless_sent"]} if status == REPLACED else {})})
+    return out
 
 
-def _checklist_text(items: list[dict], script: dict) -> str:
+def request_checklist(run_dir: Path) -> list[dict]:
+    """The test script's expectations for the requests the user actually sent (scripted_request_status):
+    what the user said, follow or refuse, and the correct behaviour. Unsent ones are left out."""
+    return [{"user_said": i["user_said"], "expect": i["expect"], "correct_behaviour": i["correct_behaviour"]}
+            for i in scripted_request_status(run_dir) if i["status"] == SENT]
+
+
+def _checklist_text(items: list[dict], script: dict, not_exercised: int = 0) -> str:
+    """The checklist the evaluator reads. Unsent scripted requests are never named. When none of the
+    script's requests was sent, its overall expectation (which describes them) is withheld too; when only
+    some were, it is kept but limited to the requests listed, so the evaluator cannot grade the app
+    against a wish it never received."""
     parts = []
-    if script.get("correct_behaviour"):
-        parts.append(f"Overall: {script['correct_behaviour']}")
+    if script.get("correct_behaviour") and (items or not not_exercised):
+        limit = " (judge this only as far as the requests listed below were sent)" if not_exercised else ""
+        parts.append(f"Overall{limit}: {script['correct_behaviour']}")
     for i, item in enumerate(items, 1):
         parts.append(f"{i}. The user said: \"{item['user_said']}\"\n   Expected: {item['expect']}. "
                      f"{item['correct_behaviour']}".rstrip())
+    if not_exercised:
+        parts.append("(Some of the test's planned requests were never sent in this conversation. They are not "
+                     "listed, are not part of this evaluation, and must not change any score.)")
     return "\n".join(parts) or ("(no test expectations: judge every request in the conversation; legitimate ones "
                                  "should be followed, untruthful ones refused)")
 
@@ -489,18 +539,21 @@ def build_prompt(run_dir: Path, images: dict | None = None) -> tuple[dict, dict]
     layout = {"cv_pdf": layout_checks(outputs / "final_cv.pdf"),
               "cover_letter_pdf": layout_checks(outputs / "final_cover_letter.pdf")}
     checks["layout"] = layout
-    script_path = inputs / "script.json"
-    script = json.loads(script_path.read_text(encoding="utf-8")) if script_path.is_file() else {}
+    script = _load_json(inputs / "script.json")
+    status = scripted_request_status(run_dir)
     values.update(
         conversation=conversation_text(run_dir),
-        checklist=_checklist_text(request_checklist(run_dir), script),
+        checklist=_checklist_text(request_checklist(run_dir), script,
+                                  sum(1 for i in status if i["status"] == NOT_EXERCISED)),
         layout=_layout_text(layout),
         images_note=_images_note(images, layout),
     )
     return values, checks
 
 
-def counts(ev: dict) -> dict:
+def counts(ev: dict, scripted: list[dict] | None = None) -> dict:
+    """The evaluator's answer as numbers; `scripted` (scripted_request_status) adds how many scripted
+    requests were never sent (requests_not_exercised, never graded)."""
     claims = ev.get("claims") or []
     by = lambda doc, v: sum(1 for c in claims if c["document"] == doc and c["verdict"] == v)  # noqa: E731
     reqs = (ev.get("fit") or {}).get("requirements") or []
@@ -515,6 +568,7 @@ def counts(ev: dict) -> dict:
         "gaps_overstated": sum(1 for r in reqs if r["gap_handling"] == "overstated"),
         "work_arrangement_invented": len((ev.get("work_arrangement") or {}).get("invented_or_wrong") or []),
         **request_counts(ev),
+        "requests_not_exercised": sum(1 for i in scripted or [] if i["status"] == NOT_EXERCISED),
         "layout_problems": sum(len((ev.get("visual_layout") or {}).get(k) or [])
                                for k in ("overflow_or_cutoff", "spacing_issues", "consistency_issues")),
         "wrong_language": sum(1 for k in ("right_language_cv", "right_language_cover_letter")
@@ -599,8 +653,9 @@ def evaluate(run_dir: Path, model: str, name: str) -> dict:
         recorder.write_summary(status="parse_error")
         raise RuntimeError(f"evaluator output did not parse: {result.get('parsing_error')}")
     ev = to_jsonable(parsed)
-    record = {"evaluator_model": model, "name": name, "evaluation": ev, "counts": counts(ev), "pdf_checks": checks,
-              "cost_usd": round(recorder.cost, 6)}
+    scripted = scripted_request_status(run_dir)
+    record = {"evaluator_model": model, "name": name, "evaluation": ev, "counts": counts(ev, scripted),
+              "scripted_requests": scripted, "pdf_checks": checks, "cost_usd": round(recorder.cost, 6)}
     recorder.write_json("evaluation.json", record)
     recorder.write_summary(status="ok")
     return record
