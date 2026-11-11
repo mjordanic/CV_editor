@@ -45,7 +45,7 @@ The run folder:
 | path | content |
 |---|---|
 | `manifest.json` | inputs given and omitted, model, status, cost, minutes, labels |
-| `config.json` | model and settings of every agent as used, workflow settings, commit, package versions |
+| `config.json` | model and settings of every agent as used, workflow settings, commit, package and pdflatex versions |
 | `inputs/` | copies of the inputs given (only those), `job_ad.txt`, `search_fixture.json`, `script.json` |
 | `events.jsonl` | every graph step with its state update, router decisions, questions and replies, errors |
 | `llm_calls.jsonl` | every model call: node, model, prompt messages, response, tokens, cost, seconds |
@@ -249,8 +249,8 @@ PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (
 `evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
 returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
 templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
-cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids and
-`batch_id` (set when the grading came from a batch).
+cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids,
+`batch_id` (set when the grading came from a batch) and `packages` (package and pdflatex versions, as in `config.json`).
 
 Grade the same session several times under different names, side by side: `eval1` and `eval2` (the
 primary grader twice, for its noise), `opus1` (`--grader-model anthropic:claude-opus-5-5`), `haiku1`
