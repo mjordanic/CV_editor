@@ -48,6 +48,8 @@ CACHE_WRITE_PER_1M = {
     "claude-sonnet-5-5": 2.50,
     "claude-haiku-5-5": 0.125,
 }
+# The Batch APIs (OpenAI /v1/batches, Anthropic Message Batches) charge half of every price above.
+BATCH_DISCOUNT = 0.5
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +138,8 @@ class _LLMCallRecorder(BaseCallbackHandler):
             "step": metadata.get("langgraph_step"),
             "model": params.get("model") or params.get("model_name") or metadata.get("ls_model_name"),
             "provider": metadata.get("ls_provider"),
+            # a call whose reply came from a Batch API (evals/batch_sp.py replays it): priced at the Batch rate
+            "batch_id": metadata.get("batch_id"),
             "invocation_params": {k: v for k, v in params.items() if k not in ("tools", "response_format")},
             "response_format": params.get("response_format"),
             "tools": params.get("tools"),
@@ -147,6 +151,7 @@ class _LLMCallRecorder(BaseCallbackHandler):
         generations = []
         usage = {"input_tokens": 0, "output_tokens": 0, "cached_tokens": 0, "reasoning_tokens": 0}
         response_model = None
+        metadata = []
         for batch in response.generations or []:
             for gen in batch:
                 message = getattr(gen, "message", None)
@@ -157,14 +162,21 @@ class _LLMCallRecorder(BaseCallbackHandler):
                 usage["cached_tokens"] += (um.get("input_token_details") or {}).get("cache_read", 0) or 0
                 usage["reasoning_tokens"] += (um.get("output_token_details") or {}).get("reasoning", 0) or 0
                 meta = getattr(message, "response_metadata", None) or {}
+                metadata.append(meta)
                 response_model = response_model or meta.get("model_name") or meta.get("model")
         model = response_model or start.get("model")
+        list_cost = cost_usd(model, usage["input_tokens"], usage["output_tokens"], usage["cached_tokens"])
+        batched = bool(start.get("batch_id"))
+        cost = list_cost * BATCH_DISCOUNT if list_cost is not None and batched else list_cost
         self.recorder._llm_call({
-            **{k: v for k, v in start.items() if k != "started_at"},
+            **{k: v for k, v in start.items() if k != "started_at" and not (k == "batch_id" and v is None)},
             "model": model,
             "seconds": round(time.time() - start["started_at"], 2),
             "usage": usage,
-            "cost_usd": cost_usd(model, usage["input_tokens"], usage["output_tokens"], usage["cached_tokens"]),
+            "cost_usd": cost,
+            **({"cost_list_usd": list_cost} if batched else {}),
+            # finish_reason, service_tier, system_fingerprint, response id and model as the provider returned them
+            "response_metadata": metadata,
             "response": generations,
         })
 

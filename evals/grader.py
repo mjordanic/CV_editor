@@ -52,6 +52,8 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from provenance import BATCH_DISCOUNT  # noqa: F401 - re-exported: Batch results cost half
+
 ANTHROPIC_MODELS = ("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5")
 PROVIDERS = ("anthropic", "openai")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
@@ -60,7 +62,6 @@ TEMPERATURE_NOT_SETTABLE = "not settable"
 TEMPERATURE_PROVIDER_DEFAULT = "provider default (not set)"
 MAX_TOKENS = 64000  # the evaluation answer alone is ~10k tokens; thinking shares this budget
 MAX_ATTEMPTS = 2  # one re-ask after an unparseable answer; never after a refusal or an API error
-BATCH_DISCOUNT = 0.5
 HAIKU_LONG_PROMPT_TOKENS = 100_000  # Haiku 5.5 list prices apply up to here; longer prompts cost more
 
 OK, PARSE_ERROR, REFUSED = "ok", "parse_error", "refused"

@@ -196,6 +196,53 @@ def _read(path: Path) -> str | None:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
 
 
+class TruthCheckFailed(RuntimeError):
+    """The checker's answer did not parse after the allowed attempts, or the checker refused."""
+
+
+def build_truth_check(run_dir: Path, grader, persona: str | Path | None = None):
+    """Everything one truth check of `run_dir` sends, built without a model call: (evals.grader.GradingRequest,
+    context for finish_truth_check). score_truth() sends the request; Batch grading (evals/batch_grade.py) submits
+    request.anthropic_params() and reads the reply with evals.grader.result_from_message."""
+    from evals.grader import parse_grader
+    grader = parse_grader(grader) if isinstance(grader, str) else grader
+    ref = persona or persona_for_run(run_dir)
+    if not ref:
+        raise ValueError(f"{run_dir}: no persona label in manifest.json; give --persona")
+    persona_path, truth = load_persona(ref)
+    cv = _read(run_dir / "outputs" / "final_cv.txt")
+    cl = _read(run_dir / "outputs" / "final_cover_letter.txt")
+    items = items_from_persona(truth)
+    request = build_check_request(grader, build_values(items, cv, cl))
+    return request, {"persona_path": persona_path, "truth": truth, "items": items, "cv": cv, "cover_letter": cl}
+
+
+def write_check_prompt(recorder, request) -> None:
+    recorder.write_json("prompt.json", {"model": request.grader.name, **request.loggable()})
+
+
+def finish_truth_check(name: str, request, result, ctx: dict, recorder, extra: dict | None = None) -> dict:
+    """Write raw_response.json, truth_check.json and summary.json for one finished check (`result` is an
+    evals.grader.GradingResult from send() or from a batch reply). Raises TruthCheckFailed after recording a
+    refusal or an unparseable answer."""
+    grading = {**result.record(), "rubric_sha256": request.rubric_sha256, "prompt_sha256": request.prompt_hash(),
+               **(extra or {})}
+    recorder.write_json("raw_response.json", {"attempts": result.attempts})
+    if result.answer is None:
+        recorder.write_summary(status=result.status, grading=grading)
+        raise TruthCheckFailed(f"truth-check output did not parse ({result.status}): "
+                               f"{result.attempts[-1].get('parse_error') if result.attempts else ''}")
+    cv, cl = ctx["cv"], ctx["cover_letter"]
+    rows = verify(ctx["items"], result.answer, cv, cl)
+    counts = {**count(rows), "cost_usd": result.cost_usd}
+    record = {"checker_model": request.grader.name, "name": name, "grader": grading, "persona": ctx["truth"].get("id"),
+              "persona_file": str(ctx["persona_path"]), "outputs": {"cv": cv is not None, "cover_letter": cl is not None},
+              "items": rows, "counts": counts, "cost_usd": counts["cost_usd"]}
+    recorder.write_json("truth_check.json", record)
+    recorder.write_summary(status="ok", grading=grading)
+    return record
+
+
 def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1", persona: str | Path | None = None,
                 llm=None, effort: str | None = None, client=None) -> dict:
     """Run the check and write RUN/evaluation/<name>/truth_check.json. `llm` replaces the chat model and
@@ -205,38 +252,18 @@ def score_truth(run_dir: Path, model: str = DEFAULT_MODEL, name: str = "truth1",
     from provenance import RunRecorder
 
     grader = parse_grader(model, effort)
-    ref = persona or persona_for_run(run_dir)
-    if not ref:
-        raise ValueError(f"{run_dir}: no persona label in manifest.json; give --persona")
-    persona_path, truth = load_persona(ref)
+    request, ctx = build_truth_check(run_dir, grader, persona)
     out_dir = run_dir / "evaluation" / name
     if out_dir.exists() and any(out_dir.iterdir()):
         raise FileExistsError(f"{out_dir} exists; choose another --name")
     recorder = RunRecorder(out_dir)
-    cv = _read(run_dir / "outputs" / "final_cv.txt")
-    cl = _read(run_dir / "outputs" / "final_cover_letter.txt")
-    items = items_from_persona(truth)
-    request = build_check_request(grader, build_values(items, cv, cl))
-    recorder.write_json("prompt.json", {"model": grader.name, **request.loggable()})
+    write_check_prompt(recorder, request)
     try:
         result = send(request, recorder, node="truth_check", client=client, llm=llm)
     except OutOfCredit as e:
         recorder.write_summary(status=INTERRUPTED_STATUS, error=str(e)[:500])
         raise
-    grading = {**result.record(), "rubric_sha256": request.rubric_sha256, "prompt_sha256": request.prompt_hash()}
-    recorder.write_json("raw_response.json", {"attempts": result.attempts})
-    if result.answer is None:
-        recorder.write_summary(status=result.status, grading=grading)
-        raise RuntimeError(f"truth-check output did not parse ({result.status}): "
-                           f"{result.attempts[-1].get('parse_error') if result.attempts else ''}")
-    rows = verify(items, result.answer, cv, cl)
-    counts = {**count(rows), "cost_usd": result.cost_usd}
-    record = {"checker_model": grader.name, "name": name, "grader": grading, "persona": truth.get("id"),
-              "persona_file": str(persona_path), "outputs": {"cv": cv is not None, "cover_letter": cl is not None},
-              "items": rows, "counts": counts, "cost_usd": counts["cost_usd"]}
-    recorder.write_json("truth_check.json", record)
-    recorder.write_summary(status="ok", grading=grading)
-    return record
+    return finish_truth_check(name, request, result, ctx, recorder)
 
 
 def main(argv=None) -> int:

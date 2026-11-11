@@ -319,10 +319,84 @@ record = finish_evaluation(run_dir, "eval1", request, result, checks, "document-
   `langchain_messages()` the OpenAI form; `loggable()` the request for `prompt.json`; `prompt_hash()`.
 - `result_from_message(request, message, seconds, batch_id)` reads one Anthropic `Message` (streamed or
   from a batch) into a `GradingResult` (`status` ok / parse_error / refused, `answer`, `attempts`,
-  `cost_usd`, `record()`). A batch has no automatic second attempt: re-submit a `parse_error`.
+  `cost_usd`, `record()`). `evals/batch_grade.py` (below) applies the synchronous retry rule across batches.
 - `finish_evaluation(...)` writes `raw_response.json`, `evaluation.json` and `summary.json`, exactly as a
   synchronous grading does, and raises `GradingFailed` after recording a refusal or a parse error.
-- The trap check has the same shape: `score_truth.build_check_request(grader, values)`.
+- The trap check has the same shape: `score_truth.build_truth_check(run_dir, grader)` returns the request and
+  its context, `finish_truth_check(...)` writes `truth_check.json` (`build_check_request(grader, values)` builds
+  the request alone).
+
+### Batch grading: `evals/batch_grade.py`
+
+The gradings and trap checks of many run folders through Anthropic's Message Batches API, at half price,
+written into the same `evaluation/<name>/` folders as the synchronous path. Nothing is sent by anything but
+submitting and collecting; `--dry-run` and `--status` call nothing.
+
+```bash
+# the gradings of a stage, as run_matrix lists them (section 9): submit, then run again to collect
+uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-file PATH/.env [--wait]
+# or run folders directly
+uv run python -m evals.batch_grade ../runs/*_r1 --eval-name eval1 [--grader-model anthropic:claude-opus-5-5]
+uv run python -m evals.batch_grade ../runs/*_r1 --truth-check            # truth1 on Haiku
+uv run python -m evals.batch_grade --jobs FILE --status | --dry-run      # no call
+```
+
+- **The same request.** Each batch request's `params` is `GradingRequest.anthropic_params()`, built by the
+  synchronous code (`build_grading_request`, `build_truth_check`): same model id, effort, `max_tokens` 64k,
+  adaptive thinking, JSON schema, images and cache breakpoints; no `fallbacks`. A test sends both through the
+  real SDK on a mock transport and compares the bodies.
+- **The same folder.** `prompt.json` and `pages/` are written at submission (as `evaluate()` writes them before its
+  call); at collection the reply is read with `result_from_message(..., batch_id=)` and written by `log_attempts`
+  and `finish_evaluation` / `finish_truth_check`, with the same `prompt_sha256`. The grader record adds `batch_id`,
+  `batch` (`custom_id`, and per attempt the batch id, `result.type`, submitted and ended times) and
+  `cost_list_usd`; `cost_usd` is the billed Batch price. Collection rebuilds the request from the folder (page
+  images reused) and refuses a reply whose request hash differs from the one submitted (`request_changed`).
+- **The same retry rule** (`MAX_ATTEMPTS = 2`). An answer that does not parse, and a request the API did not
+  answer (`errored`, `expired`, `canceled`: not billed), go out once more in a follow-up batch; every answered
+  attempt ends up in `llm_calls.jsonl` and `raw_response.json`, as after `send()`'s re-ask. A refusal is recorded
+  and final, never re-routed. What still fails is listed; `--resubmit-failed` sends only unanswered ones again.
+- **One window.** One run submits every due grading of its jobs; the batches split only between cases, so a case's
+  arms and its Sonnet, Opus, Haiku and trap-check gradings are always in the same batch.
+- **Durable.** `<runs>/batches/grading/state.json` records each request's `custom_id` (stable: grading name, run
+  folder, hash), request hash and batch id before the run waits. Running the same command again collects ended
+  batches and submits only what is due; a grading already on disk is never redone. A run that died inside a
+  submission stops the next one until it is settled: `--adopt b003=msgbatch_...` if the console shows the batch,
+  `--forget-pending` if not.
+- **Ledger.** Collected costs go to `<runs>/ledger.tsv` when it exists (`eval:<name>`, `truth`, `*-failed`, and
+  `*-attempt1` for a re-asked first answer), so run_matrix's caps see them.
+- **Anthropic graders only.** An `openai:*` grader is refused: its LangChain path re-asks inside the call loop,
+  which a batch cannot replay without a second structure; grade those with `evaluate.py`.
+
+### Batch API support (checked 2026-11-11)
+
+Read on 2026-11-11 before building the batch paths:
+
+- Anthropic Message Batches
+  ([batch processing](https://platform.claude.com/docs/en/build-with-claude/batch-processing)): the supported models
+  include `claude-sonnet-5-5`, `claude-opus-5-5` and `claude-haiku-5-5`. "Almost any request you can make to the
+  Messages API can be included in a batch", including vision, system messages and extended thinking. Only `stream`,
+  `speed`, `fallbacks` and `max_tokens: 0` are rejected, and the grader sends none of them. A batch holds 100,000
+  requests or 256 MB. `custom_id` must match `^[a-zA-Z0-9_-]{1,64}$`. Results are `succeeded`, `errored`, `canceled`
+  or `expired`, and only `succeeded` is billed. Results stay available for 29 days, at 50% of every price.
+  [Structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) lists "Batch
+  processing" under feature compatibility and is available on every model.
+  [Effort](https://platform.claude.com/docs/en/build-with-claude/effort) covers Sonnet, Opus and Haiku 5.5, with
+  adaptive thinking always on for Opus 5.5. The batch docs suggest the 1-hour cache for shared context, because
+  batches can outlast the 5-minute cache. The grader keeps its 5-minute breakpoints, since changing them would change
+  the request. Cache hits in a batch are best effort, and the recorded usage shows them.
+- OpenAI Batch ([batch guide](https://developers.openai.com/api/docs/guides/batch)): it supports
+  `/v1/chat/completions` and `/v1/responses`, and the line's `body` takes the endpoint's own parameters. A file holds
+  one model and up to 50,000 requests or 200 MB. The window is `24h`, the discount 50%, and failed or expired
+  requests go to the error file. The model pages for
+  [gpt-6-luna](https://developers.openai.com/api/docs/models/gpt-6-luna),
+  [gpt-6.1-terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) and
+  [gpt-6.1-sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) each list Batch, Chat Completions,
+  structured outputs and image input as supported.
+  [Structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs) names the Batch API among
+  the APIs that support them. The single-prompt writer's call, captured from `langchain-openai` 1.0.2 /
+  `openai` 2.8.0, is `POST /v1/chat/completions` with `model`, `messages`, `response_format` (`json_schema`,
+  strict) and `stream: false`. It sends no images, no `temperature`, no `max_tokens` and no reasoning effort, so the
+  provider default applies.
 
 ## 5. Check against the persona's ground truth: `evals/score_truth.py`
 
@@ -430,6 +504,20 @@ Estimated cost (`--estimate`): **11.70 USD** for the 39 cases: 0.12 per call (a 
 $2/1M, and up to about 10k output tokens at $10/1M: both documents as text and LaTeX, notes and
 reasoning) plus 0.18 per evaluation.
 
+### Through OpenAI's Batch API: `run_matrix --sp-batch`
+
+`--sp-batch` sends the single-prompt sessions' one call through `/v1/batches` at half price (`evals/batch_sp.py`).
+`single_prompt.batch_request()` captures the exact request offline: the same LangChain `ChatOpenAI` on a mock
+transport. The batch line's `body` is that request body byte for byte. On collection,
+`single_prompt.py ... --batch-result FILE` runs the session on the reply, replayed through the same LangChain call
+offline. It uses the same `SinglePromptResponse` parsing, `make_pdfs`, fallback layout and run-folder files.
+The manifest adds `batch` (batch id, custom id, attempt, submitted, ended and collected times). `cost_usd` is
+billed, and `cost_list_usd` is the list price, which every single-prompt manifest records. `llm_calls.jsonl` records
+`batch_id`, `cost_list_usd` and, in both paths, the provider's `response_metadata` (`finish_reason`, `service_tier`,
+`system_fingerprint`, model). An answer that does not parse is a finished `parse_error` session, never re-asked,
+as without Batch. A request the API did not answer goes out once more in a follow-up batch, then is listed
+(`--batch-resubmit-failed`).
+
 ## 8. Analysis notebook: `evals/analysis/analysis.ipynb`
 
 The notebook reads one or more rounds and compares the arms. A round is a `results/<date>/` folder or a
@@ -485,10 +573,19 @@ random order and each case's sessions back to back in random arm order: the orde
 uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --estimate [--stage pilot] [--json]
 uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --dry-run
 uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --env-file PATH/.env
-# or: sessions here, gradings through the Batch grader
-uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --sessions-only --env-file PATH/.env
+# or: sessions here (the single-prompt ones through OpenAI's Batch API), gradings through the Batch grader
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --sessions-only --sp-batch --env-file PATH/.env
+#     ... run it again until every SP session is collected (or add --batch-wait), then:
 uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --gradings-out ../runs-ab/pilot_gradings.json
+uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-file PATH/.env   # again to collect
 ```
+
+- **`--sp-batch`** (section 7) submits the stage's single-prompt calls in the same run that starts the app's
+  sessions, before them, so both arms meet the provider in the same window. The manifest records the submitted
+  and ended times. Each run collects ended batches and submits what is new. An SP case still in a batch is reported
+  and graded on a later run. A case is submitted only while the ledger's spend plus the Batch-price estimates of the
+  requests in flight stay within the total and stage caps. Collected sessions add their billed cost to
+  `ledger.tsv` (`app`). State: `RUNS_DIR/batches/sp_openai/`.
 
 - **`--estimate`** prints the plan's cost table: per arm, app sessions, Sonnet grading, re-gradings,
   Opus, Haiku and trap check at standard rates, the total and the total with Batch grading (50% off
@@ -500,6 +597,9 @@ uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ..
   text was already in the prompt, and its answer replaces the earlier ATS section of about the same
   length); the trap check 0.002. Stages 1-2: **45.62 USD
   standard, 26.66 USD with Batch** (pilot 15.74 / 8.81, core 29.88 / 17.85); stage 3: 23.51 / 14.58.
+  With `--sp-batch` the Batch column also halves the single-prompt sessions: stages 1-2 **23.47 USD**
+  (pilot 8.03, core 15.44), stage 3 **13.41 USD**. The app's sessions stay interactive, and the cost comparison between arms uses list
+  prices (`cost_list_usd`).
 - **Caps** (the plan's +25%): each stage's own spend (its sessions' rows in `ledger.tsv`) and the whole
   ledger. Stages 1-2: pilot 20 / 12, core 38 / 23, total **57 / 34** (standard / Batch); stage 3: 30 / 19,
   run into the same folder, so its total cap (87 / 53) includes stages 1-2. The standard caps apply when

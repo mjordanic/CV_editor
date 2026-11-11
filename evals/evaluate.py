@@ -67,6 +67,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Literal
@@ -602,9 +603,18 @@ def _layout_text(layout: dict) -> str:
     return "\n".join(out)
 
 
-def page_images(run_dir: Path, out_dir: Path) -> dict:
-    """PNG images of the first CV and letter pages, written to out_dir/pages/ ({kind: [paths]})."""
+def _rendered_pages(pages: Path, prefix: str) -> list[Path]:
+    found = [(int(m.group(1)), p) for p in pages.glob(f"{prefix}_page*.png")
+             if (m := re.fullmatch(rf"{prefix}_page(\d+)\.png", p.name))]
+    return [p for _, p in sorted(found)]
+
+
+def page_images(run_dir: Path, out_dir: Path, reuse: bool = False) -> dict:
+    """PNG images of the first CV and letter pages, written to out_dir/pages/ ({kind: [paths]}). `reuse`: take the
+    images already in out_dir/pages/ (Batch grading reads a reply against the images it submitted)."""
     from evals.pdf_layout import render_pages
+    if reuse:
+        return {kind: _rendered_pages(out_dir / "pages", kind) for kind in ("cv", "cover_letter")}
     outputs = run_dir / "outputs"
     return {"cv": render_pages(outputs / "final_cv.pdf", out_dir / "pages", "cv", MAX_CV_PAGE_IMAGES),
             "cover_letter": render_pages(outputs / "final_cover_letter.pdf", out_dir / "pages", "cover_letter",
@@ -729,14 +739,15 @@ def format_messages(values: dict, images: dict | None = None, mode: str = CONVER
                          _image_paths(images)).langchain_messages()
 
 
-def build_grading_request(run_dir: Path, grader, out_dir: Path, mode: str = DEFAULT_MODE):
+def build_grading_request(run_dir: Path, grader, out_dir: Path, mode: str = DEFAULT_MODE, reuse_pages: bool = False):
     """Everything one grading of `run_dir` sends, built without any model call: renders the page images
-    into out_dir/pages/ and returns (evals.grader.GradingRequest, deterministic checks, images).
-    `grader` is a GraderSpec or a "provider:model" string. evaluate() sends the request; Batch grading
-    submits request.anthropic_params() instead and reads the reply with evals.grader.result_from_message."""
+    into out_dir/pages/ (`reuse_pages`: takes the ones already there) and returns (evals.grader.GradingRequest,
+    deterministic checks, images). `grader` is a GraderSpec or a "provider:model" string. evaluate() sends the
+    request; Batch grading (evals/batch_grade.py) submits request.anthropic_params() instead and reads the reply
+    with evals.grader.result_from_message."""
     from evals.grader import build_request, parse_grader
     grader = parse_grader(grader) if isinstance(grader, str) else grader
-    images = page_images(run_dir, out_dir)
+    images = page_images(run_dir, out_dir, reuse=reuse_pages)
     values, checks = build_prompt(run_dir, images)
     system, shared, documents = prompt_parts(values, mode)
     request = build_request(grader, system, shared, documents, Evaluation, _image_paths(images),
