@@ -272,10 +272,13 @@ Batch halves every price. The Anthropic prices are in `provenance.PRICES_PER_1M`
 the official `anthropic` SDK:
 
 - **Pinned model.** Only the three ids above are accepted; the id the API returns is recorded per call.
-- **Structured output.** `output_config.format` with a JSON schema made from the pydantic answer model
-  (`json_schema_for`: every object closed and every field required; numeric limits such as the 0-10
-  score ranges are not part of the API's schema subset, so the answer is validated against the pydantic
-  model in code). Forced tool use is not used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Structured output.** A JSON schema made from the pydantic answer model (`json_schema_for`: every
+  object closed and every field required) is sent as native `output_config.format` when it fits (the
+  trap check). The 103-property evaluation schema exceeds the API's compiled-grammar limit ("The
+  compiled grammar is too large"), so that request gives the same JSON schema in the cached system
+  prompt instead. Either way the answer is validated against the pydantic model in code (which also
+  checks the 0-10 score ranges); a ```` ```json ```` fence around it is accepted. Forced tool use is not
+  used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
 - **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
   (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
   not retried.
