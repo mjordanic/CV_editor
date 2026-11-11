@@ -392,7 +392,7 @@ def test_a_matrix_plan_batches_sonnet_opus_haiku_and_the_trap_check_together(tmp
                          {"name": "opus1", "grader": "opus", "model": "anthropic:claude-opus-5-5"},
                          {"name": "haiku1", "grader": "haiku", "model": "anthropic:claude-haiku-5-5"}],
             "truth": {"name": "truth1", "grader": "trap", "model": "anthropic:claude-haiku-5-5"}}
-    (run / "manifest.json").write_text(json.dumps({"labels": {"persona": "p12"}}))
+    (run / "manifest.json").write_text(json.dumps({"status": "completed", "labels": {"persona": "p12"}}))
     plan = tmp_path / "gradings.json"
     plan.write_text(json.dumps(gradings_plan([case], out, ["--grading-mode", "document-only"])))
     (out / "ledger.tsv").write_text("")
@@ -596,6 +596,16 @@ class FakeOpenAI:
             self.uploads[b.error_file_id] = "\n".join(json.dumps(x) for x in err) + "\n"
 
 
+def _single_prompt_matrix(folder: Path) -> Path:
+    """A matrix without stages of two single-prompt (gpt-6.1-sol) cases."""
+    cases = [{"id": f"sp_{p}_{a}_{s}_sol_r1", "method": "single_prompt", "persona": p, "ad": a, "input_set": s,
+              "inputs": inputs, "model": "openai:gpt-6.1-sol", "rep": 1}
+             for p, a, s, inputs in (("p01", "a1", "all4", "all4"), ("p01", "a1", "cv_only", ["cv"]))]
+    path = folder / "matrix_single_prompt.json"
+    path.write_text(json.dumps({"total_cap": 12.0, "cases": cases}))
+    return path
+
+
 @pytest.fixture
 def sp_matrix(sp, monkeypatch, tmp_path):
     """run_matrix --sp-batch on the single-prompt matrix: OpenAI is FakeOpenAI, the collected sessions run in-process."""
@@ -603,26 +613,30 @@ def sp_matrix(sp, monkeypatch, tmp_path):
     fake = FakeOpenAI()
     monkeypatch.setattr(batch_sp.OpenAIBatches, "client", property(lambda self: fake))
 
+    real_run = batch_sp.subprocess.run
+
     def run(cmd, cwd=None, stdout=None, stderr=None, **kw):
+        if cmd[0] in ("git", "pdflatex"):  # the session's own version records
+            return real_run(cmd, cwd=cwd, stdout=stdout, stderr=stderr, **kw)
         assert cmd[1:3] == ["-m", "evals.single_prompt"]
         return SimpleNamespace(returncode=single_prompt.main(cmd[3:]))
     monkeypatch.setattr(batch_sp.subprocess, "run", run)
     out = tmp_path / "runs"
+    matrix = _single_prompt_matrix(tmp_path)
 
     def main(*extra, only=None):
         from evals import run_matrix
         from evals.cases import load_matrix
-        ids = only or [c["id"] for c in load_matrix(REPO / "evals" / "matrix_single_prompt.json")[:2]]
-        return run_matrix.main(["--matrix", str(REPO / "evals" / "matrix_single_prompt.json"), "--out", str(out),
-                                "--env-file", sp["env"], "--sessions-only", "--sp-batch", "--workers", "1",
-                                "--only", *ids, *extra])
-    return {"fake": fake, "out": out, "main": main, "sent": sp["sent"]}
+        ids = only or [c["id"] for c in load_matrix(matrix)]
+        return run_matrix.main(["--matrix", str(matrix), "--out", str(out), "--env-file", sp["env"],
+                                "--sessions-only", "--sp-batch", "--workers", "1", "--only", *ids, *extra])
+    return {"fake": fake, "out": out, "main": main, "sent": sp["sent"], "matrix": matrix}
 
 
 def test_run_matrix_submits_resumes_and_collects_the_single_prompt_sessions(sp_matrix, capsys):
     from evals.cases import load_matrix
     fake, out, main = sp_matrix["fake"], sp_matrix["out"], sp_matrix["main"]
-    cases = load_matrix(REPO / "evals" / "matrix_single_prompt.json")[:2]
+    cases = load_matrix(sp_matrix["matrix"])
     assert main() == 0
     assert len(fake.created) == len({c["model"] for c in cases})  # one input file per model
     assert fake.created[0]["endpoint"] == "/v1/chat/completions" and fake.created[0]["completion_window"] == "24h"
@@ -652,7 +666,7 @@ def test_run_matrix_submits_resumes_and_collects_the_single_prompt_sessions(sp_m
 def test_unanswered_requests_get_one_follow_up_then_are_listed(sp_matrix, capsys):
     from evals.cases import load_matrix
     fake, out, main = sp_matrix["fake"], sp_matrix["out"], sp_matrix["main"]
-    sol = [c["id"] for c in load_matrix(REPO / "evals" / "matrix_single_prompt.json") if c["model"].endswith("sol")][:2]
+    sol = [c["id"] for c in load_matrix(sp_matrix["matrix"])]
     assert main(only=sol) == 0
     ids = [line["custom_id"] for line in fake.lines()]
     fake.finish("batch_1", [ids[0]], {ids[1]: "batch_expired"})
@@ -681,7 +695,7 @@ def test_the_caps_hold_back_submissions(sp_matrix, capsys):
     assert fake.created == [] and "cap reached" in capsys.readouterr().out
 
 
-def test_the_estimate_prices_batched_single_prompt_sessions_at_half(capsys):
+def test_the_estimate_prices_batched_single_prompt_sessions_at_half(capsys, tmp_path):
     from evals import run_matrix
     matrix = str(REPO / "evals" / "matrix_ab_stage12.json")
     run_matrix.main(["--matrix", matrix, "--out", "unused", "--estimate", "--json"])
@@ -693,7 +707,7 @@ def test_the_estimate_prices_batched_single_prompt_sessions_at_half(capsys):
         a, b = plain["arms"][arm], batched["arms"][arm]
         assert b["batch"] == pytest.approx(a["batch"] - a["app"] / 2, abs=0.01)
     assert batched["arms"]["A"]["batch"] == plain["arms"]["A"]["batch"]  # the app's sessions are not batched
-    single = str(REPO / "evals" / "matrix_single_prompt.json")
+    single = str(_single_prompt_matrix(tmp_path))
     run_matrix.main(["--matrix", single, "--out", "unused", "--estimate"])
     a = json.loads(capsys.readouterr().out)
     run_matrix.main(["--matrix", single, "--out", "unused", "--estimate", "--sp-batch"])

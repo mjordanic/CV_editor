@@ -14,9 +14,8 @@ Ads and personas are referred to by their id prefix ("a3", "p07") or their full 
 optional "work_preference" and "script" (a name in scripts/, e.g. "revision"). A script written for
 one persona (its "persona" key, e.g. a request to emphasise a skill only that candidate has) can
 only be used with that persona. A case with "method": "single_prompt" runs evals/single_prompt.py
-instead of the multi-agent session (no script: one prompt cannot hold a conversation); its optional
-"baseline" names the multi-agent case it is compared with. A matrix file may also set "total_cap"
-(USD), run_matrix's default --total-cap for it.
+instead of the multi-agent session (no script: one prompt cannot hold a conversation). A matrix file may
+also set "total_cap" (USD), run_matrix's default --total-cap for it.
 """
 from __future__ import annotations
 

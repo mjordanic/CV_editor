@@ -378,6 +378,11 @@ def main(argv=None, client=None, sleep=None) -> int:
         adopt = parse_adopt(args.adopt)
     except ValueError as e:
         sys.exit(str(e))
+    from evals.run_matrix import session_done
+    unfinished = sorted({str(j["run_dir"]) for j in jobs if not session_done(Path(j["run_dir"]))})
+    if unfinished:  # nothing to grade yet: running, interrupted (credit, infrastructure) or never run
+        print(f"not graded, the session is not finished: {', '.join(unfinished)}", file=sys.stderr)
+        jobs = [j for j in jobs if str(j["run_dir"]) not in unfinished]
     if args.dry_run:
         print(json.dumps(dry_run(jobs), indent=2))
         return 0

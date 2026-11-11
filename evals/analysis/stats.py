@@ -66,6 +66,13 @@ def signflip_test(diffs, n_perm: int = 20000, seed: int = 0) -> float:
     return float((means >= obs - 1e-12).mean())
 
 
+def persona_signflip_test(diffs, clusters) -> float:
+    """Sign-flip test that flips every cluster's differences together (e.g. the three input sets of one persona):
+    the clusters, not the cells, are the independent units. Exact up to 16 clusters (13 personas: 8,192)."""
+    d, labels = np.asarray(diffs, dtype=float), np.asarray(clusters)
+    return signflip_test([d[labels == g].sum() for g in dict.fromkeys(labels.tolist())])
+
+
 def wilcoxon(diffs) -> float | None:
     """Two-sided Wilcoxon signed-rank p-value (Pratt's handling of zero differences), or None without scipy
     or without a non-zero difference."""
@@ -97,7 +104,7 @@ def paired_summary(diffs, clusters=None, seed: int = 0) -> dict:
     out["dz"] = out["mean_diff"] / out["sd_diff"] if n >= 2 and out["sd_diff"] > 0 else math.nan
     if clusters is not None and n:
         _, clo, chi = bootstrap_mean_ci(d, clusters=clusters, seed=seed)
-        out.update(ci_low_cluster=clo, ci_high_cluster=chi)
+        out.update(ci_low_cluster=clo, ci_high_cluster=chi, p_signflip_cluster=persona_signflip_test(d, clusters))
     st = sign_test(d)
     out.update(wins_b=st["wins"], ties=st["ties"], wins_a=st["losses"], p_sign=st["p"],
                p_wilcoxon=wilcoxon(d), p_signflip=signflip_test(d, seed=seed) if n else math.nan)
@@ -125,6 +132,18 @@ def pooled_within_var(groups) -> tuple[float, int]:
             ss += float(((g - g.mean()) ** 2).sum())
             df += g.size - 1
     return (ss / df if df else math.nan, df)
+
+
+def writer_var(groups, ks, var_grader: float) -> float:
+    """Writer variance from repeat groups (run values `groups`, each run the mean of `ks` gradings): the pooled
+    within-group variance is writer variance plus grader variance x the mean of 1/k, so that part is taken off
+    (with var_grader from re-gradings; never below 0). NaN without repeats or without a grader variance."""
+    var_w, df = pooled_within_var(groups)
+    if not df or math.isnan(var_grader):
+        return math.nan
+    weights = [(len(g) - 1, float(np.mean([1 / k for k in kk]))) for g, kk in zip(groups, ks) if len(g) >= 2]
+    factor = sum(w * f for w, f in weights) / sum(w for w, _ in weights)
+    return max(0.0, var_w - factor * var_grader)
 
 
 def var_ci(var: float, df: int, level: float = 0.95):

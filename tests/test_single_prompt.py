@@ -1,4 +1,4 @@
-"""Offline tests for the single-prompt baseline (evals/single_prompt.py, evals/matrix_single_prompt.json).
+"""Offline tests for the single-prompt baseline (evals/single_prompt.py) and its place in run_matrix.
 
 No paid call of any kind: every chat model the code could build is a counting stub, no .env is read (an
 empty --env-file is passed), and run_matrix's subprocess is faked. pdflatex is stubbed in the run tests;
@@ -18,7 +18,6 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-SP_MATRIX = REPO / "evals" / "matrix_single_prompt.json"
 CV_TEXT = "Marta Example\nDevOps Engineer\nSUMMARY_FROM_STUB: CI pipelines with GitHub Actions."
 LETTER_TEXT = "Dear hiring team,\nLETTER_FROM_STUB: I would like to apply.\nKind regards, Marta"
 GOOD_LATEX = "\\documentclass{article}\\begin{document}GOOD\\end{document}"
@@ -139,12 +138,15 @@ def test_the_prompt_holds_exactly_the_given_inputs_and_the_search_fixture(input_
     assert "deliberate_gaps" not in human.content and truth["traps"][0] not in human.content
 
 
-def test_without_a_cv_the_prompt_says_so_and_the_missing_details_are_declined():
-    from agents.cv_writer import NO_CV_TEXT
+def test_without_a_cv_the_prompt_says_so_and_never_asks_for_placeholders():
+    from evals.cases import INPUT_SETS
     from evals.run_case import DEFAULT_SCRIPT
-    from evals.single_prompt import build_messages
-    _, human = build_messages({"notes": "some notes"}, "ad", "(the search found nothing)")
-    assert NO_CV_TEXT in human.content and DEFAULT_SCRIPT["missing_details"] in human.content
+    from evals.single_prompt import NO_CV_TEXT, build_messages
+    for i in range(1, 14):  # every persona's no-CV case: one instruction about placeholders, never two
+        texts = _persona_texts(f"p{i:02d}")
+        _, human = build_messages({k: texts[k] for k in INPUT_SETS["no_cv"]}, "ad", "(the search found nothing)")
+        assert NO_CV_TEXT in human.content and DEFAULT_SCRIPT["missing_details"] in human.content
+        assert "leave no placeholder" in human.content and "use placeholders" not in human.content
     _, with_cv = build_messages({"cv": "a cv"}, "ad", "(none)")
     assert NO_CV_TEXT not in with_cv.content
 
@@ -218,9 +220,40 @@ def test_the_run_folder_is_graded_unchanged_and_blind(tmp_path, stubbed):
     assert checks["cv_pdf"]["exists"] and checks["cover_letter_pdf"]["exists"]
     assert _persona_texts("p03")["notes"].strip() in values["candidate"]
     assert _persona_texts("p03")["cv"].strip() not in values["candidate"]
-    shown = json.dumps([m.content for m in evaluate.format_messages(values)])
+    shown = json.dumps([m.content for m in evaluate.format_messages(values)])  # document-only, as compared
     for leak in ("single_prompt", "single prompt", "multi_agent", "gpt-6.1-sol", "fallback", "sp_p03"):
         assert leak not in shown, leak
+
+
+def test_an_infrastructure_error_marks_the_run_interrupted_not_failed(tmp_path, stubbed, monkeypatch):
+    import httpx
+    import openai
+    from evals import evaluate, single_prompt
+    from evals.credit import INFRASTRUCTURE_STATUS
+
+    def connection_lost(llm, messages, callbacks):
+        raise openai.APIConnectionError(request=httpx.Request("POST", "https://api.openai.com/v1/chat/completions"))
+
+    monkeypatch.setattr(single_prompt, "generate", connection_lost)
+    code, run_dir = _run(tmp_path, stubbed)
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert code == 1 and manifest["status"] == INFRASTRUCTURE_STATUS and manifest["failure"] is None
+    from evals.run_matrix import session_done
+    assert not session_done(run_dir)  # never graded as "no CV was produced"; run_matrix runs it again
+    assert evaluate.build_prompt(run_dir)[0]["cv"] == "(no CV was produced)"  # what grading it would have meant
+
+
+def test_an_answer_cut_off_at_the_output_limit_is_a_parse_error_with_its_finish_reason(tmp_path, stubbed, monkeypatch):
+    import openai
+    from types import SimpleNamespace
+
+    def cut_off(self, messages, stop=None, run_manager=None, **kwargs):
+        raise openai.LengthFinishReasonError(completion=SimpleNamespace(usage=None))
+
+    monkeypatch.setattr(FakeChat, "_generate", cut_off)
+    code, run_dir = _run(tmp_path, stubbed)
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert code == 1 and manifest["failure"] == "parse_error" and manifest["finish_reason"] == "length"
 
 
 def test_out_of_credit_marks_the_run_interrupted_and_exits_75(tmp_path, stubbed, monkeypatch):
@@ -252,7 +285,7 @@ def test_each_comparison_model_runs_built_as_the_app_builds_its_writers(tmp_path
     assert code == 0 and CALLS == ["SinglePromptResponse"]
     assert built == [(model, {"temperature": None})]  # luna accepts only its default temperature
     manifest = json.loads((run_dir / "manifest.json").read_text())
-    assert manifest["model"] == model and manifest["failure"] is None
+    assert manifest["model"] == model and manifest["failure"] is None and manifest["finish_reason"] is None
     logged = json.loads((run_dir / "llm_calls.jsonl").read_text().splitlines()[0])
     assert logged["model"] == model.split(":", 1)[1]
     assert manifest["cost_usd"] == pytest.approx(cost_usd(model, 6000, 9000))  # priced from provenance
@@ -331,25 +364,6 @@ def test_the_fallback_layout_compiles_and_keeps_the_text(tmp_path):
 
 
 # --- the matrix ---------------------------------------------------------------------------------------
-def test_the_single_prompt_matrix_resolves_and_mirrors_the_main_baselines():
-    from evals.cases import load_matrix, matrix_total_cap, resolve_case
-    cases = load_matrix(SP_MATRIX)
-    main = {c["id"]: c for c in load_matrix()}
-    assert len(cases) == 39 and len({c["id"] for c in cases}) == 39
-    assert not {c["id"] for c in cases} & set(main)
-    assert {(c["persona"], c["input_set"]) for c in cases} == {
-        (f"p{i:02d}", s) for i in range(1, 14) for s in ("all4", "cv_only", "no_cv")}
-    for case in cases:
-        resolve_case(case)
-        assert case["method"] == "single_prompt" and case["model"] == "openai:gpt-6.1-sol" and not case.get("script")
-        base = main[case["baseline"]]
-        assert (base["persona"], base["ad"], base["inputs"]) == (case["persona"], case["ad"], case["inputs"])
-        assert not base.get("script") and not base.get("work_preference")
-        truth = json.loads(resolve_case(case)["persona_truth"].read_text())
-        assert truth["primary_ad"].split("-", 1)[0] == case["ad"]
-    assert matrix_total_cap(SP_MATRIX) == 12.0
-
-
 def test_a_single_prompt_case_cannot_have_a_script():
     from evals.cases import resolve_case
     with pytest.raises(ValueError, match="cannot have a script"):
@@ -357,21 +371,11 @@ def test_a_single_prompt_case_cannot_have_a_script():
                       "script": "terse"})
 
 
-def test_the_estimate_stays_under_the_matrix_cap(capsys):
-    from evals import run_matrix
-    assert run_matrix.main(["--matrix", str(SP_MATRIX), "--out", "unused", "--estimate"]) == 0
-    est = json.loads(capsys.readouterr().out)
-    assert est["cases"] == 39 and est["total_cap"] == 12.0
-    assert est["total_usd"] <= est["total_cap"]
-    assert est["by_method"] == {"single_prompt": est["total_usd"]}
-    assert round(est["sessions"] + est["evaluations"], 2) == est["total_usd"]
-
-
 def test_run_matrix_runs_the_single_prompt_runner_with_the_same_ledger(tmp_path, monkeypatch):
     from argparse import Namespace
     from evals import run_matrix
-    from evals.cases import load_matrix
-    case = load_matrix(SP_MATRIX)[0]
+    case = {"id": "sp_p03_a3_all4_sol_r1", "method": "single_prompt", "persona": "p03", "ad": "a3",
+            "input_set": "all4", "inputs": "all4", "model": "openai:gpt-6.1-sol", "rep": 1}
     commands = []
 
     def fake_run(cmd, *a, **kw):
@@ -381,7 +385,7 @@ def test_run_matrix_runs_the_single_prompt_runner_with_the_same_ledger(tmp_path,
             run_dir.mkdir(parents=True)
             (run_dir / "manifest.json").write_text(json.dumps({"status": "completed", "cost_usd": 0.08}))
         else:
-            folder = Path(cmd[3]) / "evaluation" / cmd[cmd.index("--name") + 1]
+            folder = Path(cmd[3]) / "evaluation" / cmd[cmd.index("--eval-name") + 1]
             folder.mkdir(parents=True)
             (folder / "evaluation.json").write_text(json.dumps({"cost_usd": 0.17}))
         return type("Done", (), {"stdout": "", "stderr": "", "returncode": 0})()
@@ -393,7 +397,7 @@ def test_run_matrix_runs_the_single_prompt_runner_with_the_same_ledger(tmp_path,
                      truth_check=False)
     assert run_matrix.run_one(case, opts) == (case["id"], "ok")
     assert [c[2] for c in commands] == ["evals.single_prompt", "evals.evaluate"]
-    assert "method=single_prompt" in commands[0] and f"baseline={case['baseline']}" in commands[0]
+    assert "method=single_prompt" in commands[0]
     ledger = [line.split("\t")[:3] for line in (out / "ledger.tsv").read_text().splitlines()]
     assert ledger == [[case["id"], "app", "0.080000"], [case["id"], "eval", "0.170000"]]
     assert run_matrix.run_one(case, opts)[1] == "skip (done)"
@@ -403,34 +407,39 @@ def test_the_main_matrix_keeps_its_24_usd_default_cap():
     from evals import run_matrix
     from evals.cases import DEFAULT_MATRIX
     assert run_matrix.default_total_cap(DEFAULT_MATRIX) == 24.0
-    assert run_matrix.default_total_cap(SP_MATRIX) == 12.0
 
 
-# --- summarize: split by method -----------------------------------------------------------------------
-def _fake_run(folder: Path, overall: int, manifest: dict):
-    folder.mkdir(parents=True)
-    (folder / "manifest.json").write_text(json.dumps({"status": "completed", **manifest}))
-    ev_dir = folder / "evaluation" / "eval1"
-    ev_dir.mkdir(parents=True)
-    ev = {"overall_score": overall, "invented_content_score": 8, "completeness_score": 6,
-          "fit": {"score": 5}, "cv_standards": {"score": 8}, "cover_letter": {"score": 7}}
-    (ev_dir / "evaluation.json").write_text(json.dumps({"evaluation": ev, "counts": {"cv_unsupported": 1},
-                                                        "cost_usd": 0.1}))
+@pytest.mark.parametrize("method", ["evals.run_case", "evals.single_prompt"])
+def test_run_matrix_runs_an_infrastructure_failure_again_once_for_both_methods(tmp_path, monkeypatch, method):
+    from argparse import Namespace
+    from evals import run_matrix
+    from evals.credit import INFRASTRUCTURE_STATUS
+    case = {"id": "c_r1", "persona": "p03", "ad": "a3", "input_set": "all4", "inputs": "all4", "rep": 1,
+            "model": "openai:gpt-6-luna", **({"method": "single_prompt"} if method == "evals.single_prompt" else {})}
+    statuses, commands = [INFRASTRUCTURE_STATUS, "completed"], []
 
+    def fake_run(cmd, *a, **kw):
+        commands.append(cmd)
+        if cmd[2] == method:
+            run_dir = Path(cmd[cmd.index("--run-dir") + 1])
+            run_dir.mkdir(parents=True)
+            (run_dir / "manifest.json").write_text(json.dumps({"status": statuses.pop(0), "cost_usd": 0.01}))
+        else:
+            folder = Path(cmd[3]) / "evaluation" / cmd[cmd.index("--eval-name") + 1]
+            folder.mkdir(parents=True)
+            (folder / "evaluation.json").write_text(json.dumps({"cost_usd": 0.1}))
+        return type("Done", (), {"stdout": "", "stderr": "", "returncode": 1})()
 
-def test_summarize_splits_by_method_and_pairs_each_run_with_its_baseline(tmp_path, capsys):
-    from evals import summarize
-    main, sp = tmp_path / "main", tmp_path / "sp"
-    _fake_run(main / "p03_a3_cv_only_luna_r1", 6, {"labels": {"script": "default"}})
-    _fake_run(main / "p03_a3_all4_luna_r1", 7, {"labels": {"script": "default"}})
-    _fake_run(sp / "sp_p03_a3_cv_only_sol_r1", 8, {"method": "single_prompt",
-                                                  "labels": {"method": "single_prompt", "baseline": "p03_a3_cv_only_luna_r1"}})
-    result = summarize.method_summary([sp, main])
-    assert result["methods"]["single_prompt"]["runs"] == 1 and result["methods"]["multi_agent"]["runs"] == 2
-    assert result["methods"]["multi_agent"]["metrics"]["overall"]["mean"] == 6.5
-    (pair,) = result["pairs"]
-    assert pair["found"] and pair["diff"]["overall"] == 2 and pair["diff"]["invented_content"] == 0
-    assert result["paired_mean_diff"]["overall"]["mean"] == 2
-    assert summarize.main([str(sp), "--with", str(main)]) == 0
-    assert "pairs: sp-ma (n=1)" in capsys.readouterr().out
-    assert json.loads((sp / "methods_summary.json").read_text())["pairs"][0]["multi_agent"] == "p03_a3_cv_only_luna_r1"
+    monkeypatch.setattr(run_matrix.subprocess, "run", fake_run)
+    out = tmp_path / "runs"
+    out.mkdir()
+    opts = Namespace(out=str(out), env_file=None, total_cap=5.0, cost_cap=1.5, rescore=None, eval_name="eval1",
+                     truth_check=False)
+    assert run_matrix.run_one(case, opts) == ("c_r1", "ok")  # the second attempt completed and was graded
+    assert [c[2] for c in commands] == [method, method, "evals.evaluate"]
+    assert "attempt=2" in commands[1] and "attempt=2" not in commands[0]
+    commands.clear()
+    statuses[:] = [INFRASTRUCTURE_STATUS, INFRASTRUCTURE_STATUS]
+    case["id"] = "d_r1"
+    assert "infrastructure error, twice" in run_matrix.run_one(case, opts)[1]
+    assert [c[2] for c in commands] == [method, method]  # never graded

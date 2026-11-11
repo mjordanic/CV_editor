@@ -86,11 +86,13 @@ def _case_run(root: Path, method: str, cv="Jane Doe - Backend developer, Python.
                   "user": DEFAULT_SCRIPT["first"]},
                  {"turn": 1, "assistant": "Shall I add your [EMAIL]?", "user": DEFAULT_SCRIPT["missing_details"]},
                  {"turn": 2, "assistant": "Here is the letter.", "user": DEFAULT_SCRIPT["exit"]}]
-        manifest = {"method": "multi_agent", "model": "gpt-6-luna", "labels": {"persona": "p03", "arm": "MA-luna"}}
+        manifest = {"status": "completed", "method": "multi_agent", "model": "gpt-6-luna",
+                    "labels": {"persona": "p03", "arm": "MA-luna"}}
         (run / "llm_calls.jsonl").write_text(json.dumps({"node": "cv_writer", "model": "gpt-6-luna"}) + "\n")
     else:
         turns = []
-        manifest = {"method": "single_prompt", "model": "gpt-6.1-sol", "labels": {"persona": "p03", "arm": "SP-sol"}}
+        manifest = {"status": "completed", "method": "single_prompt", "model": "gpt-6.1-sol",
+                    "labels": {"persona": "p03", "arm": "SP-sol"}}
         (run / "writer_notes.txt").write_text("single_prompt notes from gpt-6.1-sol")
     (run / "transcript.json").write_text(json.dumps({"turns": turns, "observations": [], "requests": [],
                                                      **({"user_instructions": "x"} if method == "sp" else {})}))
@@ -397,7 +399,7 @@ def test_the_trap_check_runs_on_haiku_through_the_same_layer(tmp_path):
     (run / "outputs").mkdir(parents=True)
     (run / "outputs" / "final_cv.txt").write_text("Forklift licence (valid since 2020)")
     (run / "outputs" / "final_cover_letter.txt").write_text("Dear team")
-    (run / "manifest.json").write_text(json.dumps({"labels": {"persona": "p12"}}))
+    (run / "manifest.json").write_text(json.dumps({"status": "completed", "labels": {"persona": "p12"}}))
     items = [{"id": "G1", "verdict": "claimed_as_met", "document": "cv", "quote": "Forklift licence", "note": ""}]
     usage = {"input_tokens": 300, "output_tokens": 2000, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0}
     client = _Client(_message({"items": items}, model="claude-haiku-5-5", usage=usage))
@@ -409,6 +411,25 @@ def test_the_trap_check_runs_on_haiku_through_the_same_layer(tmp_path):
     assert record["grader"]["model_returned"] == "claude-haiku-5-5" and record["grader"]["temperature"] == "not settable"
     assert record["counts"]["gaps_claimed"] == 1
     assert record["cost_usd"] == pytest.approx((300 * 0.10 + 2000 * 0.50) / 1e6)
+
+
+def test_the_trap_check_reads_the_delivered_pdf_and_the_grader_is_told_it_counts(tmp_path):
+    from evals.evaluate import SYSTEM_PROMPT_DOCUMENT_ONLY
+    from evals.score_truth import score_truth
+    run = tmp_path / "run"
+    (run / "outputs").mkdir(parents=True)
+    (run / "outputs" / "final_cv.txt").write_text("Warehouse assistant")  # the tool's copy says nothing
+    make_pdf(run / "outputs" / "final_cv.pdf", [[(72, 72, 11, "Forklift licence (valid since 2020)")]])
+    (run / "outputs" / "final_cover_letter.txt").write_text("Dear team")
+    (run / "manifest.json").write_text(json.dumps({"status": "completed", "labels": {"persona": "p12"}}))
+    items = [{"id": "G1", "verdict": "claimed_as_met", "document": "cv", "quote": "Forklift licence", "note": ""}]
+    client = _Client(_message({"items": items}, model="claude-haiku-5-5"))
+    record = score_truth(run, name="truth1", client=client)
+    shown = client.calls[0]["messages"][0]["content"][1]["text"]
+    assert "Forklift licence" in shown and "Warehouse assistant" not in shown  # what the employer receives
+    assert record["counts"]["gaps_claimed"] == 1 and record["items"][0]["quote_found"]
+    assert "pdfplumber" in record["grader"]["packages"]
+    assert "The PDF is the document the employer receives" in SYSTEM_PROMPT_DOCUMENT_ONLY
 
 
 def test_the_real_sdk_streams_the_request_offline():

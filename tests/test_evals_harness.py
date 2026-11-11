@@ -245,7 +245,8 @@ def test_dry_run_prints_repeats_rescores_and_truth_checks(tmp_path, capsys):
     assert len(sessions) == 2 and all("revision.json" in line and "--label script=revision" in line for line in sessions)
     assert "p12_a7_all4_revision_luna_r2 " in sessions[1] and "--label rep=2" in sessions[1]
     assert sum("evals.evaluate" in line for line in lines) == 4
-    assert {line.split("--name ")[1].split()[0] for line in lines if "evals.evaluate" in line} == {"eval1", "eval2"}
+    names = {line.split("--eval-name ")[1].split()[0] for line in lines if "evals.evaluate" in line}
+    assert names == {"eval1", "eval2"}
     assert sum("evals.score_truth" in line for line in lines) == 2
     with pytest.raises(SystemExit):
         run_matrix.main(["--matrix", str(matrix), "--out", str(tmp_path / "runs"), "--dry-run", "--only", "nope"])
@@ -265,7 +266,7 @@ def test_rescore_and_truth_check_reuse_a_finished_session(tmp_path, monkeypatch)
 
     def fake_run(cmd, *a, **kw):
         commands.append(cmd)
-        target, name = Path(cmd[3]), cmd[cmd.index("--name") + 1]
+        target, name = Path(cmd[3]), cmd[cmd.index("--eval-name" if "--eval-name" in cmd else "--name") + 1]
         folder = target / "evaluation" / name
         assert not folder.exists()
         folder.mkdir(parents=True)
@@ -285,14 +286,15 @@ def test_rescore_and_truth_check_reuse_a_finished_session(tmp_path, monkeypatch)
 
 
 # --- summarize -----------------------------------------------------------------------------------------
-def _write_eval(run: Path, name: str, overall: int, cv_unsupported: int):
+def _write_eval(run: Path, name: str, overall: int, cv_unsupported: int, grader="anthropic:claude-sonnet-5-5"):
     folder = run / "evaluation" / name
     folder.mkdir(parents=True)
     ev = {"overall_score": overall, "invented_content_score": 7, "completeness_score": 6,
           "fit": {"score": 5}, "cv_standards": {"score": 8}, "cover_letter": {"score": 7}}
     counts = {"cv_unsupported": cv_unsupported, "cv_partly": 0, "cl_unsupported": 0, "cl_partly": 1,
               "omissions_high": 2, "gaps_overstated": 0, "work_arrangement_invented": 0}
-    (folder / "evaluation.json").write_text(json.dumps({"evaluation": ev, "counts": counts, "cost_usd": 0.1}))
+    (folder / "evaluation.json").write_text(json.dumps({"evaluator_model": grader, "evaluation": ev, "counts": counts,
+                                                        "cost_usd": 0.1}))
 
 
 def test_summarize_reports_spread_across_reps_and_rescores(tmp_path, capsys):
@@ -307,6 +309,7 @@ def test_summarize_reports_spread_across_reps_and_rescores(tmp_path, capsys):
     _write_eval(runs / "p12_a7_all4_luna_r1", "eval2", 8, 3)
     _write_eval(runs / "p12_a7_all4_luna_r2", "eval1", 4, 0)
     _write_eval(runs / "p13_a8_cv_only_luna_r1", "eval1", 9, 0)
+    _write_eval(runs / "p12_a7_all4_luna_r1", "opus1", 0, 9, grader="anthropic:claude-opus-5-5")  # never averaged in
     truth = runs / "p12_a7_all4_luna_r1" / "evaluation" / "truth1"
     truth.mkdir()
     (truth / "truth_check.json").write_text(json.dumps({"counts": {"gaps_claimed": 1, "traps_hit": 2, "unclear": 0,
@@ -330,6 +333,8 @@ def test_summarize_reports_spread_across_reps_and_rescores(tmp_path, capsys):
     assert "p12_a7_all4_luna" in table and "p13_a8" not in table and "5.5±2.121" in table
     written = json.loads((runs / "repeats_summary.json").read_text())
     assert list(written) == ["p12_a7_all4_luna"]
+    opus = summarize.summarize(runs, grader="claude-opus-5-5")["p12_a7_all4_luna"]["metrics"]["overall"]
+    assert opus["reps"] == 1 and opus["mean"] == 0
 
 
 # --- evaluator reuses the app's helpers ---------------------------------------------------------------

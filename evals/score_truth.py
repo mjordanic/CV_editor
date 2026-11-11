@@ -8,8 +8,10 @@ a cheap model reads the final CV and cover letter and answers, for each gap and 
     not_claimed      they do not
     unclear          the model cannot tell
 
-Every quote is then checked in code: a "claimed_as_met" whose quote is not in the outputs (after
-normalising case, whitespace, quotes and dashes) is downgraded to "unclear" and flagged.
+The check reads the delivered documents: the text extracted from each PDF (what the employer receives, as the
+grader's ATS section reads it), or the plain text when there is no readable PDF. Every quote is then checked in
+code: a "claimed_as_met" whose quote is in neither the PDF text nor the plain text (after normalising case,
+whitespace, quotes and dashes) is downgraded to "unclear" and flagged.
 
 The checker is "provider:model" through the grader layer (evals/grader.py): Claude Haiku 5.5 by default
 (cheap, and not the writers' OpenAI family), any grader evaluate.py accepts otherwise.
@@ -62,7 +64,7 @@ class TruthCheck(BaseModel):
 SYSTEM_PROMPT = """You check a CV and a cover letter that a writing tool produced for a job candidate. You are \
 given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only \
 partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the \
-documents claim the gap as met or fall into the trap.
+documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.
 
 Rules:
 - Judge only the two documents below. Honest wording is fine: stating the closest real experience, "willing to \
@@ -89,7 +91,6 @@ DOCUMENTS_TEMPLATE = """# OUTPUT 1: CV
 {cover_letter}
 
 Answer for every item id."""
-HUMAN_TEMPLATE = SHARED_TEMPLATE + DOCUMENTS_TEMPLATE
 
 
 # ---------------------------------------------------------------------------------------------
@@ -153,14 +154,8 @@ def build_check_request(grader, values: dict):
                                                                TruthCheck))
 
 
-def format_messages(values: dict) -> list:
-    """The check as LangChain messages (the OpenAI path)."""
-    from evals.grader import GraderSpec
-    return build_check_request(GraderSpec("openai", "-"), values).langchain_messages()
-
-
-def verify(items: list[dict], answer: dict, cv: str | None, cover_letter: str | None) -> list[dict]:
-    """Merge the model's answer into the items and check every quote in code."""
+def verify(items: list[dict], answer: dict, *documents: str | None) -> list[dict]:
+    """Merge the model's answer into the items and check every quote in code against the documents."""
     by_id = {a.get("id"): a for a in answer.get("items") or []}
     out = []
     for item in items:
@@ -172,7 +167,7 @@ def verify(items: list[dict], answer: dict, cv: str | None, cover_letter: str | 
         row = {**item, "verdict": a["verdict"], "model_verdict": a["verdict"], "document": a.get("document", "none"),
                "quote": a.get("quote", ""), "quote_found": None, "note": a.get("note", ""), "flag": None}
         if a["verdict"] == "claimed_as_met":
-            row["quote_found"] = quote_found(row["quote"], [cv, cover_letter])
+            row["quote_found"] = quote_found(row["quote"], list(documents))
             if not row["quote_found"]:
                 row["verdict"], row["flag"] = "unclear", "quote_not_in_outputs"
         out.append(row)
@@ -196,6 +191,16 @@ def _read(path: Path) -> str | None:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
 
 
+def delivered_text(outputs: Path, stem: str) -> tuple[str | None, str | None]:
+    """(what the check reads, the plain text) of one document: the text extracted from its PDF, the document the
+    employer receives, else the plain text when there is no readable PDF."""
+    from agents.pdf_text_check import extract_pdf_text
+    text = _read(outputs / f"{stem}.txt")
+    pdf = outputs / f"{stem}.pdf"
+    pdf_text = extract_pdf_text(pdf)[0] if pdf.is_file() else None
+    return (pdf_text if (pdf_text or "").strip() else text), text
+
+
 class TruthCheckFailed(RuntimeError):
     """The checker's answer did not parse after the allowed attempts, or the checker refused."""
 
@@ -210,11 +215,12 @@ def build_truth_check(run_dir: Path, grader, persona: str | Path | None = None):
     if not ref:
         raise ValueError(f"{run_dir}: no persona label in manifest.json; give --persona")
     persona_path, truth = load_persona(ref)
-    cv = _read(run_dir / "outputs" / "final_cv.txt")
-    cl = _read(run_dir / "outputs" / "final_cover_letter.txt")
+    cv, cv_text = delivered_text(run_dir / "outputs", "final_cv")
+    cl, cl_text = delivered_text(run_dir / "outputs", "final_cover_letter")
     items = items_from_persona(truth)
     request = build_check_request(grader, build_values(items, cv, cl))
-    return request, {"persona_path": persona_path, "truth": truth, "items": items, "cv": cv, "cover_letter": cl}
+    return request, {"persona_path": persona_path, "truth": truth, "items": items, "cv": cv, "cover_letter": cl,
+                     "plain_texts": [cv_text, cl_text]}
 
 
 def write_check_prompt(recorder, request) -> None:
@@ -225,15 +231,16 @@ def finish_truth_check(name: str, request, result, ctx: dict, recorder, extra: d
     """Write raw_response.json, truth_check.json and summary.json for one finished check (`result` is an
     evals.grader.GradingResult from send() or from a batch reply). Raises TruthCheckFailed after recording a
     refusal or an unparseable answer."""
+    from evals.run_case import _package_versions
     grading = {**result.record(), "rubric_sha256": request.rubric_sha256, "prompt_sha256": request.prompt_hash(),
-               **(extra or {})}
+               "packages": _package_versions(), **(extra or {})}
     recorder.write_json("raw_response.json", {"attempts": result.attempts})
     if result.answer is None:
         recorder.write_summary(status=result.status, grading=grading)
         raise TruthCheckFailed(f"truth-check output did not parse ({result.status}): "
                                f"{result.attempts[-1].get('parse_error') if result.attempts else ''}")
     cv, cl = ctx["cv"], ctx["cover_letter"]
-    rows = verify(ctx["items"], result.answer, cv, cl)
+    rows = verify(ctx["items"], result.answer, cv, cl, *ctx["plain_texts"])
     counts = {**count(rows), "cost_usd": result.cost_usd}
     record = {"checker_model": request.grader.name, "name": name, "grader": grading, "persona": ctx["truth"].get("id"),
               "persona_file": str(ctx["persona_path"]), "outputs": {"cv": cv is not None, "cover_letter": cl is not None},

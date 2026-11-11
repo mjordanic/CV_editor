@@ -16,6 +16,7 @@ Vocabulary used by the notebook:
 
 `read_rows()` gives one flat row per grading (a run without a grading gives one row with empty scores);
 the pairing helpers average re-scores within a run, then repeats within a cell, so a cell counts once.
+`truth_rows()` gives one row per trap check (`evaluation/<name>/truth_check.json`), with the same run fields.
 """
 from __future__ import annotations
 
@@ -114,7 +115,6 @@ def _run_fields(run: Path) -> dict:
         "method": method,
         "writer_model": writer,
         "arm": arm_name(method, writer),
-        "baseline": labels.get("baseline") or "",
         "status": status,
         "interrupted": status.startswith("interrupted"),
         "session_usd": manifest.get("cost_usd", summary.get("cost_usd")),
@@ -122,6 +122,11 @@ def _run_fields(run: Path) -> dict:
         "llm_calls": calls,
         "llm_errors": summary.get("llm_errors"),
         "fallback_pdfs": len(manifest.get("fallback_pdfs") or []),
+        # single prompt: parse_error / error and the call's finish_reason (the pilot gate counts parse errors);
+        # app: what a completed session did without (company research, a fact check)
+        "failure": manifest.get("failure") or "",
+        "finish_reason": manifest.get("finish_reason") or "",
+        "degraded": ",".join(manifest.get("degraded") or []),
         "commit": (_json(run / "config.json").get("code") or {}).get("commit") or "",
     }
 
@@ -162,6 +167,29 @@ def read_rows(*paths: str | Path, include_interrupted: bool = False, round_name:
             evals = sorted(run.glob("evaluation/*/evaluation.json")) or [None]
             for ev in evals:
                 rows.append({"round": name, **base, **_eval_fields(ev)})
+    return rows
+
+
+def truth_rows(*paths: str | Path, include_interrupted: bool = False, round_name: str | None = None) -> list[dict]:
+    """One row per trap check (evals/score_truth.py) of every run folder: the run's fields, the check's name
+    ("eval_name") and checker ("grader"), its counts, and "truth_rate": gaps claimed plus traps hit per item."""
+    rows = []
+    for path in paths:
+        name = round_name or (Path(path).name if Path(path).name != "runs" else Path(path).parent.name)
+        for run in sorted(p for p in runs_dir_of(path).iterdir() if p.is_dir() and (p / "manifest.json").is_file()):
+            base = _run_fields(run)
+            if base["interrupted"] and not include_interrupted:
+                continue
+            for f in sorted(run.glob("evaluation/*/truth_check.json")):
+                record = _json(f)
+                counts = record.get("counts") or {}
+                items = (counts.get("gaps") or 0) + (counts.get("traps") or 0)
+                hits = (counts.get("gaps_claimed") or 0) + (counts.get("traps_hit") or 0)
+                rows.append({"round": name, **base, "eval_name": f.parent.name,
+                             "grader": short_model(record.get("checker_model")),
+                             **{k: counts.get(k) for k in ("gaps", "traps", "gaps_claimed", "traps_hit", "unclear",
+                                                           "unverified_quotes")},
+                             "truth_rate": hits / items if items else None})
     return rows
 
 
@@ -229,13 +257,15 @@ def pair_arms(rows: list[dict], arm_a: str, arm_b: str, metric: str, grader: str
 
 
 def repeat_groups(rows: list[dict], metric: str, grader: str | None = None) -> list[dict]:
-    """Every (arm, cell) with two or more repeats: the run-level values (each the mean of its gradings).
-    The spread inside a group is writer variance plus what is left of grader variance."""
-    groups: dict[tuple, list[float]] = defaultdict(list)
+    """Every (arm, cell) with two or more repeats: the run-level values (each the mean of its gradings) and "k",
+    each run's number of gradings. The spread inside a group is writer variance plus grader variance / k
+    (stats.writer_var takes the grader part out)."""
+    groups: dict[tuple, list[tuple]] = defaultdict(list)
     for e in run_values(rows, metric, grader).values():
         if e["value"] is not None:
-            groups[(e["arm"], e["cell"])].append(e["value"])
-    return [{"arm": arm, "cell": cell, **dict(zip(CELL_FIELDS, cell)), "values": v, "n": len(v)}
+            groups[(e["arm"], e["cell"])].append((e["value"], e["k"]))
+    return [{"arm": arm, "cell": cell, **dict(zip(CELL_FIELDS, cell)), "values": [x for x, _ in v],
+             "k": [k for _, k in v], "n": len(v)}
             for (arm, cell), v in sorted(groups.items()) if len(v) >= 2]
 
 

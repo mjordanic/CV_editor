@@ -126,14 +126,6 @@ class OpenAIBatches(Adapter):
 
 
 # --------------------------------------------------------------------------------------------- the SP sessions
-def _session_done(run_dir: Path) -> bool:
-    """As run_matrix: a session is finished once its manifest has a final status (not running, not interrupted)."""
-    from evals.run_matrix import _manifest_status
-    manifest = run_dir / "manifest.json"
-    status = _manifest_status(manifest) if manifest.exists() else None
-    return not (status is None or status == "running" or str(status).startswith("interrupted"))
-
-
 def sp_custom_id(job: dict) -> str:
     return make_custom_id("sp", job["case_id"], key=f"sp|{job['case_id']}")
 
@@ -164,7 +156,7 @@ def prepare(job: dict) -> Prepared:
 
 def apply(job: dict, item: dict, outcome: Outcome, batch: dict, state_dir: Path, ledger: Path) -> dict:
     """Run the case's session on the batch reply (a subprocess, as run_matrix runs sessions)."""
-    from evals.run_matrix import _record
+    from evals.run_matrix import _record, session_done
     from evals.single_prompt import batch_request
     if outcome.kind != "succeeded":
         return {"status": outcome.kind, "error": outcome.error}
@@ -190,7 +182,7 @@ def apply(job: dict, item: dict, outcome: Outcome, batch: dict, state_dir: Path,
                 "error": f"the session wrote no manifest (see {log})"}
     data = json.loads(manifest.read_text())
     _record(ledger, job["case_id"], "app", data.get("cost_usd") or 0)
-    if not _session_done(run_dir):
+    if not session_done(run_dir):
         return {"status": "session_error", "error": f"session status {data.get('status')} (see {log})",
                 "cost_usd": data.get("cost_usd")}
     return {"status": "ok", "cost_usd": data.get("cost_usd"), "cost_list_usd": data.get("cost_list_usd"),
@@ -247,7 +239,8 @@ def sp_batch_round(cases: list[dict], opts, client=None, sleep=None, log=print) 
     ledger = Path(opts.out) / "ledger.tsv"
     store = BatchStore(state_dir, STATE_KIND)
     jobs = sp_jobs(cases, opts)
-    job = Job(custom_id=sp_custom_id, is_done=lambda j: _session_done(Path(j["run_dir"])), prepare=prepare,
+    from evals.run_matrix import session_done
+    job = Job(custom_id=sp_custom_id, is_done=lambda j: session_done(Path(j["run_dir"])), prepare=prepare,
               apply=lambda j, item, outcome, batch: apply(j, item, outcome, batch, state_dir, ledger),
               allow=cap_check(store, opts, ledger),
               discard=lambda j, outcome: discard(j, outcome, ledger))

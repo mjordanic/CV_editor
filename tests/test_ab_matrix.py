@@ -55,10 +55,6 @@ def test_stage12_resolves_and_has_the_plans_sessions():
     assert {(c["persona"], c["input_set"]) for c in first} == {
         (f"p{i:02d}", s) for i in range(1, 14) for s in ("all4", "cv_only", "no_cv")}
     assert Counter(c["case"] for c in first) == dict.fromkeys({c["case"] for c in first}, 3)
-    # the same matched cases (and ads) as the existing single-prompt matrix
-    from evals.cases import load_matrix
-    sp = {(c["persona"], c["ad"], c["input_set"]) for c in load_matrix(REPO / "evals" / "matrix_single_prompt.json")}
-    assert {(c["persona"], c["ad"], c["input_set"]) for c in first} == sp
 
 
 def test_stage12_pilot_check_repeat_and_opus_cases_follow_the_plan():
@@ -220,7 +216,7 @@ def _fake_subprocess(monkeypatch, commands, session_cost=0.03, eval_cost=0.15, e
             run_dir.mkdir(parents=True)
             (run_dir / "manifest.json").write_text(json.dumps({"status": "completed", "cost_usd": session_cost}))
         elif code == 0:
-            name = cmd[cmd.index("--name") + 1]
+            name = cmd[cmd.index("--eval-name" if "--eval-name" in cmd else "--name") + 1]
             folder = Path(cmd[3]) / "evaluation" / name
             folder.mkdir(parents=True)
             target = "truth_check.json" if module == "evals.score_truth" else "evaluation.json"
@@ -247,7 +243,8 @@ def test_a_pilot_first_run_gets_its_named_gradings_and_the_trap_check(tmp_path, 
     opts = _opts(tmp_path, cases)
     assert opts.total_cap == 57.0 and opts.stage_caps == {"pilot": 20.0, "core": 38.0}
     assert run_matrix.run_one(case, opts) == (case["id"], "ok")
-    graded = [(c[2], c[c.index("--name") + 1], c[c.index("--model") + 1]) for c in commands[1:]]
+    graded = [(c[2], c[c.index("--eval-name" if "--eval-name" in c else "--name") + 1],
+               c[c.index("--grader-model") + 1]) for c in commands[1:]]
     assert graded == [("evals.evaluate", "eval1", SONNET), ("evals.evaluate", "eval2", SONNET),
                       ("evals.evaluate", "opus1", OPUS), ("evals.evaluate", "haiku1", HAIKU),
                       ("evals.evaluate", "haiku2", HAIKU), ("evals.score_truth", "truth1", HAIKU)]
@@ -319,7 +316,7 @@ def test_a_staged_matrix_needs_a_stage_and_refuses_the_flat_options(tmp_path):
     with pytest.raises(SystemExit, match="unknown stage"):
         run_matrix.main(base + ["--stage", "stage3", "--estimate"])
     with pytest.raises(SystemExit, match="no stages"):
-        run_matrix.main(["--matrix", str(REPO / "evals" / "matrix_single_prompt.json"), "--out", "x", "--stage", "pilot"])
+        run_matrix.main(["--matrix", str(REPO / "evals" / "matrix.json"), "--out", "x", "--stage", "pilot"])
     assert not (tmp_path / "runs").exists()
 
 
@@ -347,7 +344,8 @@ def test_dry_run_prints_each_named_grading(tmp_path, capsys):
                             "--only", case["id"]]) == 0
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 7 and "--label arm=" in lines[0] and "--label app_commit=" in lines[0]
-    assert lines[3].endswith(f"--name opus1 --model {OPUS}") and lines[6].endswith(f"--name truth1 --model {HAIKU}")
+    assert lines[3].endswith(f"--eval-name opus1 --grader-model {OPUS}")
+    assert lines[6].endswith(f"--name truth1 --grader-model {HAIKU}")
     assert not list(tmp_path.iterdir())
 
 

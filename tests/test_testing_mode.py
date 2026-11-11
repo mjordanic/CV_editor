@@ -364,6 +364,23 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     assert models["grounding"] == "openai:fact-check-model"
     assert models["cv_writer"] == models["cover_letter_writer"] == models["router"] == "openai:writer-model"
     assert config["env_overrides"]["CV_EDITOR_CRITIC_MODEL"] == "openai:critic-model"
+    assert {"pdflatex", "pdfplumber", "pypdfium2", "anthropic"} <= set(config["packages"])
+    # the fake models cannot summarise the search results: the session completes, and its manifest says so
+    assert manifest["status"] == "completed" and manifest["degraded"] == ["company_research_failed"]
+
+
+def test_a_completed_session_that_did_without_research_or_a_fact_check_says_so():
+    from agents.search import NO_COMPANY_INFO, NO_COMPANY_NAME
+    from evals.run_case import degradations
+    checked = {"grounding_checked": True}
+    assert degradations({"company_info": {"company_description": "A bank."}, "cv_history": [checked]}) == []
+    assert degradations({"company_info": {"company_description": NO_COMPANY_NAME}}) == []  # the ad names none
+    assert degradations({"company_info": {"company_description": NO_COMPANY_INFO}}) == ["company_research_failed"]
+    assert degradations({"company_info": {"company_description": "Could not identify the company in the search "
+                                                                 "results."}}) == ["company_research_failed"]
+    letters = [checked, {"grounding_checked": False, "repeats_cv": True}]  # a CV-repeat draft is never checked
+    assert degradations({"cv_history": [checked], "cover_letter_history": letters}) == []
+    assert degradations({"cv_history": [{"grounding_checked": False}]}) == ["grounding_unchecked"]
 
 
 # --- work arrangement, culture and preference -------------------------------------------------
