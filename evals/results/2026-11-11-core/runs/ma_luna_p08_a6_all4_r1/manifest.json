@@ -1,0 +1,122 @@
+{
+  "run_dir": "runs/ma_luna_p08_a6_all4_r1",
+  "labels": {
+    "persona": "p08",
+    "ad": "a6",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p08_a6_all4",
+    "script": "default",
+    "method": "multi_agent",
+    "arm": "A",
+    "stage": "core",
+    "writer_model": "gpt-6-luna",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p08-oskar-messy-fullstack/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 5693
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p08-oskar-messy-fullstack/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1717
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p08-oskar-messy-fullstack/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 905
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p08-oskar-messy-fullstack/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 539
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a6-fullstack-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a6-fullstack-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-11T21:21:30+00:00",
+  "status": "completed",
+  "minutes": 5.4,
+  "cv_drafts": 3,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Hybrid in Graz, Austria, or fully remote within Austria, Germany, Croatia, or Slovenia.",
+    "culture_signals": [
+      "Friendly, low-ego team that cares about the people who use the software",
+      "Committed to a diverse and inclusive workplace; welcomes career changers and people returning to work",
+      "Patients first",
+      "Privacy by default",
+      "Simple beats clever",
+      "Pair programming on request",
+      "Weekly demos with real clinic staff"
+    ],
+    "notes": "The ad permits either hybrid work in Graz or fully remote work in the listed countries; the arrangement field is set to hybrid because it is one of the stated options. Company pages mention employees in Graz and Ljubljana plus remote colleagues, and a news item describes a Ljubljana engineering hub (though it calls Ljubljana part of Croatia). For this role, the ad’s work-location terms take precedence."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-11T21:26:54+00:00",
+  "cost_usd": 0.048406
+}

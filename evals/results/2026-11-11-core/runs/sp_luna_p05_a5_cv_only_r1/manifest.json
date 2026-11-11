@@ -1,0 +1,90 @@
+{
+  "run_dir": "runs/sp_luna_p05_a5_cv_only_r1",
+  "labels": {
+    "persona": "p05",
+    "ad": "a5",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "cv_only",
+    "case": "p05_a5_cv_only",
+    "script": "default",
+    "method": "single_prompt",
+    "arm": "C",
+    "stage": "core",
+    "writer_model": "gpt-6-luna",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cv"
+  ],
+  "inputs_omitted": [
+    "portfolio",
+    "cover_letter",
+    "notes"
+  ],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p05-rafael-overqualified-principal/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2715
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a5-backend-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a5-backend-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": null,
+  "model_override": "openai:gpt-6-luna",
+  "work_preference": null,
+  "started_at": "2026-11-11T21:42:09+00:00",
+  "method": "single_prompt",
+  "model": "openai:gpt-6-luna",
+  "status": "completed",
+  "failure": null,
+  "finish_reason": "stop",
+  "minutes": 0.61,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 1,
+  "calls_by_node": {
+    "single_prompt": 1
+  },
+  "pdfs": {
+    "cv": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cv.pdf"
+    },
+    "cover_letter": {
+      "source": "fallback_layout",
+      "compiled": false,
+      "compile_error": "x/latex/hycolor/hyc\nolor.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/hyperref/na\nmeref.sty\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/refcount/re\nfcount.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/gettitles\ntring/gettitlestring.sty\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/kvoptions/k\nvoptions.sty)))\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/etoolbox/et\noolbox.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/stringenc\n/stringenc.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/hyperref/pd\n1enc.def)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/intcalc/i\nntcalc.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/hyperref/pu\nenc.def)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/url/url.sty\n)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/bitset/bi\ntset.sty\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/bigintcal\nc/bigintcalc.sty))\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/atbegs\nhi-ltx.sty))\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/hyperref/hp\ndftex.def\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/atvery\nend-ltx.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/rerunfilech\neck/rerunfilecheck.sty\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/generic/uniquecou\nnter/uniquecounter.sty)))\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/parskip/par\nskip.sty)\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/l3backend/l\n3backend-pdftex.def)\nNo file final_cover_letter.aux.\n*geometry* driver: auto-detecting\n*geometry* detected driver: pdftex\n\n(/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/context/base/mkii\n/supp-pdf.mkii\n[Loading MPS to PDF converter (version 2006.09.02).]\n)\n! Misplaced alignment tab character &.\nl.28 ... my experience could support the Routing &\n                                                   Tracking team. Thank you ...\n\n\n[1{/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/map/pdftex/up\ndmap/pdftex.map}{/opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts\n/enc/dvips/lm/lm-ec.enc}] (./final_cover_letter.aux)\n\nPackage rerunfilecheck Warning: File `final_cover_letter.out' has changed.\n(rerunfilecheck)                Rerun to get outlines right\n(rerunfilecheck)                or use package `bookmark'.\n\n )\n(see the transcript file for additional information)</opt/homebrew/Cellar/texli\nve/20250308_2/share/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></opt/homebrew/\nCellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/lm/lmr10.pfb>\nOutput written on final_cover_letter.pdf (1 page, 57747 bytes).\nTranscript written on final_cover_letter.log.\n",
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cover_letter.pdf"
+    }
+  },
+  "fallback_pdfs": [
+    "cover_letter"
+  ],
+  "compile_failures": [
+    "cover_letter"
+  ],
+  "finished_at": "2026-11-11T21:42:46+00:00",
+  "cost_usd": 0.002684,
+  "cost_list_usd": 0.002684
+}

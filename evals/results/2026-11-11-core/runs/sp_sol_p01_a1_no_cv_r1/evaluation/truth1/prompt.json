@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "ad221f6e89fa8659f69c3c3da8d55c891dce02b286251738a5eaec0970bdc2e4",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Databricks (only a free course)\nG2: Scala\nG3: Flink\nG4: Kubernetes (read-only kubectl only)\nG5: GCP/BigQuery\nG6: Azure\n\n# TRAPS (mistakes a writer could make)\nT1: Adding Databricks, Scala, Flink or Kubernetes because data engineer ads often ask for them\nT2: Inflating 'mentors two engineers' to 'led a team'\nT3: Claiming GCP/BigQuery or Azure experience\nT4: Inventing the AWS certification when notes are omitted, or dropping it when notes are given\nT5: Reusing the old cover letter's 'two years at Adria Retail' framing as current\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nLena Varga-Holm\nSenior Data Engineer\nProfessional Summary\nSenior Data Engineer with experience designing, building and operating production data platforms\nacross logistics and payments. Owns ingestion and orchestration using Airflow, Snowflake, dbt and\nKafka, with Python, SQL and AWS experience. Delivered streaming pipelines processing around 30\nmillion events per day, faster warehouse builds and substantial cost reductions. Combines platform\nownership and on-call operations with mentoring, data quality engineering and open-source\ncontributions.\nTechnical Skills\n• Languages: Python, SQL, PySpark\n• Orchestration and transformation: Airflow, dbt, incremental models\n• Cloud and warehouses: AWS, EMR, S3, Glue Data Catalog, MSK, Snowflake, Redshift\n• Streaming and ingestion: Kafka, Kafka Connect, Debezium, PostgreSQL, Snowpipe Streaming\n• Engineering practices: Terraform, Git, CI/CD, GitHub Actions, pytest\n• Data quality and modelling: Great Expectations, dbt tests and documentation, warehouse design,\nincremental materialized views\nProfessional Experience\nSenior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present\n• Own ingestion and orchestration for the data platform using Airflow, Snowflake, dbt and Kafka;\nparticipate in a one-week-in-six on-call rotation.\n• Designed and built a shipment event streaming pipeline processing around 30 million events per\nday with end-to-end p95 latency under two minutes, using partner webhooks, Kafka, Kafka\nConnect and Snowpipe Streaming on AWS MSK.\n• Added a dead-letter topic and replay tooling to reprocess failed events without data loss.\n• Migrated approximately 300 stored procedures into dbt models with tests and documentation;\nintroduced incremental models and slim CI using state:modified in GitHub Actions.\n• Cut nightly warehouse build time from 5 hours 10 minutes to 1 hour 35 minutes and made lineage\nvisible to analysts.\n• Replaced hourly full-table extracts from the orders database with Debezium CDC into Kafka,\nreducing replica CPU during loads from approximately 70% to 25% in 2024.\n• Reduced monthly Snowflake costs by approximately 37% in 2024 through warehouse sizing,\nauto-suspend and removal of unused tables.\n• Mentor two mid-level engineers and run data platform office hours.\nData Engineer | Kovalent Pay | 2019–2022\n• Developed PySpark batch jobs on AWS EMR to reconcile bank settlement files against internal\nledgers, using S3, Glue Data Catalog, Redshift and Great Expectations.\n• Reduced finance’s manual month-end reconciliation work from approximately three days to four\nhours.\n• Worked on Redshift warehouse design and data quality with Great Expectations.\nBI Developer / ETL Responsibilities | Adria Retail Group | Earlier experience\n• Started as a BI developer and gradually took over most ETL work during two years at the\ncompany.\n• Migrated 60 nightly SSIS packages to Python scripts, making loads easier to debug and change\nand reducing dependence on a single SSIS specialist.\nEducation\nMSc in Computer Science | Northgate Technical University\nThesis: Incremental materialized views\nCertification\nAWS Certified Data Engineer – Associate | Earned May 2024\nOpen Source and Community\n• Contributed two merged pull requests to an Airflow provider package in 2023, fixing an API\npagination bug and adding tests using Python and pytest.\n• Presented “Data contracts without the hype” at a regional data meetup in 2024.\n• Teach beginner SQL at a local women-in-tech meetup, approximately four evenings per year since\n2021.\n\n# OUTPUT 2: COVER LETTER\nLena Varga-Holm\nApplication: Senior Data Engineer – Data Platform\nHalden Pay\nDear Hiring Team,\nI am applying for the Senior Data Engineer – Data Platform role at Halden Pay. Your focus\non reusable frameworks rather than one-off pipelines matches my experience owning ingestion\nand orchestration at Lukovac Freight Hub. I bring production platform experience with\nAirflow, dbt, Python and SQL, alongside payments experience from Kovalent Pay, where I\nbuilt reconciliation jobs matching bank settlement files against internal ledgers.\nAt Lukovac, I designed and built a shipment event pipeline processing around 30 million\nevents per day with p95 latency under two minutes. I added a dead-letter topic and replay\ntooling so failed events could be reprocessed without data loss. I also migrated approximately\n300 stored procedures into tested, documented dbt models, introduced incremental models\nand slim CI in GitHub Actions, and cut nightly warehouse builds from 5 hours 10 minutes to\n1 hour 35 minutes. Alongside delivery, I participate in the platform’s on-call rotation and\nmentor two mid-level engineers. These responsibilities connect platform design with reliable\nday-to-day operation and support for colleagues.\nMy cloud experience is on AWS, including EMR, S3 and MSK, alongside Snowflake and\nRedshift; I earned the AWS Certified Data Engineer – Associate certification in May 2024. At\nKovalent Pay, PySpark reconciliation jobs reduced finance’s manual month-end work from\napproximately three days to four hours, with Great Expectations supporting data quality. My\nopen-source work includes two merged pull requests to an Airflow provider package, fixing a\npagination bug and adding tests. That experience is directly relevant to your emphasis on\nopen-source tools and engineering practices that deliver a clear benefit.\nI would bring Halden Pay a combination of platform ownership, measurable operational\nimprovements and practical payments data experience. I would welcome the opportunity to\ndiscuss how my work on ingestion, transformation and data quality could support the shared\nplatform your analysts, data scientists and product teams rely on.\nKind regards,\nLena Varga-Holm\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

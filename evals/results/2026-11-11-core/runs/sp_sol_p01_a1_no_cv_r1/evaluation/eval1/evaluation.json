@@ -1,0 +1,559 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9157,
+      "output_tokens": 8111,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13428
+    },
+    "cost_usd": 0.050383,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "392643860ab097aa59817ee8447a894a39dc4732a62c4eefa9625e27d6f0317f",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p01_a1_no_cv_r1-499747b83b",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p01_a1_no_cv_r1-499747b83b",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.100766
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Senior Data Engineer at Lukovac Freight Hub d.o.o. 2022–Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Senior Data Engineer at Lukovac Freight Hub d.o.o. (2022-Present)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "around 30 million events per day, p95 under two minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Around 30 million events per day, end-to-end latency under 2 minutes at p95.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced monthly Snowflake costs by approximately 37%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "from ~38k/month to ~24k/month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "one-week-in-six on-call rotation",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "on-call rotation for data platform, 1 week in 6",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "AWS Certified Data Engineer – Associate, May 2024",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Engineer Kovalent Pay 2019–2022; 3 days to 4 hours",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "from ~3 days to ~4 hours per month-end",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Adria Retail Group BI developer; migrated 60 SSIS packages to Python",
+        "kind": "employer",
+        "verdict": "partly_supported",
+        "source": "cover_letter",
+        "evidence_quote": "moving 60 nightly SSIS packages to Python scripts",
+        "note": "Taken from the earlier letter, which says 'for the past two years' at Adria, written for a Kovalent Pay application. The timeline conflicts with Kovalent 2019-2022, and the CV gives no dates, so the entry is a stale carry-over."
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Computer Science, Northgate Technical University",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "MSc in Computer Science from Northgate Technical University",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Two merged PRs, talk, SQL teaching",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "gave a talk \"Data contracts without the hype\"",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Terraform, Git, CI/CD, pytest",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Technologies: Kafka, Kafka Connect, Snowflake, Python, Terraform, AWS MSK.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "across logistics and payments ... operating production data platforms",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Owns ingestion and orchestration for the data platform",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Mentor two mid-level engineers; on-call rotation",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Mentors two mid-level engineers",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "payments experience from Kovalent Pay, built reconciliation jobs",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "PySpark batch jobs on EMR matching bank settlement files against internal ledgers",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "production platform experience with Airflow, dbt, Python and SQL",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Technologies: dbt, Snowflake, SQL, GitHub Actions.",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Google Cloud not used; AWS is the comparable cloud, and the letter could state that explicitly",
+        "source": "portfolio",
+        "source_quote": "AWS MSK",
+        "relevance": "medium",
+        "why_it_matters": "The ad asks for GCP or a comparable cloud; the transferability is not made explicit."
+      },
+      {
+        "fact": "Read-only kubectl only; containers/Docker not shown",
+        "source": "notes",
+        "source_quote": "k8s: only read-only kubectl at lukovac",
+        "relevance": "low",
+        "why_it_matters": "The ad lists containers; honest minimal mention could help, but it is a weak point."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Production data platforms/cloud warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Own ingestion and orchestration for the data platform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Advanced Python and SQL incl. query optimisation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Languages: Python, SQL, PySpark",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Dimensional data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "warehouse design",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "AWS, EMR, S3, Glue Data Catalog, MSK, Snowflake, Redshift",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Airflow, dbt",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Airflow, dbt, incremental models",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker, CI/CD, Git",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Terraform, Git, CI/CD, GitHub Actions, pytest",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Open-source curiosity",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Contributed two merged pull requests to an Airflow provider package",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Data quality/governance standards",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Great Expectations, dbt tests and documentation",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Good English; Portuguese plus",
+          "priority": "nice_to_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        }
+      ],
+      "gap_handling_summary": "Gaps (GCP, Docker/k8s) are not faked; AWS is shown as the comparable cloud without overstatement. Nothing is claimed about Databricks, Scala or Flink.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 7,
+      "has_contact_details": false,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": false,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No contact details (user asked to leave them out)",
+        "Adria entry has 'Earlier experience' instead of dates and looks stale",
+        "Heading 'BI Developer / ETL Responsibilities' is awkward"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Technical Skills",
+        "Professional Experience",
+        "Education",
+        "Certification",
+        "Open Source and Community"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Git",
+        "CI/CD",
+        "data platform",
+        "data modelling",
+        "cloud data warehouse",
+        "open-source",
+        "data quality",
+        "Docker",
+        "BigQuery"
+      ],
+      "covered_in_searchable_wording": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Git",
+        "CI/CD",
+        "data platform",
+        "open-source",
+        "data quality"
+      ],
+      "missed_but_candidate_has": [
+        "dimensional modelling wording",
+        "query optimisation"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, ordered text with standard headings and most real requirements in searchable wording. Modelling and optimisation are only weakly worded."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company specifics are limited to the ad (reusable frameworks, open-source)",
+        "Mostly repeats CV bullets",
+        "No mention of GCP vs AWS transferability or hybrid Lisbon"
+      ],
+      "strengths": [
+        "Opens by tying to the ad's reusable-frameworks focus",
+        "Accurate metrics",
+        "Fits one page, professional tone"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 1 of the CV ends with a large empty area after the first job, because the Kovalent entry moved to page 2"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [
+        "Plain but clean layout"
+      ],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "'These responsibilities connect platform design with reliable day-to-day operation and support for colleagues' is filler"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "AWS certification May 2024",
+        "on-call 1 in 6",
+        "Snowflake cost reduction",
+        "talk",
+        "SQL teaching"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left out"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [
+        "The earlier cover letter's Adria Retail experience is reused as a CV entry without dates; it is outdated context"
+      ],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No contact details in the CV or letter",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Strong, accurate CV and letter that use portfolio and notes well, including the certification, cost saving and on-call. The Snowflake cost percentage is correctly derived. The main weakness is the Adria Retail entry lifted from an earlier letter, undated and conflicting with the timeline. The letter is generic in company-specific content and does not address GCP vs AWS. Layout is clean, with a half-empty first page."
+  },
+  "counts": {
+    "claims": 14,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 8,
+    "must_haves_shown": 5,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3511,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2189,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 56.7,
+          "top": 51.0,
+          "bottom": 231.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 52.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.6,
+          "top": 71.4,
+          "bottom": 308.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 63.4,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.050383,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

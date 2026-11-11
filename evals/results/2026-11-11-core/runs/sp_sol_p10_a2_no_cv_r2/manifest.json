@@ -1,0 +1,96 @@
+{
+  "run_dir": "runs/sp_sol_p10_a2_no_cv_r2",
+  "labels": {
+    "persona": "p10",
+    "ad": "a2",
+    "model": "openai:gpt-6.1-sol",
+    "rep": "2",
+    "input_set": "no_cv",
+    "case": "p10_a2_no_cv",
+    "script": "default",
+    "method": "single_prompt",
+    "arm": "E",
+    "stage": "core",
+    "writer_model": "gpt-6.1-sol",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1594
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 734
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 659
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a2-ml-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a2-ml-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": null,
+  "model_override": "openai:gpt-6.1-sol",
+  "work_preference": null,
+  "started_at": "2026-11-11T22:02:50+00:00",
+  "method": "single_prompt",
+  "model": "openai:gpt-6.1-sol",
+  "status": "completed",
+  "failure": null,
+  "finish_reason": "stop",
+  "minutes": 0.81,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 1,
+  "calls_by_node": {
+    "single_prompt": 1
+  },
+  "pdfs": {
+    "cv": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cv.pdf"
+    },
+    "cover_letter": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cover_letter.pdf"
+    }
+  },
+  "fallback_pdfs": [],
+  "compile_failures": [],
+  "finished_at": "2026-11-11T22:03:39+00:00",
+  "cost_usd": 0.034344,
+  "cost_list_usd": 0.034344
+}

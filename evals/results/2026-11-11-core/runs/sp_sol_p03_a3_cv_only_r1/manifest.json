@@ -1,0 +1,86 @@
+{
+  "run_dir": "runs/sp_sol_p03_a3_cv_only_r1",
+  "labels": {
+    "persona": "p03",
+    "ad": "a3",
+    "model": "openai:gpt-6.1-sol",
+    "rep": "1",
+    "input_set": "cv_only",
+    "case": "p03_a3_cv_only",
+    "script": "default",
+    "method": "single_prompt",
+    "arm": "E",
+    "stage": "core",
+    "writer_model": "gpt-6.1-sol",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cv"
+  ],
+  "inputs_omitted": [
+    "portfolio",
+    "cover_letter",
+    "notes"
+  ],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": null,
+  "model_override": "openai:gpt-6.1-sol",
+  "work_preference": null,
+  "started_at": "2026-11-11T21:27:32+00:00",
+  "method": "single_prompt",
+  "model": "openai:gpt-6.1-sol",
+  "status": "completed",
+  "failure": null,
+  "finish_reason": "stop",
+  "minutes": 0.64,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 1,
+  "calls_by_node": {
+    "single_prompt": 1
+  },
+  "pdfs": {
+    "cv": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cv.pdf"
+    },
+    "cover_letter": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cover_letter.pdf"
+    }
+  },
+  "fallback_pdfs": [],
+  "compile_failures": [],
+  "finished_at": "2026-11-11T21:28:10+00:00",
+  "cost_usd": 0.039684,
+  "cost_list_usd": 0.039684
+}

@@ -1,0 +1,81 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{90,98,104}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.35em}
+\setlist[itemize]{leftmargin=1.3em,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+
+\begin{document}
+
+{\centering
+{\Huge\bfseries\color{primarycolor} Tiago Ferrão-Lindqvist}\par
+{\large\color{accentcolor} Data Engineering | Test Data, Python \& BI}\par
+}
+
+\section*{PROFESSIONAL SUMMARY}
+Test \& Validation Engineer with experience building and supporting Python-based test-data processing and reporting tools, SQL Server staging workflows, and Power BI dashboards. Processes approximately 2 GB of rig data per week across six rigs; the processing tool is used by four test engineers, and the dashboard by about 15 engineers in validation and design. Brings a mechanical testing and root-cause analysis background, with ongoing data engineering study.
+
+\section*{TECHNICAL SKILLS}
+Programming and data processing: Python, pandas, NumPy, SQL, MATLAB, Simulink\\
+Databases and reporting: SQL Server, SQLite, Power BI\\
+Data acquisition and visualisation: TDMS, CSV, npTDMS, Matplotlib\\
+Tools: Windows Task Scheduler, Flask, Docker Compose, Git\\
+Testing: Durability and vibration testing, test-data processing, test reporting, root-cause analysis
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Test \& Validation Engineer | Corvane Automotive Components | 2019–Present}
+\begin{itemize}
+\item Conduct durability and vibration testing and contribute to root-cause analysis.
+\item Develop test-data tooling and reporting workflows for rig data.
+\item Trained three apprentices in rig safety and test setup (2022–2024).
+\end{itemize}
+
+\textbf{Mechanical Design Engineer | Halvik Pumps | 2014–2019}
+\begin{itemize}
+\item Designed pump casings and impellers and ran structural FEA.
+\item Supported performance test-bench activities.
+\end{itemize}
+
+\section*{SELECTED PROJECTS}
+\textbf{Rig Data Processing and Reporting Tool | Corvane Automotive Components | 2021–Present}
+\begin{itemize}
+\item Developed Python scripts to parse TDMS and CSV output from six rigs, processing about 2 GB of data per week.
+\item Flagged channels outside test specifications and generated report figures using pandas, NumPy, Matplotlib, and npTDMS.
+\item Automated nightly runs with Windows Task Scheduler on a lab PC and wrote summary results to an IT-created staging table in SQL Server.
+\item Packaged the tool for internal use; four other test engineers use it for their tests.
+\end{itemize}
+
+\textbf{Test Results Dashboard | Corvane Automotive Components | 2023}
+\begin{itemize}
+\item Built a Power BI dashboard on the staging table to show pass/fail trends and cycles to failure by product generation.
+\item Used by about 15 engineers in validation and design.
+\end{itemize}
+
+\textbf{Adjuster Drive Load-Profile Model | Corvane Automotive Components | 2020–Present}
+\begin{itemize}
+\item Developed a MATLAB/Simulink model of the seat-adjuster drive, including its motor, gearbox, and rail friction, to select rig load profiles matching customer duty cycles.
+\end{itemize}
+
+\textbf{Bike-Sharing Trips API | Personal Learning Project | 2025}
+\begin{itemize}
+\item Built a small Flask API with three read-only endpoints over a public bike-sharing dataset loaded into SQLite; it runs locally on a laptop.
+\item Followed a tutorial to run the project with Docker Compose.
+\end{itemize}
+
+\section*{PROFESSIONAL DEVELOPMENT}
+Online Data Engineering Course | In progress; six of nine modules completed. No certificate.
+
+\end{document}

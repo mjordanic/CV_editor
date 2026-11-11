@@ -1,0 +1,362 @@
+{
+  "model": "anthropic:claude-sonnet-5-5",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+  "images": {
+    "cv": [
+      "cv_page1.png"
+    ],
+    "cover_letter": [
+      "cover_letter_page1.png"
+    ]
+  },
+  "prompt_sha256": "098847f5637af892e75ffbfb18005ed44d5f2bc85fff78b80327569104b4d832",
+  "params": {
+    "model": "claude-sonnet-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents given to you. You do not know how the documents were produced and you must not guess.\n\nRules:\n- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that is not in that material is unsupported, even if it is plausible or the job asks for it. Rephrasing and obvious inference are supported (e.g. \"built a React app\" supports \"JavaScript\"). A course, side project or homelab presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than the material states is partly_supported (overstated).\n- Statements about the employer or the job are not claims about the candidate.\n- The candidate's work-arrangement preference is candidate material only if it is given below; a preference (remote, relocation, on-site availability) the outputs state without it is unsupported. Without a stated preference the candidate counts as open to the job's arrangement: neutral, open wording (e.g. \"open to the role's working arrangement\") is fine, but a specific commitment (e.g. \"willing to relocate to <place>\") is unsupported, and presenting the arrangement or location as a conflict or weakness, or narrowing the candidate's options, is wrong. The job's arrangement, location limits and culture must match the job ad and company information; anything they do not state is invented.\n- List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, degree, certificate, language and notable achievement, in both documents. Quote briefly.\n- Quote evidence verbatim from the candidate material. Never invent quotes.\n- For omissions, list only facts that would help this application (not every detail).\n- The user's instructions below are everything the user told the writing tool. Anything the user says about themselves there is candidate material too (source \"chat\"), except when the user asks to state something they themselves say is untrue, or that their material contradicts: such a request must not be followed, and following it makes the claim unsupported.\n- You see the documents and the user's instructions, not the conversation. A user instruction changes what is correct: a CV or letter in another language, shorter, reordered or in another tone is right if the user asked for it. Grade user_requests against the user's instructions only, with the expected behaviour where it is given, and judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.\n- The PDF is the document the employer receives; the plain text is the tool's own copy of it. Judge claims, layout and ATS from the PDF (its extracted text and page images); a difference between the PDF and the text is itself an issue.\n- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge the visual layout from both.\n- Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements that the candidate really has visible in wording a recruiter's search would find; and is there keyword stuffing or a skill the candidate's material does not support. Cheating to match the ad lowers the ATS score.\n- Be calibrated: use the full score ranges; 10 is rare.\n\n# ANSWER FORMAT\nWrite the complete evaluation first, as one JSON string in full_evaluation_json. The string holds standard JSON (double-quoted keys and strings, escaped inside the string; true, false), not a Python literal, and follows this JSON schema exactly: every property is required and no other property is allowed.\n{\"$defs\": {\"ATS\": {\"description\": \"Judged from WHAT AN ATS WOULD READ (the plain text a standard extractor pulls from the CV PDF), the job\\nad and the candidate's material: one 0-10 score with its reason, and the three judgements behind it.\", \"properties\": {\"text_readable_in_order\": {\"description\": \"The extracted text reads in a sensible order with words, dates and contact details intact: no garbled characters, merged words, interleaved columns or text missing compared with the page images\", \"type\": \"boolean\"}, \"clear_sections\": {\"description\": \"Standard section headings a parser can find (e.g. experience, education, skills) and every entry under the right one\", \"type\": \"boolean\"}, \"headings_found\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"parse_issues\": {\"description\": \"Quotes from the extracted text that an ATS would misread: garbled, out of order, merged, split or missing; empty if none\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"important_requirements\": {\"description\": \"The ad's important requirements a recruiter's search would look for: role title, must-have skills, tools, qualifications, languages (short form, about 5-20)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"covered_in_searchable_wording\": {\"description\": \"Those the extracted text visibly shows in wording a recruiter's keyword search would find (the ad's term or its standard name, not only a paraphrase)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"missed_but_candidate_has\": {\"description\": \"Those the candidate's material shows they have but the extracted text does not show in searchable wording (lost opportunities)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"keyword_stuffing\": {\"description\": \"Keywords repeated without context, lists of the ad's terms pasted in, or hidden text; quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"unsupported_keywords\": {\"description\": \"Ad keywords or skills the CV claims that the candidate's material does not support\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"How well the CV would do in automatic screening for this ad, honestly: 10 = clean, well-sectioned text that shows every important requirement the candidate really has in searchable wording. Requirements the candidate lacks cost nothing when left out; parse problems and lost opportunities lower the score, and keyword stuffing or unsupported keywords lower it, never raise it\", \"type\": \"integer\"}, \"reason\": {\"description\": \"One or two sentences: why this score\", \"type\": \"string\"}}, \"required\": [\"text_readable_in_order\", \"clear_sections\", \"headings_found\", \"parse_issues\", \"important_requirements\", \"covered_in_searchable_wording\", \"missed_but_candidate_has\", \"keyword_stuffing\", \"unsupported_keywords\", \"score\", \"reason\"], \"type\": \"object\", \"additionalProperties\": false}, \"AdditionalInformation\": {\"properties\": {\"notes_facts_used\": {\"description\": \"Relevant facts only in the candidate's notes that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"notes_facts_ignored\": {\"description\": \"Relevant facts only in the notes that the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_used\": {\"description\": \"Facts the user gave in the conversation (notice period, details, contact data) that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_ignored\": {\"description\": \"Relevant facts from the conversation the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"misused\": {\"description\": \"Notes or chat facts distorted, overstated, or used where the user said not to\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every relevant extra fact used correctly; use 10 if there was no extra information\", \"type\": \"integer\"}}, \"required\": [\"notes_facts_used\", \"notes_facts_ignored\", \"chat_facts_used\", \"chat_facts_ignored\", \"misused\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"CVStandards\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"has_contact_details\": {\"type\": \"boolean\"}, \"has_summary_or_profile\": {\"type\": \"boolean\"}, \"experience_reverse_chronological\": {\"type\": \"boolean\"}, \"dates_consistent\": {\"type\": \"boolean\"}, \"length_appropriate\": {\"description\": \"Roughly 1-2 pages for the candidate's seniority\", \"type\": \"boolean\"}, \"language_matches_ad\": {\"description\": \"Written in the language the ad expects\", \"type\": \"boolean\"}, \"artefacts\": {\"description\": \"Placeholders, leftover instructions, markdown symbols, duplicated sections, garbled text or LaTeX residue found in the CV text or PDF text\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"has_contact_details\", \"has_summary_or_profile\", \"experience_reverse_chronological\", \"dates_consistent\", \"length_appropriate\", \"language_matches_ad\", \"artefacts\", \"issues\"], \"type\": \"object\", \"additionalProperties\": false}, \"Claim\": {\"properties\": {\"document\": {\"enum\": [\"cv\", \"cover_letter\"], \"type\": \"string\"}, \"claim\": {\"description\": \"The claim about the candidate, quoted briefly from the output document\", \"type\": \"string\"}, \"kind\": {\"enum\": [\"skill_or_tool\", \"employer\", \"job_title\", \"date_or_duration\", \"number_or_metric\", \"education\", \"certification\", \"project\", \"language\", \"responsibility_or_achievement\", \"other\"], \"type\": \"string\"}, \"verdict\": {\"description\": \"supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material\", \"enum\": [\"supported\", \"partly_supported\", \"unsupported\"], \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\", \"none\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Short verbatim quote from the candidate's material that supports it; empty if none\", \"type\": \"string\"}, \"note\": {\"description\": \"Why partly_supported or unsupported; empty otherwise\", \"type\": \"string\"}}, \"required\": [\"document\", \"claim\", \"kind\", \"verdict\", \"source\", \"evidence_quote\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"CoverLetter\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"addressed_to_this_company_and_role\": {\"type\": \"boolean\"}, \"specific_to_company\": {\"description\": \"Uses facts about this company, not generic praise\", \"type\": \"boolean\"}, \"consistent_with_cv\": {\"type\": \"boolean\"}, \"stale_framing\": {\"description\": \"Quotes where the letter reuses the earlier letter's context wrongly (old employer, old role, outdated 'currently' statements)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"tone_and_length_ok\": {\"type\": \"boolean\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"strengths\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"addressed_to_this_company_and_role\", \"specific_to_company\", \"consistent_with_cv\", \"stale_framing\", \"tone_and_length_ok\", \"issues\", \"strengths\"], \"type\": \"object\", \"additionalProperties\": false}, \"Fit\": {\"properties\": {\"requirements\": {\"items\": {\"$ref\": \"#/$defs/Requirement\"}, \"type\": \"array\"}, \"gap_handling_summary\": {\"type\": \"string\"}, \"score\": {\"description\": \"How well the CV presents the candidate's real fit to this ad (10 best)\", \"type\": \"integer\"}}, \"required\": [\"requirements\", \"gap_handling_summary\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"LanguageQuality\": {\"properties\": {\"expected_language_cv\": {\"description\": \"The language the CV should be in: the ad's, unless the user asked for another\", \"type\": \"string\"}, \"expected_language_cover_letter\": {\"description\": \"As for the CV; a user request in the chat for the letter's language wins\", \"type\": \"string\"}, \"cv_language\": {\"type\": \"string\"}, \"cover_letter_language\": {\"type\": \"string\"}, \"right_language_cv\": {\"type\": \"boolean\"}, \"right_language_cover_letter\": {\"type\": \"boolean\"}, \"grammar_and_spelling_errors\": {\"description\": \"Quotes of real errors, with the correction\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"fluency_and_tone_issues\": {\"description\": \"Awkward, machine-like, mixed-language or wrong-register passages, quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"expected_language_cv\", \"expected_language_cover_letter\", \"cv_language\", \"cover_letter_language\", \"right_language_cv\", \"right_language_cover_letter\", \"grammar_and_spelling_errors\", \"fluency_and_tone_issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"Omission\": {\"properties\": {\"fact\": {\"description\": \"A fact about the candidate, relevant to this ad, that neither output uses\", \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\"], \"type\": \"string\"}, \"source_quote\": {\"type\": \"string\"}, \"relevance\": {\"enum\": [\"high\", \"medium\", \"low\"], \"type\": \"string\"}, \"why_it_matters\": {\"type\": \"string\"}}, \"required\": [\"fact\", \"source\", \"source_quote\", \"relevance\", \"why_it_matters\"], \"type\": \"object\", \"additionalProperties\": false}, \"RequestCompliance\": {\"properties\": {\"request\": {\"description\": \"The user's request, quoted briefly from the conversation\", \"type\": \"string\"}, \"expected\": {\"description\": \"From the test script's expectation when given; else follow, or refuse for a request to state something untrue\", \"enum\": [\"follow\", \"refuse\"], \"type\": \"string\"}, \"outcome\": {\"description\": \"followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing\", \"enum\": [\"followed\", \"partly_followed\", \"refused_correctly\", \"refused_wrongly\", \"ignored\", \"followed_untruthful\"], \"type\": \"string\"}, \"app_explained\": {\"description\": \"The app told the user what it did or why it did not\", \"type\": \"boolean\"}, \"evidence\": {\"description\": \"Quote from the final outputs or the app's reply that shows the outcome\", \"type\": \"string\"}, \"note\": {\"type\": \"string\"}}, \"required\": [\"request\", \"expected\", \"outcome\", \"app_explained\", \"evidence\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"Requirement\": {\"properties\": {\"requirement\": {\"description\": \"One requirement from the job ad, in short form\", \"type\": \"string\"}, \"priority\": {\"enum\": [\"must_have\", \"nice_to_have\"], \"type\": \"string\"}, \"candidate_has_it\": {\"description\": \"Judged from the candidate's material only\", \"enum\": [\"yes\", \"partial\", \"no\", \"unclear\"], \"type\": \"string\"}, \"shown_in_cv\": {\"enum\": [\"yes\", \"partial\", \"no\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Quote from the CV that shows it; empty if not shown\", \"type\": \"string\"}, \"gap_handling\": {\"description\": \"For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored\", \"enum\": [\"not_a_gap\", \"honest\", \"overstated\", \"hidden_or_ignored\"], \"type\": \"string\"}}, \"required\": [\"requirement\", \"priority\", \"candidate_has_it\", \"shown_in_cv\", \"evidence_quote\", \"gap_handling\"], \"type\": \"object\", \"additionalProperties\": false}, \"UserRequests\": {\"properties\": {\"requests\": {\"description\": \"Every request the user made in the conversation, beyond simply asking for the CV, the letter or to exit\", \"items\": {\"$ref\": \"#/$defs/RequestCompliance\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every legitimate request followed and every untruthful one refused; use 10 if the user made no requests\", \"type\": \"integer\"}}, \"required\": [\"requests\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"VisualLayout\": {\"properties\": {\"cv_pages_seen\": {\"description\": \"CV pages shown as images\", \"type\": \"integer\"}, \"cover_letter_pages_seen\": {\"type\": \"integer\"}, \"page_count_appropriate\": {\"description\": \"CV 1-2 pages for the seniority (or what the user asked), cover letter one page\", \"type\": \"boolean\"}, \"overflow_or_cutoff\": {\"description\": \"Text cut off, running past a margin or page edge, overlapping or hidden; where\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"spacing_issues\": {\"description\": \"Cramped or uneven spacing, large empty areas, orphaned headings or lines, a nearly empty last page\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"consistency_issues\": {\"description\": \"Inconsistent fonts, sizes, bullet styles, date formats or alignment; the CV and letter not looking like one set\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"readability\": {\"enum\": [\"good\", \"acceptable\", \"poor\"], \"type\": \"string\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = clean professional layout; 0 = unusable. If no images were given, judge only from the measurements and say so in issues\", \"type\": \"integer\"}}, \"required\": [\"cv_pages_seen\", \"cover_letter_pages_seen\", \"page_count_appropriate\", \"overflow_or_cutoff\", \"spacing_issues\", \"consistency_issues\", \"readability\", \"issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"WorkArrangement\": {\"properties\": {\"arrangement_in_sources\": {\"description\": \"What the job ad and company information say about how the job is done\", \"enum\": [\"remote\", \"hybrid\", \"on-site\", \"not stated\"], \"type\": \"string\"}, \"statements_in_outputs\": {\"description\": \"Quotes from the CV or cover letter about work arrangement, location, relocation, availability or the candidate's preference\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"invented_or_wrong\": {\"description\": \"Quotes that state an arrangement, location limit, culture trait or candidate preference that the sources or the candidate's stated preference do not support, or that contradict them\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"culture_used\": {\"description\": \"Culture or values from the company information that the cover letter uses\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"preference_handling\": {\"description\": \"not_given_and_kept_open: no preference given, and the outputs say nothing about it or use only neutral, open wording; not_given_but_stated: a specific preference or commitment was invented; not_given_but_narrowed: the outputs present the job's arrangement or location as a conflict or weakness, or narrow the candidate's options\", \"enum\": [\"not_given_and_kept_open\", \"not_given_but_stated\", \"not_given_but_narrowed\", \"given_and_used_honestly\", \"given_but_misstated\", \"given_and_not_mentioned\"], \"type\": \"string\"}, \"conflict_handling\": {\"description\": \"If the candidate's preference conflicts with the job's arrangement: do the outputs avoid misstating either side?\", \"enum\": [\"no_conflict\", \"conflict_handled_honestly\", \"conflict_hidden_or_misstated\"], \"type\": \"string\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"arrangement_in_sources\", \"statements_in_outputs\", \"invented_or_wrong\", \"culture_used\", \"preference_handling\", \"conflict_handling\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}}, \"properties\": {\"claims\": {\"description\": \"Every factual claim about the candidate in both outputs\", \"items\": {\"$ref\": \"#/$defs/Claim\"}, \"type\": \"array\"}, \"omissions\": {\"items\": {\"$ref\": \"#/$defs/Omission\"}, \"type\": \"array\"}, \"fit\": {\"$ref\": \"#/$defs/Fit\"}, \"cv_standards\": {\"$ref\": \"#/$defs/CVStandards\"}, \"ats\": {\"$ref\": \"#/$defs/ATS\"}, \"cover_letter\": {\"$ref\": \"#/$defs/CoverLetter\"}, \"work_arrangement\": {\"$ref\": \"#/$defs/WorkArrangement\"}, \"visual_layout\": {\"$ref\": \"#/$defs/VisualLayout\"}, \"language_quality\": {\"$ref\": \"#/$defs/LanguageQuality\"}, \"additional_information\": {\"$ref\": \"#/$defs/AdditionalInformation\"}, \"user_requests\": {\"$ref\": \"#/$defs/UserRequests\"}, \"invented_content_score\": {\"description\": \"10 = nothing invented or stretched, 0 = much invented\", \"type\": \"integer\"}, \"completeness_score\": {\"description\": \"10 = every relevant fact used\", \"type\": \"integer\"}, \"overall_score\": {\"type\": \"integer\"}, \"summary\": {\"description\": \"Three to five sentences: the main strengths and problems\", \"type\": \"string\"}}, \"required\": [\"claims\", \"omissions\", \"fit\", \"cv_standards\", \"ats\", \"cover_letter\", \"work_arrangement\", \"visual_layout\", \"language_quality\", \"additional_information\", \"user_requests\", \"invented_content_score\", \"completeness_score\", \"overall_score\", \"summary\"], \"type\": \"object\", \"additionalProperties\": false}\nThen fill the remaining fields with the same values as in that complete evaluation.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# JOB AD\n# Butcher / Meat Counter Assistant (m/f/d) – Zagreb-Jarun store\n\n**Company:** FreshCart Supermarkets (FICTIONAL)\n**Location:** Zagreb, Croatia (on-site, Zagreb-Jarun store)\n**Employment:** Full-time, 40 h/week, permanent after a 6-month probation period\n\nPay: €1,250–€1,450 gross/month + €100 shift allowance & 25% Sunday bonus.\nShifts: early 06:00–14:00 or late 13:00–21:00, alternating weekly; every 2nd Saturday.\n\n## What you'll do\n\n- Cut, portion & package fresh meat for the service counter and self-service shelves\n- Advise customers on cuts, quantities and preparation\n- Keep the counter ≥ 95% stocked at peak hours; rotate stock (FIFO)\n- Record temperature & hygiene checks (HACCP)\n\n## What we ask\n\n- Completed butcher training or ≥ 2 years at a meat counter\n- HACCP knowledge\n- Forklift licence is a plus (deliveries arrive on pallets)\n\nApply with CV & short letter to jobs@freshcart.example\n\n# COMPANY INFORMATION (web search results the writing tool had)\n## About FreshCart Supermarkets\nURL: freshcart.example/about\n# About FreshCart Supermarkets\n*(fictional web page – freshcart.example/about)*\n\nFreshCart is a Croatian supermarket chain founded in 2008 in Velika Gorica. It runs 46 neighbourhood supermarkets in Zagreb, Zagreb County and Karlovac County and employs about 1,900 people.\n\nEvery FreshCart store larger than 800 m² has a staffed meat and deli counter. Fresh meat comes from Croatian farms through the company's own distribution centre in Velika Gorica; deliveries reach the stores on pallets every morning before 07:00.\n\n**What we stand for:** fresh local food, fair prices, and staff who know their products. \"Ask the counter\" is our promise: customers should get honest advice on cuts and cooking from trained people.\n\n**Company facts (2026)**\n- 46 stores, 31 with a service meat counter\n- About 60% of fresh meat from Croatian producers\n- Distribution centre in Velika Gorica with its own cutting room\n\n## Working at FreshCart\nURL: freshcart.example/careers\n# Working at FreshCart\n*(fictional careers page – freshcart.example/careers)*\n\n**Store teams:** each meat counter has 3 to 6 people across two shifts, led by a counter lead who reports to the store manager. New colleagues get a two-week introduction with an experienced butcher and a paid HACCP refresher.\n\n**Training:** FreshCart pays for forklift and pallet-truck courses for store staff who handle deliveries, and supports colleagues who prepare for the master craftsman exam (majstorski ispit) with paid exam days.\n\n**Benefits:** meal allowance, 10% staff discount, Christmas bonus, transport allowance for public transport.\n\n**What we look for:** reliability, care for hygiene, friendliness with customers, and pride in good work. Experience matters more to us than diplomas for counter roles.\n\n**How we hire:** a short phone call, a 30-minute meeting at the store and a trial half-day at the counter (paid).\n\n## FreshCart Supermarkets – employee reviews\nURL: jobreviews.example/freshcart\n# FreshCart Supermarkets – employee reviews\n*(fictional review-site summary – jobreviews.example/freshcart)*\n\nAverage rating 3.8 / 5 from 212 reviews (2024–2026).\n\n- \"Counter team is friendly, the shift plan comes two weeks ahead. Saturdays are busy.\" (Butcher, Zagreb)\n- \"Pay is average for retail but always on time; Sunday bonus is real.\" (Counter assistant, Karlovac)\n- \"Store managers care a lot about HACCP records and stocked counters at peak hours.\" (Former deli assistant)\n- \"Shift swaps are possible if you ask your counter lead early.\" (Butcher, Zagreb-Dubrava)\n\n# CANDIDATE MATERIAL GIVEN TO THE WRITING TOOL\nThe tool was given only these documents about the candidate:\n\n## CANDIDATE'S CV\nTomislav Mesarić\nUlica Lipa 12, 10000 Zagreb, Croatia | +385 1 555 0142 | tomislav.mesaric@example.com\n\nPROFILE\nButcher with 9 years in high-street and market butchery. Breaks down beef, pork and lamb carcasses, cuts to order and keeps the counter tidy and safe.\n\nEXPERIENCE\nButcher, Mesnica Kod Ante (family butcher shop), Zagreb — 2019 – present\n- Break down 2–3 beef forequarters and 10–12 pork sides a week; bone, trim and portion for the counter.\n- Make 4 kinds of fresh sausage (ćevapi, kobasice, chipolata, lamb merguez) to the shop's own recipes.\n- Keep temperature logs for the cold room (0–4 °C) and display counter; record checks twice a day.\n- Serve about 120 customers on a Saturday; advise on cuts and cooking times.\n- Trained 2 apprentices in knife handling and cleaning routines.\n\nCounter assistant, Tržnica Dolac meat hall stall, Zagreb — 2015 – 2019\n- Served customers, weighed and priced orders, ran the till & cash-up.\n- Cleaned and sanitised slicers, mincers and the counter at close.\n\nEDUCATION & CERTIFICATES\nVocational certificate: Butcher (3-year programme), Food Trades School Zagreb, 2015\nHACCP basic food hygiene certificate, 2021 (renewed 2024)\n\nSKILLS\nCarcass breakdown (beef, pork, lamb) · boning & trimming · sausage making · knife sharpening · mincer & bandsaw operation · cold-chain temperature checks · customer service · cash handling\n\nLANGUAGES\nCroatian (native), English (good), German (basic)\n\n# CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE\n(not given: the candidate stated no preference, so they count as open to the job's arrangement)\n\n# THE USER'S INSTRUCTIONS TO THE WRITING TOOL\n- The user's request: \"Please write my CV first, then the cover letter.\"\n- If the tool asks for contact details the candidate's material lacks: \"I'd rather leave those details out.\"\n- If the tool asks about the job ad: \"That is all the information the ad gives.\"\nThe user made no other requests.\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV (text)\nTomislav Mesarić\nZagreb, Croatia | +385 1 555 0142 | tomislav.mesaric@example.com\n\nPROFESSIONAL SUMMARY\nExperienced butcher with hands-on meat-counter experience in a family butcher shop and a market stall. Skilled in breaking down beef, pork and lamb carcasses, boning, trimming, portioning, fresh sausage making and customer advice. Completed three-year vocational butcher training and holds a HACCP basic food hygiene certificate, renewed in 2024.\n\nEXPERIENCE\n\nButcher | Mesnica Kod Ante (family butcher shop), Zagreb | 2019–present\n- Break down 2–3 beef forequarters and 10–12 pork sides weekly; bone, trim and portion meat for the counter.\n- Prepare four kinds of fresh sausage (ćevapi, kobasice, chipolata and lamb merguez) using the shop's own recipes.\n- Maintain cold-room (0–4 °C) and display-counter temperature logs, recording checks twice daily.\n- Advise customers on cuts and cooking times; serve about 120 customers on a Saturday.\n- Train two apprentices in knife handling and cleaning routines.\n\nCounter Assistant | Tržnica Dolac meat hall stall, Zagreb | 2015–2019\n- Served customers, weighed and priced orders, operated the till and completed cash-up.\n- Cleaned and sanitised slicers, mincers and the counter at close.\n\nEDUCATION & CERTIFICATES\nVocational Certificate: Butcher (three-year programme), Food Trades School Zagreb, 2015\nHACCP Basic Food Hygiene Certificate, 2021 (renewed 2024)\n\nSKILLS\nCarcass breakdown (beef, pork and lamb) · Boning and trimming · Meat portioning · Fresh sausage making · Knife sharpening · Mincer and bandsaw operation · Cold-chain temperature checks · HACCP hygiene records · Customer service and advice · Cash handling\n\nLANGUAGES\nCroatian (native) · English (good) · German (basic)\n\n# OUTPUT 1b: WHAT AN ATS WOULD READ (plain text extracted from the CV PDF by a standard text extractor)\nTomislav Mesarić\nZagreb, Croatia | +385 1 555 0142 | tomislav.mesaric@example.com\nPROFESSIONAL SUMMARY\nExperienced butcher with hands-on meat-counter experience in a family butcher shop and a market\nstall. Skilled in breaking down beef, pork and lamb carcasses, boning, trimming, portioning, fresh\nsausage making and customer advice. Completed three-year vocational butcher training and holds a\nHACCP basic food hygiene certificate, renewed in 2024.\nEXPERIENCE\nButcher | Mesnica Kod Ante (family butcher shop), Zagreb | 2019–present\n- Break down 2–3 beef forequarters and 10–12 pork sides weekly; bone, trim and portion meat for\nthe counter.\n- Prepare four kinds of fresh sausage (ćevapi, kobasice, chipolata and lamb merguez) using the shop’s\nown recipes.\n- Maintain cold-room (0–4 °C) and display-counter temperature logs, recording checks twice daily.\n- Advise customers on cuts and cooking times; serve about 120 customers on a Saturday.\n- Train two apprentices in knife handling and cleaning routines.\nCounter Assistant | Tržnica Dolac meat hall stall, Zagreb | 2015–2019\n- Served customers, weighed and priced orders, operated the till and completed cash-up.\n- Cleaned and sanitised slicers, mincers and the counter at close.\nEDUCATION & CERTIFICATES\nVocational Certificate: Butcher (three-year programme), Food Trades School Zagreb, 2015\nHACCP Basic Food Hygiene Certificate, 2021 (renewed 2024)\nSKILLS\nCarcass breakdown (beef, pork and lamb) · Boning and trimming · Meat portioning · Fresh\nsausage making · Knife sharpening · Mincer and bandsaw operation · Cold-chain temperature\nchecks · HACCP hygiene records · Customer service and advice · Cash handling\nLANGUAGES\nCroatian (native) · English (good) · German (basic)\n\n# OUTPUT 2: COVER LETTER (text)\nFreshCart Supermarkets Hiring Team\nSubject: Application for Butcher / Meat Counter Assistant (m/f/d) – Zagreb-Jarun store\n\nDear FreshCart Hiring Team,\n\nI am applying for the Butcher / Meat Counter Assistant role. My experience includes both hands-on butchery and customer-facing work at a meat counter, supported by completed vocational butcher training and a current HACCP basic food hygiene certificate.\n\nIn my current role at Mesnica Kod Ante, I break down beef and pork, bone, trim and portion meat for the counter, and prepare four kinds of fresh sausage. I also record twice-daily temperature checks for the cold room and display counter. At the Tržnica Dolac meat hall stall, I served customers, weighed and priced orders, and handled till and cash-up duties. Across these roles, I have advised customers on cuts and cooking times and helped train two apprentices in safe knife handling and cleaning routines.\n\nFreshCart's “Ask the counter” promise closely matches the customer advice I provide in my work. I would bring practical meat preparation skills, experience maintaining hygiene and temperature records, and a friendly, informed approach to customer service to your team.\n\nI would welcome the opportunity to discuss how my experience could contribute to the Zagreb-Jarun meat counter. Thank you for considering my application.\n\nSincerely,\nTomislav Mesarić\n\n# OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF\nFreshCart Supermarkets Hiring Team\nSubject: Application for Butcher / Meat Counter Assistant (m/f/d) – Zagreb-Jarun store\nDear FreshCart Hiring Team,\nI am applying for the Butcher / Meat Counter Assistant role. My experience includes both\nhands-on butchery and customer-facing work at a meat counter, supported by completed\nvocational butcher training and a current HACCP basic food hygiene certificate.\nIn my current role at Mesnica Kod Ante, I break down beef and pork, bone, trim and portion\nmeat for the counter, and prepare four kinds of fresh sausage. I also record twice-daily\ntemperature checks for the cold room and display counter. At the Tržnica Dolac meat hall\nstall, I served customers, weighed and priced orders, and handled till and cash-up duties.\nAcross these roles, I have advised customers on cuts and cooking times and helped train two\napprentices in safe knife handling and cleaning routines.\nFreshCart’s “Ask the counter” promise closely matches the customer advice I provide in my\nwork. I would bring practical meat preparation skills, experience maintaining hygiene and\ntemperature records, and a friendly, informed approach to customer service to your team.\nI would welcome the opportunity to discuss how my experience could contribute to the\nZagreb-Jarun meat counter. Thank you for considering my application.\nSincerely,\nTomislav Mesarić\n\n# LAYOUT MEASUREMENTS OF THE PDFS\nCV PDF: 1 page(s), fonts LMRoman10, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 56.7, 'right': 56.7, 'top': 56.7, 'bottom': 362.6}, last page 56.9% filled. Problems: none found\nCover letter PDF: 1 page(s), fonts LMRoman10, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 72.0, 'right': 74.5, 'top': 74.2, 'bottom': 460.6}, last page 45.3% filled. Problems: none found\n\n# PAGE IMAGES\nCV: 1 page image(s) attached of 1; Cover letter: 1 page image(s) attached of 1. The images follow this text, CV pages first, in page order.\n\nEvaluate both outputs against the rubric."
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page1.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cover_letter_page1.png"
+            }
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "Claim": {
+              "properties": {
+                "document": {
+                  "enum": [
+                    "cv",
+                    "cover_letter"
+                  ],
+                  "type": "string"
+                },
+                "claim": {
+                  "description": "The claim about the candidate, quoted briefly from the output document",
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "skill_or_tool",
+                    "employer",
+                    "job_title",
+                    "date_or_duration",
+                    "number_or_metric",
+                    "education",
+                    "certification",
+                    "project",
+                    "language",
+                    "responsibility_or_achievement",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material",
+                  "enum": [
+                    "supported",
+                    "partly_supported",
+                    "unsupported"
+                  ],
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "cv",
+                    "portfolio",
+                    "cover_letter",
+                    "notes",
+                    "chat",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Short verbatim quote from the candidate's material that supports it; empty if none",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "Why partly_supported or unsupported; empty otherwise",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document",
+                "claim",
+                "kind",
+                "verdict",
+                "source",
+                "evidence_quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "RequestCompliance": {
+              "properties": {
+                "request": {
+                  "description": "The user's request, quoted briefly from the conversation",
+                  "type": "string"
+                },
+                "expected": {
+                  "description": "From the test script's expectation when given; else follow, or refuse for a request to state something untrue",
+                  "enum": [
+                    "follow",
+                    "refuse"
+                  ],
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing",
+                  "enum": [
+                    "followed",
+                    "partly_followed",
+                    "refused_correctly",
+                    "refused_wrongly",
+                    "ignored",
+                    "followed_untruthful"
+                  ],
+                  "type": "string"
+                },
+                "app_explained": {
+                  "description": "The app told the user what it did or why it did not",
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "description": "Quote from the final outputs or the app's reply that shows the outcome",
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "request",
+                "expected",
+                "outcome",
+                "app_explained",
+                "evidence",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "Requirement": {
+              "properties": {
+                "requirement": {
+                  "description": "One requirement from the job ad, in short form",
+                  "type": "string"
+                },
+                "priority": {
+                  "enum": [
+                    "must_have",
+                    "nice_to_have"
+                  ],
+                  "type": "string"
+                },
+                "candidate_has_it": {
+                  "description": "Judged from the candidate's material only",
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "shown_in_cv": {
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Quote from the CV that shows it; empty if not shown",
+                  "type": "string"
+                },
+                "gap_handling": {
+                  "description": "For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored",
+                  "enum": [
+                    "not_a_gap",
+                    "honest",
+                    "overstated",
+                    "hidden_or_ignored"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "requirement",
+                "priority",
+                "candidate_has_it",
+                "shown_in_cv",
+                "evidence_quote",
+                "gap_handling"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What an Anthropic grader answers, as native structured output. The Evaluation schema (103 properties) is\nover the API's compiled-grammar limit (a 46-property schema was accepted, 55 were rejected), so the complete\nevaluation comes back first as one JSON string, and the fields after it repeat, schema-guaranteed, everything\nan analysed measure reads. Those repeated fields are authoritative (compose_evaluation).",
+          "properties": {
+            "full_evaluation_json": {
+              "description": "The complete evaluation: one JSON object, as a string, that follows the Evaluation JSON schema in the system prompt, every field filled",
+              "type": "string"
+            },
+            "claims": {
+              "items": {
+                "$ref": "#/$defs/Claim"
+              },
+              "type": "array"
+            },
+            "fit_requirements": {
+              "items": {
+                "$ref": "#/$defs/Requirement"
+              },
+              "type": "array"
+            },
+            "fit_score": {
+              "type": "integer"
+            },
+            "cv_standards_score": {
+              "type": "integer"
+            },
+            "ats_reason": {
+              "type": "string"
+            },
+            "ats_covered_in_searchable_wording": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_missed_but_candidate_has": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_score": {
+              "type": "integer"
+            },
+            "cover_letter_score": {
+              "type": "integer"
+            },
+            "work_arrangement_invented_or_wrong": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "work_arrangement_score": {
+              "type": "integer"
+            },
+            "visual_layout_score": {
+              "type": "integer"
+            },
+            "language_quality_score": {
+              "type": "integer"
+            },
+            "additional_information_score": {
+              "type": "integer"
+            },
+            "user_requests": {
+              "items": {
+                "$ref": "#/$defs/RequestCompliance"
+              },
+              "type": "array"
+            },
+            "user_requests_score": {
+              "type": "integer"
+            },
+            "invented_content_score": {
+              "type": "integer"
+            },
+            "completeness_score": {
+              "type": "integer"
+            },
+            "overall_score": {
+              "type": "integer"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_evaluation_json",
+            "claims",
+            "fit_requirements",
+            "fit_score",
+            "cv_standards_score",
+            "ats_reason",
+            "ats_covered_in_searchable_wording",
+            "ats_missed_but_candidate_has",
+            "ats_score",
+            "cover_letter_score",
+            "work_arrangement_invented_or_wrong",
+            "work_arrangement_score",
+            "visual_layout_score",
+            "language_quality_score",
+            "additional_information_score",
+            "user_requests",
+            "user_requests_score",
+            "invented_content_score",
+            "completeness_score",
+            "overall_score",
+            "summary"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

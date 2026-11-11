@@ -50,7 +50,7 @@ claims about the arms. The comparisons below describe the pilot only. The main c
 
 Paired by case (6 pairs; the two runs averaged first):
 - **Overall:** SP-luna minus MA-luna is +0.42 (5 better, 1 tied). SP-sol minus MA-luna is +0.58 (4 better, 2 tied).
-- **Invented content:** +0.54 and +0.67.
+- **Invented content:** +0.63 and +0.75.
 - **Visual layout:** +0.50 and +1.00.
 
 No contrast is significant at this size: Holm-adjusted p ≥ 0.25. The notebook's tables are in
@@ -118,15 +118,19 @@ one session moves a contrast's mean by 0.17. The composite, which the threshold 
 
 | grading | gradings | full copy did not parse | gradings with disagreements | disagreements |
 |---|---|---|---|---|
-| `eval1` (Sonnet) | 36 | 1 | 6 | 6 |
+| `eval1` (Sonnet) | 36 | 0 | 6 | 6 |
 | `eval2` (Sonnet) | 18 | 0 | 5 | 5 |
 | `opus1` (Opus) | 18 | 0 | 2 | 2 |
 | `haiku1` (Haiku) | 18 | 1 | 13 | 26 |
 | `haiku2` (Haiku) | 18 | 1 | 13 | 26 |
 
-The three unparsed copies were invalid JSON. One was Sonnet's copy for `ma_luna_p12_a7_all4_r2`, cut off at 3,649
-characters. Those gradings still count on their guaranteed fields, but their omissions, layout and language counts are
-empty.
+The two unparsed copies (both Haiku) were invalid JSON. Those gradings still count on their guaranteed fields, but
+their omissions, layout and language counts are empty.
+
+`eval1` of `ma_luna_p12_a7_all4_r2` is a second answer, asked during stage 2 (11 November 2026, batch, $0.04): the
+first answer put the whole grading in the full copy, which was invalid JSON, and left the guaranteed fields with no
+claims and the summary "...". Stage 2's report ([`../2026-11-11-core/REPORT.md`](../2026-11-11-core/REPORT.md))
+describes the rule; the first answer is kept outside the repository.
 
 ## Noise (notebook, overall grade)
 
@@ -148,12 +152,12 @@ Per sub-score, the grader SD is 0.24 to 0.47 and the writer SD 0 to 0.47. Repeat
 
 | grader (Batch price) | gradings | mean per grading (plan) | total |
 |---|---|---|---|
-| Sonnet 5.5 | 54 | $0.0465 ($0.075, **−38%**) | $2.51 |
+| Sonnet 5.5 | 54 | $0.0469 ($0.075, **−37%**) | $2.53 |
 | Opus 5.5 | 18 | $0.176 ($0.15, +18%) | $3.18 |
 | Haiku 5.5 | 36 | $0.0049 ($0.004, +22%) | $0.176 |
 | trap check (Haiku) | 36 | $0.0005 ($0.001, **−47%**) | $0.019 |
 
-Total spend: **$6.78**.
+Total spend: **$6.78** for the pilot, plus $0.04 for the re-asked grading above ($6.83 in `ledger.tsv`).
 - OpenAI $0.90.
 - Anthropic $5.88.
 

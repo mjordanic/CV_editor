@@ -1,0 +1,528 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9620,
+      "output_tokens": 6706,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14552
+    },
+    "cost_usd": 0.043878,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "5d95114ad82136bafcae24eda28cf7ad391441a494de14e098b486b3cccf6ad6",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p06_a2_all4_r1-70f00e59bc",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p06_a2_all4_r1-70f00e59bc",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.087756
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "more than five years of experience in NLP and document classification",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "s više od 5 godina iskustva u obradi prirodnog jezika (NLP)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "94% accuracy and 0.91 macro F1 across 23 classes, ~15,000 documents per day",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "23 classes, 94% accuracy, macro F1 0.91",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Microsoft Certified: Azure AI Engineer Associate | 2024",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "certifikat: Microsoft Certified: Azure AI Engineer Associate (2024)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "PhD in progress, expected 2027",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "PhD NIJE gotov (expected 2027)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Guest lecturer at NLP summer school, 90 minutes, 2025",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "guest lecture 2025, 90 min",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Daily English-language meetings with a client in Slovenia",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "engleski radim svaki dan s klijentom iz Slovenije",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "RAG demo weekend prototype, not production",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Weekend prototype ... Not used in production",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Implemented production monitoring with PSI alerts, caught OCR change of 9 points",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "alert when PSI > 0.2",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fine-tuned XLM-R for document classification and BERTić for NER",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Fine-tuned XLM-R base",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My production language-model work has focused on fine-tuning XLM-R and BERTić",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Fine-tuned BERTic",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "That experience is directly relevant to the text classification underlying ticket routing",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "TF-IDF + logistic regression baseline, then fastText",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Mentor two student interns",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mentoriram dvije studentice na stručnoj praksi.",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Open to EN-speaking companies",
+        "source": "notes",
+        "source_quote": "open to EN-speaking companies, remote",
+        "relevance": "low",
+        "why_it_matters": "Not needed; remote conflicts with office-first."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML/CS",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Master's Degree in Computer Science",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer in production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "03/2023 - Present",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "not deployed to production and assessed through manual checks only",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Model serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Served models through FastAPI in Docker containers",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Major cloud provider",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Azure App Service",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Python, MLflow etc.",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "MLflow experiment tracking and a model registry",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Feature engineering and data ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "CI/CD and automated tests",
+          "priority": "nice_to_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        }
+      ],
+      "gap_handling_summary": "Gaps honestly handled; RAG caveat explicit, no overstated experience.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Page 1 has large blank space at bottom as the project section moved to page 2",
+        "Location omitted"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "CERTIFICATION",
+        "TECHNICAL SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "Builtanddeployedanincoming-documentclassifierforpublicadministration",
+        "ProductionMLandMLOps: AzureML,AzureAppService"
+      ],
+      "important_requirements": [
+        "Machine Learning Engineer",
+        "Python",
+        "MLflow",
+        "Azure",
+        "RAG",
+        "model serving",
+        "monitoring",
+        "fine-tuning",
+        "computer science degree",
+        "Docker"
+      ],
+      "covered_in_searchable_wording": [
+        "Machine Learning Engineer",
+        "Python",
+        "MLflow",
+        "Azure",
+        "RAG",
+        "model serving",
+        "monitoring",
+        "fine-tuning",
+        "computer science degree",
+        "Docker"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean sections and keywords visible, but several bullets extract with merged words, which could hamper matching."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company-specific detail is modest",
+        "Does not address the degree, 4-year gap or Hamburg office-first"
+      ],
+      "strengths": [
+        "Honest about RAG demo",
+        "Relevant complaint-classification link",
+        "No stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 1 ends with large blank area",
+        "Page 2 about one-third empty"
+      ],
+      "consistency_issues": [
+        "Several font sizes"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Mixed tense: 'I fine-tune' vs 'Mentor'"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "PhD not finished, expected 2027",
+        "RAG weekend demo only",
+        "Azure certificate",
+        "Guest lecture",
+        "Daily English meetings",
+        "kappa 0.87"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No placeholders",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Honest, well-grounded CV and letter that use the notes well, state the PhD as unfinished, and caveat the RAG demo. No inventions of Kubernetes, AWS or LLM fine-tuning. Weaknesses are the 4-year experience gap not being addressed, no CI/CD or pipeline wording, merged words in ATS extraction and a half-empty first page."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 5,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 3,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3560,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2307,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "SFRM1095",
+          "SFBX1095",
+          "SFBX1200",
+          "SFRM1000",
+          "SFRM1200",
+          "SFBX1728"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 55.2,
+          "bottom": 213.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 66.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": [
+          "6 font families: SFRM1095, SFBX1095, SFBX1200, SFRM1000, SFRM1200, SFBX1728"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "SFRM1095",
+          "SFRM1000",
+          "SFBX1095",
+          "SFBX1200"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 73.3,
+          "bottom": 267.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 68.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": [
+          "4 font families: SFRM1095, SFRM1000, SFBX1095, SFBX1200"
+        ]
+      }
+    }
+  },
+  "cost_usd": 0.043878,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

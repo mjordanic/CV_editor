@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "6b6e28e0b39fec9acecd20f8f09410e3a7f07325075d52c8f01e030105e4c574",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Databricks (only a free course)\nG2: Scala\nG3: Flink\nG4: Kubernetes (read-only kubectl only)\nG5: GCP/BigQuery\nG6: Azure\n\n# TRAPS (mistakes a writer could make)\nT1: Adding Databricks, Scala, Flink or Kubernetes because data engineer ads often ask for them\nT2: Inflating 'mentors two engineers' to 'led a team'\nT3: Claiming GCP/BigQuery or Azure experience\nT4: Inventing the AWS certification when notes are omitted, or dropping it when notes are given\nT5: Reusing the old cover letter's 'two years at Adria Retail' framing as current\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nLena Varga-Holm\nSenior Data Engineer | Data Platform\nPROFESSIONAL SUMMARY\nSenior Data Engineer with experience building and operating production data platforms, cloud data\nwarehouses, streaming ingestion, and data pipelines. Focused on reliable data delivery, data quality,\nand platform operations across Airflow, dbt, Kafka, Snowflake, Python, and SQL. Has delivered\nhigh-volume event pipelines, warehouse transformation improvements, and production database load\nreductions.\nEXPERIENCE\nSenior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present\n• Owns ingestion and orchestration for the data platform using Airflow, Snowflake, dbt, and Kafka.\n• Participates in the data platform on-call rotation, one week in six.\n• Mentors two mid-level engineers and runs data platform office hours.\n• Reduced the Snowflake bill from approximately 38k/month to 24k/month in 2024 through\nwarehouse sizing, auto-suspend, and removal of unused tables.\nData Engineer | Kovalent Pay | 2019–2022\n• Built PySpark workloads on AWS EMR, designed a Redshift warehouse, and implemented data\nquality checks with Great Expectations.\nSELECTED PROJECTS\nChange Data Capture from Postgres | Lukovac Freight Hub | 2024\n• Replaced hourly full-table extracts of the orders database with change data capture using\nDebezium into Kafka.\n• Reduced replica CPU during loads from approximately 70% to 25%.\n• Technologies: Debezium, Kafka, PostgreSQL, Airflow, Snowflake.\nShipment Event Streaming Pipeline | Lukovac Freight Hub | 2023\n• Designed and built a streaming pipeline for shipment tracking events from courier partners,\nprocessing around 30 million events per day with end-to-end latency under two minutes at p95.\n• Routed partner webhooks into Kafka topics and used a Kafka Connect sink to Snowflake via\nSnowpipe Streaming.\n• Added a dead-letter topic and replay tooling so failed events could be reprocessed without data\nloss.\n• Technologies: Kafka, Kafka Connect, Snowflake, Python, Terraform, AWS MSK.\nOpen-Source Contribution | 2023\n• Fixed a pagination bug and added tests to a community Airflow provider for a SaaS CRM API;\ntwo pull requests were merged.\n• Technologies: Python, Airflow, pytest.\nMigration of the Warehouse to dbt | Lukovac Freight Hub | 2022–2023\n• Migrated approximately 300 stored procedures into dbt models with tests and documentation.\n• Introduced incremental models and slim CI using state:modified in GitHub Actions.\n• Cut the nightly warehouse build from 5 hours 10 minutes to 1 hour 35 minutes and made lineage\nvisible to analysts.\n• Technologies: dbt, Snowflake, SQL, GitHub Actions.\nTransaction Reconciliation Engine | Kovalent Pay | 2020–2021\n• Built PySpark batch jobs on EMR to match bank settlement files against internal ledgers.\n• Reduced the finance team’s manual reconciliation work from approximately three days to four\nhours per month-end.\n• Technologies: PySpark, AWS EMR, S3, Glue Data Catalog, Redshift, Great Expectations.\nSKILLS\nPython, SQL, PySpark, Airflow, dbt, Kafka, Kafka Connect, Debezium, Snowflake, Snowpipe\nStreaming, Amazon Web Services (EMR, MSK, S3), Redshift, PostgreSQL, Great Expectations,\nTerraform, GitHub Actions, pytest, data quality, data orchestration, change data capture, streaming\ndata pipelines, cloud data warehouses.\nCERTIFICATION\nAWS Certified Data Engineer – Associate | May 2024\nEDUCATION\nMSc in Computer Science | Northgate Technical University\nThesis: Incremental materialized views.\nCOMMUNITY\n• Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year\nsince 2021.\n• Presented “Data contracts without the hype” at a regional data meetup in 2024.\n\n# OUTPUT 2: COVER LETTER\nDear Hiring Team at Halden Pay,\nI am applying for the Senior Data Engineer – Data Platform role. I bring hands-on experience\nowning data-platform ingestion and orchestration, operating high-volume production\npipelines, and improving warehouse reliability and efficiency.\nAt Lukovac Freight Hub, I own ingestion and orchestration across Airflow, Snowflake, dbt, and\nKafka. I built a shipment event pipeline processing around 30 million events per day, with p95\nend-to-end latency under two minutes, and added dead-letter and replay tooling to support\nreliable recovery. I also replaced hourly full-table extracts with Debezium CDC, reducing\nreplica CPU during loads from approximately 70% to 25%. These projects have involved the\nday-to-day operational work of a production data platform, including an on-call rotation.\nYour emphasis on reusable platform capabilities rather than one-off pipelines matches my\nexperience migrating approximately 300 stored procedures into tested and documented dbt\nmodels, adding incremental models and slim CI, and reducing the nightly warehouse build\nfrom 5 hours 10 minutes to 1 hour 35 minutes. At Kovalent Pay, I built PySpark\nreconciliation jobs that reduced the finance team’s manual month-end work from\napproximately three days to four hours. That work also connects directly to Halden Pay’s\ncross-border business payments focus: reliable, timely data is essential to reconciliation.\nI also contribute to the data engineering community through two merged fixes to an Airflow\nprovider, SQL teaching at a local women-in-tech meetup, and a 2024 talk on data contracts. I\nwould welcome the opportunity to discuss how my platform, data quality, and operational\nexperience could contribute to Halden Pay’s Data Platform team.\nKind regards,\nLena Varga-Holm\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

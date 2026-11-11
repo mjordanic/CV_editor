@@ -1,0 +1,577 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9038,
+      "output_tokens": 8089,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 15076
+    },
+    "cost_usd": 0.050237,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "7be52e325ffa09dfe58e6107b041ccfc6375b2c5f11a00da914648823b4bd9a8",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p02_a5_all4_r1-4cf09f3e01",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p02_a5_all4_r1-4cf09f3e01",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.100474
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "7 years of experience building and running Java and Spring Boot services",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Backend engineer with 7 years of experience designing and running Java/Spring Boot services",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python: Scripting for data fixes and small Jenkins helpers; no production Python services",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "python: only scripts (data fixes, small jenkins helpers). never shipped python service",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Go learning project CLI ~600 lines non-production",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "a CLI that diffs openapi specs. on github, ~600 lines, NOT production",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Terraform (can read; has not authored modules)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "I can read terraform but never wrote modules",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "p99 latency from 1.8 seconds to 450 milliseconds",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "from 1.8 s to 450 ms",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "approximately 400,000 quote requests per month; 12 broker partners",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "around 400k quote requests per month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "duplicates fell from ~40 per week to zero",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~40 per week to zero over the following quarter",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Investigated a major Kafka lag incident in March 2024 and wrote an incident report that was praised",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "handled the big kafka lag incident in march 2024 (writeup was praised)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Run the backend guild meeting every two weeks, since 2024",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "I run our backend guild meeting every 2 weeks (since 2024)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Oracle Certified Professional Java SE 11 Developer 2020",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Oracle Certified Professional Java SE 11 Developer (2020)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Thymeleaf templating in notifications service",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "templating with Thymeleaf",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "background building Java and Kotlin services",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Small internal service in Kotlin + Spring Boot",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "my Python experience is scripting, not production services",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "never shipped python service",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I helped investigate the issue and wrote a report that was praised",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "handled the big kafka lag incident in march 2024",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "deploy with Docker and Helm to Kubernetes on AWS EKS through Jenkins",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Deploy with Helm charts to Kubernetes (EKS) through Jenkins pipelines",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Wants to move to Python or Go stack",
+        "source": "notes",
+        "source_quote": "would like to move to Python or Go stack",
+        "relevance": "low",
+        "why_it_matters": "Motivation is partly expressed already."
+      },
+      {
+        "fact": "PostgreSQL used in portfolio projects",
+        "source": "portfolio",
+        "source_quote": "Technologies: Java 17, Spring Boot, PostgreSQL, Redis",
+        "relevance": "medium",
+        "why_it_matters": "Must-have DB experience could be tied to concrete work."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "3+ years backend in Python or comparable language",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "7 years of experience building and running Java and Spring Boot services",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Relational DBs, PostgreSQL, tuning, migrations",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "PostgreSQL, Oracle, Redis, JPA query tuning",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "REST APIs",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Designed and versioned an OpenAPI 3 REST API",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker and AWS cloud deployment",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Deploy services to Kubernetes on AWS EKS",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated testing and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Jenkins pipelines",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kafka",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "idempotent Kafka consumers",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kubernetes and Terraform",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Terraform (can read; has not authored modules)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Observability tooling",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Logistics/EDI",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Dutch or French",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Python gap is stated honestly and Java experience is framed as comparable; Terraform and Go are described accurately.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Spills onto a second page with only certification and languages",
+        "Candid 'no production Python services' line in the skills section may weigh against the candidate"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "CERTIFICATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "REST",
+        "Docker",
+        "AWS",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "CI/CD",
+        "automated testing",
+        "English",
+        "on-call"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "PostgreSQL",
+        "REST",
+        "Docker",
+        "AWS",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "automated testing",
+        "English",
+        "on-call"
+      ],
+      "missed_but_candidate_has": [
+        "CI/CD wording"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, parseable text with the real matching keywords visible and no stuffing; the exact term CI/CD is missing and Python appears only as a caveat."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not mention PostgreSQL or Docker-to-cloud in relation to the ad's specific requirements much",
+        "Company specificity limited to Kafka and live tracking"
+      ],
+      "strengths": [
+        "Honest about Python gap",
+        "Concrete metrics",
+        "Uses Kafka migration news"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "dependable live shipment tracking",
+        "Kafka-based event processing"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 holds only certification and languages, mostly empty"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Skills section phrases like 'service user' and 'has not authored modules' are slightly awkward"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Python scripts only",
+        "Go side project",
+        "Terraform read-only",
+        "On-call and Kafka incident",
+        "Backend guild",
+        "Oracle certification",
+        "English working language"
+      ],
+      "notes_facts_ignored": [
+        "Wish to move to Python/Go (only partly reflected)"
+      ],
+      "chat_facts_used": [
+        "Contact details kept as in CV"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Both documents are faithful to the candidate material, with no inventions and honest handling of the Python gap, Go project and Terraform. Strong metrics and relevant Kafka, REST and AWS evidence are shown. Weaknesses are the nearly empty second CV page, the self-undermining Python line in the skills section, and limited tailoring to PostgreSQL and CI/CD wording."
+  },
+  "counts": {
+    "claims": 15,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 6,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3257,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1936,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 50.6,
+          "right": 49.8,
+          "top": 49.7,
+          "bottom": 69.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 16.6,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 16.6% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 56.7,
+          "right": 56.7,
+          "top": 58.9,
+          "bottom": 427.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 49.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.050237,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

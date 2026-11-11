@@ -1,0 +1,57 @@
+Lena Varga-Holm
+Senior Data Engineer
+
+PROFESSIONAL SUMMARY
+Senior Data Engineer experienced in designing, building and operating production data platforms and cloud data warehouses at scale. Skilled in Python, SQL, Airflow, dbt, Kafka and Snowflake, with experience in streaming ingestion, change data capture, data modelling, orchestration and data quality. Delivered measurable improvements to pipeline reliability, Snowflake warehouse build times and cloud data costs, including a reduction in monthly Snowflake spend from approximately $38,000 to $24,000; mentors engineers and contributes to open-source projects.
+
+CORE SKILLS
+Languages: Python, SQL
+Data platform and orchestration: Airflow, Kafka, Kafka Connect, Debezium, dbt
+Cloud data warehousing: Snowflake, AWS, AWS MSK, AWS EMR, Redshift, S3, Glue Data Catalog
+Infrastructure and engineering practices: Terraform, GitHub Actions, CI/CD, pytest, Great Expectations
+Data engineering: Streaming pipelines, change data capture, data modelling, incremental processing, data quality
+
+PROFESSIONAL EXPERIENCE
+Senior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present
+- Own the design, ingestion, orchestration and day-to-day operation of the production data platform using Airflow, Snowflake, dbt and Kafka.
+- Participate in the data-platform on-call rotation, one week in six.
+- Mentored two mid-level engineers and run data-platform office hours.
+- Reduced Snowflake costs from approximately $38,000 to $24,000 per month in 2024 through warehouse sizing, auto-suspend and removal of unused tables.
+- Designed and built a shipment-event streaming pipeline processing around 30 million events per day, with end-to-end latency under two minutes at p95.
+- Added a dead-letter topic and replay tooling to support reprocessing failed events without data loss.
+- Migrated approximately 300 stored procedures into tested and documented dbt SQL models, introducing incremental processing and clearer lineage for analysts, and reducing the nightly warehouse build from 5 hours 10 minutes to 1 hour 35 minutes.
+- Replaced hourly full-table extracts from the orders database with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70% to 25%.
+
+Data Engineer | Kovalent Pay | 2019–2022
+- Built PySpark batch jobs on AWS EMR and worked on data quality using Great Expectations.
+- Developed a transaction reconciliation engine matching bank settlement files against internal ledgers.
+- Reduced manual finance-team reconciliation work from approximately three days to four hours per month-end.
+
+SELECTED PROJECTS
+Shipment Event Streaming Pipeline | Lukovac Freight Hub | 2023
+Kafka topics fed by courier-partner webhooks; Kafka Connect sink to Snowflake via Snowpipe Streaming. Approximately 30 million events per day with under two minutes’ end-to-end latency at p95.
+Technologies: Kafka, Kafka Connect, Snowflake, Python, Terraform, AWS MSK
+
+dbt Migration of the Warehouse | Lukovac Freight Hub | 2022–2023
+Migrated approximately 300 stored procedures into dbt models, introduced incremental models and slim CI (state:modified) in GitHub Actions, and made lineage visible to analysts. Cut nightly warehouse build time from 5 hours 10 minutes to 1 hour 35 minutes.
+Technologies: dbt, Snowflake, SQL, GitHub Actions
+
+Change Data Capture from Postgres | Lukovac Freight Hub | 2024
+Replaced hourly full-table extracts of the orders database with CDC using Debezium into Kafka, reducing replica CPU during loads from approximately 70% to 25%.
+Technologies: Debezium, Kafka, PostgreSQL, Airflow, Snowflake
+
+Transaction Reconciliation Engine | Kovalent Pay | 2020–2021
+Built PySpark batch jobs on EMR to match bank settlement files against internal ledgers, reducing manual reconciliation work from approximately three days to four hours per month-end.
+Technologies: PySpark, AWS EMR, S3, Glue Data Catalog, Redshift, Great Expectations
+
+OPEN-SOURCE AND COMMUNITY
+- Contributed two merged pull requests to an Airflow provider package for a SaaS CRM API, fixing a pagination bug and adding tests (Python, Airflow, pytest), 2023.
+- Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year since 2021.
+- Presented “Data contracts without the hype” at a regional data meetup, 2024.
+
+EDUCATION
+MSc in Computer Science | Northgate Technical University
+Thesis: Incremental materialized views
+
+CERTIFICATION
+AWS Certified Data Engineer – Associate | May 2024

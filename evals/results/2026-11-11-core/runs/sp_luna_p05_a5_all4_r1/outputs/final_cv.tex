@@ -1,0 +1,81 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} RAFAEL MORETTI-KLEIN}\\[0.3em]
+{\large\color{accentcolor} Senior Backend Engineer | Python, Go}\\[0.3em]
+Munich, Germany | rafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example
+\end{center}
+
+\section*{SUMMARY}
+Backend engineer with 21 years of experience building large-scale systems in Python, Go and C++. Designed and wrote most of a Go entitlement service handling 120k requests per second at peak, and helped improve a playback API’s availability from 99.5\% to 99.95\%. Experienced with PostgreSQL, event-driven systems, Kubernetes and production observability.
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Director of Engineering, Platform | Streamhaus GmbH, Munich | 2019–August 2026}
+\begin{itemize}
+\item Led a five-team platform organisation of 45 engineers responsible for identity, playback API, billing integration and developer platform.
+\item Drove migration of a Python 2 monolith to approximately 60 Python and Go services on GKE; playback API availability improved from 99.5\% to 99.95\%.
+\item Built an internal Python cost dashboard using BigQuery billing data; rightsizing and committed use discounts reduced cloud spend by 31\% (EUR 4.2M per year).
+\item Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide.
+\end{itemize}
+
+\textbf{Principal Engineer | Streamhaus GmbH | 2015–2019}
+\begin{itemize}
+\item Designed and wrote most of the Go entitlement service for subscriptions, regions and devices; handled 120k requests per second at peak with p99 latency under 15 ms.
+\item Served as technical lead for the playback API, using Python, Cassandra and Redis.
+\item Co-authored the company’s service template and Python style guide.
+\end{itemize}
+
+\textbf{Senior Software Engineer | Nordfels Telematik AG, Stuttgart | 2010–2015}
+\begin{itemize}
+\item Built backend services for fleet telematics, ingesting GPS data from 300k vehicles using C++, Python, PostgreSQL/PostGIS and RabbitMQ.
+\item Led a team of six developers on the route-history product.
+\end{itemize}
+
+\textbf{Software Engineer | Dataquelle Systems GmbH, Karlsruhe | 2005–2010}
+\begin{itemize}
+\item Developed C++ and Python for industrial data acquisition software on Linux and embedded x86.
+\item Built a Python test harness used by QA for eight years.
+\end{itemize}
+
+\section*{SELECTED OPEN-SOURCE WORK}
+\textbf{Maintainer of a Python retry library | 2012–2018}
+\begin{itemize}
+\item Maintained a Python retry library with approximately 1.5k GitHub stars; handed over maintenance in 2018.
+\item Technologies: Python, pytest, tox.
+\end{itemize}
+
+\section*{EDUCATION}
+Dipl.-Inf. (equivalent to MSc) in Computer Science | Rhine Valley University | 2005
+
+\section*{TECHNICAL SKILLS}
+Languages: Python, Go, C++ (earlier experience)\\
+Python: Django, Flask, FastAPI, Tornado, asyncio\\
+Databases and messaging: PostgreSQL, PostGIS, Cassandra, Redis, Kafka, RabbitMQ\\
+Cloud and infrastructure: GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform\\
+APIs and observability: gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry\\
+Engineering: Distributed systems design, API design, architecture reviews, automated testing (pytest, tox)
+
+\section*{LANGUAGES}
+German (native), Italian (native), English (fluent)
+
+\section*{PUBLICATIONS \& TALKS}
+“Running Python at 100k rps” — conference talk, 2018\\
+“Cost is a feature” — internal platform engineering summit keynote, 2023
+\end{document}

@@ -1,0 +1,65 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\\[0.35em]
+{\large\color{accentcolor} Senior Cloud Infrastructure / Platform Engineer}\\[0.3em]
+Manchester, UK | \href{mailto:nadia.brennanaziz@example.com}{nadia.brennanaziz@example.com} | +44 7700 900909 | \href{https://github.com/nba-sre-example}{github.com/nba-sre-example}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Cloud infrastructure and platform engineer with 10 years in infrastructure, including the last 6 running Kubernetes platforms on AWS. Hands-on experience designing, building and operating production cloud infrastructure, maintaining Terraform-based infrastructure as code, and leading platform engineering work. Focused on reliable, observable platforms and self-service infrastructure that helps product teams ship and operate services effectively.
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Senior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS) | Manchester / remote | Apr 2022 - present}
+\begin{itemize}
+\item Technical lead of a 5-person platform team operating an AWS EKS platform with 8 clusters, approximately 350 services and 3 regions.
+\item Built an internal developer platform with service templates, Argo CD GitOps and Crossplane-based self-service for RDS, SQS and S3; reduced the time for a new service to reach production from approximately 2 weeks to under 1 day.
+\item Introduced SLOs and error budgets for the 20 most critical services; reduced on-call pages per week by approximately 60\%.
+\item Moved node provisioning to Karpenter with spot instances, reducing EC2 spend by 38\%.
+\item Participate in the incident commander rotation and wrote the incident and post-mortem process.
+\end{itemize}
+
+\textbf{Site Reliability Engineer | Brightwater Games | Leeds | Jan 2019 - Mar 2022}
+\begin{itemize}
+\item Ran AWS game backend infrastructure using EC2, ECS and then EKS for titles with up to 1.2 million daily active players.
+\item Managed AWS infrastructure as code with Terraform across approximately 40 modules; used Atlantis for plan and apply on pull requests.
+\item Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.
+\item Performed pre-launch load testing with k6 and planned capacity for launch days.
+\end{itemize}
+
+\textbf{Linux Systems Engineer | Pennine Hosting | Sheffield | Jul 2016 - Dec 2018}
+\begin{itemize}
+\item Managed approximately 600 Linux servers for hosting customers using Puppet configuration management.
+\item Automated tasks with Bash and Python and provided on-call support for customer incidents.
+\end{itemize}
+
+\section*{TECHNICAL SKILLS}
+Cloud and infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), Terraform, Atlantis, Kubernetes, Helm, Kustomize, Crossplane, Karpenter, Puppet, Linux\\
+Platform and operations: Argo CD, GitHub Actions, Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\\
+Programming and testing: Go, Python, Bash, k6
+
+\section*{EDUCATION}
+BSc Computer Science | University of the North Moors | 2016
+
+\section*{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA) | 2021, renewed 2024\\
+AWS Certified Solutions Architect - Professional | 2023
+
+\section*{LANGUAGES}
+English (native), Urdu (conversational)
+\end{document}

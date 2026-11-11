@@ -1,0 +1,76 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.35em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvitem}[2]{\noindent\textbf{#1}\par\noindent #2\par}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\par
+{\large\color{accentcolor} Senior Site Reliability / Platform Engineer}\par
+{\small \href{mailto:nadia.brennanaziz@example.com}{nadia.brennanaziz@example.com} | +44 7700 900909 | \href{https://github.com/nba-sre-example}{github.com/nba-sre-example}}\par
+
+\cvsection{PROFESSIONAL SUMMARY}
+Senior infrastructure engineer with 10 years of experience, including six running Kubernetes platforms on AWS. Technical lead with hands-on experience in cloud infrastructure design and operation, Terraform, developer self-service, observability and incident management. Delivered platforms adopted by 14 product teams, reduced service deployment lead time from approximately two weeks to under one day, and cut EC2 costs by 38\%.
+
+\cvsection{TECHNICAL SKILLS}
+\textbf{Cloud and infrastructure:} AWS, EKS, EC2, ECS, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront, Linux\par
+\textbf{Infrastructure as code and delivery:} Terraform, Atlantis, Crossplane, Argo CD, Helm, Kustomize, GitHub Actions, Puppet\par
+\textbf{Reliability and observability:} Prometheus, Grafana, Alertmanager, Loki, OpenTelemetry, Sloth, PagerDuty, SLOs, error budgets, incident management, k6\par
+\textbf{Engineering:} Go, Python, Bash, Kubernetes controllers, system design, capacity planning
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\cvitem{Senior Platform Engineer | Tallybrook Ltd}{Apr 2022 - present}
+\begin{itemize}
+\item Technical lead of a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.
+\item Built an internal developer platform with Go and Python service templates, Argo CD ApplicationSets and Crossplane compositions for self-service RDS, SQS and S3 provisioning through pull requests.
+\item Enabled all 14 product teams to use the platform; reduced time from new service to production from approximately two weeks to under one day.
+\item Introduced SLOs and burn-rate alerts for the 20 most critical services using Prometheus and Sloth; agreed an error budget policy with product leadership and reduced weekly on-call pages by approximately 60\%.
+\item Replaced cluster-autoscaler node groups with Karpenter and Spot instances for stateless workloads, including interruption handling; reduced EC2 spend by 38\%, approximately GBP 410,000 annually.
+\item Served in the incident commander rotation and wrote the incident and post-mortem process.
+\end{itemize}
+
+\cvitem{Site Reliability Engineer | Brightwater Games}{Jan 2019 - Mar 2022}
+\begin{itemize}
+\item Operated AWS game backend infrastructure across EC2, ECS and EKS for titles with up to 1.2 million daily active players.
+\item Managed all AWS infrastructure through Terraform, with approximately 40 modules and Atlantis plan/apply workflows on pull requests.
+\item Replaced Nagios with a Prometheus, Grafana, Alertmanager and Loki observability stack.
+\item Led capacity planning for two major launches; used k6 to simulate 300,000 concurrent players and identified and fixed a connection pool limit before launch.
+\end{itemize}
+
+\cvitem{Linux Systems Engineer | Pennine Hosting}{Jul 2016 - Dec 2018}
+\begin{itemize}
+\item Managed approximately 600 Linux servers for hosting customers using Puppet configuration management.
+\item Automated operations with Bash and Python and provided on-call support for customer incidents.
+\end{itemize}
+
+\cvsection{OPEN SOURCE AND TECHNICAL LEADERSHIP}
+\begin{itemize}
+\item Built an open-source Kubernetes controller in Go using controller-runtime to delete expired preview namespaces; approximately 120 GitHub stars.
+\item Mentored three backend engineers into SRE roles.
+\item Presented ``SLOs that product managers care about'' at a UK DevOps meetup in 2024.
+\end{itemize}
+
+\cvsection{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA) - 2021, renewed 2024\par
+AWS Certified Solutions Architect - Professional - 2023
+
+\cvsection{EDUCATION}
+BSc Computer Science | University of the North Moors | 2016
+
+\cvsection{LANGUAGES}
+English: native | Urdu: conversational
+\end{document}

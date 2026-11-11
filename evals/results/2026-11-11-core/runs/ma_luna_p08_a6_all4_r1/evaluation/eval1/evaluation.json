@@ -1,0 +1,562 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9859,
+      "output_tokens": 7363,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 16451
+    },
+    "cost_usd": 0.047497,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "ecb92fe32fcc94f3b0c356a18e16e83fadd41e0815b2bb38560c6c2f7a5d4b61",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-ma_luna_p08_a6_all4_r1-8d8019a134",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-ma_luna_p08_a6_all4_r1-8d8019a134",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.094994
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "12 years of professional experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "12 years if counting from 2014 professionally",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a BankID identity-verification flow; conversion 61% to 74%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "conversion of the onboarding funnel went from 61% to 74%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "reduced mobile LCP from 4.1 seconds to 1.9 seconds",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "LCP from 4.1s to 1.9s on mobile",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Served as acting team lead for four months in 2024",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "in 2024 I was \"acting team lead\" for 4 months",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Maintained a GraphQL backend-for-frontend",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "I maintain it with another dev",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Web accessibility (WCAG 2.1 AA)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Accessibility audit fixes on the onboarding flow (WCAG 2.1 AA)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Project tech lead, ferry app, ~50,000 downloads",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Oskar was project tech lead and did most of the app",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Customer Impact Award 2023",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "onboarding team won internal \"customer impact award\" 2023",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fluent in English and Swedish",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "English - fluent",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I led development of most of a React Native ferry-ticket app",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "project tech lead and did most of the app",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "used Next.js for server-rendered pages",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "SSR for the landing pages with Next.js",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "attentive to reliable handling of sensitive customer information",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "KYC flows for new customers",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Open to remote or hybrid; ad offers hybrid/remote",
+        "source": "notes",
+        "source_quote": "interested in remote, or hybrid gothenburg",
+        "relevance": "low",
+        "why_it_matters": "Sweden is not in the ad's remote countries; not stated anyway"
+      },
+      {
+        "fact": "Mentoring experience fits the mentor duty (only mentioned in CV additional)",
+        "source": "cv",
+        "source_quote": "mentor at a coding bootcamp",
+        "relevance": "medium",
+        "why_it_matters": "Ad asks to mentor juniors"
+      },
+      {
+        "fact": "Storybook and design-system experience not highlighted in letter",
+        "source": "cv",
+        "source_quote": "Storybook",
+        "relevance": "low",
+        "why_it_matters": "Nice-to-have"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years React and TypeScript",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Strong expertise in React and TypeScript",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Node.js backend and SQL",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Node.js services built with NestJS and PostgreSQL",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Semantic HTML, responsive, accessibility",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Fixed accessibility issues in the onboarding flow to WCAG 2.1 AA",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated testing and Git workflows",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Jest, Playwright, Cypress",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Web security, OWASP, privacy awareness",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "secure document-upload workflow",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fluent English; German/Croatian helpful",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "German: Basic, school-level",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Next.js/SSR",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Next.js",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Regulated environment",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Älvgrind Fintech AB",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "AWS and Docker",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "AWS (ECS, S3, Lambda, SQS, CloudWatch, RDS)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Design systems and Storybook",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Storybook",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Analytics and A/B testing",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "A/B testing and rollout improved onboarding conversion",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "No faking; security and regulated experience shown through the fintech work.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [
+        "Freelance Developer / Student |  |"
+      ],
+      "issues": [
+        "Empty separators after the freelance heading",
+        "Nordkust heading split from its date across the page break"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "Freelance Developer / Student | |"
+      ],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Jest",
+        "Playwright",
+        "WCAG",
+        "Next.js",
+        "AWS",
+        "Docker",
+        "Storybook",
+        "A/B testing",
+        "Git",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Jest",
+        "Playwright",
+        "WCAG",
+        "Next.js",
+        "AWS",
+        "Docker",
+        "Storybook",
+        "A/B testing",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "OWASP/security",
+        "Git"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 9,
+      "reason": "Clean text with standard headings and nearly all ad keywords shown; only security and Git are weak."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Somewhat generic and dense with CV content",
+        "Little on mentoring or health data"
+      ],
+      "strengths": [
+        "Uses company principles",
+        "Maps accessibility and testing to the ad",
+        "No stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Patients first",
+        "Privacy by default",
+        "Simple beats clever"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Nordkust heading orphaned at bottom of page 1",
+        "Page 2 about 44% filled"
+      ],
+      "consistency_issues": [
+        "Empty pipes in freelance heading",
+        "Blue rules on page 2 differ from grey on page 1"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "12 years",
+        "acting team lead 2024",
+        "GraphQL BFF"
+      ],
+      "notes_facts_ignored": [
+        "Remote/hybrid interest"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "The CV and letter are accurate, with no invented claims, and the content is strong for the ad. ATS wording is good. Minor flaws are the empty pipes in the freelance heading, the orphaned Nordkust heading, and a generic letter that skips mentoring and health-data awareness."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 5,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 4,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 9
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 4358,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1877,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12",
+          "LMRoman9"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 9.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 49.8,
+          "right": 49.0,
+          "top": 47.4,
+          "bottom": 48.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 44.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 71.6,
+          "right": 69.9,
+          "top": 74.2,
+          "bottom": 398.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 52.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.047497,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

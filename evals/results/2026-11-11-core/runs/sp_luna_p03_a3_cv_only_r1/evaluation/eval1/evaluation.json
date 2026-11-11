@@ -1,0 +1,427 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6610,
+      "output_tokens": 4631,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 12699
+    },
+    "cost_usd": 0.0304,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "f142f8ba041182e6eb7ef44db7007b6863ff63cbb00167aaa811280c1dcd9dcc",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p03_a3_cv_only_r1-5269881b58",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p03_a3_cv_only_r1-5269881b58",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.0608
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "QA automation engineer with 7 years of experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "QA automation engineer with 7 years of experience",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced average pipeline duration from 38 to 14 minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Cut average pipeline time from 38 to 14 minutes",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "flaky-test rate from 7% to under 1%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "flaky rate down from 7% to under 1%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kubernetes (basic)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Kubernetes (basic)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Brings hands-on experience with Docker, Helm, Kubernetes, Linux",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Helm charts on the company's shared Kubernetes cluster",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "making improvements across teams",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Own the GitLab CI pipelines for 3 product teams",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "operational reliability",
+        "kind": "skill_or_tool",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "flaky rate down from 7% to under 1%",
+        "note": "Test reliability, not production operations."
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Grafana dashboards",
+        "source": "cv",
+        "source_quote": "Grafana (dashboards for test metrics)",
+        "relevance": "low",
+        "why_it_matters": "Observability is in the ad; already listed in skills."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on cloud infrastructure design and operation",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "mTLS/TLS networking",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Linux",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Docker, Docker Compose, Helm, Kubernetes (basic), Linux",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Leading technical topics",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Own GitLab CI pipelines for three product teams",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "The letter openly admits the Terraform and cloud design gap; the CV claims nothing false. TLS and security gaps are not mentioned.",
+      "score": 4
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Headline stays QA Automation Engineer"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "AWS",
+        "Terraform",
+        "Terragrunt",
+        "mTLS",
+        "Kubernetes",
+        "Linux",
+        "CI/CD",
+        "infrastructure",
+        "observability"
+      ],
+      "covered_in_searchable_wording": [
+        "Linux",
+        "Kubernetes",
+        "CI/CD"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 5,
+      "reason": "Clean parseable text with honest keywords, but the candidate lacks most core ad terms such as Terraform, AWS and mTLS."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Generic greeting",
+        "Little company-specific content",
+        "Does not mention the contractor arrangement"
+      ],
+      "strengths": [
+        "Honest about the gap",
+        "Concrete metrics",
+        "References telemetry, alerting and remote updates"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "No space between job blocks in experience",
+        "Large empty area at the bottom of the letter"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formulaic phrases such as 'compelling application of that infrastructure experience'"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No invented contact details",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 6,
+    "summary": "The documents are truthful, clean and well formatted, and the letter honestly acknowledges the Terraform and cloud gap. The candidate is a weak match, so fit and ATS scores are limited. TLS, security and observability transferable points are underused, and the letter is fairly generic about the company."
+  },
+  "counts": {
+    "claims": 7,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 4,
+    "must_haves_shown": 0,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 5
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2495,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1732,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 120.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 85.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 76.3,
+          "top": 74.2,
+          "bottom": 391.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 53.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.0304,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.25em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\par
+\vspace{0.3em}
+{\large\color{accentcolor} Data Scientist | Machine Learning Engineering Focus}\par
+\href{mailto:tobias.mwangihartley@example.com}{tobias.mwangihartley@example.com} | +44 7700 900110\par
+\href{https://linkedin.com/in/tmh-example}{linkedin.com/in/tmh-example}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Data scientist with six years in analytics and data science, including over four years developing forecasting, churn and experimentation solutions for a subscription business. Strong Python, feature engineering and statistical evaluation, with operational batch workflows using BigQuery and Vertex AI Workbench. Moving into machine learning engineering, bringing measurable business impact, automated testing experience and collaboration with product, growth and data platform teams.
+
+\cvsection{EXPERIENCE}
+\textbf{Data Scientist | Thistlebox, meal-kit subscriptions}\par
+Feb 2022 - Present
+\begin{itemize}
+\item Built a LightGBM demand forecasting model predicting weekly orders by recipe and region six weeks ahead, with calendar, price and menu-position features. Reduced WAPE from 23\% to 14\%, with an estimated 9\% reduction in food waste.
+\item Run forecasting as a Vertex AI Workbench scheduled notebook, writing outputs to BigQuery for operations to access through Looker.
+\item Introduced pytest unit tests for forecasting feature code in 2025; coverage is approximately 60\%.
+\item Developed an XGBoost churn model with weekly batch scoring in BigQuery to target retention offers. Evaluation using a 10\% holdout showed churn 2.1 percentage points lower in the treated group.
+\item Write production SQL and maintain dbt models for the analytics layer; use dbt Cloud scheduling and scheduled notebooks.
+\item Built a Streamlit sequential A/B testing calculator used by approximately 25 product and growth colleagues. Wrote the Dockerfile; the data platform team handles deployment on Cloud Run.
+\item Design and analyse approximately 40 A/B tests annually, present results to leadership monthly and delivered internal "Stats for PMs" training three times.
+\end{itemize}
+\vspace{0.3em}
+\textbf{Junior Data Analyst | Firth Energy Retail}\par
+Sep 2020 - Jan 2022
+\begin{itemize}
+\item Performed customer segmentation and tariff analysis using R and SQL.
+\item Automated monthly regulatory reports with R Markdown, saving the team approximately two days each month.
+\end{itemize}
+
+\cvsection{TECHNICAL SKILLS}
+\begin{itemize}
+\item Python: pandas, scikit-learn, LightGBM, XGBoost, statsmodels, SHAP; pytest unit testing.
+\item Data processing and cloud tools: SQL, BigQuery, dbt, dbt Cloud scheduler, Vertex AI Workbench, Looker.
+\item Engineering tools: Git version control, Jupyter, Streamlit; Dockerfile authoring for a Streamlit app.
+\item Modelling and evaluation: feature engineering, time-series forecasting, A/B testing, causal inference, Bayesian statistics; R, tidyverse, brms.
+\end{itemize}
+
+\cvsection{SELECTED LEARNING PROJECT}
+\textbf{Image Classification | Personal course project | 2025}
+\begin{itemize}
+\item Fine-tuned a small CNN in PyTorch on a public food-images dataset, achieving approximately 80\% accuracy. Used torchvision and Google Colab; a learning project, not a production deployment.
+\end{itemize}
+
+\cvsection{EDUCATION}
+\textbf{MSc Statistics, Distinction | University of the Lothians | 2020}\par
+Dissertation: Bayesian hierarchical models for small-area energy demand\par
+\vspace{0.4em}
+\textbf{BSc Mathematics | University of the Lothians | 2019}
+
+\cvsection{LANGUAGES}
+English: native | Swahili: conversational
+\end{document}

@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\usepackage{microtype}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.85em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[1]{\par\noindent\textbf{#1}\par}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.18em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Oskar Haddad-Lindqvist}\par
+{\large Full-Stack Developer | TypeScript / React / Node.js}\par
+\href{mailto:oskar.hl@example.com}{oskar.hl@example.com} | +46 70 555 0808\par
+\href{https://github.com/oskarhl-example}{github.com/oskarhl-example}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Full-stack developer building web applications professionally since 2014, with React, TypeScript, Node.js, NestJS and PostgreSQL experience in fintech onboarding. Delivered measurable improvements in conversion and mobile performance, implemented WCAG 2.1 AA accessibility audit fixes, and integrated identity verification and secure document uploads. Combines end-to-end development with designer collaboration, production support and mentoring experience.
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\cvrole{Fullstack Developer | Älvgrind Fintech AB | 2021–Present}
+\begin{itemize}
+\item Build customer-facing KYC onboarding features in a six-person team using React, TypeScript, Node.js, NestJS and PostgreSQL; collaborate with designers in Figma.
+\item Built a BankID identity verification flow, integrating the API through a provider SDK and handling QR codes, error states and retries. Onboarding conversion increased from 61\% to 74\%; the new flow was A/B tested with 10\% of traffic before full rollout.
+\item Reduced mobile Largest Contentful Paint (LCP) from 4.1 seconds to 1.9 seconds through code splitting, image optimisation and removal or replacement of heavy dependencies.
+\item Implemented WCAG 2.1 AA accessibility audit fixes in the onboarding flow and migrated the frontend from Create React App to Vite in 2023.
+\item Built document uploads using S3 presigned URLs, ClamAV scanning in AWS Lambda, and status handling through SQS and PostgreSQL.
+\item Helped migrate legacy Express services to NestJS; jointly maintain a GraphQL backend-for-frontend. Use Next.js server-side rendering for marketing landing pages.
+\item Work with AWS ECS Fargate, Docker, GitHub Actions, Jest, Playwright, Storybook and Unleash feature flags; participate in an on-call rotation of one week every six weeks.
+\end{itemize}
+
+\cvrole{Developer | Sjöbris Digital Agency AB | 2018–2021}
+\begin{itemize}
+\item Built websites and web applications for approximately 25 clients across retail, transport, municipalities and sport, using React, Angular, Node.js/Express and PHP/Laravel.
+\item Served as project technical lead and one of two developers on a React Native ferry ticket-purchasing app with approximately 50,000 downloads.
+\item Established GitLab CI for the agency, replacing FTP-based deployment workflows.
+\item Developed custom WordPress themes and plugins; worked with MySQL, MongoDB and Firebase across client projects.
+\end{itemize}
+
+\cvrole{Web Developer | Nordkust Media AB | 2014–2018}
+\begin{itemize}
+\item Developed newspaper websites and an AngularJS article editor using PHP, jQuery and MySQL.
+\item Implemented a paywall integration, configured Varnish caching and performed Ubuntu server administration.
+\end{itemize}
+
+\cvrole{Freelance Web Developer / Student | 2012–2014}
+\begin{itemize}
+\item Built websites for personal contacts and local businesses using PHP, jQuery and WordPress.
+\end{itemize}
+
+\cvsection{EDUCATION}
+\textbf{Bachelor in Computer Science | West Coast University College (Högskola) | 2011–2014}\par
+Graduated 2014.\par
+Additional training: Advanced React Patterns, 2022.
+
+\cvsection{TECHNICAL SKILLS}
+\textbf{Frontend:} React, TypeScript, JavaScript, HTML, CSS, SCSS, Next.js, Storybook, React Query, Redux, React Native, Angular.\par
+\textbf{Backend and databases:} Node.js, NestJS, Express, REST, GraphQL, PostgreSQL, MySQL, Redis, Prisma, PHP, Laravel.\par
+\textbf{Automated testing:} Jest, React Testing Library, Supertest, Playwright, Cypress.\par
+\textbf{Cloud and delivery:} AWS ECS, S3, Lambda, SQS, CloudWatch, RDS; Docker, GitHub Actions, GitLab CI, Git, Linux.\par
+\textbf{Collaboration and operations:} Figma, Agile/Scrum, Jira, Confluence, Sentry, Datadog, Unleash.
+
+\cvsection{MENTORING AND COMMUNITY}
+\begin{itemize}
+\item Evening mentor at a coding bootcamp, 2019–2020.
+\item Speaker at a local JavaScript meetup, 2022: “Migrating Express to NestJS without stopping the world”.
+\end{itemize}
+
+\cvsection{LANGUAGES}
+Swedish: native. English: fluent; working language at Älvgrind. Arabic: spoken at home.
+\end{document}

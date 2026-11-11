@@ -1,0 +1,527 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6986,
+      "output_tokens": 7682,
+      "cache_creation_input_tokens": 2525,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.049063,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "872bc2bdc98b8c7b6746b4680405d1073d29980578119baa50958c7ab911f68d",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p07_a3_cv_only_r1-0cd4312970",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p07_a3_cv_only_r1-0cd4312970",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.098126
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Cloud Engineer (contract) | Havenstad Logistics B.V., Mar 2025 - Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Cloud Engineer (contract) - Havenstad Logistics B.V., Rotterdam",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "three-person cloud team operating approximately 400 Azure VMs and 12 AKS clusters across three subscriptions",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~400 VMs, 12 AKS clusters across 3 subscriptions",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Developed Terraform modules for landing zone networking, hub-spoke VNets, Azure Firewall, private endpoints",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Wrote Terraform modules for landing zone networking",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Replaced manual deployments for 15 internal applications with Azure DevOps YAML release pipelines",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Moved release pipelines for 15 internal apps from manual deployments to Azure DevOps YAML pipelines",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led the migration of 60 servers from VMware to Azure IaaS in 2019",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Led the move of 60 servers from VMware to Azure IaaS in 2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Designing and operating Azure infrastructure",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Wrote Terraform modules for landing zone networking (hub-spoke VNets, Azure Firewall, private endpoints).",
+        "note": "Operating is clear; design is only implied via the landing zone modules."
+      },
+      {
+        "document": "cv",
+        "claim": "Certifications AZ-104 2019 and Terraform Associate 2025",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "HashiCorp Certified: Terraform Associate (003), 2025",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Freelance IT Administrator Sep 2022 - Jan 2024, nine small businesses, MFA, conditional access",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Microsoft 365 and Azure AD setup and support for 9 small businesses (5-40 employees).",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Systems Administrator ~250 servers; Helpdesk Technician 2011-2013; MBO 4 2011; languages",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Administered ~250 Windows and Linux servers for municipal services.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "migration leadership and operational experience to technical discussions",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Led the move of 60 servers from VMware to Azure IaaS in 2019",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My hands-on cloud experience is in Azure",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Azure (VMs, VNets, App Service, AKS",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "networking and Active Directory troubleshooting background",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Second-line escalation for network and Active Directory issues.",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Linux (Ubuntu, RHEL) and VMs are nice-to-haves; Linux appears only in skills and not in the letter",
+        "source": "cv",
+        "source_quote": "Linux (Ubuntu, RHEL)",
+        "relevance": "low",
+        "why_it_matters": "Nice-to-have match."
+      },
+      {
+        "fact": "Contract/freelance experience matches B2B engagement",
+        "source": "cv",
+        "source_quote": "Cloud Engineer (contract)",
+        "relevance": "medium",
+        "why_it_matters": "The ad is a B2B contract."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud design/operation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "operating approximately 400 Azure VMs and 12 AKS clusters",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "AWS preferred, other major clouds acceptable",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Azure VMs, VNets, App Service, AKS",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Developed Terraform modules for landing zone networking",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Systems architecture and design",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "hub-spoke VNets",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Networking, mTLS, SSL/TLS",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "TCP/IP, DNS, VPN, firewalls",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Practical security awareness",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "basic security baselines, including MFA and conditional access",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Leading technical topics, stakeholders",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Led the migration of 60 servers",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "IoT/automotive integration",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Linux (Ubuntu, RHEL)",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Gaps (Terragrunt, mTLS, IoT, JVM) are not faked; the closest real experience is shown and Azure is framed honestly as an accepted alternative.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Gap between Feb 2020 and Sep 2022 and between Jan 2024 and Mar 2025 not explained",
+        "Helpdesk entry has no bullets"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Technical Skills",
+        "Professional Experience",
+        "Education",
+        "Certifications",
+        "Languages"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "AWS or other major cloud",
+        "Terraform",
+        "Terragrunt",
+        "mTLS",
+        "SSL/TLS",
+        "networking",
+        "security",
+        "Linux",
+        "virtual machines",
+        "infrastructure as code",
+        "cloud infrastructure",
+        "system design",
+        "monitoring/observability"
+      ],
+      "covered_in_searchable_wording": [
+        "Terraform",
+        "networking",
+        "Linux",
+        "Azure (major cloud)",
+        "cloud infrastructure",
+        "virtual machines",
+        "security",
+        "Azure Monitor"
+      ],
+      "missed_but_candidate_has": [
+        "infrastructure as code spelled out in the CV"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, well-sectioned text with honest Terraform, Azure, Linux and networking keywords. Terragrunt and mTLS are absent, but the candidate has no evidence for them."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company-specific content is thin (only the train fleet)",
+        "Does not acknowledge the gaps in Terragrunt, mTLS and IoT",
+        "Somewhat generic and dense",
+        "Does not mention contractor/B2B suitability"
+      ],
+      "strengths": [
+        "Accurate figures",
+        "Honest framing of Azure vs AWS",
+        "Ties experience to the ad's IaC, networking and deployment needs"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Large empty space at the bottom of both pages"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formulaic phrasing such as 'provides a practical foundation'"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left as given; no extra details added"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both a CV and a cover letter exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No address or other additional details were added; the contact line is limited to email and phone",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Both documents are faithful to the candidate's material, with accurate figures, dates and certifications and no invented content. The CV is clean, ATS-friendly and fits one page. The fit is limited by real gaps (Terragrunt, mTLS, IoT), which are handled honestly, though the letter does little to address them and is only lightly tailored to the company. The summary slightly stretches 'designing' infrastructure."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2571,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2229,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 50.4,
+          "right": 50.4,
+          "top": 48.3,
+          "bottom": 145.1
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 82.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 73.3,
+          "bottom": 280.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 66.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.049063,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

@@ -1,0 +1,618 @@
+{
+  "evaluator_model": "anthropic:claude-opus-5-5",
+  "name": "opus1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-opus-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-opus-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6906,
+      "output_tokens": 10847,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13106
+    },
+    "cost_usd": 0.123593,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01125j4jPLKfM7WFRkJ4627v",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "d72fed4cf0b7db88c847018acc511c6368bfe3eafb92553fdb73b5401c09aa6e",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "opus1-sp_sol_p10_a2_no_cv_r1-674903d075",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01125j4jPLKfM7WFRkJ4627v",
+          "custom_id": "opus1-sp_sol_p10_a2_no_cv_r1-674903d075",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:09:35+00:00",
+          "ended_at": "2026-11-11T22:16:10.257733+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.247186
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Data Scientist | Thistlebox | 2022-Present",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Data Scientist at Thistlebox (2022-Present)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Junior Data Analyst | Firth Energy Retail | 2020-2022",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Junior Data Analyst at Firth Energy Retail (2020-2022)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc in Statistics; dissertation on Bayesian hierarchical models",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "My MSc in Statistics, with a dissertation on Bayesian hierarchical models",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python, SQL, R; pandas, scikit-learn",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "in R and SQL... comfortable with pandas and scikit-learn",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "LightGBM, XGBoost, SHAP, feature engineering",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "LightGBM with calendar, price and menu-position features",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "GCP experience using BigQuery and Vertex AI Workbench scheduled notebooks",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "GCP: BigQuery daily, Vertex Workbench",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "dbt and dbt Cloud scheduler",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "we use dbt Cloud scheduler + scheduled notebooks",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "pytest unit tests ... coverage is approximately 60%",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "in 2025 I started writing unit tests (pytest) for the forecasting feature code - ~60% coverage now",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Streamlit; Dockerfile creation for a Streamlit application",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "I wrote the app and the Dockerfile, they handle deployment",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "experimental design, sequential A/B testing, statsmodels",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "planning and analysing experiments with sequential boundaries",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced WAPE from 23% to 14%, estimated 9% reduction in food waste",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "WAPE 23% -> 14%; estimated food waste reduction of 9%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Vertex AI Workbench scheduled notebook writing to BigQuery ... Looker",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Vertex AI Workbench scheduled notebook writing to BigQuery; operations reads it in Looker",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "XGBoost churn model ... 10% holdout ... 2.1 percentage points lower",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Validated with a 10% holdout: churn down 2.1 percentage points in the treated group",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "used by approximately 25 product and growth colleagues; deployment to Cloud Run by platform team",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "used by ~25 people in product and growth. Hosted by the data platform team on Cloud Run",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Delivered the internal training session \"Stats for PMs\" three times",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "gave internal training \"Stats for PMs\" 3 times",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Analysed customer segments and tariffs using R and SQL",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "I segment customers and analyse tariffs in R and SQL",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Automated monthly regulatory reports with R Markdown, saving approximately two days each month",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "automated our monthly regulator reports with R Markdown, which saved the team about two days each month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fine-tuned a small CNN in PyTorch ... approximately 80% accuracy; learning project only",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "fine-tuned a small CNN in PyTorch on a public food images dataset (~80% accuracy). Learning project only.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I build machine learning models used in weekly operational decisions",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Weekly forecast of orders per recipe and region",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My experience to date is in scheduled and batch workflows rather than API model serving",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "never deployed a model as an API myself",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Since 2025, I have added pytest unit tests ... approximately 60% coverage",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "~60% coverage now",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "MSc in Statistics and three deliveries of \"Stats for PMs\"",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "My MSc in Statistics",
+        "note": ""
+      }
+    ],
+    "omissions": [],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML, CS or related field",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "MSc in Statistics",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping to production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Builds Python models used in operational workflows through scheduled notebooks and BigQuery batch scoring",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "AI products: chat assistants or RAG",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Production software skills: serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Wrote the application and Dockerfile; the data platform team handled deployment to Cloud Run",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Major cloud provider (AWS/GCP/Azure)",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "GCP experience using BigQuery and Vertex AI Workbench scheduled notebooks",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Python",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Programming: Python, SQL, R",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "MLOps/orchestration tools (MLflow, Kubeflow, Airflow)",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "dbt and dbt Cloud scheduler",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Feature engineering and data ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "using calendar, price and menu-position features",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fine-tune and evaluate models incl. language models",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Fine-tuned a small CNN in PyTorch ... learning project only",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Large text datasets",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Version control, CI/CD, automated tests",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Began adding pytest unit tests to forecasting feature code in 2025",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps (no RAG/LLM, no API serving, no MLflow/Airflow, no MLE title) are left honest; closest real experience shown and the letter explicitly states batch-only experience. Nothing faked.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": false,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No contact details (user chose to leave them out)",
+        "Education lacks institution and year (not in material)"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Technical Skills",
+        "Professional Experience",
+        "Education",
+        "Additional Project"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Machine Learning Engineer",
+        "Python",
+        "GCP/cloud",
+        "MLOps tools",
+        "RAG/LLM",
+        "model serving",
+        "feature engineering",
+        "data pipelines",
+        "CI/CD/automated tests",
+        "Docker",
+        "degree",
+        "PyTorch/fine-tuning"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "GCP",
+        "BigQuery",
+        "Vertex AI",
+        "feature engineering",
+        "pytest unit tests",
+        "Dockerfile",
+        "PyTorch",
+        "MSc in Statistics",
+        "machine learning engineering"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, ordered, well-sectioned text showing the requirements the candidate has; lower match is due to real gaps (LLM, MLOps, serving) and a Data Scientist headline, not to parsing or missed facts."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Leans on job-ad wording rather than company information (e.g. culture, office-first, small merchants)",
+        "Does not address LLM/RAG interest or learning plan"
+      ],
+      "strengths": [
+        "Concrete metrics",
+        "Honest statement of batch-only experience",
+        "No stale framing from old letter"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 9
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "\"Ran forecasting through a Vertex AI Workbench scheduled notebook\" slightly awkward"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "pytest ~60% coverage",
+        "Stats for PMs x3",
+        "dbt Cloud scheduler",
+        "no API serving",
+        "Dockerfile only, platform deploys"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left out"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter produced",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No contact details in either document",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 9,
+    "overall_score": 8,
+    "summary": "Fully truthful CV and letter: every claim traces to the portfolio, notes or earlier letter, and gaps (no API serving, no MLOps tools, no LLM work) are handled honestly, the letter even stating batch-only experience. Clean one-page layouts and ATS-friendly text. Fit to the ad is inherently limited, and the letter uses ad wording more than company culture. No contact details, as the user asked."
+  },
+  "counts": {
+    "claims": 22,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 8,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 0,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2641,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2190,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 53.3,
+          "right": 52.5,
+          "top": 51.9,
+          "bottom": 64.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 92.4,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 71.5,
+          "right": 69.9,
+          "top": 73.3,
+          "bottom": 311.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 63.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.123593,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

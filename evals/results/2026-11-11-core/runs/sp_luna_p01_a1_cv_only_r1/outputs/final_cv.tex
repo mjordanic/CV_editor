@@ -1,0 +1,68 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33, 37, 41}
+\definecolor{secondarycolor}{RGB}{0, 102, 204}
+\definecolor{accentcolor}{RGB}{108, 117, 125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Huge\bfseries\color{primarycolor} LENA VARGA-HOLM}\\[0.35em]
+{\large\color{accentcolor} Senior Data Engineer}\\[0.25em]
+\small \href{mailto:lena.vargaholm@example.com}{lena.vargaholm@example.com} | +385 55 555 0101 | \href{https://github.com/lvh-data-example}{github.com/lvh-data-example}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior Data Engineer with 9 years of experience building and operating batch and streaming data platforms for e-commerce, payments and logistics. Experienced in owning data platform ingestion, developing reusable pipelines with Airflow and dbt, and improving data quality through testing and data contracts. Built production systems processing approximately 30 million events per day and 1.2 TB of raw files daily.
+
+\section*{SKILLS}
+Languages: Python, SQL, Bash\\
+Data platforms and engineering: Airflow, dbt, PySpark, Kafka, Kafka Connect, Snowflake, Redshift, PostgreSQL, Great Expectations\\
+Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM), Docker, Terraform (basic), GitHub Actions\\
+Data and BI: Dimensional modelling, data quality, data contracts, Power BI, Looker (basic)
+
+\section*{EXPERIENCE}
+\textbf{Senior Data Engineer | Lukovac Freight Hub d.o.o. (logistics marketplace) | 03/2022 - Present}
+\begin{itemize}
+\item Own the ingestion layer of the company data platform, maintaining approximately 140 Airflow DAGs that load from Postgres, MySQL, Salesforce and third-party APIs into Snowflake.
+\item Migrated transformation logic from stored procedures to dbt, building 420+ models with tests on every model; reduced nightly run time from 5 hours 10 minutes to 1 hour 35 minutes.
+\item Introduced JSON Schema data contracts and CI checks between product teams and the data team, reducing broken-pipeline incidents from approximately 9 per month to 2 per month.
+\item Built a Kafka-based event pipeline using Kafka Connect and Snowpipe Streaming for shipment tracking, processing approximately 30 million events per day.
+\item Mentor two mid-level data engineers and run weekly data platform office hours.
+\end{itemize}
+
+\textbf{Data Engineer | Kovalent Pay (payments startup) | 09/2019 - 02/2022}
+\begin{itemize}
+\item Built PySpark jobs on AWS EMR for transaction reconciliation, processing approximately 1.2 TB of raw files from S3 daily.
+\item Designed a Redshift dimensional warehouse schema with 30+ fact and dimension tables for finance and risk teams.
+\item Implemented Great Expectations data quality checks on critical finance tables.
+\item Developed an internal Python library for S3 and Glue catalog access, adopted by four teams.
+\end{itemize}
+
+\textbf{Junior Data Engineer / BI Developer | Adria Retail Group | 06/2017 - 08/2019}
+\begin{itemize}
+\item Maintained SSIS packages and T-SQL ETL processes for an on-premises SQL Server warehouse.
+\item Built Power BI reports for store operations across 40+ stores.
+\item Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.
+\end{itemize}
+
+\section*{EDUCATION}
+MSc Computer Science (Data Science track) | Northgate Technical University | 2017\\
+Thesis: Incremental materialized views for analytical queries
+
+\section*{LANGUAGES}
+Croatian (native), English (C1), German (B1)
+
+\end{document}

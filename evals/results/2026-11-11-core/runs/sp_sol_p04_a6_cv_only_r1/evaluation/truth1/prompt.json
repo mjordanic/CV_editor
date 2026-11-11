@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "ec8aff249594405a4aa77accbfb31ca08f04fee8c960f3f35458da63a3cdba37",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: professional backend work\nG2: GraphQL (course only)\nG3: Vue (one weekend)\nG4: cloud (AWS/Azure)\nG5: CI/CD ownership\nG6: years of professional experience\n\n# TRAPS (mistakes a writer could make)\nT1: Inflating internship + freelance into 'X years of experience' or 'Software Engineer'\nT2: Claiming she built the Study Buddy backend or led the team\nT3: Listing GraphQL or Vue\nT4: Inventing CI/CD, Docker or AWS\nT5: Reusing old cover letter claim 'third-year student' as current status\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nAiyana Brooks-Tan\nJunior Frontend Developer\naiyana.brookstan@example.com | +353 55 555 0404\ngithub.com/aiyana-bt-example | aiyana-bt.example.com\nPROFESSIONAL SUMMARY\nJunior frontend developer with professional React experience, freelance Next.js delivery and a First\nClass Honours degree in Computing - Software Development. Fixed accessibility issues across 20+\nReact components and wrote unit tests with Jest and React Testing Library. Technical skills include\nTypeScript, Node.js, Express and PostgreSQL, with React, TypeScript and Node.js used in an\naccessible final-year application.\nTECHNICAL SKILLS\nFrontend: React, TypeScript, JavaScript, Next.js, HTML5, CSS3, Tailwind CSS\nBackend and databases: Node.js, Express, PostgreSQL\nAccessibility and testing: WCAG 2.1, keyboard navigation, colour contrast, ARIA labels, Jest,\nReact Testing Library\nDevelopment and design tools: Git/GitHub, Storybook, Figma, Vercel, WordPress\nEXPERIENCE\nFrontend Developer (part-time, freelance) | Self-employed\nOct 2025 - present\n• Built a booking website for a local yoga studio using Next.js and Tailwind CSS, hosted on Vercel.\n• Made small updates to two WordPress sites.\nSoftware Development Intern | Harbourline Media\nMay 2024 - Aug 2024\n• Worked in the web team on the company’s React news site.\n• Fixed audit-identified accessibility issues across 20+ components, addressing keyboard navigation,\ncolour contrast and ARIA labels.\n• Built a reusable image gallery component with Storybook stories.\n• Wrote unit tests with Jest and React Testing Library.\nBarista | Corner Bean Cafe\n2021 - 2025 | Part-time during studies\nEDUCATION\nBSc (Hons) Computing - Software Development\nLiffey Institute of Technology | 2021 - 2025\nFirst Class Honours\n• Final-year project: \"Tidewatch\" - an accessible tide and weather app for sea swimmers, built with\nReact, TypeScript and Node.js.\n• Relevant modules: Web Development, Databases, Human-Computer Interaction, Software Testing,\nData Structures & Algorithms.\nLANGUAGES\nEnglish (native) | Mandarin (conversational)\n\n# OUTPUT 2: COVER LETTER\nAiyana Brooks-Tan\naiyana.brookstan@example.com | +353 55 555 0404\ngithub.com/aiyana-bt-example | aiyana-bt.example.com\nVerdane Care\nRe: Full-Stack Engineer (TypeScript / React) - Patient Experience\nDear Hiring Team,\nYour Patient Experience role brings together three areas represented in my work: React\naccessibility, booking websites and applications built with TypeScript and Node.js. I am\napplying with professional frontend experience, a First Class Honours degree in Computing -\nSoftware Development and practical examples relevant to Verdane Care’s patient-facing\nfeatures.\nDuring my internship at Harbourline Media, I fixed accessibility issues identified in an audit\nacross more than 20 React components, including keyboard navigation, colour contrast and\nARIA labels. I also built a reusable image gallery component with Storybook stories and\nwrote unit tests using Jest and React Testing Library. This experience is directly relevant to\nyour emphasis on accessible React components and automated testing. My accessibility\nknowledge is grounded in WCAG 2.1; your WCAG 2.2 AA standard provides a clear\nbenchmark for the role.\nIn my freelance work, I built a Next.js and Tailwind CSS booking website for a yoga studio,\nhosted on Vercel. My final-year project, Tidewatch, was an accessible tide and weather app\nfor sea swimmers built with React, TypeScript and Node.js. Alongside my Express and\nPostgreSQL skills, these projects provide a foundation for contributing beyond the frontend.\nThe booking project also offers a practical connection to Verdane Care’s appointment-booking\nproduct, without equating that work with healthcare software experience.\nI would welcome the opportunity to discuss how my accessibility work, component testing and\nbooking-site experience could contribute to your Patient Experience squad. My portfolio and\nGitHub links are included above. Thank you for considering my application.\nYours sincerely,\nAiyana Brooks-Tan\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

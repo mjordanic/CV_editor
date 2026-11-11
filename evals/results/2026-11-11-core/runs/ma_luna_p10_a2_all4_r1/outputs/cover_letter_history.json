@@ -1,0 +1,189 @@
+[
+  {
+    "iteration": 1,
+    "content": "Dear Quillstone AI Hiring Team,\n\nI am applying for the Machine Learning Engineer – Customer Support AI role. My experience building and evaluating forecasting and customer-propensity models, developing Python and SQL workflows, and working closely with product and operations teams has given me a practical foundation for contributing to applied machine learning systems.\n\nAt Thistlebox, I built a weekly demand-forecasting workflow using LightGBM and engineered calendar, price and menu-position features. It runs as a scheduled Vertex AI Workbench notebook and writes forecasts to BigQuery; forecast WAPE fell from 23% to 14%, with an estimated 9% reduction in food waste. I also developed a weekly XGBoost churn-scoring workflow in BigQuery, where a 10% holdout validated a 2.1 percentage-point reduction in churn in the treated group. These projects have involved turning business needs into useful models and data workflows, evaluating their impact, and communicating results to stakeholders.\n\nAlongside this work, I design and analyse around 40 A/B tests a year and built a Python Streamlit sequential-testing tool used by about 25 colleagues. I wrote its Dockerfile, while the data platform team manages its Cloud Run deployment. Since 2025, I have also written pytest unit tests for forecasting feature code, reaching approximately 60% coverage. I use BigQuery regularly and have worked with Vertex AI Workbench; I am keen to build further on this experience in production machine learning engineering. My MSc in Statistics and BSc in Mathematics support my work in modelling, experimentation and feature engineering.\n\nQuillstone’s focus on helping merchants through its customer operations tools, and its emphasis on team ownership, practical problem-solving and learning, make this role particularly appealing to me. I would welcome the opportunity to discuss how my experience in applied modelling, experimentation and analytical workflows could contribute to the AI team.\n\nKind regards,\nTobias Mwangi-Hartley",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is clear, concise, professional, and well structured. It uses credible quantified evidence: WAPE improvement from 23% to 14%, estimated food-waste reduction of 9%, churn reduction of 2.1 percentage points, approximately 40 experiments per year, 25 tool users, and 60% test coverage. It also accurately explains the candidate's role in the Cloud Run deployment rather than overstating ownership. The main content weakness is that the letter presents strong data-science experience but does not sufficiently distinguish this from the Machine Learning Engineer requirements or explicitly surface the candidate's related workflow, testing, feature-engineering, and data-platform experience in the job ad's terminology.",
+      "ats_compatibility_feedback": "The letter is ATS-readable: it uses standard paragraphs, no tables or graphics, and includes useful terms such as Python, SQL, LightGBM, XGBoost, BigQuery, Vertex AI Workbench, Docker, pytest, feature engineering, forecasting, and A/B testing. However, it does not include several important supported terms from the candidate's material, including dbt and scheduled notebook jobs/orchestration. The letter also does not contain terms such as model serving, monitoring, data versioning, RAG, chat assistants, MLflow, Kubeflow, Airflow, or LLM observability because the original candidate information does not support them; these should not be added. AI screening probability is moderate-to-low for this particular role: the document will likely pass basic keyword parsing for Python, GCP-related tools, feature engineering, and cloud data workflows, but it will rank weakly against applicants who demonstrate production MLE, support AI, RAG, serving, and MLOps experience.",
+      "job_alignment_feedback": "The letter aligns well with the role's applied modelling, experimentation, Python, feature engineering, cloud data workflows, testing, and cross-functional communication aspects. It also makes a reasonable connection to Quillstone's practical, ownership-oriented culture without making unsupported claims. However, the candidate's material indicates substantial gaps against the central requirements: the candidate has not worked as a Machine Learning Engineer for four years, has not built chat assistants or RAG systems, has not personally deployed a model as an API, and does not have documented monitoring or data-versioning experience. The candidate has GCP-related experience through BigQuery and Vertex AI Workbench, but not broad GCP infrastructure expertise. The candidate has some orchestration-related experience through scheduled notebooks and dbt Cloud scheduling, but not the named MLOps tools in the advertisement. These are candidate-profile gaps rather than defects that can be solved by wording alone.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS:\n1. In the third paragraph, replace the general sentence beginning \"I use BigQuery regularly\" with a more ATS-specific and accurate sentence such as: \"I use BigQuery daily for production SQL and batch churn scoring, maintain dbt models for the analytics layer, and have worked with scheduled Vertex AI Workbench notebook jobs.\" This surfaces the candidate's supported data-platform and orchestration experience without claiming API deployment or broader GCP infrastructure expertise.\n\n2. In the second paragraph, change \"developing Python and SQL workflows\" to \"developing Python and SQL machine-learning workflows, including feature engineering, scheduled batch scoring, and forecasting pipelines.\" This uses the job description's terminology while remaining supported by the forecasting and churn projects.\n\n3. In the third paragraph, revise the testing sentence to make the software-engineering evidence more explicit: \"Since 2025, I have written pytest unit tests for forecasting feature code, reaching approximately 60% coverage; I also wrote the Dockerfile for a Streamlit application used by around 25 colleagues.\" Keep the existing clarification that the data platform team manages Cloud Run deployment. This presents automated testing and containerisation accurately without implying ownership of deployment.\n\n4. In the final paragraph, make the motivation more specific to the transferable part of the role. For example, replace \"could contribute to the AI team\" with \"could contribute to the AI team through practical model evaluation, feature engineering, experimentation, and reliable data workflows while developing further in production machine learning engineering.\" This avoids implying prior customer-support AI or RAG experience while giving the application a clearer rationale.\n\nMINOR ENHANCEMENT:\n5. In the opening paragraph, consider changing \"practical foundation for contributing to applied machine learning systems\" to \"practical foundation in applied machine learning workflows and production-oriented analytical systems.\" The revised wording is more precise because the candidate's documented systems are scheduled notebooks and batch SQL scoring rather than independently served ML APIs.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "It runs as a scheduled Vertex AI Workbench notebook and writes forecasts to BigQuery"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "I built a Python Streamlit sequential-testing tool used by about 25 colleagues"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "missing",
+          "quote": "We use dbt Cloud scheduler and scheduled notebooks"
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "missing",
+          "quote": "Write production SQL in BigQuery and maintain dbt models for the analytics layer; the forecasting workflow uses engineered calendar, price and menu-position features"
+        }
+      ],
+      "defects": 2
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 2
+  },
+  {
+    "iteration": 2,
+    "content": "Dear Quillstone AI Hiring Team,\n\nI am applying for the Machine Learning Engineer – Customer Support AI role. My experience building and evaluating forecasting and customer-propensity models, developing Python and SQL machine-learning workflows, including feature engineering, scheduled batch scoring, and forecasting pipelines, and working closely with product and operations teams has given me a practical foundation in applied machine learning workflows and production-oriented analytical systems.\n\nAt Thistlebox, I built a weekly demand-forecasting workflow using LightGBM and engineered calendar, price and menu-position features. It runs as a scheduled Vertex AI Workbench notebook and writes forecasts to BigQuery; forecast WAPE fell from 23% to 14%, with an estimated 9% reduction in food waste. I also developed a weekly XGBoost churn-scoring workflow in BigQuery, where a 10% holdout validated a 2.1 percentage-point reduction in churn in the treated group. These projects have involved turning business needs into useful models and data workflows, evaluating their impact, and communicating results to stakeholders.\n\nAlongside this work, I design and analyse around 40 A/B tests a year and built a Python Streamlit sequential-testing tool used by about 25 colleagues. Since 2025, I have written pytest unit tests for forecasting feature code, reaching approximately 60% coverage; I also wrote the Dockerfile for a Streamlit application used by around 25 colleagues. The data platform team manages its Cloud Run deployment. I use BigQuery daily for production SQL and batch churn scoring, maintain dbt models for the analytics layer, and have worked with scheduled Vertex AI Workbench notebook jobs. I am keen to build further on this experience in production machine learning engineering. My MSc in Statistics and BSc in Mathematics support my work in modelling, experimentation and feature engineering.\n\nQuillstone’s focus on helping merchants through its customer operations tools, and its emphasis on team ownership, practical problem-solving and learning, make this role particularly appealing to me. I would welcome the opportunity to discuss how my experience in applied modelling, experimentation and analytical workflows could contribute to the AI team through practical model evaluation, feature engineering, experimentation, and reliable data workflows while developing further in production machine learning engineering.\n\nKind regards,\nTobias Mwangi-Hartley",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is professional, coherent, and supported by concrete results: WAPE improvement, food-waste reduction, churn impact, experiment volume, tool adoption, and test coverage. It establishes a credible applied data-science background and explains the candidate’s interest in moving toward machine-learning engineering. The main content weaknesses are repetition and limited role-specific relevance. The second and third paragraphs repeat the same Dockerfile, Streamlit, scheduled-workflow, and production-SQL points. The opening sentence is also overly dense, and the letter gives little direct connection to customer-support AI beyond a general reference to the AI team. It is appropriately cautious about deployment ownership and does not invent experience.",
+      "ats_compatibility_feedback": "The document is ATS-friendly in plain-text structure: clear paragraphs, standard headings are unnecessary for a letter, no tables or graphics, and important terms such as Python, SQL, feature engineering, scheduled batch scoring, BigQuery, Vertex AI Workbench, Docker, pytest, dbt, Cloud Run, forecasting, and model evaluation appear naturally. However, ATS and recruiter screening for this role will likely remain low-to-moderate because the letter does not demonstrate several core requirements: chat assistants or RAG, model serving, monitoring, data versioning, or named MLOps/orchestration tools. These are substantive candidate gaps rather than formatting defects. Estimated AI-screening probability: low-to-moderate for this specific role, despite good keyword coverage for applied modelling and cloud-based batch workflows.",
+      "job_alignment_feedback": "The letter aligns well with feature engineering, Python, experimentation, model evaluation, cloud-based batch workflows, automated testing, and practical stakeholder communication. It also reflects relevant cultural themes from the advertisement, including practical problem-solving, learning, and collaboration. The candidate’s material does not establish a degree in machine learning, computer science, or an engineering field; four years as a machine-learning engineer shipping systems to production; experience with chat assistants or RAG; production model serving, monitoring, or data versioning; or familiarity with the named MLOps/orchestration ecosystem. The experience shown is primarily data science with scheduled notebook and SQL batch scoring, rather than end-to-end production ML engineering. The letter should therefore position the experience accurately as a transferable foundation without implying equivalence to the role’s seniority or production scope.",
+      "improvement_instructions": "CRITICAL ISSUES: None identified.\n\nMINOR, HIGH-VALUE IMPROVEMENTS:\n1. In the opening paragraph, replace the long first sentence with two shorter sentences that distinguish current evidence from future development. For example: \"I am applying for the Machine Learning Engineer – Customer Support AI role. In my current data-science work, I build and evaluate Python-based forecasting and propensity models, engineer features, and operate scheduled batch workflows in BigQuery and Vertex AI Workbench.\"\n2. In the third paragraph, remove the repeated sentence beginning \"I also wrote the Dockerfile for a Streamlit application...\" because the same evidence already appears in the preceding sentence. Retain the more precise version: \"I built a Python Streamlit sequential-testing tool used by about 25 colleagues and wrote its Dockerfile; the data platform team manages its Cloud Run deployment.\"\n3. In the second paragraph, make the production scope more precise by changing \"It runs as a scheduled Vertex AI Workbench notebook\" to \"It runs as a scheduled Vertex AI Workbench notebook job\" and changing \"writes forecasts to BigQuery\" to \"writes forecast outputs to BigQuery for operations reporting in Looker.\" This better reflects the documented workflow without implying API serving.\n4. In the third paragraph, replace the generic sentence \"These projects have involved turning business needs into useful models and data workflows...\" with a more role-relevant but truthful summary: \"Together, these projects have given me experience with feature engineering, scheduled batch scoring, model evaluation, automated testing, and communicating model results to product and operations stakeholders.\" \n5. In the final paragraph, connect the candidate’s evidence more directly to the advertised responsibilities by changing the closing contribution statement to: \"I would welcome the opportunity to contribute my experience in feature engineering, model evaluation, experimentation, automated testing, and reliable batch data workflows while developing further in production machine-learning engineering.\" This is more concise and avoids implying experience with conversational AI or model serving that is not documented.\n6. In the final paragraph, replace the phrase \"Quillstone’s focus on helping merchants through its customer operations tools\" with a more specific reference to the advertised team: \"Quillstone’s focus on helping merchants through customer-operations tools, together with its emphasis on ownership, pragmatic problem-solving, and learning, makes this role particularly appealing to me.\"",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "shown",
+          "quote": "scheduled Vertex AI Workbench notebook jobs; I use BigQuery daily"
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "built a Python Streamlit sequential-testing tool; written pytest unit tests"
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "missing",
+          "quote": "Candidate material states: \"dbt Cloud scheduler + scheduled notebooks\"; the letter mentions scheduled Vertex AI Workbench notebook jobs but does not clearly identify this orchestration experience."
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "shown",
+          "quote": "developing Python and SQL machine-learning workflows, including feature engineering, scheduled batch scoring, and forecasting pipelines"
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 1
+  },
+  {
+    "iteration": 3,
+    "content": "Dear Quillstone AI Hiring Team,\n\nI am applying for the Machine Learning Engineer – Customer Support AI role. In my current data-science work, I build and evaluate Python-based forecasting and propensity models, engineer features, and operate scheduled batch workflows in BigQuery and Vertex AI Workbench.\n\nAt Thistlebox, I built a weekly demand-forecasting workflow using LightGBM and engineered calendar, price and menu-position features. It runs as a scheduled Vertex AI Workbench notebook job and writes forecast outputs to BigQuery for operations reporting in Looker; forecast WAPE fell from 23% to 14%, with an estimated 9% reduction in food waste. I also developed a weekly XGBoost churn-scoring workflow in BigQuery, where a 10% holdout validated a 2.1 percentage-point reduction in churn in the treated group. Together, these projects have given me experience with feature engineering, scheduled batch scoring, model evaluation, automated testing, and communicating model results to product and operations stakeholders.\n\nAlongside this work, I design and analyse around 40 A/B tests a year. I built a Python Streamlit sequential-testing tool used by about 25 colleagues and wrote its Dockerfile; the data platform team manages its Cloud Run deployment. Since 2025, I have written pytest unit tests for forecasting feature code, reaching approximately 60% coverage. I use BigQuery daily for production SQL and batch churn scoring, maintain dbt models for the analytics layer, and have worked with scheduled Vertex AI Workbench notebook jobs. I am keen to build further on this experience in production machine learning engineering. My MSc in Statistics and BSc in Mathematics support my work in modelling, experimentation and feature engineering.\n\nQuillstone’s focus on helping merchants through customer-operations tools, together with its emphasis on ownership, pragmatic problem-solving, and learning, makes this role particularly appealing to me. I would welcome the opportunity to contribute my experience in feature engineering, model evaluation, experimentation, automated testing, and reliable batch data workflows while developing further in production machine-learning engineering.\n\nKind regards,\nTobias Mwangi-Hartley",
+    "score": 81,
+    "critique": {
+      "quality_score": 81,
+      "content_quality_feedback": "The cover letter is professional, clear, and appropriately tailored to Quillstone's Machine Learning Engineer role. It uses credible evidence, including a WAPE reduction from 23% to 14%, an estimated 9% food-waste reduction, a 2.1 percentage-point churn reduction, approximately 40 annual experiments, and 60% pytest coverage. It also accurately distinguishes the candidate's scheduled batch workflows from broader production machine-learning engineering. The main content weakness is repetition: BigQuery, Vertex AI Workbench, scheduled workflows, feature engineering, and production machine-learning engineering are mentioned several times without adding substantially different evidence. The letter is also strongest for applied data science and batch modelling, while it has limited direct relevance to customer-support AI, language models, or model-serving systems; this is a genuine background gap rather than a writing defect.",
+      "ats_compatibility_feedback": "The letter is highly parseable: it uses standard paragraphs, conventional headings are not necessary for a cover letter, and there are no tables, graphics, unusual symbols, or formatting elements likely to impair parsing. It includes strong supported keywords such as Python, LightGBM, XGBoost, feature engineering, BigQuery, Vertex AI Workbench, Docker, pytest, dbt, scheduled batch scoring, model evaluation, and automated testing. AI screening probability is moderate rather than high because several central job terms are absent, including chat assistants, RAG, language models, model serving, monitoring, data versioning, MLOps, and Airflow/MLflow/Kubeflow. These omissions reflect gaps in the candidate's documented experience and should not be inserted without evidence. The letter also mentions GCP services but does not explicitly identify them as GCP, which weakens keyword matching for the cloud-provider requirement.",
+      "job_alignment_feedback": "The strongest alignment is with Python-based modelling, feature engineering, model evaluation, scheduled batch scoring, experimentation, automated testing, BigQuery/dbt data work, and experience using GCP services. The letter also makes a reasonable culture connection to pragmatic problem-solving and ownership, supported by the candidate's internal tool development and stakeholder communication. The candidate's material shows gaps against several mandatory requirements: the degrees are in Statistics and Mathematics rather than machine learning, computer science, or an engineering field; the candidate has four-plus years in data science rather than four-plus years as a machine learning engineer; there is no experience with chat assistants or RAG; the candidate has not independently deployed a model as an API and lacks documented monitoring and data-versioning experience; and the candidate has no MLflow, Kubeflow, Airflow, or comparable named MLOps-tool experience. The letter should therefore position the application around transferable batch-ML and engineering foundations without implying direct customer-support AI or full production-serving experience.",
+      "improvement_instructions": "CRITICAL: In the opening paragraph, replace the broad wording \"operate scheduled batch workflows in BigQuery and Vertex AI Workbench\" with a more precise statement such as: \"I build and evaluate Python forecasting and propensity models, with scheduled batch workflows that write outputs to BigQuery using Vertex AI Workbench.\" This avoids implying broader operational or platform ownership than the candidate's evidence supports.\n\nHIGH PRIORITY: In the first or second paragraph, explicitly identify the cloud context without overstating infrastructure expertise. For example, change \"in BigQuery and Vertex AI Workbench\" to \"using GCP services including BigQuery and Vertex AI Workbench.\" This truthfully surfaces the supported cloud-provider keyword for ATS screening.\n\nHIGH PRIORITY: Reduce repetition in the third paragraph. Remove the sentence \"I use BigQuery daily for production SQL and batch churn scoring, maintain dbt models for the analytics layer, and have worked with scheduled Vertex AI Workbench notebook jobs,\" because these capabilities are already established in the first two paragraphs. Replace it with the more distinctive evidence from the candidate material: \"I also maintain dbt models for the analytics layer and write pytest tests for forecasting feature code, now at approximately 60% coverage.\" This makes the letter more concise while preserving relevant engineering keywords.\n\nMEDIUM PRIORITY: Make the closing more specific to the evidence actually presented. Replace \"reliable batch data workflows\" with \"tested, scheduled batch modelling workflows and analytical tools used by operations, product, and growth teams.\" This is more concrete and avoids suggesting a level of production reliability engineering not documented in the candidate information.\n\nMINOR: In the final paragraph, replace the generic phrase \"Quillstone's focus on helping merchants through customer-operations tools\" with a tighter connection to the candidate's transferable experience, such as: \"Quillstone's focus on reducing friction for merchants through customer-operations tools appeals to me because I have built forecasting, retention-targeting, and experimentation tools that support operational and product decisions.\"",
+      "critical_issues": "Claims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n- \"reliable batch data workflows\"",
+      "unsupported_claims": [
+        "\"reliable batch data workflows\""
+      ],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Degree in machine learning, computer science or a related engineering field",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "At least four years of experience as a machine learning engineer shipping ML or AI systems to production",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with AI products such as chat assistants or retrieval-augmented generation (RAG)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Software engineering skills for production systems: model serving, monitoring, data versioning",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with a major cloud provider (AWS, GCP or Azure)",
+          "status": "missing",
+          "quote": "Original candidate material: \"BigQuery daily, Vertex Workbench\" and \"GCP: BigQuery daily, Vertex Workbench\""
+        },
+        {
+          "requirement": "Strong Python",
+          "status": "shown",
+          "quote": "\"I build and evaluate Python-based forecasting and propensity models\""
+        },
+        {
+          "requirement": "Familiarity with MLOps and orchestration tools such as MLflow, Kubeflow, Airflow or an LLM-observability tool",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with feature engineering and data ingestion pipelines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [
+      "\"reliable batch data workflows\""
+    ],
+    "grounding_checked": true,
+    "defects": 1
+  }
+]

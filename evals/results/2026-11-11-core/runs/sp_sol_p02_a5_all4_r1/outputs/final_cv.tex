@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{needspace}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.9em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[1]{\Needspace{5\baselineskip}\par\medskip\noindent\textbf{#1}\par}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+\begin{document}
+{\Huge\bfseries\color{primarycolor} Daniel Okafor-Reyes}\par
+{\large\color{accentcolor} Backend Software Engineer}\par
+{\small Email: \href{mailto:daniel.okafor-reyes@example.com}{daniel.okafor-reyes@example.com} | Phone: +351 555 010 202\par
+LinkedIn: \href{https://linkedin.com/in/daniel-okafor-reyes-example}{linkedin.com/in/daniel-okafor-reyes-example}}\par
+
+\cvsection{Professional Summary}
+Backend engineer building and running Java and Kotlin services for insurance and travel products. Experience in REST API design, PostgreSQL, query tuning, Kafka event processing, automated testing and AWS EKS deployments. Reduced quote API p99 latency from 1.8 s to 450 ms and eliminated duplicate claims through transactional outbox and idempotent consumers. Seeking to bring this production experience to a Python-focused backend role; current Python experience is scripting.
+
+\cvsection{Technical Skills}
+\textbf{Languages:} Java 8-17, Kotlin, Python (data-fix scripts and Jenkins helpers)\par
+\textbf{Backend and APIs:} Spring Boot, Spring MVC, REST, OpenAPI 3, Spring Data JPA, Hibernate\par
+\textbf{Data and messaging:} PostgreSQL, Oracle, Redis, Kafka, RabbitMQ\par
+\textbf{Cloud and delivery:} AWS (EKS, S3, SQS), Docker, Kubernetes, Helm, Jenkins CI/CD, Git, Linux\par
+\textbf{Testing:} JUnit 5, Testcontainers, Spring Cloud Contract
+
+\cvsection{Professional Experience}
+\cvrole{Backend Engineer | Tejo Insurance Tech | Jan 2022 - Present}
+\begin{itemize}
+\item Develop and maintain seven Java 17 / Spring Boot microservices for policy quoting and claims intake.
+\item Designed a versioned REST API with OpenAPI 3 for 12 broker partners, handling approximately 400,000 quote requests per month; added per-partner rate limiting and contract tests with Spring Cloud Contract.
+\item Reduced quote endpoint p99 latency from 1.8 s to 450 ms through Redis caching and fixing N+1 queries in JPA.
+\item Implemented a transactional outbox and idempotency keys for Kafka consumers backed by PostgreSQL; duplicate claims fell from approximately 40 per week to zero over the following quarter.
+\item Built an internal Kotlin / Spring Boot service to render policy PDFs, using AWS S3 and SQS; wrote the team's Kotlin coding guidelines.
+\item Deploy services to Kubernetes on AWS EKS using Helm and Jenkins pipelines; participate in on-call one week per month.
+\item Handled a major Kafka lag incident in March 2024 and produced a praised incident write-up.
+\item Run fortnightly backend guild meetings since 2024; work entirely in English.
+\end{itemize}
+
+\cvrole{Software Developer | Viajar Online S.A. | Sep 2019 - Dec 2021}
+\begin{itemize}
+\item Built booking and payment features in a Java 11 / Spring MVC monolith backed by Oracle.
+\item Wrote integration tests with Testcontainers, increasing payments module test coverage from 35\% to 70\% and supporting safer refactoring.
+\item Extracted email/SMS notifications into a separate Spring Boot service using RabbitMQ, Thymeleaf and Docker as part of the monolith decomposition.
+\end{itemize}
+
+\cvrole{Junior Developer (internship then full-time) | CodeFarol Lda | Jul 2018 - Aug 2019}
+\begin{itemize}
+\item Maintained PHP and later Java applications for small business clients.
+\end{itemize}
+
+\cvsection{Education}
+BSc Informatics Engineering | Atlantic Polytechnic Institute | 2018
+
+\cvsection{Certification}
+Oracle Certified Professional Java SE 11 Developer | 2020
+
+\cvsection{Languages}
+English: fluent; Portuguese: fluent; Spanish: conversational
+\end{document}

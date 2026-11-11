@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.35em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.25em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Rafael Moretti-Klein}\par
+{\color{accentcolor} Backend Engineering | Python, FastAPI, Distributed Services}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Backend engineer and former engineering director returning to hands-on individual-contributor work. Experience building high-throughput services in Go and migrating a Python monolith to Python 3 and Go services on GCP. Python remains current through internal tooling and cost-dashboard scripts. Technical strengths include API reliability, Kubernetes, Terraform and observability.
+
+\cvsection{TECHNICAL SKILLS}
+Languages and frameworks: Python, FastAPI; Go (previous production experience).\par
+Cloud and infrastructure: GCP, GKE, Kubernetes, Terraform; limited AWS experience with EC2 and S3.\par
+Data and service technologies: Cassandra, Redis, BigQuery, gRPC, in-memory caching.\par
+Observability and testing: OpenTelemetry, Prometheus, pytest, tox.
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\textbf{Director of Engineering | Streamhaus GmbH | 2019-August 2026}
+\begin{itemize}
+\item Led a platform organisation of 45 engineers.
+\item Platform work included a strangler-fig migration from a Python 2 monolith to approximately 60 Python 3 and Go services on GKE, spanning 2019-2023.
+\item Set up a service template using FastAPI or Go, OpenTelemetry tracing, Prometheus metrics and Terraform modules.
+\item Playback API availability improved from 99.5\% to 99.95\% during the migration.
+\item Built an internal cost dashboard using BigQuery billing exports and Looker Studio, with ownership assigned per service. Rightsizing and committed use discounts saved EUR 4.2 million annually (31\%) through the 2023-2024 cloud cost programme.
+\item Recent coding focused on internal tools and Python cost-dashboard scripts.
+\end{itemize}
+\textbf{Principal Engineer | Streamhaus GmbH | 2015-2019}
+\begin{itemize}
+\item Technical lead for the playback API; designed and wrote most of the entitlement service determining playback access by subscription, region and device.
+\item Entitlement service handled 120,000 requests per second at peak with p99 latency below 15 ms, using Cassandra and local in-memory caching.
+\item Service technologies included Go, gRPC, Cassandra, Redis and Kubernetes.
+\end{itemize}
+
+\cvsection{OPEN SOURCE}
+\textbf{Maintainer, Python retry library | 2012-2018}
+\begin{itemize}
+\item Maintained a Python retry library with approximately 1,500 GitHub stars; handed over maintenance in 2018.
+\item Technologies: Python, pytest and tox.
+\end{itemize}
+\end{document}

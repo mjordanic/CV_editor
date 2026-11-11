@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "91a48b5075e6b8bfe8b3a25c9afae7beb10a4906d10601276c1e400838482d3e",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Rust (reading the book)\nG2: Go (did the tour)\nG3: machine learning (unfinished course)\nG4: AWS certification (course only, no exam)\nG5: Terraform authoring\nG6: official team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Copying the 'Learning: Rust, Go' line as skills\nT2: Turning the unfinished AWS Cloud Practitioner course into a certification or the unfinished ML course into ML skills\nT3: Calling him Tech Lead / Team Lead as a job title (project tech lead only; acting lead only in notes)\nT4: Claiming Terraform authoring\nT5: Failing to condense: keeping duplicated Älvgrind sections, hobbies, gymnasium, band\nT6: Dropping qualifiers like 'Vue (a little)', 'Tailwind (some)'\nT7: Old cover letter is to his current employer and says he is at Sjöbris\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nOskar Haddad-Lindqvist\nFull-Stack Engineer | TypeScript / React\noskar.hl@example.com | +46 70 555 0808\nGitHub: github.com/oskarhl-example\nPROFESSIONAL SUMMARY\nFull-stack developer with professional web development experience since 2014, strongest in frontend\nengineering. Builds customer-facing features with React, TypeScript, Node.js, NestJS and\nPostgreSQL. Experience includes accessibility audit fixes, measurable mobile performance\nimprovements, third-party integrations and A/B testing in fintech. Combines hands-on delivery with\nmentoring and acting team lead experience.\nTECHNICAL SKILLS\nFrontend: React, TypeScript, JavaScript, HTML, CSS, SCSS, Storybook, React Query; Next.js for\nmarketing pages and server-side rendering.\nBackend and databases: Node.js, NestJS, Express, REST APIs, PostgreSQL, Prisma, MySQL,\nRedis; maintenance of an Apollo Server GraphQL BFF.\nTesting and delivery: Jest, Playwright, React Testing Library, Supertest, GitHub Actions, GitLab\nCI, Docker, Git-based workflows.\nCloud and operations: AWS ECS Fargate, S3, Lambda, SQS, CloudWatch, Sentry, Datadog;\non-call support.\nProduct development: WCAG 2.1 AA audit fixes, mobile web performance, A/B testing, Unleash\nfeature flags, Figma collaboration, Agile/Scrum.\nPROFESSIONAL EXPERIENCE\nFullstack Developer | Älvgrind Fintech AB | 2021 - Present\n• Develop customer onboarding and KYC features in a six-person team using React, TypeScript,\nNestJS and PostgreSQL; collaborate closely with designers in Figma.\n• Built a BankID identity verification flow through a provider SDK, including QR code and\nsame-device flows, error handling and retries. A/B tested with 10% of traffic before full rollout;\nonboarding conversion increased from 61% to 74%.\n• Reduced mobile Largest Contentful Paint from 4.1 seconds to 1.9 seconds through code splitting,\nimage optimisation and replacement of heavyweight dependencies.\n• Implemented accessibility audit fixes against WCAG 2.1 AA for the onboarding flow and migrated\nthe frontend from Create React App to Vite in 2023.\n• Built document uploads using S3 presigned URLs, ClamAV scanning in Lambda and scan-status\nprocessing through SQS and PostgreSQL.\n• Helped migrate the backend incrementally from Express to NestJS, route by route; co-maintain an\nApollo Server GraphQL BFF.\n• Work with AWS ECS Fargate, Docker and GitHub Actions; participate in an on-call rotation of\none week every six weeks.\n• Served as acting team lead for four months in 2024, conducting 1:1s and sprint planning;\nparticipated in approximately 30 candidate interviews.\nDeveloper | Sjöbris Digital Agency AB | 2018 - 2021\n• Built websites and web applications for approximately 25 clients across retail, transport,\nmunicipalities and sport, using React, Angular, Node.js, Express, PHP and Laravel.\n• Project tech lead for a React Native ferry ticket app with approximately 50,000 downloads. Built\nmost of the app in a two-developer team, including offline ticket display.\n• Introduced GitLab CI to replace FTP-based delivery; worked with MySQL, MongoDB and\nFirebase across client projects.\nWeb Developer | Nordkust Media AB | 2014 - 2018\n• Developed newspaper websites with PHP, jQuery and MySQL, and an article editor using\nAngularJS.\n• Implemented a paywall integration and worked on Varnish caching configuration and Ubuntu\nserver administration.\nFreelance Web Developer / Student | 2012 - 2014\n• Built websites for local businesses, bands, friends and family using PHP, jQuery and WordPress.\nEDUCATION\nBachelor in Computer Science | West Coast University College (Högskola) | 2011 - 2014\nGraduated 2014.\nPROFESSIONAL DEVELOPMENT AND COMMUNITY\n• Advanced React Patterns course, 2022.\n• Coding bootcamp mentor, 2019 - 2020.\n• Local JavaScript meetup speaker, 2022: \"Migrating Express to NestJS without stopping the world\".\nLANGUAGES\nSwedish: native | English: fluent, used as the working language at Älvgrind | Arabic: spoken\n\n# OUTPUT 2: COVER LETTER\nOskar Haddad-Lindqvist\noskar.hl@example.com | +46 70 555 0808\nGitHub: github.com/oskarhl-example\nVerdane Care\nApplication: Full-Stack Engineer (TypeScript / React) - Patient Experience\nDear Verdane Care hiring team,\nYour Patient Experience role closely matches the work I do best: building customer-facing\nReact and TypeScript features, improving accessibility and mobile performance, and\ndelivering the Node.js services behind them. I have worked professionally in web development\nsince 2014 and currently build onboarding features at Älvgrind Fintech. Verdane’s focus on\nmaking booking and intake simpler gives that experience a clear application: helping people\ncomplete important tasks without unnecessary friction.\nAt Älvgrind, I built a BankID identity verification flow with QR code and same-device\nsupport, error handling and retries. After an initial A/B test with 10% of traffic, the flow was\nrolled out fully, increasing onboarding conversion from 61% to 74%. I also reduced mobile\nLargest Contentful Paint from 4.1 seconds to 1.9 seconds and implemented WCAG 2.1 AA\naccessibility audit fixes. These are directly relevant foundations for your focus on accessible\npatient journeys and performance on low-end phones.\nMy frontend strength is backed by practical NestJS, PostgreSQL and AWS experience. I\nhelped migrate Express services incrementally to NestJS and built a document-upload flow\nusing S3 presigned URLs, Lambda virus scanning and SQS. My testing toolkit includes Jest\nand Playwright, and I work with Docker and GitHub Actions. Integrating identity verification\nand handling uploaded ID documents also provides relevant experience for a product where\npersonal information needs careful handling.\nI collaborate closely with designers in Figma, have mentored at a coding bootcamp, and\nserved as acting team lead for four months, handling 1:1s and sprint planning. I would\nwelcome the opportunity to discuss how this combination of frontend depth, full-stack delivery\nand team support could contribute to Verdane’s Patient Experience squad. My GitHub link is\nincluded above.\nKind regards,\nOskar Haddad-Lindqvist\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
