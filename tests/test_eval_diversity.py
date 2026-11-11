@@ -458,7 +458,8 @@ def test_an_evaluation_out_of_credit_is_marked_interrupted_and_exits_75(tmp_path
     run = _run_folder(tmp_path)
     env = tmp_path / "empty.env"
     env.write_text("")
-    assert ev_mod.main([str(run), "--env-file", str(env)]) == EXIT_OUT_OF_CREDIT
+    assert ev_mod.main([str(run), "--grader-model", "openai:gpt-6.1-sol", "--grading-mode", "conversation",
+                        "--env-file", str(env)]) == EXIT_OUT_OF_CREDIT
     summary = json.loads((run / "evaluation" / "eval1" / "summary.json").read_text())
     assert summary["status"] == INTERRUPTED_STATUS and not (run / "evaluation" / "eval1" / "evaluation.json").exists()
     # an ordinary error is not turned into an out-of-credit exit
