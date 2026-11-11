@@ -29,8 +29,18 @@ workspace/), plus prompt.json (the prompt as sent), outputs/final_cv.tex, final_
 writer_notes.txt and pdf_checks.json. evals/evaluate.py grades it unchanged and blind: it reads inputs/,
 outputs/, transcript.json and inputs/script.json, never the manifest, so it sees neither the method nor
 the model. The manifest says `"method": "single_prompt"` (also as a label) for evals/summarize.py, and
-`"calls"`: the number of model calls made (1). There is no conversation: transcript.json has no turns.
-The default script's answer to the app's question for missing contact details (decline) is in the prompt.
+`"calls"`: the number of model calls made (1).
+
+The same user words as the app's default user: the prompt carries, verbatim, the default scripted user's request
+("Please write my CV first, then the cover letter.") and its answer to the app's question for missing contact
+details (decline), from `evals.run_case.DEFAULT_SCRIPT`. transcript.json records them as the run's user turns
+(after the job ad, shown as the app's run shows it) and as `user_instructions`, so the grader's input builder
+reads both arms' run folders alike. There are no tool messages: the turns' `assistant` is empty.
+
+Models: any `--model` with a price in provenance.PRICES_PER_1M (or a local `ollama:` model); the comparison uses
+openai:gpt-6-luna, openai:gpt-6.1-terra and openai:gpt-6.1-sol. The model is built as the app builds its writers
+(`temperature=None`, the model's default: gpt-6-luna accepts no other). An answer that does not parse is a failed
+session (`"failure": "parse_error"`, status `error: ...`, exit 1); it is not retried and is graded as it is.
 
 Usage (from the repo root; this makes one paid model call per case):
     .venv/bin/python -m evals.single_prompt --run-dir RUN --ad a3 --persona p03 [--inputs all4|cv_only|no_cv]
@@ -72,6 +82,9 @@ from agents.work_context import describe as describe_work_context, with_preferen
 METHOD = "single_prompt"
 DEFAULT_MODEL = "openai:gpt-6.1-sol"
 GENERATION_NODE = "single_prompt"
+# The default scripted user's replies the single prompt carries, in the order the app's user sends them.
+USER_REPLY_KEYS = ("first", "missing_details")
+JOB_AD_TURN = "<path to job ad>"  # how run_case's transcript shows the reply that hands over the job ad
 KINDS = ("cv", "cover_letter")
 TEMPLATES = {"cv": REPO / "templates" / "cv_template.tex",
              "cover_letter": REPO / "templates" / "cover_letter_template.tex"}
@@ -142,6 +155,34 @@ def missing_details_reply() -> str:
     return DEFAULT_SCRIPT["missing_details"]
 
 
+def user_instructions() -> list[dict]:
+    """The default scripted user's words the single prompt carries verbatim: [{"key", "text"}]."""
+    from evals.run_case import DEFAULT_SCRIPT
+    return [{"key": key, "text": DEFAULT_SCRIPT[key]} for key in USER_REPLY_KEYS]
+
+
+def transcript_record() -> dict:
+    """transcript.json of a single-prompt run: the user's words as turns, as run_case records a conversation
+    (the job ad first), with no tool messages; and the same words as `user_instructions`."""
+    said = [JOB_AD_TURN] + [i["text"] for i in user_instructions()]
+    return {"turns": [{"turn": n, "waiting_at": [], "assistant": None, "user": text} for n, text in enumerate(said)],
+            "observations": [], "requests": [], "user_instructions": user_instructions()}
+
+
+def init_model(model: str):
+    """The one call's model, built as the app builds its writers (the model's default temperature)."""
+    from config.config_loader import local_model_kwargs
+    return init_chat_model(model, temperature=None, **local_model_kwargs(model))
+
+
+def check_model(model: str) -> None:
+    """Refuse a model whose cost the run could not record (no price in provenance, not local)."""
+    from provenance import price_for
+    if not model.startswith("ollama:") and price_for(model) is None:
+        raise SystemExit(f"--model {model}: no price in provenance.PRICES_PER_1M, so its cost could not be "
+                         "recorded or capped; add the price first")
+
+
 def build_messages(given: dict[str, str], job_ad: str, company: str, work_preference: str | None = None) -> list:
     """The single prompt: [system, human]. `given` maps cv/portfolio/cover_letter/notes to text (omitted keys absent);
     `company` is the search fixture's result text (evals.evaluate.company_text)."""
@@ -157,6 +198,7 @@ def build_messages(given: dict[str, str], job_ad: str, company: str, work_prefer
         + "\n\n" + rules["truthfulness"]
     )
     parts = ["Create a professional, tailored CV and cover letter for this job from the following information.\n"]
+    parts.append(f"**The candidate's request (their words):** \"{user_instructions()[0]['text']}\"\n")
     for key in INPUT_ORDER:
         if given.get(key):
             parts.append(f"{INPUT_SECTIONS[key]}\n{given[key].strip()}\n")
@@ -205,6 +247,10 @@ def read_given_inputs(inputs_dir: Path, given_keys: list[str]) -> dict[str, str]
     return out
 
 
+class AnswerNotParsed(RuntimeError):
+    """The one call returned an answer that is not the five fields: a failed session, never retried."""
+
+
 def generate(llm, messages: list, callbacks: list) -> SinglePromptResponse:
     """The one model call of the case (no retries: a second call would change the topology)."""
     chain = llm.with_structured_output(SinglePromptResponse, include_raw=True)
@@ -212,7 +258,7 @@ def generate(llm, messages: list, callbacks: list) -> SinglePromptResponse:
                                             "run_name": GENERATION_NODE})
     parsed = result.get("parsed") if isinstance(result, dict) else result
     if parsed is None:
-        raise RuntimeError(f"the model's answer did not parse: {result.get('parsing_error')}")
+        raise AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}")
     return parsed
 
 
@@ -310,7 +356,8 @@ def parse_args(argv=None):
     parser.add_argument("--ad", required=True, help="tracked fixture ad id (e.g. a3): its ad.md and search_fixture.json")
     parser.add_argument("--persona", required=True, help="tracked fixture persona id (e.g. p03): its candidate files")
     parser.add_argument("--inputs", help="all4 (default), cv_only, no_cv, or e.g. cv,notes")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"the one call's model (default {DEFAULT_MODEL})")
+    parser.add_argument("--model", default=DEFAULT_MODEL,
+                        help=f"the one call's model, e.g. openai:gpt-6-luna, openai:gpt-6.1-terra (default {DEFAULT_MODEL})")
     parser.add_argument("--work-preference", dest="work_preference", choices=["remote", "hybrid", "on-site", "no preference"])
     parser.add_argument("--env-file", help=".env file with API keys (read, never copied)")
     parser.add_argument("--cost-cap", type=float, default=1.0, help="recorded in the manifest; a run is one call (default 1.0)")
@@ -326,6 +373,7 @@ def parse_args(argv=None):
 
 def main(argv=None) -> int:
     args = parse_args(argv)
+    check_model(args.model)
     from evals.run_case import apply_fixture_defaults, prepare_run_folder
     apply_fixture_defaults(args)
     if not any(getattr(args, k) for k in ("cv", "notes")):
@@ -363,10 +411,10 @@ def main(argv=None) -> int:
                               company_text(inputs / "search_fixture.json"), args.work_preference)
     recorder.write_json("prompt.json", [{"role": m.type, "content": m.content} for m in messages])
 
-    status, response, pdfs = "completed", None, {}
+    status, response, pdfs, failure = "completed", None, {}, None
     t0 = time.time()
     try:
-        response = generate(init_chat_model(args.model), messages, callbacks)
+        response = generate(init_model(args.model), messages, callbacks)
         recorder.event("generation", model=args.model, **{f"{f}_chars": len(getattr(response, f)) for f in
                                                           ("cv_content", "cv_latex", "cover_letter_content",
                                                            "cover_letter_latex")})
@@ -379,6 +427,7 @@ def main(argv=None) -> int:
         recorder.record_error("session", e)
     except Exception as e:  # noqa: BLE001 - record what happened
         status = f"error: {type(e).__name__}: {e}"[:500]
+        failure = "parse_error" if isinstance(e, AnswerNotParsed) else "error"
         recorder.record_error("session", e)
 
     out = run_dir / "outputs"
@@ -400,10 +449,10 @@ def main(argv=None) -> int:
                                        response.cv_content if kind == "cv" else response.cover_letter_content)
         entry["pdf"] = files.get(f"{kind}_pdf_path")
     recorder.write_json("outputs/pdf_checks.json", pdfs)
-    # No conversation: the evaluator's conversation section says so, and its request checklist is empty.
-    recorder.write_json("transcript.json", {"turns": [], "observations": [], "requests": []})
+    # The default user's words as the run's user turns (no tool messages); no scripted request, so no checklist.
+    recorder.write_json("transcript.json", transcript_record())
     calls = recorder.totals["llm_calls"] + recorder.totals["llm_errors"]
-    summary = {"status": status, "method": METHOD, "minutes": round((time.time() - t0) / 60, 2), "outputs": files,
+    summary = {"status": status, "method": METHOD, "failure": failure, "minutes": round((time.time() - t0) / 60, 2), "outputs": files,
                "calls": calls, "calls_by_node": {n: v["calls"] for n, v in recorder.totals["by_node"].items()},
                "pdfs": {k: {kk: v.get(kk) for kk in ("source", "compiled", "compile_error", "fallback_error",
                                                        "fallback_dropped_chars", "pdf")} for k, v in pdfs.items()},
