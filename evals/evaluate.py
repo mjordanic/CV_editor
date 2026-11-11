@@ -3,7 +3,8 @@
 The evaluator is blind to how the run was made: it never sees the model, the input-set name or the
 run id. It gets the job ad, the company information the writer had (the replayed search results),
 the candidate documents the writer was given (omitted ones are simply absent), the final CV and
-cover letter text, and the text extracted from the two PDFs. It answers a fixed rubric as JSON with
+cover letter text, and the plain text extracted from the two PDFs (pdfplumber, no model; for the CV this is
+"what an ATS would read"). It answers a fixed rubric as JSON with
 quoted evidence:
 
   (a) invented content   every skill, tool, employer, title, date, number, degree, certificate in the
@@ -11,7 +12,10 @@ quoted evidence:
   (b) completeness       facts in the material that matter for this ad but were left out
   (c) fit to the ad      must-have and nice-to-have coverage, and whether gaps are handled honestly
   (d) CV standards       structure, length, contact details, chronology, language, artefacts
-  (e) ATS screening      PDF text parseability, standard headings, keyword coverage, pass likelihood
+  (e) ATS screening      one 0-10 score with a reason, judged from what an ATS would read (the plain text a
+                         standard extractor pulls from the CV PDF): readable, in order, clear sections; the
+                         ad's important requirements the candidate has shown in searchable wording; keyword
+                         stuffing and unsupported keywords flagged (they lower the score)
   (f) cover letter       specificity, consistency with the CV, stale framing from the old letter
   (g) work arrangement   remote / hybrid / on-site, location limits and culture used correctly and not
                          invented; the candidate's preference stated only if given, conflicts not hidden
@@ -136,18 +140,37 @@ class CVStandards(BaseModel):
 
 
 class ATS(BaseModel):
-    pdf_text_parseable: bool = Field(description="The PDF text reads in a sensible order with words intact")
-    standard_headings: bool
+    """Judged from WHAT AN ATS WOULD READ (the plain text a standard extractor pulls from the CV PDF), the job
+    ad and the candidate's material: one 0-10 score with its reason, and the three judgements behind it."""
+    text_readable_in_order: bool = Field(
+        description="The extracted text reads in a sensible order with words, dates and contact details intact: "
+                    "no garbled characters, merged words, interleaved columns or text missing compared with the "
+                    "page images")
+    clear_sections: bool = Field(description="Standard section headings a parser can find (e.g. experience, "
+                                             "education, skills) and every entry under the right one")
     headings_found: list[str]
-    ad_keywords: list[str] = Field(description="The main hard-skill and role keywords of the ad (10-25)")
-    keywords_in_cv: list[str]
-    keywords_missing_from_cv: list[str]
-    keywords_missing_but_candidate_has: list[str] = Field(
-        description="Missing keywords the candidate's material shows they have (lost opportunities)")
-    keyword_coverage_pct: int = Field(ge=0, le=100)
-    pass_likelihood: Literal["low", "medium", "high"] = Field(
-        description="How likely the CV passes an automatic screening for this ad")
-    reasons: list[str]
+    parse_issues: list[str] = Field(description="Quotes from the extracted text that an ATS would misread: garbled, "
+                                                "out of order, merged, split or missing; empty if none")
+    important_requirements: list[str] = Field(
+        description="The ad's important requirements a recruiter's search would look for: role title, must-have "
+                    "skills, tools, qualifications, languages (short form, about 5-20)")
+    covered_in_searchable_wording: list[str] = Field(
+        description="Those the extracted text visibly shows in wording a recruiter's keyword search would find "
+                    "(the ad's term or its standard name, not only a paraphrase)")
+    missed_but_candidate_has: list[str] = Field(
+        description="Those the candidate's material shows they have but the extracted text does not show in "
+                    "searchable wording (lost opportunities)")
+    keyword_stuffing: list[str] = Field(
+        description="Keywords repeated without context, lists of the ad's terms pasted in, or hidden text; quoted")
+    unsupported_keywords: list[str] = Field(
+        description="Ad keywords or skills the CV claims that the candidate's material does not support")
+    score: int = Field(ge=0, le=10, description="How well the CV would do in automatic screening for this ad, "
+                                                "honestly: 10 = clean, well-sectioned text that shows every "
+                                                "important requirement the candidate really has in searchable "
+                                                "wording. Requirements the candidate lacks cost nothing when left "
+                                                "out; parse problems and lost opportunities lower the score, and "
+                                                "keyword stuffing or unsupported keywords lower it, never raise it")
+    reason: str = Field(description="One or two sentences: why this score")
 
 
 class CoverLetter(BaseModel):
@@ -312,6 +335,10 @@ for the CV and then the cover letter is followed when both documents exist. Noth
 """
 _RULES_END = """- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
 the visual layout from both.
+- Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; \
+the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements \
+that the candidate really has visible in wording a recruiter's search would find; and is there keyword stuffing or \
+a skill the candidate's material does not support. Cheating to match the ad lowers the ATS score.
 - Be calibrated: use the full score ranges; 10 is rare."""
 
 SYSTEM_PROMPT = _SYSTEM_INTRO + _RULES_COMMON + _RULES_CONVERSATION + _RULES_END
@@ -337,7 +364,7 @@ The tool was given only these documents about the candidate:
 _OUTPUTS_TEMPLATE = """# OUTPUT 1: CV (text)
 {cv}
 
-# OUTPUT 1b: TEXT EXTRACTED FROM THE CV PDF
+# OUTPUT 1b: WHAT AN ATS WOULD READ (plain text extracted from the CV PDF by a standard text extractor)
 {cv_pdf}
 
 # OUTPUT 2: COVER LETTER (text)
@@ -663,6 +690,7 @@ def counts(ev: dict, scripted: list[dict] | None = None) -> dict:
         "wrong_language": sum(1 for k in ("right_language_cv", "right_language_cover_letter")
                               if (ev.get("language_quality") or {}).get(k) is False),
         "language_errors": len((ev.get("language_quality") or {}).get("grammar_and_spelling_errors") or []),
+        "ats_score": (ev.get("ats") or {}).get("score"),
     }
 
 
@@ -801,7 +829,7 @@ def main(argv=None) -> int:
     print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "grader": args.model,
                       "grading_mode": args.grading_mode, "counts": record["counts"],
                       "overall": record["evaluation"]["overall_score"],
-                      "ats": record["evaluation"]["ats"]["pass_likelihood"], "cost_usd": record["cost_usd"]}))
+                      "ats": record["evaluation"]["ats"]["score"], "cost_usd": record["cost_usd"]}))
     return 0
 
 

@@ -102,8 +102,10 @@ DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 # App sessions: the measured means of the 2026-11-10 default-script sessions (62 luna, 20 terra). Single-prompt
 # sessions: sp_session_usd. Gradings: Anthropic list prices per 1M tokens (GRADER_PRICES_PER_1M, the prices the
 # Claude grader records) at ~16k input and ~12k output tokens per grading (the measured 10k output plus room for
-# thinking); the trap check at ~5k input and ~1.5k output. The plan rounds them as below. The Batch API takes
-# BATCH_DISCOUNT off every grading line; sessions run on OpenAI interactively, so Batch does not change them.
+# thinking; the ATS score adds no input, as the CV's PDF text was already in the prompt, and its answer replaces
+# the earlier ATS section of about the same length); the trap check at ~5k input and ~1.5k output. The plan rounds
+# them as below. The Batch API takes BATCH_DISCOUNT off every grading line; sessions run on OpenAI interactively,
+# so Batch does not change them.
 GRADER_PRICES_PER_1M = {"claude-sonnet-5-5": (2.00, 10.00), "claude-opus-5-5": (4.00, 20.00),
                         "claude-haiku-5-5": (0.10, 0.50)}  # input, output
 GRADING_TOKENS = (16_000, 12_000)

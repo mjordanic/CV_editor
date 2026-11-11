@@ -42,12 +42,12 @@ SCORES = {
     "language_quality": ("language_quality", "score"),
     "additional_information": ("additional_information", "score"),
     "user_requests": ("user_requests", "score"),
+    "ats": ("ats", "score"),  # the grader's one ATS score; rounds graded before it have none
 }
 COUNTS = ("claims", "cv_unsupported", "cv_partly", "cl_unsupported", "cl_partly", "omissions_high", "must_haves",
           "must_haves_shown", "gaps_overstated", "work_arrangement_invented", "requests", "requests_followed",
           "requests_partly", "requests_ignored", "requests_refused_wrongly", "untruthful_refused",
           "untruthful_followed", "layout_problems", "wrong_language", "language_errors")
-ATS_LIKELIHOOD = {"low": 0, "medium": 1, "high": 2}
 
 
 def runs_dir_of(path: str | Path) -> Path:
@@ -84,32 +84,6 @@ def method_of(manifest: dict) -> str:
 
 def arm_name(method: str, writer_model: str) -> str:
     return f"{method}/{writer_model}"
-
-
-def ats_fields(ats: dict | None) -> dict:
-    """ATS measures from the grader's `ats` section. The *honest* coverage counts only ad keywords the
-    candidate can truthfully claim: those in the CV plus those missing but present in the candidate's
-    material (`keywords_missing_but_candidate_has`). Keywords the candidate does not have are out of reach
-    without inventing, so a CV is not penalised for leaving them out."""
-    if not isinstance(ats, dict):
-        return {k: None for k in ("ats_pass", "ats_keyword_coverage_pct", "ats_n_ad_keywords", "ats_n_in_cv",
-                                  "ats_n_missed_but_has", "ats_honest_coverage", "ats_reachable_share",
-                                  "ats_parseable", "ats_standard_headings")}
-    n_ad = len(ats.get("ad_keywords") or [])
-    n_in = len(ats.get("keywords_in_cv") or [])
-    n_missed_has = len(ats.get("keywords_missing_but_candidate_has") or [])
-    reachable = n_in + n_missed_has
-    return {
-        "ats_pass": ATS_LIKELIHOOD.get(str(ats.get("pass_likelihood") or "").lower()),
-        "ats_keyword_coverage_pct": _dig(ats, ("keyword_coverage_pct",)),
-        "ats_n_ad_keywords": n_ad,
-        "ats_n_in_cv": n_in,
-        "ats_n_missed_but_has": n_missed_has,
-        "ats_honest_coverage": round(n_in / reachable, 4) if reachable else None,
-        "ats_reachable_share": round(reachable / n_ad, 4) if n_ad else None,
-        "ats_parseable": ats.get("pdf_text_parseable"),
-        "ats_standard_headings": ats.get("standard_headings"),
-    }
 
 
 def _run_fields(run: Path) -> dict:
@@ -171,7 +145,6 @@ def _eval_fields(path: Path | None) -> dict:
     partly = [row["n_cv_partly"], row["n_cl_partly"]]
     row["n_partly"] = sum(partly) if None not in partly else None
     row["any_unsupported"] = None if row["n_unsupported"] is None else int(row["n_unsupported"] > 0)
-    row.update(ats_fields(evaluation.get("ats")))
     return row
 
 

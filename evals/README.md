@@ -173,7 +173,8 @@ uv run python -m evals.evaluate runs/p03_a3_all4 [--grader-model anthropic:claud
 
 The evaluator sees the job ad, the company information from the search fixture, the candidate
 documents that were given (omitted ones are absent), and the final CV and cover letter as text and
-as extracted PDF text. It does not see the model, the input-set name or the run id. It returns one
+as plain text extracted from the PDFs (pdfplumber, no model). The CV's extracted text is labelled *what
+an ATS would read*. It does not see the model, the input-set name or the run id. It returns one
 JSON answer with quoted evidence:
 
 - **claims**: every skill, tool, employer, title, date, number, degree, certificate in both outputs,
@@ -186,8 +187,16 @@ JSON answer with quoted evidence:
   culture actually used, and whether a preference was stated only if the candidate gave one and a
   conflict with the job was not hidden. Without a stated preference the candidate counts as open:
   neutral wording is fine, an invented commitment or presenting the arrangement as a weakness is not
-- **cv_standards**, **ats** (PDF text parseable, headings, keyword coverage, pass likelihood low/medium/high
-  with reasons) and **cover_letter**
+- **cv_standards** and **cover_letter**
+- **ats**: one ATS score 0-10 with a short `reason`, judged inside the same grading call from what an ATS
+  would read (the CV PDF's extracted text), the ad and the candidate's material. Behind it, three
+  judgements: the text is readable and in order with clear sections (`text_readable_in_order`,
+  `clear_sections`, `headings_found`, `parse_issues`); the ad's important requirements that the candidate
+  has are visible in wording a recruiter's search would find (`important_requirements`,
+  `covered_in_searchable_wording`, `missed_but_candidate_has`); keyword stuffing and skills the candidate
+  does not have are flagged (`keyword_stuffing`, `unsupported_keywords`) and lower the score.
+  Requirements the candidate lacks cost nothing when left out. No extra model call and no extra input
+  files; `counts.ats_score` carries the score, and it is the only ATS measure the analysis reads
 - **visual_layout**: from PNG images of the first pages (up to 3 of the CV and 2 of the letter, about
   110 dpi) and deterministic measurements (`evals/pdf_layout.py`: pages, fonts, body and smallest font
   size, margins, characters past the page edge, a nearly empty last page, unmapped glyphs): overflow or
@@ -440,8 +449,8 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   - paired differences: bootstrap CIs, Wilcoxon and sign tests, Holm over the primary contrasts;
   - a noise floor from repeats and re-gradings;
   - breakdowns by input set, ad and persona, plus cost and latency;
-  - an ATS measure, `ats_honest_coverage`: of the ad's keywords that the candidate can truthfully
-    claim, the share the CV shows;
+  - the grader's ATS score (`ats`, 0-10; rounds graded before it, such as 2026-11-10, have none)
+    next to the claims the grader flags, so a high ATS score bought by cheating shows;
   - grader calibration, when two graders graded the same sessions;
   - power, sample sizes and the cost of candidate designs.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
@@ -487,7 +496,9 @@ uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ..
   the plan's figures and caps. Unit prices (`AB_UNIT_USD` in `run_matrix.py`): app sessions the measured
   2026-11-10 means (luna 0.027, terra 0.085); single-prompt sessions 6k input and 10k output tokens at
   provenance's prices, rounded up to a cent (luna 0.01, terra 0.06, sol 0.12); a grading 16k input and
-  12k output tokens (Sonnet 0.15, Opus 0.30, Haiku 0.008); the trap check 0.002. Stages 1-2: **45.62 USD
+  12k output tokens (Sonnet 0.15, Opus 0.30, Haiku 0.008; the ATS score needs no extra input, the CV's PDF
+  text was already in the prompt, and its answer replaces the earlier ATS section of about the same
+  length); the trap check 0.002. Stages 1-2: **45.62 USD
   standard, 26.66 USD with Batch** (pilot 15.74 / 8.81, core 29.88 / 17.85); stage 3: 23.51 / 14.58.
 - **Caps** (the plan's +25%): each stage's own spend (its sessions' rows in `ledger.tsv`) and the whole
   ledger. Stages 1-2: pilot 20 / 12, core 38 / 23, total **57 / 34** (standard / Batch); stage 3: 30 / 19,
