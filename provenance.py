@@ -32,7 +32,6 @@ PRICES_PER_1M = {
     "gpt-6-luna": (0.10, 0.01, 0.50),
     "gpt-6.1-terra": (1.00, 0.10, 5.00),
     "gpt-6.1-sol": (2.00, 0.20, 10.00),
-    "gpt-6-astra": (10.00, 1.00, 50.00),  # read 2026-11-11; short context (up to 272k input tokens)
     "gpt-5-nano": (0.05, 0.005, 0.40),
     "gpt-5.6-luna": (0.20, 0.02, 1.20),
     "text-embedding-3-small": (0.02, 0.02, 0.0),

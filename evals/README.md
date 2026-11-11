@@ -577,13 +577,12 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
 `evals/build_ab_matrix.py` writes two matrices (no model calls; `--check` fails if they are out of date,
 and a test runs it):
 
-- **`matrix_ab_stage12.json`**, 186 sessions: arms **A** MA-luna (the app, default script, gpt-6-luna),
+- **`matrix_ab_stage12.json`**, 147 sessions: arms **A** MA-luna (the app, default script, gpt-6-luna),
   **C** SP-luna and **E** SP-sol on the 39 matched cases (p01-p13 on their primary ad x `all4`,
   `cv_only`, `no_cv`), in two stages. **pilot** (36): the 6 pilot cases (p01/a1, p03/a3, p04/a6, p11/a1,
-  p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (150): the other 33 cases x 3 arms, plus a
-  second writer run of the 4 extra repeat cases, plus **F** SP-astra (one gpt-6-astra call, added after the
-  pilot) on all 39 cases, one writer run each, graded once by Sonnet. Haiku was dropped as a re-grader after
-  the pilot (option O1 off): the core has no Haiku grading.
+  p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (111): the other 33 cases x 3 arms, plus a
+  second writer run of the 4 extra repeat cases. Haiku was dropped as a re-grader after the pilot (option O1
+  off): the core has no Haiku grading.
 - **`matrix_ab_stage3.json`**, 78 sessions, run only if the core run calls for it: **B** MA-terra and
   **D** SP-terra on the 39 cases.
 
@@ -621,13 +620,12 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
   measured means (`evals/results/2026-11-11`): app session luna 0.0286; single-prompt sessions luna 0.0028,
   sol 0.0439; gradings, measured through the Batch API and stored at list price, Sonnet 0.093, Opus 0.352,
   Haiku 0.0098; trap check 0.001. Not in the pilot: the terra app session (the 2026-11-10 mean, 0.085) and a
-  terra or astra single call (6k input and 10k output tokens at provenance's prices, a ceiling: terra 0.06,
-  astra 0.56). At these units the pilot comes to 6.78 USD with Batch, what it spent. Core (A, C, E and F,
-  150 sessions): **46.18 USD standard, 35.40 USD with Batch grading** (sessions on direct OpenAI calls), cap
-  58 / 45; stage 3: 20.03 / 12.84. `--sp-batch` would also halve the single-prompt sessions (core 23.62), but
-  the core runs them as direct calls. The cost comparison between arms uses list prices (`cost_list_usd`).
+  terra single call (6k input and 10k output tokens at provenance's prices, a ceiling: 0.06). At these units
+  the pilot comes to 6.78 USD with Batch, what it spent. Core (111 sessions): **20.67 USD standard, 11.73 USD
+  with Batch grading** (sessions on direct OpenAI calls); stage 3: 20.03 / 12.84. `--sp-batch` would also
+  halve the single-prompt sessions (core 10.87), but the core runs them as direct calls. The cost comparison between arms uses list prices (`cost_list_usd`).
 - **Caps** (the plan's +25%): each stage's own spend (its sessions' rows in `ledger.tsv`) and the whole
-  ledger. Stages 1-2: pilot 20 / 12, core 58 / 45, total **78 / 56** (standard / Batch); stage 3: 30 / 19,
+  ledger. Stages 1-2: pilot 20 / 12, core 38 / 23, total **57 / 34** (standard / Batch); stage 3: 30 / 19,
   run into the same folder, so its total cap (87 / 53) includes stages 1-2. The standard caps apply when
   the gradings run here, the Batch caps with `--sessions-only`. `--total-cap` overrides the total.
 - **`--stage`** is required to run a staged matrix; `--only` narrows it further. Resume, the ledger and

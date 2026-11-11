@@ -117,8 +117,8 @@ DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
 # The sessions were direct OpenAI calls. The gradings and trap checks went through Anthropic's Batch API, so their
 # measured Batch means are divided by BATCH_PRICE_FACTOR here; the estimate's Batch column multiplies them back.
 # The Batch API charges BATCH_PRICE_FACTOR x list price on every grading line; sessions run on OpenAI interactively,
-# so Batch does not change them. gpt-6.1-terra and gpt-6-astra were not in the pilot: terra's app session is the
-# 2026-11-10 measured mean (20 sessions), and a single call of either is sp_session_usd (6k input and 10k output
+# so Batch does not change them. gpt-6.1-terra was not in the pilot: its app session is the
+# 2026-11-10 measured mean (20 sessions), and a single call is sp_session_usd (6k input and 10k output
 # tokens, a ceiling: the pilot's single calls averaged 5.4k input and 3.8-5.0k output). Haiku grades only in the
 # pilot (dropped as a re-grader).
 PILOT_BATCH_USD = {"claude-sonnet-5-5": 0.0465, "claude-opus-5-5": 0.176, "claude-haiku-5-5": 0.0049,
@@ -126,7 +126,7 @@ PILOT_BATCH_USD = {"claude-sonnet-5-5": 0.0465, "claude-opus-5-5": 0.176, "claud
 AB_UNIT_USD = {
     "multi_agent": {"gpt-6-luna": 0.0286, "gpt-6.1-terra": 0.085},
     "single_prompt": {"gpt-6-luna": 0.0028, "gpt-6.1-sol": 0.0439,
-                      **{m: sp_session_usd(m) for m in ("gpt-6.1-terra", "gpt-6-astra")}},
+                      "gpt-6.1-terra": sp_session_usd("gpt-6.1-terra")},
     "grading": {m: PILOT_BATCH_USD[m] / BATCH_PRICE_FACTOR
                 for m in ("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5")},
     "trap": {"claude-haiku-5-5": PILOT_BATCH_USD["trap"] / BATCH_PRICE_FACTOR},

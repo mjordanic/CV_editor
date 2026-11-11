@@ -5,21 +5,19 @@ The plan (cv-eval-plan, sections 1-3) compares the multi-agent app with one mode
     A  MA-luna   the app as shipped (default script), gpt-6-luna writes           core, stages 1-2
     C  SP-luna   one gpt-6-luna call (evals/single_prompt.py)                     core, stages 1-2
     E  SP-sol    one gpt-6.1-sol call                                             core, stages 1-2
-    F  SP-astra  one gpt-6-astra call                                             stage 2 only (added after the pilot)
     B  MA-terra  the app with gpt-6.1-terra as the writer                         stage 3, only if triggered
     D  SP-terra  one gpt-6.1-terra call                                           stage 3, only if triggered
 
 on the 39 matched cases: personas p01-p13, each on its primary ad, with the input sets all4, cv_only and no_cv.
 
-Stages 1-2 (evals/matrix_ab_stage12.json), 186 sessions:
+Stages 1-2 (evals/matrix_ab_stage12.json), 147 sessions:
     pilot  the 6 pilot cases (all4: p01/a1, p03/a3, p04/a6, p11/a1, p12/a7, p13/a8) x A, C, E x 2 writer runs = 36.
            Every session is graded once by Sonnet (eval1). The 18 first-run sessions are also graded by Sonnet a
            second time (eval2), by Opus once (opus1) and by Haiku twice (haiku1, haiku2).
     core   the other 33 cases x A, C, E, graded once by Sonnet; the 4 extra repeat cases get a second writer run
            (graded once) and their first-run sessions a second Sonnet grading; Opus grades the first-run sessions
-           of the 6 check cases. 111 sessions. Plus F on all 39 cases (the pilot cases too), one writer run each,
-           graded once by Sonnet: 39 sessions, 150 in all. Haiku was dropped as a re-grader after the pilot
-           (option O1 off), so the core has no Haiku grading.
+           of the 6 check cases. 111 sessions. Haiku was dropped as a re-grader after the pilot (option O1 off), so
+           the core has no Haiku grading.
     The 6 check cases come from the 6 of the 7 non-pilot personas a seeded draw picks, two per input set; the 4
     extra repeat cases are the check cases with cv_only and no_cv (the 6 pilot repeats are all all4). Every session
     gets the ground-truth trap check (truth1). So: 10 repeat cases (30 re-graded first runs), 12 Opus cases (36
@@ -61,7 +59,6 @@ ARMS = {
     "C": {"name": "SP-luna", "slug": "sp_luna", "method": "single_prompt", "model": "openai:gpt-6-luna"},
     "D": {"name": "SP-terra", "slug": "sp_terra", "method": "single_prompt", "model": "openai:gpt-6.1-terra"},
     "E": {"name": "SP-sol", "slug": "sp_sol", "method": "single_prompt", "model": "openai:gpt-6.1-sol"},
-    "F": {"name": "SP-astra", "slug": "sp_astra", "method": "single_prompt", "model": "openai:gpt-6-astra"},
 }
 GRADERS = {
     "sonnet": "anthropic:claude-sonnet-5-5",  # the primary grader
@@ -71,13 +68,13 @@ GRADERS = {
 }
 # The plan's prices (section 3) and caps (+25%, rounded up to a dollar), per stage. Caps are on that stage's own
 # spend in the ledger; "total" caps the whole ledger of the runs folder. The pilot keeps the figures it ran under
-# (it spent 6.78 USD). The core is re-priced from the pilot's measured unit costs (run_matrix.AB_UNIT_USD) and
-# includes arm F (2026-11-11; it was 29.88 / 17.85, cap 38 / 23, before). Its Batch figure has the sessions on
-# direct OpenAI calls and the gradings through Anthropic's Batch API.
-PLAN_USD_12 = {"pilot": {"standard": 15.74, "batch": 8.81}, "core": {"standard": 46.18, "batch": 35.40},
-               "total": {"standard": 61.92, "batch": 44.21}}
-CAPS_12 = {"pilot": {"standard": 20.0, "batch": 12.0}, "core": {"standard": 58.0, "batch": 45.0},
-           "total": {"standard": 78.0, "batch": 56.0}}
+# (it spent 6.78 USD). The core is re-priced from the pilot's measured unit costs (run_matrix.AB_UNIT_USD,
+# 2026-11-11; it was 29.88 / 17.85 before) and keeps its caps. Its Batch figure has the sessions on direct OpenAI
+# calls and the gradings through Anthropic's Batch API.
+PLAN_USD_12 = {"pilot": {"standard": 15.74, "batch": 8.81}, "core": {"standard": 20.67, "batch": 11.73},
+               "total": {"standard": 36.41, "batch": 20.54}}
+CAPS_12 = {"pilot": {"standard": 20.0, "batch": 12.0}, "core": {"standard": 38.0, "batch": 23.0},
+           "total": {"standard": 57.0, "batch": 34.0}}
 PLAN_USD_3 = {"stage3": {"standard": 23.51, "batch": 14.58}, "total": {"standard": 23.51, "batch": 14.58}}
 # Stage 3 runs into the same folder as stages 1-2 (its pairs are with arm A), so its total adds the stage 1-2 caps.
 CAPS_3 = {"stage3": {"standard": 30.0, "batch": 19.0}, "total": {"standard": 87.0, "batch": 53.0}}
@@ -138,7 +135,6 @@ def stage12(seed: int = SEED, app_commit: str | None = None) -> dict:
     rng = random.Random(seed + 12)
 
     def sessions_of(case: str) -> list[dict]:
-        """Arms A, C, E of a case, in its stage."""
         stage = "pilot" if case in d["pilot"] else "core"
         out = []
         for arm in ("A", "C", "E"):
@@ -154,26 +150,21 @@ def stage12(seed: int = SEED, app_commit: str | None = None) -> dict:
                 out.append(_session(arm, by_case[case], 2, stage, [_grading("eval1", "sonnet")]))
         return out
 
-    def core_sessions_of(case: str) -> list[dict]:
-        """A pilot case has only its F session in the core; a core case has A, C, E and F."""
-        astra = _session("F", by_case[case], 1, "core", [_grading("eval1", "sonnet")])
-        return ([] if case in d["pilot"] else sessions_of(case)) + [astra]
-
-    cases = _ordered(d["pilot"], sessions_of, rng) + _ordered(list(by_case), core_sessions_of, rng)
+    cases = (_ordered(d["pilot"], sessions_of, rng)
+             + _ordered([c for c in by_case if c not in d["pilot"]], sessions_of, rng))
     return {
         "description": "Stages 1-2 of the CV-editor experiment plan (cv-eval-plan sections 1-3): arms A (MA-luna, the "
                        "app, default script), C (SP-luna) and E (SP-sol) on the 39 matched cases, the pilot as its own "
-                       "stage, and F (SP-astra) on the 39 cases in the core. Generated by evals/build_ab_matrix.py; do not edit by hand. Run a stage with: python -m "
+                       "stage. Generated by evals/build_ab_matrix.py; do not edit by hand. Run a stage with: python -m "
                        "evals.run_matrix --matrix evals/matrix_ab_stage12.json --stage pilot --out RUNS_DIR",
         "generated_by": "evals/build_ab_matrix.py", "plan_stages": [1, 2],
         "app_commit": app_commit,
-        "arms": {k: ARMS[k] for k in ("A", "C", "E", "F")}, "graders": GRADERS,
+        "arms": {k: ARMS[k] for k in ("A", "C", "E")}, "graders": GRADERS,
         "evaluate_args": [], "design": d,
         "stages": {
             "pilot": {"description": "stage 1: 6 pilot cases x A, C, E x 2 writer runs; grader calibration",
                       "plan_usd": PLAN_USD_12["pilot"], "cap_usd": CAPS_12["pilot"]},
-            "core": {"description": "stage 2: the other 33 cases x A, C, E; 4 extra repeat cases; Opus on 6 check cases; "
-                                    "F on all 39 cases",
+            "core": {"description": "stage 2: the other 33 cases x A, C, E; 4 extra repeat cases; Opus on 6 check cases",
                      "plan_usd": PLAN_USD_12["core"], "cap_usd": CAPS_12["core"]},
         },
         "plan_usd": PLAN_USD_12["total"], "caps": {"total": CAPS_12["total"]},
