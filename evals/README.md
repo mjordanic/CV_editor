@@ -248,7 +248,7 @@ counts and deterministic PDF checks: pages, extractable text, how much of the te
 PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (the images) and the cost.
 `evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
 returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
-templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
+templates and answer schema; so it differs between Claude and OpenAI graders), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
 cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids,
 `batch_id` (set when the grading came from a batch) and `packages` (package and pdflatex versions, as in `config.json`).
 
