@@ -200,8 +200,10 @@ def test_the_anthropic_request_is_batch_ready_structured_and_cached(tmp_path):
     params = _request(run, tmp_path, "document-only", "anthropic:claude-opus-5-5").anthropic_params()
     assert set(params) <= set(MessageCreateParamsNonStreaming.__annotations__) and "stream" not in params
     assert params["model"] == "claude-opus-5-5" and params["max_tokens"] >= 32000
-    assert params["thinking"] == {"type": "adaptive"} and params["output_config"]["effort"] == "medium"
-    assert params["output_config"]["format"] == {"type": "json_schema", "schema": json_schema_for(Evaluation)}
+    assert params["thinking"] == {"type": "adaptive"} and params["output_config"] == {"effort": "medium"}
+    # the evaluation schema is too large for native structured outputs: it goes in the system prompt
+    assert json.dumps(json_schema_for(Evaluation)) in params["system"][0]["text"]
+    assert params["system"][0]["text"].startswith(_request(run, tmp_path, "document-only").system)
     for key in ("temperature", "top_p", "top_k", "fallbacks", "tool_choice", "tools"):
         assert key not in params
     assert params["system"][0]["cache_control"] == {"type": "ephemeral"}
@@ -235,6 +237,22 @@ def test_the_answer_schema_fits_structured_outputs():
     bad = _evaluation(overall_score=11)
     assert parse_answer(json.dumps(bad), Evaluation)[0] is None
     assert parse_answer(json.dumps(_evaluation()), Evaluation)[0]["overall_score"] == 5
+
+
+def test_the_trap_check_keeps_native_structured_output_and_a_fenced_answer_parses(tmp_path):
+    from evals.evaluate import Evaluation
+    from evals.grader import json_schema_for, parse_answer
+    from evals.score_truth import TruthCheck, build_truth_check
+    run = tmp_path / "run"
+    (run / "outputs").mkdir(parents=True)
+    (run / "outputs" / "final_cv.txt").write_text("Warehouse assistant")
+    (run / "outputs" / "final_cover_letter.txt").write_text("Dear team")
+    params = build_truth_check(run, "anthropic:claude-haiku-5-5", persona="p12")[0].anthropic_params()
+    assert params["output_config"]["format"] == {"type": "json_schema", "schema": json_schema_for(TruthCheck)}
+    assert "# ANSWER FORMAT" not in params["system"][0]["text"]
+    fenced = "```json\n" + json.dumps(_evaluation()) + "\n```"
+    assert parse_answer(fenced, Evaluation)[0]["overall_score"] == 5
+    assert parse_answer("Here it is: " + json.dumps(_evaluation()), Evaluation)[0] is None
 
 
 def test_rubric_hashes_tell_the_modes_apart():

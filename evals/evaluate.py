@@ -752,8 +752,9 @@ def build_grading_request(run_dir: Path, grader, out_dir: Path, mode: str = DEFA
     images = page_images(run_dir, out_dir, reuse=reuse_pages)
     values, checks = build_prompt(run_dir, images)
     system, shared, documents = prompt_parts(values, mode)
+    # schema_in_prompt: the Evaluation schema is too large for Anthropic's structured outputs (see evals/grader.py)
     request = build_request(grader, system, shared, documents, Evaluation, _image_paths(images),
-                            rubric_sha256=rubric_sha256(mode))
+                            rubric_sha256=rubric_sha256(mode), schema_in_prompt=True)
     return request, checks, images
 
 
