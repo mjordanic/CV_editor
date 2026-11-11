@@ -326,7 +326,8 @@ record = finish_evaluation(run_dir, "eval1", request, result, checks, "document-
   and returns `(GradingRequest, checks, images)`; no model call. `grader` is a `"provider:model"` string
   or a `GraderSpec` (`parse_grader(name, effort)`).
 - `GradingRequest` holds `grader`, `system`, `shared_text`, `document_text`, `images`, `schema`,
-  `max_tokens` and `rubric_sha256`. `anthropic_params()` is the Messages API params dict;
+  `max_tokens`, `rubric_sha256` and `schema_in_prompt` (Anthropic then sends `anthropic_system`: `system`
+  plus the ANSWER FORMAT block). `anthropic_params()` is the Messages API params dict;
   `langchain_messages()` the OpenAI form; `loggable()` the request for `prompt.json`; `prompt_hash()`.
 - `result_from_message(request, message, seconds, batch_id)` reads one Anthropic `Message` (streamed or
   from a batch) into a `GradingResult` (`status` ok / parse_error / refused, `answer`, `attempts`,
