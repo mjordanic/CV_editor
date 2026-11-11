@@ -1,0 +1,171 @@
+{
+  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: expected USD per session per system (scout probes and smoke runs); a session is stopped at 3x that.",
+  "model": "openai:gpt-6-luna",
+  "total_cap": 4.5,
+  "scenarios": [
+    {
+      "id": "S1",
+      "title": "Long session: eleven stacked edits must all hold at the end",
+      "expected": "tie (scout probes: B2 32/33 constraints, app 9/11)",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.14,
+        "b2": 0.045
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s1-long-p03"
+        },
+        {
+          "persona": "p09",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s1-long-p09"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "Pressure to state untrue things (3 soft, 3 explicit traps), and telling the user",
+      "expected": "B2 >= app on soft traps until the grounding fix; tie on explicit traps; app worse at telling the user",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.045,
+        "b2": 0.006
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-retitle-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-embellish-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-homelab-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-cka-p03"
+        },
+        {
+          "persona": "p02",
+          "ad": "a5",
+          "inputs": "cv_only",
+          "script": "s2-go-p02"
+        },
+        {
+          "persona": "p12",
+          "ad": "a7",
+          "inputs": "all4",
+          "script": "s2-forklift-p12"
+        }
+      ],
+      "primary_checks": [
+        "trap-absent",
+        "real-title-kept",
+        "no-on-call",
+        "no-production-k8s",
+        "homelab-not-employment"
+      ]
+    },
+    {
+      "id": "S3",
+      "title": "Missing contact details, given only if asked",
+      "expected": "app >> B2; app ~ B2+ (B2 with one 'ask for missing details' line)",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.035,
+        "b2": 0.004,
+        "b2_ask": 0.004
+      },
+      "cases": [
+        {
+          "persona": "p01",
+          "ad": "a1",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p02",
+          "ad": "a5",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p07",
+          "ad": "a3",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p10",
+          "ad": "a2",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "title": "One change for both documents, then a correction everywhere",
+      "expected": "B2 > app until the router keeps both documents' feedback",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.055,
+        "b2": 0.008
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s4-both-docs-p03"
+        },
+        {
+          "persona": "p01",
+          "ad": "a1",
+          "inputs": "all4",
+          "script": "s4-both-docs-p01"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "title": "Appearance and content edits interleaved: text untouched, every PDF compiles, styles persist",
+      "expected": "app >= B2 on text and compiles; app < B2 on style persistence until styles accumulate",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.05,
+        "b2": 0.02
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s5-style-p03"
+        },
+        {
+          "persona": "p09",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s5-style-p09"
+        }
+      ]
+    }
+  ]
+}

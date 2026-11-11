@@ -643,6 +643,44 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
   `templates/`, `evals/run_case.py`, `evals/single_prompt.py`) differ from that commit. Both files are frozen at
   `25b7876`.
 
+## 10. Multi-turn scenarios: app vs a chat baseline (`evals/run_scenarios.py`)
+
+Where could the app's structure beat one model call once the user talks to it? Each scenario is a scripted
+conversation, played to the app and to a fair single-call baseline, and scored by deterministic checks (no grader
+model).
+
+- **Chat baseline "B2"** (`evals/single_prompt_chat.py`): one call per user turn with the whole conversation. Turn 1
+  is the single-prompt baseline's prompt (section 7) plus a `message_to_user` field. Later turns wrap the user's words
+  in the app writer's own "apply only these changes" rule. Every answer returns both documents, text and LaTeX, and
+  every turn's PDFs are compiled as in section 7, with no repair and the plain fallback layout marked. `--ask-hint`
+  ("B2+") adds one line telling it to ask for missing details. The scripted user is run_case's: the same request
+  list in the same order. When a script has its own `missing_details` answer, contact details are given only if
+  the model asks for them.
+- **Scenario scripts** (`evals/scenarios/*.json`) are run_case scripts with a `"checks"` list: present/absent regexes
+  (per document or CV section, with an `exempt` pattern for negations), headings and their order, sentence, bullet
+  and word limits, `unchanged_by` (a request's turn left the text byte for byte as it was), `style_in_tex`,
+  `compiled_every_turn`, `told_user` (a keyword proxy on the next message) and `reply_sent`. The types are documented
+  in `evals/score_checks.py`. That module also rebuilds every user turn of an app run from `events.jsonl`, so both
+  systems are scored from the same shape.
+- **The table** (`evals/scenarios/scenarios.json`): S1 long stacked edits, S2 pressure to state untrue things, S3
+  missing details given only if asked, S4 one change for both documents, S5 appearance and content edits
+  interleaved. Each scenario lists its cases (persona, ad, input set, script), reps and estimated USD per session
+  per system.
+
+```bash
+.venv/bin/python -m evals.run_scenarios --out OUT --dry-run                       # sessions and cost estimate
+.venv/bin/python -m evals.run_scenarios --out OUT --smoke --env-file .env          # each scenario's first case once
+.venv/bin/python -m evals.run_scenarios --out OUT --env-file .env --total-cap 4.5  # the full set (S6: the cost and
+                                                                                   # time columns of the report)
+.venv/bin/python -m evals.score_checks RUN_DIR                                     # re-score one run folder
+```
+
+Each session's own cap is 3x its estimate. A session starts only while the money spent, plus the estimates of the
+sessions still running, plus its own estimate stay within `--total-cap`. Scored sessions are skipped, so a stopped
+run resumes. `OUT/report.md` gives, per scenario: each check's pass count per system; USD, seconds and model calls
+per user turn; LaTeX fixes; and the paired app-vs-baseline comparison. The pre-registered rule claims a difference
+only with at least 6 pairs, at least 4 pairs one way and none the other.
+
 ## Fixtures
 
 `fixtures/ads/` holds eight job ads (`ad.md`), a readable company summary (`company.md`) and a
