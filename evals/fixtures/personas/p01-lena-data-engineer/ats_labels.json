@@ -1,0 +1,77 @@
+{
+  "persona": "p01",
+  "source": "Has/lacks for each term of the ad's requirements.json, from persona.json (true_skills, deliberate_gaps, fit_vs_ads) and, where persona.json is silent, from the candidate's own files: a term the material neither states nor clearly implies is 'lacks'. Written once; review before relying on it.",
+  "ads": {
+    "a1": {
+      "has": [
+        "data-platform",
+        "data-warehouse",
+        "python",
+        "sql",
+        "dimensional-modelling",
+        "cloud",
+        "serverless",
+        "containers",
+        "english",
+        "airflow",
+        "dbt",
+        "docker",
+        "ci-cd",
+        "git",
+        "data-quality",
+        "access-policies",
+        "open-source"
+      ],
+      "lacks": [
+        "query-optimisation",
+        "google-cloud",
+        "bigquery",
+        "cloud-run",
+        "gke",
+        "graph-modelling",
+        "governance",
+        "portuguese"
+      ],
+      "notes": {
+        "cloud": "AWS counts as the ad's 'comparable cloud'; Google Cloud itself is a gap",
+        "serverless": "AWS Lambda",
+        "access-policies": "AWS IAM"
+      }
+    },
+    "a5": {
+      "has": [
+        "python",
+        "relational-db",
+        "postgresql",
+        "docker",
+        "cloud",
+        "automated-testing",
+        "ci-cd",
+        "english",
+        "aws",
+        "github-actions",
+        "kafka",
+        "terraform",
+        "logistics",
+        "on-call"
+      ],
+      "lacks": [
+        "backend",
+        "query-tuning",
+        "schema-migrations",
+        "rest",
+        "fastapi",
+        "kubernetes",
+        "observability",
+        "edi",
+        "dutch",
+        "french"
+      ],
+      "notes": {
+        "backend": "data engineer; backend API work is thin (persona fit)",
+        "kubernetes": "read-only kubectl only (gap)",
+        "ci-cd": "GitHub Actions"
+      }
+    }
+  }
+}

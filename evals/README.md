@@ -340,6 +340,66 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
   are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
   `tests/test_analysis_load.py`.
+## 9. Deterministic ATS check: `evals/ats_check.py`
+
+A free, offline proxy for "a machine can read the CV, and it uses the ad's words for true things". No
+model calls: it reads only the run folder, the ad's fixed keyword list and the persona's has/lacks labels.
+
+```bash
+uv run python -m evals.ats_check RUN [RUN ...]                     # writes RUN/ats.json
+uv run python -m evals.ats_check results/2026-11-10/runs --out-dir ../ats   # every run in a folder
+```
+
+It prints one line per run (parse score, earned must-have coverage, exact wording, raw must-have
+coverage, the grader's honest coverage, flags) and, for five or more graded runs, the Spearman
+correlation between earned coverage and the grader's honest coverage. `--extractor pdftotext` uses
+poppler's `pdftotext -raw` for the reading-order check instead of pypdf (poppler must be installed).
+
+`ats.json` has three parts:
+
+- **parse** (CV PDF; score 0-100, every component also stored raw): text extracts with no unmapped
+  glyphs (15); the PDF holds the text version's words (15); reading order, the in-order share of the
+  words common to the text version and a plain content-stream extraction (20); one column, or columns
+  that still extract in order (10); no large images that could hold text (10); standard headings found
+  for experience, education and skills (EN/DE/HR word lists; 10); a contact block near the top of page 1,
+  not only in the header or footer zone, matching the material or the details the user supplied, and
+  absent only when the material has none or the user declined (10); entry date ranges that parse
+  (EN/DE/HR month names) in reverse chronological order (10). A component that cannot be measured is
+  left out and the rest rescaled.
+- **keywords**: `earned_coverage_must`, the headline: the share of the ad's must-have terms that the
+  candidate has (labelled `has` and found in the material the run was given) that appear in the CV PDF
+  text. A term the candidate lacks cannot raise it. Also `earned_coverage_nice`/`_all`,
+  `exact_wording_pct` (of the earned terms in the CV, the share written in the ad's own wording rather
+  than a synonym), and `raw_must_coverage` for reference only (it rewards claiming what you lack).
+  `reachable_must_share` and `backed_must_share` describe the persona-ad pair and the input set: use them
+  as covariates, not outcomes.
+- **cheating** (a good system scores 0 flags): unearned terms (labelled `lacks`) in the CV or letter,
+  split into honest mentions (learning, course, booked, "no", naming the employer or the job, and German
+  and Croatian equivalents) and claims; a claim is a **flag only when a second source agrees** (the grader
+  marked a claim with the term `unsupported`/`partly_supported`, or the trap check marked it
+  `claimed_as_met`). Stuffing: ad-term density per 100 words, terms repeated more than 4 times, skills
+  listed only in the skills section, runs of 8+ words copied from the ad; the flag fires on a density
+  over 20, one term 10 times within about 60 words, or 20+ copied words (calibrated so that none of the
+  110 sessions of 2026-11-10 is flagged: densest 16, most repeats 9, longest copy 8 words). Hidden text in
+  either PDF: low contrast against the page or a filled box under it, under 4 pt, off the page, render
+  mode 3/7 (invisible), and duplicate characters drawn on top of each other.
+
+Data: `fixtures/ads/<ad>/requirements.json` (the ad's terms in its own wording, with synonyms and
+must/nice priority, derived only from that fixture ad) and `fixtures/personas/<p>/ats_labels.json`
+(has/lacks for every term of each ad the persona is matched with, from `persona.json` and, where it is
+silent, from the candidate's own files). Without labels for a pair, `has` falls back to "found in the
+given material".
+
+**Limits.** This is a proxy, not an applicant-tracking system. Workday, Greenhouse, Lever, Taleo and
+Textkernel each parse differently, and most do not auto-reject on a keyword score: recruiters search and
+filter. The keyword lists, synonyms and labels are ours: they carry our bias, are incomplete, and were
+written once without a second reviewer. Honest-mention detection is a word-list heuristic (it reads the
+words around a match, not their meaning), which is why a claim needs a second source before it counts.
+Column and image checks are heuristics tuned on LaTeX output from this app; no Form XObject content is
+inspected for invisible text. On the 2026-11-10 sessions earned coverage is at its ceiling (100 of 109
+CVs at 1.0), so it barely separates systems there; raw coverage agrees with the grader's keyword
+coverage (Spearman 0.74), and earned coverage does not yet rank sessions like the grader's honest
+coverage (0.11). Report both until a review of the sessions where they disagree says otherwise.
 
 ## Fixtures
 
@@ -356,6 +416,8 @@ written fresh. No real ad text, search output or URL is in the repository; URLs 
 (an old letter for an earlier job), `notes.txt` (rough free-form notes) and `persona.json` (the
 grader's ground truth: true skills, deliberate gaps, facts that appear in only one file, traps a
 writer may fall into, and the ads it targets). Never give `persona.json` to the CV editor.
+The ATS check's keyword lists (`ads/<ad>/requirements.json`) and has/lacks labels
+(`personas/<p>/ats_labels.json`) are described in section 9; the app never sees them either.
 
 | persona | case | target ad |
 |---|---|---|
