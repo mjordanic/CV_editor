@@ -312,6 +312,35 @@ Estimated cost (`--estimate`): **11.70 USD** for the 39 cases: 0.12 per call (a 
 $2/1M, and up to about 10k output tokens at $10/1M: both documents as text and LaTeX, notes and
 reasoning) plus 0.18 per evaluation.
 
+## 8. Analysis notebook: `evals/analysis/analysis.ipynb`
+
+The notebook reads one or more rounds and compares the arms. A round is a `results/<date>/` folder or a
+runs folder, and several can be combined, e.g. the main round and the single-prompt runs. An arm is a
+system with a writer model: multi-agent luna or terra, or single prompt with luna, terra or sol. The
+notebook makes no model calls and runs offline.
+
+```bash
+uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
+```
+
+- Sessions are paired within *cells* (persona, ad, input set, script and work preference). Re-gradings
+  of a session are averaged first, then repeats within a cell, so each cell counts once. Cells that only
+  one arm has are listed and left out.
+- It reports:
+  - per-dimension score distributions and invented-claim rates;
+  - paired differences: bootstrap CIs, Wilcoxon and sign tests, Holm over the primary contrasts;
+  - a noise floor from repeats and re-gradings;
+  - breakdowns by input set, ad and persona, plus cost and latency;
+  - an ATS measure, `ats_honest_coverage`: of the ad's keywords that the candidate can truthfully
+    claim, the share the CV shows;
+  - grader calibration, when two graders graded the same sessions;
+  - power, sample sizes and the cost of candidate designs.
+- Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
+  cell to choose the data.
+- The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
+  are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
+  `tests/test_analysis_load.py`.
+
 ## Fixtures
 
 `fixtures/ads/` holds eight job ads (`ad.md`), a readable company summary (`company.md`) and a
