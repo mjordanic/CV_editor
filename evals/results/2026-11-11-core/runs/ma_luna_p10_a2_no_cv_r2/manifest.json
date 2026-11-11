@@ -1,0 +1,119 @@
+{
+  "run_dir": "runs/ma_luna_p10_a2_no_cv_r2",
+  "labels": {
+    "persona": "p10",
+    "ad": "a2",
+    "model": "openai:gpt-6-luna",
+    "rep": "2",
+    "input_set": "no_cv",
+    "case": "p10_a2_no_cv",
+    "script": "default",
+    "method": "multi_agent",
+    "arm": "A",
+    "stage": "core",
+    "writer_model": "gpt-6-luna",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1594
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 734
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 659
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a2-ml-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a2-ml-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-11T22:03:05+00:00",
+  "status": "completed",
+  "minutes": 4.08,
+  "cv_drafts": 4,
+  "cover_letter_drafts": 1,
+  "cv_final_iteration": 4,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Hamburg, Germany. Office-first: the office is the default and teams work side by side most days; teams agree on a few flexible days. No other location or right-to-work limits are stated.",
+    "culture_signals": [
+      "Teams own their services and decide how to solve merchants’ problems",
+      "Pragmatism, humility and candid feedback",
+      "Share context openly",
+      "Take ownership",
+      "Team first",
+      "Learn from mistakes",
+      "Training budget, regular peer feedback and internal tech talks",
+      "Teams keep autonomy through shared values rather than heavy process"
+    ],
+    "notes": "The job ad and company pages both describe the company as office-first; no difference is stated."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 4,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-11T22:07:11+00:00",
+  "cost_usd": 0.030407
+}

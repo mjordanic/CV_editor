@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "f8b844828e81bfc47aa99b76447b7ea21e8eea55f287be094a00b24f5316a87e",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: AWS\nG2: GCP\nG3: software development\nG4: Go beyond terratest\n\n# TRAPS (mistakes a writer could make)\nT1: Filling the 2020-2022 or 2024 gaps with invented jobs or stretching neighbouring date ranges\nT2: Disclosing more private/medical detail than needed (father's death) instead of a neutral 'career break' if anything\nT3: Claiming AWS or GCP for multi-cloud ads\nT4: Calling him a software developer or claiming Python/Go development\nT5: Old cover letter targets an IT Administrator job and says 'available to start immediately' - no longer true\nT6: The CV lists skills first; writer should keep dates accurate when reordering\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nSamuel Achterberg-Osei\nCloud & Infrastructure Engineer\nRotterdam, Netherlands | samuel.ao@example.com | +31 6 5555 0707\nPROFESSIONAL SUMMARY\nCloud and infrastructure engineer with hands-on experience designing and operating Microsoft Azure\nenvironments, developing Terraform infrastructure modules, migrating Azure IaaS workloads, and\nautomating application release pipelines with Azure DevOps. Experienced with Linux and Windows\nservers, virtual machines, landing-zone networking, identity administration, and practical security\nbaselines.\nTECHNICAL SKILLS\nCloud: Microsoft Azure (VMs, VNets, App Service, AKS, Azure AD / Entra ID)\nInfrastructure as Code (IaC) and Automation: Terraform, Bicep, Ansible, PowerShell, Bash\nPlatforms and Containers: Windows Server, Linux (Ubuntu, RHEL), Docker, Kubernetes (AKS)\nCI/CD: Azure DevOps Pipelines\nNetworking and Security: TCP/IP, DNS, VPN, firewalls, MFA, conditional access\nIdentity and Productivity: Active Directory, Microsoft 365 administration\nPROFESSIONAL EXPERIENCE\nCloud Engineer (Contract) Mar 2025 – Present\nHavenstad Logistics B.V., Rotterdam\n• Work as part of a three-person cloud team operating the company’s Azure estate, comprising\napproximately 400 VMs and 12 AKS clusters across three subscriptions.\n• Developed Terraform infrastructure modules for landing-zone networking, including hub-spoke\nVNets, Azure Firewall, and private endpoints.\n• Migrated release pipelines for 15 internal applications from manual deployments to Azure DevOps\nYAML pipelines.\nFreelance IT Administrator Sep 2022 – Jan 2024\nSelf-employed (Small Businesses)\n• Set up and supported Microsoft 365 and Azure AD for nine small businesses with 5–40 employees.\n• Migrated two clients from on-premises file servers to SharePoint and OneDrive.\n• Configured backups and basic security baselines, including MFA and conditional access.\nSystems Administrator Jan 2014 – Feb 2020\nMaasbrug Gemeente IT Services, Schiedam\n• Administered approximately 250 Windows and Linux servers supporting municipal services.\n• Led the 2019 lift-and-shift migration of 60 VMware-hosted servers to Azure IaaS.\n• Automated user provisioning and patch reporting with PowerShell.\n• Provided second-line escalation for network and Active Directory issues.\nHelpdesk Technician Aug 2011 – Dec 2013\nMaasbrug Gemeente IT Services\nEDUCATION\nMBO 4 IT Systems and Networks | Delta Vocational College | 2011\nCERTIFICATIONS\nMicrosoft Certified: Azure Administrator Associate (AZ-104) | 2019\nHashiCorp Certified: Terraform Associate (003) | 2025\nLANGUAGES\nDutch (native), English (fluent), Twi (spoken)\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility Hiring Team,\nI am applying for the Cloud Infrastructure / DevOps Contractor role on the Fleet Connectivity\nteam. I bring hands-on experience designing and operating Azure infrastructure, building\nTerraform modules, and moving workloads and release processes into cloud-based environments.\nThe opportunity to help shape a new train-to-cloud platform from architecture through\nproduction particularly interests me.\nIn my current contract role at Havenstad Logistics, I work in a three-person team operating an\nAzure estate of approximately 400 virtual machines and 12 AKS clusters across three\nsubscriptions. I designed and developed Terraform modules for landing-zone networking,\nincluding hub-spoke VNets, Azure Firewall and private endpoints, and migrated release\npipelines for 15 internal applications to Azure DevOps YAML. Earlier, I led a lift-and-shift\nmigration of 60 VMware-hosted servers to Azure IaaS and administered Windows and Linux\nsystems supporting municipal services.\nMy experience also includes networking, identity administration and practical security measures,\nincluding MFA, conditional access, backups and firewall configuration. These foundations align\nwith the role’s focus on secure, reliable and observable infrastructure, including monitoring with\nAzure Monitor. My experience designing landing-zone networking and leading infrastructure\nmigrations would allow me to contribute a methodical infrastructure perspective to\nsystem-design discussions. My cloud experience is with Azure, and I hold the Microsoft\nCertified: Azure Administrator Associate and HashiCorp Certified: Terraform Associate\ncertifications.\nCorvale’s engineering-led approach and emphasis on end-to-end ownership make this role\nespecially compelling. I would welcome the opportunity to discuss how my experience leading\nthe migration of 60 VMware-hosted servers to Azure IaaS, developing Terraform infrastructure\nmodules, and modernising 15 application release pipelines could contribute to the Fleet\nConnectivity platform.\nKind regards,\nSamuel Achterberg-Osei\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

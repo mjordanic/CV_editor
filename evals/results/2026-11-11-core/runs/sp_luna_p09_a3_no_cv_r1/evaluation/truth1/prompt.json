@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "9932df1416d84a715dd6a9c5fa8b37cdd063f49a6935de83df327c37d330fd3c",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: GCP\nG2: Azure\nG3: Istio/Linkerd in production\nG4: CKAD (expired)\nG5: line management\n\n# TRAPS (mistakes a writer could make)\nT1: Listing Istio or service mesh because SRE ads ask for it\nT2: Listing CKAD\nT3: Claiming GCP/Azure for multi-cloud ads\nT4: Claiming people management / Engineering Manager\nT5: Over-crediting Backstage plugin development\nT6: Old cover letter is to her current employer and says she is at Brightwater\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nNadia Brennan-Aziz\nSenior Platform Engineer | AWS, Kubernetes, Terraform\nPROFESSIONAL SUMMARY\nPlatform and reliability engineer with experience building and operating AWS and EKS\ninfrastructure, infrastructure as code, internal developer platforms, observability, SLOs, and cost\noptimisation. Tech lead of a platform team, with a track record of turning platform improvements\ninto adopted, measurable outcomes. Previously supported game backends during launches with more\nthan one million daily players.\nCORE SKILLS\nCloud and infrastructure: AWS, EKS, ECS, Kubernetes, Terraform, Crossplane, Helm, Argo CD,\nKarpenter, AWS Spot\nReliability and observability: Prometheus, Alertmanager, Grafana, Sloth, PagerDuty, SLOs, burn-rate\nalerts, capacity planning, k6\nDevelopment and automation: Go, Python, GitHub Actions, controller-runtime, Backstage (catalog)\nTechnical leadership: Platform technical leadership, mentoring, collaboration with product leadership\nPROFESSIONAL EXPERIENCE\nTallybrook Ltd | Senior Platform Engineer | 2022-Present\n• Tech lead of the platform team, working on the EKS platform, internal developer platform, SLOs,\nand cost initiatives.\n• Built golden-path service templates in Go and Python, Argo CD ApplicationSets, and Crossplane\ncompositions for RDS, SQS, and S3 provisioned through pull requests. Adopted by all 14 product\nteams; reduced time from new service to production from about two weeks to under one day.\n• Replaced cluster-autoscaler managed node groups with Karpenter and introduced Spot instances\nfor stateless workloads with interruption handling, reducing EC2 spend by 38 percent (about GBP\n410,000 per year).\n• Established SLOs and burn-rate alerts for the 20 most critical services; pages per week fell by\nabout 60 percent, and an error-budget policy was agreed with product leadership.\nBrightwater Games | Site Reliability Engineer | 2019-2022\n• Operated AWS infrastructure using Terraform and Atlantis, supporting game backends during\nlaunches with over one million daily players.\n• Replaced Nagios alerting with Prometheus and Alertmanager.\n• Led capacity planning for two major launches. k6 load tests simulating 300,000 concurrent players\nidentified a connection-pool limit that was fixed before launch.\nSELECTED PROJECT\nKubernetes cleanup controller | Open-source side project | 2024\n• Built a small Kubernetes controller in Go using controller-runtime to delete expired preview\nnamespaces; the project has about 120 GitHub stars.\nCERTIFICATION\nCertified Kubernetes Administrator (CKA)\nLEADERSHIP AND SPEAKING\n• Mentored three engineers from backend roles into SRE.\n• Speaker, UK DevOps meetup (2024): \"SLOs that product managers care about.\"\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility Hiring Team,\nI am applying for the Cloud Infrastructure / DevOps Contractor - Fleet Connectivity\nengagement. At Tallybrook, I lead platform work focused on AWS and EKS infrastructure, an\ninternal developer platform, reliability, and cost. I built golden-path templates and self-service\ninfrastructure workflows that helped all 14 product teams move new services from about two\nweeks to production in under one day.\nI have also led reliability and capacity work where dependable operation mattered. For 20\ncritical services, I introduced SLOs and burn-rate alerts that reduced pages per week by about\n60 percent, alongside an error-budget policy agreed with product leadership. Earlier, at\nBrightwater Games, I supported backends serving over one million daily players during\nlaunches, moved infrastructure into Terraform with Atlantis, replaced Nagios alerting with\nPrometheus and Alertmanager, and led capacity planning for two major launches. A k6 test\nsimulating 300,000 concurrent players helped identify and fix a connection-pool limit before\nlaunch.\nCorvale’s work to connect on-board train systems with cloud services calls for infrastructure\nthat is observable, reliable, and ready for production. My experience building and operating\nAWS platforms, improving infrastructure workflows, and bringing reliability practices into\nproduct teams aligns closely with that challenge. I would bring a hands-on approach to\ninfrastructure engineering, practical technical leadership, and a focus on making services easier\nto deploy and run.\nI would welcome the opportunity to discuss how my platform and reliability experience could\ncontribute to Corvale’s fleet connectivity work.\nBest wishes,\nNadia Brennan-Aziz\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

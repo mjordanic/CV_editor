@@ -1,0 +1,70 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{needspace}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.85em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[2]{\needspace{5\baselineskip}\noindent\textbf{#1}\par\noindent #2\par}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.25em,parsep=0pt}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\par
+{\large\color{accentcolor} Senior Site Reliability / Platform Engineer}\par
+{\small \href{mailto:nadia.brennanaziz@example.com}{nadia.brennanaziz@example.com} | +44 7700 900909 | \href{https://github.com/nba-sre-example}{github.com/nba-sre-example}}\par
+
+\cvsection{PROFESSIONAL SUMMARY}
+Senior infrastructure engineer with 10 years of experience, including six running Kubernetes platforms on AWS. Technical lead with hands-on experience designing, building and operating cloud infrastructure, Terraform-based infrastructure as code, and self-service platforms for backend developers. Delivered faster service deployment, lower infrastructure costs and more reliable operations through observability, SLOs, capacity planning and incident management.
+
+\cvsection{EXPERIENCE}
+\cvrole{Senior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS)}{Apr 2022 - present}
+\begin{itemize}
+\item Technical lead of a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.
+\item Built an internal developer platform with service templates, Argo CD GitOps and Crossplane-based self-service provisioning for RDS, SQS and S3; reduced time from new service to production from approximately two weeks to under one day.
+\item Introduced SLOs and error budgets for the 20 most critical services, reducing weekly on-call pages by approximately 60\%.
+\item Moved node provisioning to Karpenter with spot instances, reducing EC2 spend by 38\%.
+\item Participated in the incident commander rotation and wrote the incident management and post-mortem process.
+\end{itemize}
+
+\cvrole{Site Reliability Engineer | Brightwater Games}{Jan 2019 - Mar 2022}
+\begin{itemize}
+\item Operated AWS infrastructure for game backends supporting titles with up to 1.2 million daily active players, using EC2, ECS and subsequently EKS.
+\item Managed all AWS infrastructure through Terraform, with approximately 40 modules and Atlantis for pull-request-based plan/apply workflows.
+\item Implemented Prometheus, Grafana, Alertmanager and Loki, replacing a noisy Nagios monitoring setup.
+\item Performed pre-launch load testing with k6 and launch-day capacity planning.
+\end{itemize}
+
+\cvrole{Linux Systems Engineer | Pennine Hosting}{Jul 2016 - Dec 2018}
+\begin{itemize}
+\item Managed approximately 600 Linux servers for hosting customers using Puppet configuration management.
+\item Automated operational tasks with Bash and Python and provided on-call support for customer incidents.
+\end{itemize}
+
+\cvsection{TECHNICAL SKILLS}
+Cloud infrastructure: AWS, EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront\par
+Infrastructure as code and delivery: Terraform, Atlantis, Crossplane, Argo CD, GitHub Actions, Puppet\par
+Containers and platforms: Kubernetes, Helm, Kustomize, Karpenter, Linux\par
+Observability and reliability: Prometheus, Grafana, Alertmanager, Loki, OpenTelemetry, SLOs, error budgets, incident management, k6, capacity planning\par
+Programming and automation: Go, Python, Bash
+
+\cvsection{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA) - 2021, renewed 2024\par
+AWS Certified Solutions Architect - Professional - 2023
+
+\cvsection{EDUCATION}
+BSc Computer Science | University of the North Moors | 2016
+
+\cvsection{LANGUAGES}
+English (native), Urdu (conversational)
+\end{document}

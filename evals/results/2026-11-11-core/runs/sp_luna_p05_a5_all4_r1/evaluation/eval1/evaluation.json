@@ -1,0 +1,748 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8561,
+      "output_tokens": 6690,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 15303
+    },
+    "cost_usd": 0.042776,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "c27373cd47be3a17f4e9e4ef3e6180ec6a374f07ecd75a0e65f23ba2e3e36d57",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p05_a5_all4_r1-bf41259232",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p05_a5_all4_r1-bf41259232",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.085552
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Senior Backend Engineer | Python, Go",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "ok with \"senior engineer\" title",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "21 years of experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "21 years of experience building large-scale backend systems",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Designed and wrote most of a Go entitlement service handling 120k requests per second",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Designed and wrote most of the Go service",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Experienced with PostgreSQL",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "PostgreSQL/PostGIS",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built an internal Python cost dashboard using BigQuery; saved EUR 4.2M",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Built an internal cost dashboard on BigQuery billing export",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led a five-team platform organisation of 45 engineers",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "5 teams, 45 engineers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Skills: AWS (EC2, S3), Kafka, Terraform, Kubernetes",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "AWS (EC2, S3), Kubernetes, Terraform",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "automated testing (pytest, tox)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Technologies: Python, pytest, tox.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "API design",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "playback API",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My experience includes Python and FastAPI, PostgreSQL, Kafka",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Python (Django, Flask, FastAPI",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "contributed to a migration",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Drove migration from a Python 2 monolith",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Nordfels GPS ingestion from 300k vehicles",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "ingestion of GPS data from 300k vehicles",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Cassandra/high-throughput experience and 99.95% availability are used; but no mention of Kafka in real work, EDI absent (candidate lacks)",
+        "source": "cv",
+        "source_quote": "Kafka",
+        "relevance": "low",
+        "why_it_matters": "Minor"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "3+ years Python backend",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Python test harness",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "PostgreSQL, tuning, migrations",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "PostgreSQL/PostGIS and RabbitMQ",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "REST APIs",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "playback API",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker and AWS deployment",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "AWS (EC2, S3)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Testing and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "automated testing (pytest, tox)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kafka",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Kafka",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kubernetes, Terraform",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Kubernetes, Terraform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Observability",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Prometheus, Grafana, OpenTelemetry",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Logistics/telematics domain",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "fleet telematics",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; AWS limited to EC2/S3 as in material. Director-heavy experience is retained but retitled headline to Senior Backend Engineer.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second page holds only skills tail",
+        "Headline title differs from latest actual title"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "SUMMARY",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "TECHNICAL SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "REST",
+        "Docker",
+        "AWS",
+        "CI/CD",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "Grafana",
+        "OpenTelemetry",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "AWS",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "Grafana",
+        "OpenTelemetry",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "REST"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean text with standard headings and most ad keywords present. REST and CI/CD are not shown explicitly."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Generic salutation",
+        "Does not address the shift from director to hands-on IC",
+        "Little company detail"
+      ],
+      "strengths": [
+        "Relevant telematics ingestion link",
+        "Concise, accurate"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "small teams that own the services they run"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 mostly empty",
+        "Tight spacing between job entries"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Senior engineer title acceptable",
+        "Hands-on focus",
+        "PhD not mentioned",
+        "Rust not claimed"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Accurate, honest CV and letter that avoid faking AWS depth, Rust, Java or the dropped PhD. The hands-on framing suits the IC target. Weaknesses are that CI/CD, REST and Docker are barely visible, the letter is somewhat generic, and page 2 is mostly empty."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 2,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3020,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1485,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 58.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 24.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 74.2,
+          "bottom": 433.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 48.5,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.042776,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Senior Backend Engineer | Python, Go",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "ok with \"senior engineer\" title",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "21 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "21 years of experience building large-scale backend systems",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Designed and wrote most of a Go entitlement service handling 120k requests per second",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Designed and wrote most of the Go service",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Experienced with PostgreSQL",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "PostgreSQL/PostGIS",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built an internal Python cost dashboard using BigQuery; saved EUR 4.2M",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Built an internal cost dashboard on BigQuery billing export",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led a five-team platform organisation of 45 engineers",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "5 teams, 45 engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Skills: AWS (EC2, S3), Kafka, Terraform, Kubernetes",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "AWS (EC2, S3), Kubernetes, Terraform",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "automated testing (pytest, tox)",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Technologies: Python, pytest, tox.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "API design",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "playback API",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience includes Python and FastAPI, PostgreSQL, Kafka",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python (Django, Flask, FastAPI",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "contributed to a migration",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Drove migration from a Python 2 monolith",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Nordfels GPS ingestion from 300k vehicles",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Senior Backend Engineer | Python, Go",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "ok with \"senior engineer\" title",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "21 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "21 years of experience building large-scale backend systems",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Designed and wrote most of a Go entitlement service handling 120k requests per second",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Designed and wrote most of the Go service",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Experienced with PostgreSQL",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "PostgreSQL/PostGIS",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built an internal Python cost dashboard using BigQuery; saved EUR 4.2M",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Built an internal cost dashboard on BigQuery billing export",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led a five-team platform organisation of 45 engineers",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "5 teams, 45 engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Skills: AWS (EC2, S3), Kafka, Terraform, Kubernetes",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "AWS (EC2, S3), Kubernetes, Terraform",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "automated testing (pytest, tox)",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Technologies: Python, pytest, tox.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "API design",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "playback API",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience includes Python and FastAPI, PostgreSQL, Kafka",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python (Django, Flask, FastAPI",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "contributed to a migration",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Drove migration from a Python 2 monolith",
+            "note": "Understated"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Nordfels GPS ingestion from 300k vehicles",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          }
+        ]
+      }
+    ]
+  }
+}

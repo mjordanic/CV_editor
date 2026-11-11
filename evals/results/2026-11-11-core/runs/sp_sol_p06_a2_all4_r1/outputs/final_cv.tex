@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.45em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.25em,topsep=0.35em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+\pagestyle{empty}
+\urlstyle{same}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} PETRA ZLATARIĆ-NOVOSEL}\\[0.4em]
+{\large Machine Learning Engineer | NLP and Document AI}\\[0.3em]
+{\small petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Machine learning engineer with more than five years of experience in NLP and document classification, spanning research, model development and production deployment. Production experience with transformer fine-tuning, FastAPI model serving, Docker, Azure and MLflow. Previous customer complaint classification experience in banking. PhD in Computer Science in progress, focused on named entity recognition in Croatian legal texts.
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\textbf{Machine Learning Engineer | Slavonica Document AI d.o.o.}\\
+03/2023 - Present
+\begin{itemize}
+\item Built and deployed an incoming-document classifier for public administration: 94\% accuracy and 0.91 macro F1 across 23 classes, processing approximately 15,000 documents per day after OCR.
+\item Fine-tuned XLM-R for document classification and BERTić for named entity recognition in Croatian administrative documents.
+\item Served models through FastAPI in Docker containers on Azure App Service; introduced MLflow experiment tracking and a model registry, using Azure ML in the deployment workflow.
+\item Built an annotated dataset of 4,000 documents with annotation guidelines and two annotators, achieving inter-annotator kappa of 0.87.
+\item Implemented production monitoring with weekly reports on text length, vocabulary and predicted class distributions, with alerts when PSI exceeded 0.2. Detected an OCR change that reduced accuracy by 9 percentage points; the issue was resolved within a week.
+\item Mentor two student interns.
+\end{itemize}
+
+\textbf{Data Scientist | Baranjska kreditna banka d.d.}\\
+09/2021 - 02/2023
+\begin{itemize}
+\item Developed customer complaint topic classification using TF-IDF and logistic regression, followed by fastText, covering 11 topics for weekly customer service management reporting.
+\item Built customer churn prediction models using gradient boosting and LightGBM for the sales team.
+\item Produced SQL reports from an Oracle data warehouse.
+\end{itemize}
+
+\textbf{Research Project Assistant | Faculty of Applied Informatics, Sveučilište Drava}\\
+10/2020 - 08/2021
+\begin{itemize}
+\item Created a corpus and annotations of Croatian legal texts and wrote Python scripts to support the research.
+\end{itemize}
+
+\newpage
+\cvsection{SELECTED PERSONAL PROJECT}
+\textbf{Retrieval-Augmented Question Answering Demo | 2025}
+\begin{itemize}
+\item Built a weekend prototype for question answering over Croatian laws using sentence embeddings, FAISS and an open-weight LLM accessed through an API.
+\item Personal RAG exploration only; not deployed to production and assessed through manual checks only.
+\end{itemize}
+
+\cvsection{EDUCATION}
+\textbf{PhD in Computer Science | Sveučilište Drava}\\
+2022 - Present | Expected completion: 2027\\
+Research: Named entity recognition in Croatian legal texts.
+
+\textbf{Master's Degree in Computer Science (Mag. ing. comp.) | Sveučilište Drava}\\
+2020
+
+\cvsection{CERTIFICATION}
+Microsoft Certified: Azure AI Engineer Associate | 2024
+
+\cvsection{TECHNICAL SKILLS}
+Programming and data: Python, SQL, pandas, NumPy, Oracle SQL, PostgreSQL\\
+Machine learning and NLP: PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy, TF-IDF, sentence-transformers, FAISS\\
+Production ML and MLOps: Azure ML, Azure App Service, Azure Functions, MLflow, FastAPI, Docker, Evidently, Git, Linux\\
+Annotation: Label Studio, annotation guidelines, inter-annotator agreement
+
+\cvsection{KNOWLEDGE SHARING}
+\begin{itemize}
+\item Guest lecturer at an NLP summer school, delivering a 90-minute session in 2025.
+\item Co-authored a 2024 regional workshop paper on named entity recognition for Croatian administrative documents.
+\end{itemize}
+
+\cvsection{LANGUAGES}
+Croatian: Native | English: C1 | German: B2\\
+Daily English-language meetings with a client in Slovenia.
+\end{document}

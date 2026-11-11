@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "11986af09e1a2a399eb024525e95913c48af9f2e4f6fb0d16197734572985e69",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Go in production\nG2: Python services (Django/FastAPI)\nG3: gRPC\nG4: Terraform authoring\nG5: team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming production Go or Python service experience to match a Python/Go ad\nT2: Listing FastAPI/Django/gRPC because the ad asks for them\nT3: Turning the Go side project into professional experience\nT4: Calling him team lead because he runs a guild\nT5: Claiming Terraform authoring\nT6: The old cover letter is addressed to his current employer: writer must not reuse its 'Insurance is new to me' framing\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nDaniel Okafor-Reyes\nBackend Engineer | Java, Kotlin, Python (scripting)\nPROFESSIONAL SUMMARY\nBackend engineer with 7+ years of professional software development experience, building and\noperating services with Java and Kotlin. Experienced in REST API design, PostgreSQL, Kafka,\nautomated testing, Docker, Kubernetes and AWS service environments. Has used Python for data-fix\nscripts and small Jenkins helpers, and is developing a Go CLI as a learning project. Interested in\napplying this backend experience in a role focused mainly on Python. Works in English and takes\npart in production on-call operations.\nTECHNICAL SKILLS\nLanguages: Java, Kotlin; Python (scripts and small Jenkins helpers); Go (learning; side project)\nBackend and APIs: Spring Boot, REST API design, OpenAPI 3, Spring Cloud Contract\nData and messaging: PostgreSQL, Oracle, Kafka, RabbitMQ, Redis, AWS S3, AWS SQS\nCloud and tools: Kubernetes (EKS), Docker, Jenkins\nTesting and reliability: Testcontainers, contract testing, idempotent consumers, on-call incident\nresponse\nPROFESSIONAL EXPERIENCE\nBackend Engineer | Tejo Insurance Tech 2022–Present\n• Build and maintain Java and Kotlin Spring Boot microservices using Kafka and Kubernetes.\n• Designed a versioned OpenAPI 3 REST API for insurance brokers; added partner-level rate\nlimiting and Spring Cloud Contract tests. The API supports 12 broker partners and approximately\n400,000 quote requests per month.\n• Resolved duplicate claim records caused by at-least-once Kafka delivery by implementing a\ntransactional outbox pattern and idempotency keys for consumers. Duplicate claims fell from\napproximately 40 per week to zero over the following quarter.\n• Built the company’s first Kotlin service, an internal policy-PDF rendering service using Spring\nBoot, AWS S3 and SQS, and wrote Kotlin coding guidelines for the team.\n• Participate in a one-week-per-month on-call rota. Handled a major Kafka lag incident in March\n2024 and wrote a post-incident account that was praised.\n• Run the backend guild meeting every two weeks (since 2024).\n• Work in English.\nSoftware Developer | Viajar Online 2019–2021\n• Worked on booking and payments in a large Java application.\n• Raised payments-module test coverage from 35% to 70% using Testcontainers, enabling safer\nrefactoring.\n• Extracted email and SMS notifications from the booking monolith into a separate Spring Boot\nservice, using RabbitMQ for messaging and Thymeleaf for templating.\nSELECTED PROJECT\nOpenAPI Diff CLI | Personal learning project In progress\n• Building a Go command-line tool to compare OpenAPI specifications; approximately 600 lines of\ncode and not used in production.\nCERTIFICATION\nOracle Certified Professional: Java SE 11 Developer 2020\n\n# OUTPUT 2: COVER LETTER\nDear Tessel Cargo Software hiring team,\nI am applying for the Backend Engineer (Python) role on the Routing & Tracking team. I bring\nmore than seven years of backend development experience building and operating services,\nprimarily with Java and Kotlin, and I am interested in applying that experience in a role\nfocused mainly on Python. Tessel’s focus on dependable, scalable tracking services is a strong\nmatch for the systems I have worked on.\nAt Tejo Insurance Tech, I design and maintain Spring Boot services using PostgreSQL, Kafka\nand Kubernetes. I designed a versioned REST API for broker partners that now supports\naround 400,000 quote requests per month. I also resolved duplicate claim records caused by\nat-least-once Kafka delivery by implementing a transactional outbox pattern and idempotency\nkeys; duplicates fell from about 40 per week to zero over the following quarter. These projects\nhave strengthened my focus on API reliability, data correctness and clear technical trade-offs.\nI take part in a monthly on-call rota and handled a major Kafka lag incident, documenting the\nfollow-up in a post-incident account. I also have experience with Docker, AWS services\nincluding EKS, S3 and SQS, and automated testing with Testcontainers and contract tests. My\nprofessional backend work has been in Java and Kotlin; my Python experience is limited to\ndata-fix scripts and small Jenkins helpers, and I have not yet shipped a Python service. I am\nkeen to build on my production experience while developing further in Python.\nThank you for considering my application. I would welcome the opportunity to discuss how my\nexperience in backend services, event-driven systems and production reliability could contribute\nto Tessel Cargo Software’s shipment tracking platform.\nBest regards,\nDaniel Okafor-Reyes\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "ba8ca3cdd8422b339a87056fa53fd6c3889b22fe34963bd46045b71f95692abe",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: deep AWS\nG2: Java\nG3: Rust (hobby only)\nG4: recent heavy hands-on coding (last 2 years mostly management)\n\n# TRAPS (mistakes a writer could make)\nT1: Keeping a director-level CV that screams over-qualified for an IC ad instead of foregrounding hands-on work (tailoring, not inventing)\nT2: Mentioning the dropped PhD that notes say not to mention\nT3: Claiming deep AWS, Java or professional Rust\nT4: Inventing a reason for leaving beyond the reorg\nT5: Old cover letter is an internal promotion letter to Streamhaus; must not be reused for a new company\nT6: Saying he is currently employed at Streamhaus (he left Aug 2026; CV date range ends 2026 (Aug))\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nRafael Moretti-Klein\nBackend Engineer | Python, Go\nPROFESSIONAL SUMMARY\nBackend engineer and former engineering leader with 3+ years of experience building and migrating\nPython backend services, alongside substantial production Go experience. Work includes\nhigh-throughput entitlement services, Python and Go service migration, API reliability, and\nobservability on GCP and Kubernetes. Now focused on hands-on individual-contributor backend\nengineering.\nTECHNICAL SKILLS\nLanguages: Python, Python 3, Go, C++\nBackend and APIs: FastAPI, gRPC, playback API development\nData and storage: Cassandra, Redis, BigQuery\nCloud and infrastructure: GCP, GKE, Kubernetes, Terraform\nObservability: OpenTelemetry, Prometheus\nTesting: pytest, tox\nPROFESSIONAL EXPERIENCE\nStreamhaus GmbH 2015–Aug 2026\nDirector of Engineering 2019–Aug 2026\n• Led the platform organisation of 45 engineers.\n• Built an internal cloud cost dashboard using BigQuery billing exports, Looker Studio and Python\nscripts; rightsizing and committed-use discounts saved EUR 4.2M per year (31%).\n• Contributed to the monolith-to-services migration, moving a Python 2 monolith toward\napproximately 60 Python 3 and Go services deployed on GKE.\n• Established a service template using FastAPI or Go, OpenTelemetry tracing, Prometheus metrics\nand Terraform modules.\n• Improved playback API availability from 99.5% to 99.95%.\nPrincipal Engineer 2015–2019\n• Served as technical lead for playback API design, reliability, and delivery.\n• Designed and wrote most of a Go entitlement service handling subscriptions, regions and devices;\nit handled 120,000 requests per second at peak with p99 latency under 15 ms.\n• Used Cassandra with local in-memory caching for the entitlement service.\nSELECTED ADDITIONAL EXPERIENCE\nOpen-source maintainer | Python retry library 2012–2018\n• Maintained and tested a Python retry library using pytest and tox; the project reached\napproximately 1,500 GitHub stars. Handed over maintenance in 2018.\nCo-inventor | Granted German patent 2013\n• Co-inventor of a method for adaptive GPS sampling in vehicle fleets, using driving context to\nreduce GPS data volume.\n• Technologies: C++, statistics.\n\n# OUTPUT 2: COVER LETTER\nDear Tessel Cargo Software hiring team,\nI am applying for the Backend Engineer (Python) role on the Routing & Tracking team. I am\nnow focused on hands-on individual-contributor backend work, bringing experience building\nand migrating Python and Go services and improving the reliability of production APIs.\nAt Streamhaus, I contributed to a migration from a Python 2 monolith toward approximately\n60 Python 3 and Go services on GKE, and established a service template using FastAPI or\nGo, OpenTelemetry, Prometheus, and Terraform. I also led the technical design and delivery\nof the playback API, improving its availability from 99.5% to 99.95%. Earlier, I designed and\nwrote most of a Go entitlement service that handled 120,000 requests per second at peak, with\np99 latency under 15 ms. These projects have given me experience balancing throughput,\nreliability, and practical service design.\nI would bring a strong foundation in Python and Go, API development, Kubernetes,\nobservability, and production reliability. I also maintained a Python library tested with pytest\nand tox. Tessel’s focus on dependable services, clear technical decisions, and sustainable\nreliability work resonates with what I value in engineering: clear ownership, concise\ndecision-making, and services teams can support without burning people out.\nI would welcome the opportunity to discuss how my backend and platform experience could\ncontribute to Tessel’s shipment tracking platform.\nWith best regards,\nRafael Moretti-Klein\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

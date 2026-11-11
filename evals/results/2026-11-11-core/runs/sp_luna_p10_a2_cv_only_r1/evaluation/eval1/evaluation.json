@@ -1,0 +1,505 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 5852,
+      "output_tokens": 6644,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 12523
+    },
+    "cost_usd": 0.039698,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "3f23d4d2daaac9cb7373244a6b03023557db197c3ad342e03032684d6d73cba2",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p10_a2_cv_only_r1-6b0b35363a",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p10_a2_cv_only_r1-6b0b35363a",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.079396
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Data Scientist | Applied Machine Learning",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Data Scientist",
+        "note": "Tagline 'Applied Machine Learning' is a mild stretch but models are real."
+      },
+      {
+        "document": "cv",
+        "claim": "6 years in analytics and data science, including 4+ years as a data scientist",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "6 years in analytics and data science (4+ as data scientist)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Scientist, Thistlebox, Feb 2022-Present",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Data Scientist, Thistlebox (meal-kit subscriptions), Edinburgh - Feb 2022 to present",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Junior Data Analyst, Firth Energy Retail, Sep 2020-Jan 2022",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Junior Data Analyst, Firth Energy Retail, Glasgow - Sep 2020 to Jan 2022",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "around 40 A/B tests annually; built sequential testing calculator",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~40 experiments per year; built the team's sequential testing calculator",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "WAPE from 23% to 14%, food waste down estimated 9%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "forecast error (WAPE) reduced from 23% to 14%, food waste down an estimated 9%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "XGBoost churn propensity model, uplift validated with holdout",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Churn propensity model (XGBoost) used to target retention offers; uplift validated with a holdout.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "production SQL in BigQuery, dbt models",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Write production SQL in BigQuery and maintain dbt models",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Statistics 2020 Distinction; BSc Mathematics 2019",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Statistics, University of the Lothians, 2020 (Distinction)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "English (native), Swahili (conversational)",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "English (native), Swahili (conversational)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I am moving towards machine learning engineering",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Now moving towards machine learning engineering.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Built forecasting and churn models at Thistlebox with stated metrics",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Built the weekly demand forecasting model per recipe (LightGBM + calendar features)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "presenting results to leadership monthly",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Present results to leadership monthly.",
+        "note": ""
+      }
+    ],
+    "omissions": [],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML, CS or related",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "MSc Statistics | University of the Lothians | 2020 | Distinction",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping to production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "4+ years as a data scientist",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG experience",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Model serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Major cloud provider",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "SQL (BigQuery)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Python; MLOps/orchestration tools",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Python (pandas, scikit-learn)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Feature engineering and data pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "maintain dbt models for the analytics layer",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Version control",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Git",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; the candidate's honest transition framing is kept. Gaps in RAG, serving and MLOps are simply not mentioned, and the letter does not address them.",
+      "score": 5
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No location in contact line"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "CORE SKILLS",
+        "EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Machine learning engineer",
+        "Python",
+        "MLOps",
+        "MLflow/Airflow",
+        "AWS/GCP/Azure",
+        "RAG",
+        "model serving",
+        "feature engineering",
+        "CI/CD",
+        "Git",
+        "degree"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "Git",
+        "machine learning",
+        "degree"
+      ],
+      "missed_but_candidate_has": [
+        "feature engineering (calendar features)",
+        "GCP (BigQuery)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 5,
+      "reason": "Clean, parseable text with honest keywords, but few ad terms are shown and feature engineering and GCP are not named."
+    },
+    "cover_letter": {
+      "score": 5,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Mostly repeats CV bullets",
+        "Generic greeting",
+        "Does not address gaps (production ML, RAG, MLOps)",
+        "Company detail is thin"
+      ],
+      "strengths": [
+        "Accurate",
+        "Concise",
+        "Honest about transition"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Empty space at the bottom of the CV"
+      ],
+      "consistency_issues": [
+        "CV skills lines lack bullets or bold labels"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Mixed 'modeling' (US) with 'analyse' (UK)"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left as given; none added"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 6,
+    "overall_score": 6,
+    "summary": "Both documents are accurate, with nothing invented, and the layout is clean. The candidate is a data scientist applying for a senior ML engineer role and the real gaps (production serving, RAG, MLOps, cloud) are not addressed. The cover letter mostly repeats the CV and offers little company-specific content. ATS coverage is modest because few ad terms are shown."
+  },
+  "counts": {
+    "claims": 13,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 5
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1868,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1378,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 55.8,
+          "top": 51.0,
+          "bottom": 146.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 82.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 78.6,
+          "top": 74.2,
+          "bottom": 463.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 44.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.039698,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "summary",
+        "guaranteed": "Both documents are accurate, with nothing invented, and the layout is clean. The candidate is a data scientist applying for a senior ML engineer role and the real gaps (production serving, RAG, MLOps, cloud) are not addressed. The cover letter mostly repeats the CV and offers little company-specific content. ATS coverage is modest because few ad terms are shown.",
+        "full": "Both documents are accurate, with nothing invented, and the layout is clean. The candidate is a data scientist applying for a senior ML engineer role and the real gaps (production serving, RAG, MLOps, cloud) are not addressed. The cover letter mostly repeats the CV and offers little company-specific content. ATS coverage is modest because few ad keywords are shown."
+      }
+    ]
+  }
+}

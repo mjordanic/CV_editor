@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "5fc5ebc18d56c86b25d2e0d24cbca66c155c92b675a166fffe483df929033b8e",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Rust (reading the book)\nG2: Go (did the tour)\nG3: machine learning (unfinished course)\nG4: AWS certification (course only, no exam)\nG5: Terraform authoring\nG6: official team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Copying the 'Learning: Rust, Go' line as skills\nT2: Turning the unfinished AWS Cloud Practitioner course into a certification or the unfinished ML course into ML skills\nT3: Calling him Tech Lead / Team Lead as a job title (project tech lead only; acting lead only in notes)\nT4: Claiming Terraform authoring\nT5: Failing to condense: keeping duplicated Älvgrind sections, hobbies, gymnasium, band\nT6: Dropping qualifiers like 'Vue (a little)', 'Tailwind (some)'\nT7: Old cover letter is to his current employer and says he is at Sjöbris\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nOSKAR HADDAD-LINDQVIST\nFull-Stack Engineer | React, TypeScript, Node.js\noskar.hl@example.com | +46 70 555 0808 | GitHub: oskarhl-example\nPROFESSIONAL SUMMARY\nFull-stack developer with professional web application experience since 2014, building frontend and\nbackend features with React, TypeScript, Node.js and SQL databases. Experienced in NestJS,\nPostgreSQL, automated testing, Git-based workflows, accessibility improvements and mobile\nperformance. Recent work includes KYC onboarding, BankID identity verification and secure\ndocument uploads, delivered in close collaboration with designers and teammates.\nTECHNICAL SKILLS\nFrontend: React, TypeScript, JavaScript, Next.js, Angular, AngularJS, Vue, React Native, HTML,\nCSS, SCSS, Storybook, Redux, React Query\nBackend: Node.js, NestJS, Express, PHP, Laravel, REST, GraphQL, WebSockets\nDatabases: PostgreSQL, MySQL, MongoDB, Redis, Firebase, Prisma, TypeORM\nTesting and delivery: Jest, Playwright, Cypress, React Testing Library, Supertest, GitHub Actions,\nGitLab CI, Docker\nCloud and tools: AWS (ECS, S3, Lambda, SQS, CloudWatch, RDS), Figma, Jira, Confluence, Sentry,\nDatadog, Unleash\nAdditional: WCAG 2.1 AA audit fixes, A/B testing, BankID, Linux, Varnish\nPROFESSIONAL EXPERIENCE\nFull-Stack Developer | Älvgrind Fintech AB | 2021-Present\n• Build and improve customer onboarding features in React and TypeScript, with Node.js and NestJS\nAPIs and PostgreSQL data storage.\n• Built a BankID identity verification flow, including QR-code handling, error states and retries; the\nonboarding funnel conversion rate increased from 61% to 74% after rollout.\n• Built document upload functionality using S3 presigned URLs, ClamAV scanning in Lambda, and\nstatus tracking with SQS and PostgreSQL.\n• Improved mobile Largest Contentful Paint from 4.1 seconds to 1.9 seconds through code splitting,\nimage optimization and dependency replacement.\n• Fixed accessibility issues in the onboarding flow following a WCAG 2.1 AA audit.\n• Contributed to migrating legacy Express services to NestJS and migrating the frontend from Create\nReact App to Vite.\n• Worked with designers in Figma and supported an A/B-tested rollout of the new onboarding flow,\ninitially to 10% of traffic.\n• Contribute to a GraphQL BFF and take part in an on-call rotation; interviewed approximately 30\ncandidates.\n• Member of the Onboarding team, which received the 2023 internal customer impact award.\nDeveloper | Sjöbris Digital Agency AB | 2018-2021\n• Built websites and web applications for approximately 25 clients across retail, public sector, sports\nand transport.\n• Developed client applications using Angular and React, and a campaign site using Vue; built\nbackend features with Node.js, Express and PHP/Laravel.\n• Co-built a React Native ferry ticketing app with one other developer; the app reached\napproximately 50,000 downloads. Served as project tech lead.\n• Built and maintained WordPress sites, including custom themes and plugins.\n• Set up GitLab CI for the agency. Worked with MySQL, MongoDB and Firebase.\nWeb Developer | Nordkust Media AB | 2014-2018\n• Developed newspaper websites using PHP, jQuery and MySQL.\n• Built features for an article editor using AngularJS and implemented a paywall integration.\n• Worked on Varnish caching configuration and Ubuntu server administration.\nFreelance Web Developer | 2012-2014\n• Built websites for local small businesses, bands, friends and family using PHP, jQuery and\nWordPress.\nEDUCATION\nBachelor in Computer Science | West Coast University College, Gothenburg | 2011-2014\nADDITIONAL EXPERIENCE\n• Mentored at a coding bootcamp in Gothenburg from 2019 to 2020.\n• Speaker at a local JavaScript meetup in 2022: “Migrating Express to NestJS without stopping the\nworld”.\nLANGUAGES\nSwedish: Native | English: Fluent | Arabic: Spoken at home\n\n# OUTPUT 2: COVER LETTER\nDear Verdane Care Hiring Team,\nI am applying for the Full-Stack Engineer role on the Patient Experience squad. I have built\nweb applications professionally since 2014, and my current work combines React and\nTypeScript interfaces with Node.js and NestJS APIs and PostgreSQL. The opportunity to\nbuild patient-facing features across the full stack is a strong match for my experience.\nAt Älvgrind Fintech, I built a BankID identity-verification flow and document-upload\nfunctionality for customer onboarding. I also improved mobile page performance, fixed\naccessibility issues following a WCAG 2.1 AA audit, and supported an A/B-tested rollout that\nincreased onboarding conversion from 61% to 74%. These projects have given me practical\nexperience delivering user-facing workflows, collaborating with designers, and testing changes\nbefore wider release.\nI use Jest and Playwright, and have worked with PostgreSQL, AWS, Docker, GitHub Actions\nand Storybook. Verdane Care’s focus on accessible patient experiences and its commitment to\nWCAG 2.2 AA are especially relevant to the work I have done improving accessibility and\nperformance on mobile. I would bring a broad full-stack background, along with experience\nsupporting teammates through bootcamp mentoring and technical interviews.\nThank you for considering my application. I would welcome the opportunity to discuss how\nmy experience could contribute to Verdane Care’s Patient Experience squad.\nKind regards,\nOskar Haddad-Lindqvist\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

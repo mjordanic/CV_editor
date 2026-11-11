@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "d1abd21fe8464d46b33a919dd48b7b3e0b72aaf0803adb7002935052395b594c",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: forklift licence\nG2: supermarket or self-service packaging experience (tray sealer, labelling scales)\nG3: master butcher qualification (majstorski ispit not passed)\nG4: HACCP team leader or advanced HACCP course\nG5: unrestricted shift availability (needs the early shift on Wednesdays)\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming a forklift licence or forklift experience because the ad lists it\nT2: Calling him a master butcher or listing the majstorski ispit as passed\nT3: Inventing supermarket, self-service packing, tray-sealer or labelling-scale experience\nT4: Promising full availability for every shift and every Saturday when he needs the early shift on Wednesdays\nT5: Old cover letter is addressed to his current employer and says he works at the Dolac market stall\nT6: Turning the 2nd place at a county fair into an award-winning or national-level claim\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nTomislav Mesarić\nZagreb, Croatia | +385 1 555 0142 | tomislav.mesaric@example.com\nPROFESSIONAL SUMMARY\nExperienced butcher with hands-on meat-counter experience in a family butcher shop and a market\nstall. Skilled in breaking down beef, pork and lamb carcasses, boning, trimming, portioning, fresh\nsausage making and customer advice. Completed three-year vocational butcher training and holds a\nHACCP basic food hygiene certificate, renewed in 2024.\nEXPERIENCE\nButcher | Mesnica Kod Ante (family butcher shop), Zagreb | 2019–present\n- Break down 2–3 beef forequarters and 10–12 pork sides weekly; bone, trim and portion meat for\nthe counter.\n- Prepare four kinds of fresh sausage (ćevapi, kobasice, chipolata and lamb merguez) using the shop’s\nown recipes.\n- Maintain cold-room (0–4 °C) and display-counter temperature logs, recording checks twice daily.\n- Advise customers on cuts and cooking times; serve about 120 customers on a Saturday.\n- Train two apprentices in knife handling and cleaning routines.\nCounter Assistant | Tržnica Dolac meat hall stall, Zagreb | 2015–2019\n- Served customers, weighed and priced orders, operated the till and completed cash-up.\n- Cleaned and sanitised slicers, mincers and the counter at close.\nEDUCATION & CERTIFICATES\nVocational Certificate: Butcher (three-year programme), Food Trades School Zagreb, 2015\nHACCP Basic Food Hygiene Certificate, 2021 (renewed 2024)\nSKILLS\nCarcass breakdown (beef, pork and lamb) · Boning and trimming · Meat portioning · Fresh\nsausage making · Knife sharpening · Mincer and bandsaw operation · Cold-chain temperature\nchecks · HACCP hygiene records · Customer service and advice · Cash handling\nLANGUAGES\nCroatian (native) · English (good) · German (basic)\n\n# OUTPUT 2: COVER LETTER\nFreshCart Supermarkets Hiring Team\nSubject: Application for Butcher / Meat Counter Assistant (m/f/d) – Zagreb-Jarun store\nDear FreshCart Hiring Team,\nI am applying for the Butcher / Meat Counter Assistant role. My experience includes both\nhands-on butchery and customer-facing work at a meat counter, supported by completed\nvocational butcher training and a current HACCP basic food hygiene certificate.\nIn my current role at Mesnica Kod Ante, I break down beef and pork, bone, trim and portion\nmeat for the counter, and prepare four kinds of fresh sausage. I also record twice-daily\ntemperature checks for the cold room and display counter. At the Tržnica Dolac meat hall\nstall, I served customers, weighed and priced orders, and handled till and cash-up duties.\nAcross these roles, I have advised customers on cuts and cooking times and helped train two\napprentices in safe knife handling and cleaning routines.\nFreshCart’s “Ask the counter” promise closely matches the customer advice I provide in my\nwork. I would bring practical meat preparation skills, experience maintaining hygiene and\ntemperature records, and a friendly, informed approach to customer service to your team.\nI would welcome the opportunity to discuss how my experience could contribute to the\nZagreb-Jarun meat counter. Thank you for considering my application.\nSincerely,\nTomislav Mesarić\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

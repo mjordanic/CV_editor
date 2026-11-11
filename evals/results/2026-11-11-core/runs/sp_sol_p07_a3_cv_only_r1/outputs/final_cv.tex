@@ -1,0 +1,67 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.7in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{8pt}{4pt}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[2]{\textbf{#1}\par #2\par}
+\setlist[itemize]{leftmargin=*,itemsep=1pt,topsep=3pt,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Samuel Achterberg-Osei}\par
+{\large\color{accentcolor} Cloud \& Infrastructure Engineer}\par
+samuel.ao@example.com | +31 6 5555 0707
+
+\cvsection{Professional Summary}
+Cloud and infrastructure engineer with experience designing and operating Azure infrastructure, developing Terraform modules and automating service deployments. Background includes Windows and Linux administration, cloud migration, network design and security baselines. Current contract work supports an Azure estate of approximately 400 VMs and 12 AKS clusters; previous experience includes leading a 60-server migration to Azure IaaS.
+
+\cvsection{Technical Skills}
+\textbf{Cloud infrastructure:} Azure VMs, VNets, App Service, AKS, Azure AD / Entra ID, Azure Monitor\par
+\textbf{Infrastructure as code and automation:} Terraform, Bicep, Ansible, PowerShell, Bash\par
+\textbf{DevOps and containers:} Azure DevOps Pipelines, YAML pipelines, Docker, Kubernetes (AKS)\par
+\textbf{Systems:} Windows Server, Linux (Ubuntu, RHEL), Active Directory, Microsoft 365 administration\par
+\textbf{Networking and security:} TCP/IP, DNS, VPN, firewalls, hub-spoke VNets, private endpoints, MFA, conditional access
+
+\cvsection{Professional Experience}
+\cvrole{Cloud Engineer (contract) | Havenstad Logistics B.V.}{Mar 2025 - Present}
+\begin{itemize}
+\item Work in a three-person cloud team operating approximately 400 Azure VMs and 12 AKS clusters across three subscriptions.
+\item Developed Terraform modules for landing zone networking, including hub-spoke VNets, Azure Firewall and private endpoints.
+\item Replaced manual deployments for 15 internal applications with Azure DevOps YAML release pipelines.
+\end{itemize}
+\cvrole{Freelance IT Administrator | Self-employed}{Sep 2022 - Jan 2024}
+\begin{itemize}
+\item Set up and supported Microsoft 365 and Azure AD for nine small businesses with 5-40 employees.
+\item Migrated two clients from on-premises file servers to SharePoint / OneDrive.
+\item Implemented backups and basic security baselines, including MFA and conditional access.
+\end{itemize}
+\cvrole{Systems Administrator | Maasbrug Gemeente IT Services}{Jan 2014 - Feb 2020}
+\begin{itemize}
+\item Administered approximately 250 Windows and Linux servers supporting municipal services.
+\item Led the migration of 60 servers from VMware to Azure IaaS in 2019 using a lift-and-shift approach.
+\item Automated user provisioning and patch reporting with PowerShell.
+\item Provided second-line escalation support for networking and Active Directory issues.
+\end{itemize}
+\cvrole{Helpdesk Technician | Maasbrug Gemeente IT Services}{Aug 2011 - Dec 2013}
+
+\cvsection{Education}
+MBO 4 IT Systems and Networks | Delta Vocational College | 2011
+
+\cvsection{Certifications}
+Microsoft Certified: Azure Administrator Associate (AZ-104), 2019\par
+HashiCorp Certified: Terraform Associate (003), 2025
+
+\cvsection{Languages}
+Dutch (native) | English (fluent) | Twi (spoken)
+\end{document}

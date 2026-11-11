@@ -8,7 +8,9 @@ results. Run them from the repository root with the project's environment
 
 Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
 `results.csv`/`results.json` (the first one is [`results/2026-11-10/`](results/2026-11-10/REPORT.md); the
-stage 1 pilot of the staged comparison, section 9, is [`results/2026-11-11/`](results/2026-11-11/REPORT.md)).
+stage 1 pilot of the staged comparison, section 9, is [`results/2026-11-11/`](results/2026-11-11/REPORT.md); stage 2,
+the core, is [`results/2026-11-11-core/`](results/2026-11-11-core/REPORT.md), with stages 1 and 2 analysed together in
+`analysis/output/2026-11-11-stages12-primary/` and `analysis/output/2026-11-11-stages12/`).
 
 ## 1. Run one session: `evals/run_case.py`
 

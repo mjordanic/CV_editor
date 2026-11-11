@@ -1,0 +1,474 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6546,
+      "output_tokens": 6031,
+      "cache_creation_input_tokens": 2300,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.040087,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "2fc0b05f2fca8de6f7032cda26eff129c87e31a0b08566a4a3a4abfe7b2ffbad",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p10_a2_cv_only_r1-6b743aa034",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p10_a2_cv_only_r1-6b743aa034",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.080174
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "six years in analytics and data science, including over four years as a data scientist",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "6 years in analytics and data science (4+ as data scientist)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built weekly recipe-level demand forecasting model, WAPE 23% to 14%, 9% waste",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "forecast error (WAPE) reduced from 23% to 14%, food waste down an estimated 9%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "approximately 40 A/B tests annually; sequential testing calculator",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~40 experiments per year",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Feature engineering",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "LightGBM + calendar features",
+        "note": "Inferred from forecasting work."
+      },
+      {
+        "document": "cv",
+        "claim": "Junior Data Analyst, Firth Energy Retail, Sep 2020 - Jan 2022",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Junior Data Analyst, Firth Energy Retail, Glasgow - Sep 2020 to Jan 2022",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Statistics 2020 Distinction; BSc Mathematics 2019",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Statistics, University of the Lothians, 2020 (Distinction)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "over four years building models and experiments at Thistlebox",
+        "kind": "date_or_duration",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Data Scientist, Thistlebox ... Feb 2022 to present",
+        "note": "Four-plus years as a data scientist is stated, but the letter ties them all to Thistlebox. Feb 2022 to present may fit, depending on the date."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "strong Python and statistical skills",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "production SQL in BigQuery and maintain dbt models",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Write production SQL in BigQuery and maintain dbt models",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "present results to leadership monthly",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Present results to leadership monthly",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Git skill and BigQuery (GCP) as cloud exposure",
+        "source": "cv",
+        "source_quote": "SQL (BigQuery)",
+        "relevance": "medium",
+        "why_it_matters": "Cloud provider requirement; BigQuery is a GCP service but the CV does not name GCP."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML/CS/related",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "MSc Statistics",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping to production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "now moving towards machine learning engineering",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Model serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Major cloud provider",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "BigQuery",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Python",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Python (pandas, scikit-learn, LightGBM",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "MLOps/orchestration tools",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Feature engineering and ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Feature engineering; maintain dbt models",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps are not faked; the candidate is honest about moving towards ML engineering. Production, RAG and MLOps gaps are simply not addressed.",
+      "score": 5
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Title heading remains Data Scientist"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Experience",
+        "Education",
+        "Skills",
+        "Languages"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Machine learning engineer",
+        "Python",
+        "feature engineering",
+        "MLOps",
+        "cloud",
+        "RAG",
+        "CI/CD",
+        "model serving",
+        "Git"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "feature engineering",
+        "Git",
+        "machine learning engineering",
+        "BigQuery"
+      ],
+      "missed_but_candidate_has": [
+        "GCP"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 6,
+      "reason": "Clean, parseable text with honest keywords. The candidate lacks many of the ad's key terms, which costs little, but the CV does not name GCP."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not address gaps such as production deployment, RAG or MLOps",
+        "Somewhat generic, repeating CV bullets"
+      ],
+      "strengths": [
+        "Honest about the move towards ML engineering",
+        "Uses company values"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "ownership, pragmatism, sharing context"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 9
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Somewhat formulaic phrases"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left as in the CV"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "The CV and letter are truthful and cleanly formatted, and nothing material is invented. The candidate is a real stretch for a 4+ year ML engineer role, and the documents honestly frame the move towards ML engineering. The letter ties over four years to Thistlebox, which is slightly stretched, and it does not address the production, RAG or MLOps gaps."
+  },
+  "counts": {
+    "claims": 10,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 8,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 0,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2122,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2239,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 127.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 84.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.9,
+          "top": 73.3,
+          "bottom": 249.1
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 70.4,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.040087,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

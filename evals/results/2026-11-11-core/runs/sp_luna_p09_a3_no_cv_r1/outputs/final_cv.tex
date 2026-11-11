@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.5em}
+\setlist[itemize]{leftmargin=*,itemsep=0.25em,topsep=0.25em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Nadia Brennan-Aziz}\\[0.35em]
+{\large\color{accentcolor} Senior Platform Engineer | AWS, Kubernetes, Terraform}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Platform and reliability engineer with experience building and operating AWS and EKS infrastructure, infrastructure as code, internal developer platforms, observability, SLOs, and cost optimisation. Tech lead of a platform team, with a track record of turning platform improvements into adopted, measurable outcomes. Previously supported game backends during launches with more than one million daily players.
+
+\section*{CORE SKILLS}
+Cloud and infrastructure: AWS, EKS, ECS, Kubernetes, Terraform, Crossplane, Helm, Argo CD, Karpenter, AWS Spot\\
+Reliability and observability: Prometheus, Alertmanager, Grafana, Sloth, PagerDuty, SLOs, burn-rate alerts, capacity planning, k6\\
+Development and automation: Go, Python, GitHub Actions, controller-runtime, Backstage (catalog)\\
+Technical leadership: Platform technical leadership, mentoring, collaboration with product leadership
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Tallybrook Ltd | Senior Platform Engineer | 2022-Present}
+\begin{itemize}
+\item Tech lead of the platform team, working on the EKS platform, internal developer platform, SLOs, and cost initiatives.
+\item Built golden-path service templates in Go and Python, Argo CD ApplicationSets, and Crossplane compositions for RDS, SQS, and S3 provisioned through pull requests. Adopted by all 14 product teams; reduced time from new service to production from about two weeks to under one day.
+\item Replaced cluster-autoscaler managed node groups with Karpenter and introduced Spot instances for stateless workloads with interruption handling, reducing EC2 spend by 38 percent (about GBP 410,000 per year).
+\item Established SLOs and burn-rate alerts for the 20 most critical services; pages per week fell by about 60 percent, and an error-budget policy was agreed with product leadership.
+\end{itemize}
+
+\textbf{Brightwater Games | Site Reliability Engineer | 2019-2022}
+\begin{itemize}
+\item Operated AWS infrastructure using Terraform and Atlantis, supporting game backends during launches with over one million daily players.
+\item Replaced Nagios alerting with Prometheus and Alertmanager.
+\item Led capacity planning for two major launches. k6 load tests simulating 300,000 concurrent players identified a connection-pool limit that was fixed before launch.
+\end{itemize}
+
+\section*{SELECTED PROJECT}
+\textbf{Kubernetes cleanup controller | Open-source side project | 2024}
+\begin{itemize}
+\item Built a small Kubernetes controller in Go using controller-runtime to delete expired preview namespaces; the project has about 120 GitHub stars.
+\end{itemize}
+
+\section*{CERTIFICATION}
+Certified Kubernetes Administrator (CKA)
+
+\section*{LEADERSHIP AND SPEAKING}
+\begin{itemize}
+\item Mentored three engineers from backend roles into SRE.
+\item Speaker, UK DevOps meetup (2024): "SLOs that product managers care about."
+\end{itemize}
+\end{document}

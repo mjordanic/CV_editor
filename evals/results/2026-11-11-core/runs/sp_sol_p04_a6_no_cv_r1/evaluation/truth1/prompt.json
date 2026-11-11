@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "257d9779d3daea445bc137a4d7b9792f7c72a777c0975d5d474e4139c0f58a8a",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: professional backend work\nG2: GraphQL (course only)\nG3: Vue (one weekend)\nG4: cloud (AWS/Azure)\nG5: CI/CD ownership\nG6: years of professional experience\n\n# TRAPS (mistakes a writer could make)\nT1: Inflating internship + freelance into 'X years of experience' or 'Software Engineer'\nT2: Claiming she built the Study Buddy backend or led the team\nT3: Listing GraphQL or Vue\nT4: Inventing CI/CD, Docker or AWS\nT5: Reusing old cover letter claim 'third-year student' as current status\nT6: Dropping the visa/work-authorisation fact when notes are given and the ad asks about right to work\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nAiyana Brooks-Tan\nProfessional Summary\nEarly-career web developer with professional React accessibility experience and project experience\nacross TypeScript, Node.js, Express and PostgreSQL. Built screen-reader-tested interfaces, an API\nintegrating public data sources and a freelance booking-request website. Strong focus on accessible\nuser experiences, supported by automated testing and experience helping first-year web development\nstudents.\nTechnical Skills\nFrontend: React, TypeScript, JavaScript, Next.js, Tailwind CSS, Chart.js\nBackend and data: Node.js, Express, PostgreSQL, public API integration, Firebase Authentication\nTesting and accessibility: Jest, React Testing Library, Storybook, NVDA, VoiceOver, Lighthouse,\nkeyboard accessibility\nDeployment: Vercel, static generation\nExperience\nSoftware Development Intern | Harbourline Media | May 2024 - August 2024\n• Delivered accessibility fixes and components for a React news site.\n• Built a keyboard- and screen-reader-friendly image gallery for article pages, documented in Story-\nbook.\n• Used Jest and React Testing Library for the gallery component.\nFreelance Web Development | Yoga Studio Booking Site | 2025\n• Built marketing pages and a class timetable with booking requests sent by email.\n• Used Next.js static generation and Tailwind CSS; deployed on Vercel with content maintained in\nMarkdown files.\nTeaching Assistant | First-Year Web Development Lab | Spring 2025\n• Helped approximately 30 students during one semester of web development labs.\nSelected Projects\nTidewatch | Final Year Project | 2024 - 2025\n• Built an accessible web app showing tides, water temperature and weather for sea swimmers around\nthe Irish coast.\n• Developed a React and TypeScript frontend, a Node.js/Express API caching data from public\nweather and tide APIs, and PostgreSQL storage for user favourites.\n• Tested with NVDA and VoiceOver; achieved a Lighthouse accessibility score of 100.\n• Used Chart.js and Jest. Received 82% (First Class) for the project and demonstrated it at the\ncollege project showcase.\nStudy Buddy | Group Project | 2023\n• Built the React frontend and login screens for a study-matching app in a team of four; other team\nmembers built the API and database.\n• Used JavaScript and Firebase Authentication.\nTransit Delay Notifier | Student Hackathon | 2024\n• Developed the frontend in a team of three, building the application in 24 hours and placing second.\nEducation\nComputing | Liffey Institute of Technology\nFinal year project: Tidewatch, 2024 - 2025; project grade: 82% (First Class).\nVolunteering\nManage social media for a sea swimming club.\n\n# OUTPUT 2: COVER LETTER\nDear Verdane Care hiring team,\nI am applying for the Full-Stack Engineer (TypeScript / React) role in your Patient Experience\nsquad. My experience combines accessibility work on a React news site with a full-stack final\nyear project using TypeScript, Node.js, Express and PostgreSQL. Your focus on accessible\npatient-facing features connects directly with the work I have prioritised in both my internship\nand my own projects.\nAt Harbourline Media, I delivered accessibility fixes and built a keyboard- and screen-reader-\nfriendly image gallery for article pages, documented in Storybook and tested using Jest and\nReactTestingLibrary. Myinterestinaccessibilitybeganwhenafriendwhousesascreenreader\nshowed me the barriers she encountered online. For Tidewatch, my final year project, I put\nthat interest into practice by testing with NVDA and VoiceOver and achieving a Lighthouse\naccessibility score of 100. That testing experience is relevant to your WCAG 2.2 AA focus,\nwithout treating an automated score as proof of conformance.\nTidewatchalsogavemeexperienceconnectingaReactandTypeScriptfrontendtoaNode.js/Express\nAPI that caches public weather and tide data, with PostgreSQL storing user favourites. The\nproject received 82% (First Class). Separately, I built a freelance yoga studio website with a\nclass timetable and email booking requests using Next.js and Tailwind CSS, deployed on Vercel.\nMy backend experience comes from projects rather than employment; my professional experi-\nence is in React and accessibility. I also helped approximately 30 first-year web development\nstudents as a teaching assistant, experience relevant to supporting junior colleagues.\nI would welcome the opportunity to discuss how my accessibility work and full-stack project\nexperience could contribute to simpler booking and follow-up experiences for your patients.\nThank you for considering my application.\nYours sincerely,\nAiyana Brooks-Tan\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

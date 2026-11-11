@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "ea0812ab82301d2e2f123382c6f349a704a3a087dc8c36b3be5ec3469c3f20da",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: model serving APIs\nG2: Kubernetes\nG3: MLflow\nG4: Airflow/Kubeflow\nG5: deep learning beyond a course\nG6: GCP infrastructure\nG7: CI/CD for ML\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming he deployed models as APIs or built ML pipelines on Kubernetes/Kubeflow\nT2: Listing MLflow, Airflow, Kubernetes, SageMaker because MLE ads require them\nT3: Presenting the PyTorch course project as professional deep learning\nT4: Claiming he deployed the Streamlit app to Cloud Run (platform team did)\nT5: Retitling him as ML Engineer in the experience section\nT6: Old cover letter is to his current employer and describes him as junior analyst\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nTobias Mwangi-Hartley\nData Scientist | Applied Machine Learning\nEmail: tobias.mwangihartley@example.com | Phone: +44 7700 900110 | LinkedIn:\nlinkedin.com/in/tmh-example\nPROFILE\nData scientist with 6 years of experience in analytics and data science. Strong foundation in statistics\nand Python, with experience developing forecasting and churn propensity models. Builds analyses\nand models that inform operational and customer decisions, and communicates results clearly to\nbusiness stakeholders. Interested in moving towards machine learning engineering.\nEXPERIENCE\nData Scientist | Thistlebox (meal-kit subscriptions) Feb 2022–Present\n• Built a weekly per-recipe demand forecasting model using LightGBM and calendar features. The\nmodel is used by operations to order ingredients; WAPE decreased from 23% to 14%, and food\nwaste fell by an estimated 9%.\n• Developed a churn propensity model using XGBoost to target retention offers, with uplift validated\nusing a holdout.\n• Design and analyse approximately 40 A/B tests per year for growth and product teams; built the\nteam’s sequential testing calculator.\n• Write production SQL in BigQuery and maintain dbt models for the analytics layer.\n• Present results to leadership monthly.\nJunior Data Analyst | Firth Energy Retail | Glasgow Sep 2020–Jan 2022\n• Conducted customer segmentation and tariff analysis using R and SQL.\n• Automated monthly regulator reports using R Markdown.\nEDUCATION\nMSc Statistics | University of the Lothians | 2020 | Distinction\nDissertation: Bayesian hierarchical models for small-area energy demand\nBSc Mathematics | University of the Lothians | 2019\nSKILLS\nProgramming and data: Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels), R\n(tidyverse, brms), SQL (BigQuery)\nData and engineering tools: dbt, Git, Jupyter, Looker\nMachine learning and analytics: Demand forecasting, churn propensity modelling, A/B testing,\ncausal inference, time-series forecasting, Bayesian statistics\nLANGUAGES\nEnglish (native) | Swahili (conversational)\n\n# OUTPUT 2: COVER LETTER\nDear Hiring Team,\nI am applying for the Machine Learning Engineer – Customer Support AI role at Quillstone\nPayments. I bring six years of experience in analytics and data science, with a strong\nfoundation in Python and statistics and hands-on experience building models that inform\noperational and customer decisions. I am now looking to apply my data-science and production\nanalytics experience in a machine learning engineering environment, and the opportunity to\nhelp make support faster and more useful for merchants particularly interests me.\nAt Thistlebox, I built a weekly per-recipe demand forecasting model using LightGBM and\ncalendar features. Operations uses it to order ingredients; forecast error (WAPE) fell from 23%\nto 14%, and food waste decreased by an estimated 9%. I also developed an XGBoost churn\npropensity model to target retention offers, with uplift validated using a holdout. I also design\nand analyse approximately 40 A/B tests each year for growth and product teams and built the\nteam’s sequential testing calculator. Alongside this work, I write production SQL in BigQuery\n(GCP), maintain dbt models for the analytics layer, and use Git. These experiences have taught\nme to connect modeling choices to practical outcomes and to communicate results clearly to\nstakeholders.\nQuillstone’s work on AI systems that answer merchant questions and support agents appeals to\nme because it brings applied machine learning close to real customer needs. I would bring\nexperience taking forecasting, customer-propensity, and experimentation work from business\nquestions to decision-useful outputs, while collaborating with product and operational teams. I\nam keen to build on that foundation in a team that takes ownership, shares context openly, and\nlearns from mistakes.\nThank you for considering my application. I would welcome the opportunity to discuss how my\nexperience could contribute to Quillstone’s Customer Operations AI team.\nKind regards,\nTobias Mwangi-Hartley\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,450 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9693,
+      "output_tokens": 4532,
+      "cache_creation_input_tokens": 6228,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.040649,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "97ec894cc86ac3271b34f57de63369a61b6081eb4f78943fab7457c3abe71de6",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p08_a6_all4_r1-f1bc9a2d31",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p08_a6_all4_r1-f1bc9a2d31",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.081298
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Professional web development experience since 2014",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "professionally since 2014",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BankID flow, A/B tested 10%, conversion 61% to 74%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "onboarding conversion 61% -> 74%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "LCP from 4.1s to 1.9s",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "LCP from 4.1s to 1.9s on mobile",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Acting team lead four months in 2024, 1:1s and sprint planning",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "\"acting team lead\" for 4 months",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Apollo Server GraphQL BFF co-maintained",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "maintain one BFF, Apollo server",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Project tech lead for ferry app, ~50,000 downloads",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Oskar was project tech lead",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Migrated from CRA to Vite in 2023",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Migrated from Create React App to Vite (2023)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Third-party integrations",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "BankID integration",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Arabic: spoken",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Arabic - spoken at home",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "practical AWS experience",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "AWS (ECS, Lambda, S3, SQS, CloudWatch, RDS)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "have mentored at a coding bootcamp",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "I was a mentor at a coding bootcamp",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "German school-level",
+        "source": "cv",
+        "source_quote": "German - school level",
+        "relevance": "low",
+        "why_it_matters": "Ad prefers German; weak"
+      },
+      {
+        "fact": "Redis, Storybook design system, Cypress",
+        "source": "cv",
+        "source_quote": "Storybook",
+        "relevance": "low",
+        "why_it_matters": "nice to have"
+      },
+      {
+        "fact": "Customer impact award 2023",
+        "source": "cv",
+        "source_quote": "won internal \"customer impact award\" 2023",
+        "relevance": "low",
+        "why_it_matters": "achievement"
+      }
+    ],
+    "fit": {
+      "requirements": [],
+      "gap_handling_summary": "No healthcare experience; not faked, privacy angle used honestly.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Page 2 only 58% filled; Gothenburg location omitted"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Jest",
+        "Playwright",
+        "accessibility",
+        "Git",
+        "Docker",
+        "AWS",
+        "Next.js",
+        "Storybook",
+        "A/B testing",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Jest",
+        "Playwright",
+        "accessibility",
+        "Git",
+        "Docker",
+        "AWS",
+        "Next.js",
+        "Storybook",
+        "A/B testing",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "semantic HTML",
+        "OWASP/security"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 9,
+      "reason": "Clean, sectioned text with nearly all ad keywords honestly present; security keywords absent."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company-specific content is thin (only booking and intake)",
+        "No mention of healthcare gap"
+      ],
+      "strengths": [
+        "Maps accessibility, performance, privacy to ad",
+        "Concrete metrics"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 1 ends with blank space"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "acting team lead",
+        "Apollo BFF"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "contact details left out beyond given"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 8,
+    "overall_score": 9,
+    "summary": "Accurate, well-targeted CV and letter with no invented claims; metrics and notes facts used correctly. ATS-friendly with clean layout. Minor gaps: thin company specificity, no security/semantic HTML wording, no German mention."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 0,
+    "must_haves_shown": 0,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 9
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3916,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2128,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 53.2,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 139.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 58.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 285.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 66.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.040649,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

@@ -1,0 +1,61 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.7em}{0.3em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.25em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\pagestyle{empty}
+\urlstyle{same}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Daniel Okafor-Reyes}\\[0.2em]
+{\large\color{accentcolor} Backend Software Engineer}\\[0.3em]
+Email: \href{mailto:daniel.okafor-reyes@example.com}{daniel.okafor-reyes@example.com} | Phone: +351 555 010 202\\
+LinkedIn: \href{https://linkedin.com/in/daniel-okafor-reyes-example}{linkedin.com/in/daniel-okafor-reyes-example}
+
+\section*{Professional Summary}
+Backend engineer with 7 years of experience building and running Java/Spring Boot services for insurance and travel products. Experience in REST API design, Kafka event processing, relational databases and query tuning, automated testing, and AWS EKS deployments. Combines measurable API performance improvements with regular production on-call responsibility.
+
+\section*{Professional Experience}
+\textbf{Backend Engineer | Tejo Insurance Tech | Jan 2022 - Present}
+\begin{itemize}
+\item Develop and maintain 7 Java 17 / Spring Boot microservices for policy quoting and claims intake.
+\item Designed the partner quoting REST API used by 12 broker partners, with API versioning documented through OpenAPI.
+\item Produce and consume Kafka events for claims workflows; introduced idempotent consumers and an outbox table, eliminating duplicate claim records.
+\item Reduced quote endpoint p99 latency from 1.8 s to 450 ms through Redis caching and resolution of N+1 queries in JPA.
+\item Deploy services to Kubernetes on AWS EKS using Helm charts and Jenkins CI/CD pipelines; participate in production on-call one week per month.
+\end{itemize}
+\textbf{Software Developer | Viajar Online S.A. | Sep 2019 - Dec 2021}
+\begin{itemize}
+\item Built booking and payment features in a Java 11 / Spring MVC monolith backed by Oracle.
+\item Wrote automated integration tests with Testcontainers, increasing payments module test coverage from 35\% to 70\%.
+\item Contributed to monolith decomposition by extracting a notifications service using Spring Boot and RabbitMQ.
+\end{itemize}
+\textbf{Junior Developer (internship then full-time) | CodeFarol Lda | Jul 2018 - Aug 2019}
+\begin{itemize}
+\item Maintained PHP and, subsequently, Java applications for small business clients.
+\end{itemize}
+
+\section*{Technical Skills}
+\textbf{Backend and APIs:} Java 8-17, Spring Boot, Spring MVC, REST, OpenAPI, Kotlin (basic)\\
+\textbf{Databases and persistence:} PostgreSQL, Oracle, Redis, Spring Data JPA, Hibernate, query tuning\\
+\textbf{Event-driven integration:} Kafka, RabbitMQ, idempotent consumers, outbox pattern\\
+\textbf{Cloud and delivery:} AWS (EKS, S3, SQS), Docker, Kubernetes, Helm, Jenkins, CI/CD\\
+\textbf{Testing and tools:} JUnit 5, Testcontainers, Git, Linux
+
+\section*{Education}
+BSc Informatics Engineering | Atlantic Polytechnic Institute | 2018
+
+\section*{Languages}
+English (fluent), Portuguese (fluent), Spanish (conversational)
+\end{document}

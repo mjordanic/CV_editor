@@ -1,0 +1,193 @@
+{
+  "checker_model": "anthropic:claude-haiku-5-5",
+  "name": "truth1",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 1827,
+      "output_tokens": 1456,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1324
+    },
+    "cost_usd": 0.000462,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+    "prompt_sha256": "8e500ca52fabcf9c543335aff34e62ca6c0e79576a02aff3c69a139d4cd65343",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "truth1-sp_luna_p05_a5_all4_r1-462bf72747",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "truth1-sp_luna_p05_a5_all4_r1-462bf72747",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.000924
+  },
+  "persona": "p05",
+  "persona_file": "evals/fixtures/personas/p05-rafael-overqualified-principal/persona.json",
+  "outputs": {
+    "cv": true,
+    "cover_letter": true
+  },
+  "not_applicable": [],
+  "items": [
+    {
+      "id": "G1",
+      "kind": "gap",
+      "item": "deep AWS",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The CV only lists AWS (EC2, S3) among many skills, which does not claim deep AWS expertise.",
+      "flag": null
+    },
+    {
+      "id": "G2",
+      "kind": "gap",
+      "item": "Java",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Java does not appear in either document.",
+      "flag": null
+    },
+    {
+      "id": "G3",
+      "kind": "gap",
+      "item": "Rust (hobby only)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Rust does not appear in either document.",
+      "flag": null
+    },
+    {
+      "id": "G4",
+      "kind": "gap",
+      "item": "recent heavy hands-on coding (last 2 years mostly management)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The documents describe management roles and past coding work; the vague 'hands-on backend perspective' does not claim recent heavy coding.",
+      "flag": null
+    },
+    {
+      "id": "T1",
+      "kind": "trap",
+      "item": "Keeping a director-level CV that screams over-qualified for an IC ad instead of foregrounding hands-on work (tailoring, not inventing)",
+      "verdict": "claimed_as_met",
+      "model_verdict": "claimed_as_met",
+      "document": "cv",
+      "quote": "Director of Engineering, Platform",
+      "quote_found": true,
+      "note": "The CV keeps the director-level role and 45-engineer organisation prominent for an IC application, which is the over-qualified mistake.",
+      "flag": null
+    },
+    {
+      "id": "T2",
+      "kind": "trap",
+      "item": "Mentioning the dropped PhD that notes say not to mention",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No PhD is mentioned; the education line lists only the Dipl.-Inf. degree.",
+      "flag": null
+    },
+    {
+      "id": "T3",
+      "kind": "trap",
+      "item": "Claiming deep AWS, Java or professional Rust",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Neither document claims deep AWS, Java or professional Rust.",
+      "flag": null
+    },
+    {
+      "id": "T4",
+      "kind": "trap",
+      "item": "Inventing a reason for leaving beyond the reorg",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Neither document gives any reason for leaving Streamhaus.",
+      "flag": null
+    },
+    {
+      "id": "T5",
+      "kind": "trap",
+      "item": "Old cover letter is an internal promotion letter to Streamhaus; must not be reused for a new company",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The cover letter is newly written for Tessel Cargo Software, not a reused internal promotion letter.",
+      "flag": null
+    },
+    {
+      "id": "T6",
+      "kind": "trap",
+      "item": "Saying he is currently employed at Streamhaus (he left Aug 2026; CV date range ends 2026 (Aug))",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The CV gives the Streamhaus role as ending in August 2026, not as current employment.",
+      "flag": null
+    }
+  ],
+  "counts": {
+    "gaps": 4,
+    "traps": 6,
+    "gaps_claimed": 0,
+    "traps_hit": 1,
+    "unclear": 0,
+    "unverified_quotes": 0,
+    "missing_from_answer": 0,
+    "cost_usd": 0.000462
+  },
+  "cost_usd": 0.000462
+}

@@ -1,0 +1,29 @@
+PROJECT: Incoming Document Classification for Public Administration (Slavonica Document AI, 2023-2024)
+- Classifier for scanned incoming documents (invoices, contracts, decisions) after OCR; 23 classes, 94% accuracy, macro F1 0.91.
+- Fine-tuned XLM-R base; served as FastAPI service in Docker on Azure App Service; ~15k documents per day.
+- Technologies: PyTorch, Hugging Face Transformers, FastAPI, Docker, Azure ML, MLflow.
+
+PROJECT: Croatian Named Entity Recognition (Slavonica Document AI + PhD, 2023-2025)
+- NER model for persons, organisations, OIB numbers, addresses and legal references in Croatian administrative text.
+- Fine-tuned BERTic; built an annotated dataset of 4,000 documents with an annotation guideline and two annotators (inter-annotator kappa 0.87).
+- Published at a regional workshop (2024).
+- Technologies: PyTorch, Hugging Face Transformers, spaCy, Label Studio.
+
+PROJECT: Model Drift Monitoring (Slavonica Document AI, 2024)
+- Weekly drift report on input text length, vocabulary and predicted class distribution; alert when PSI > 0.2.
+- Caught a silent OCR change at a client that dropped accuracy by 9 points, fixed within a week.
+- Technologies: Python, Evidently, Azure Functions, PostgreSQL.
+
+PROJECT: Customer Complaint Topic Classification (Baranjska kreditna banka, 2022)
+- TF-IDF + logistic regression baseline, then fastText; 11 topics; used for weekly reporting to customer service management.
+- Technologies: scikit-learn, fastText, Oracle SQL, pandas.
+
+PROJECT: Retrieval-augmented question answering demo (personal, 2025)
+- Weekend prototype: question answering over Croatian laws using a sentence embedding model and an open-weight LLM through an API. Not used in production, no evaluation beyond manual checks.
+- Technologies: Python, sentence-transformers, FAISS.
+
+EXPERIENCE: ML Engineer at Slavonica Document AI (2023-Present)
+- Document classification and NER for Croatian public administration documents.
+
+EXPERIENCE: Data Scientist at Baranjska kreditna banka (2021-2023)
+- Churn prediction and complaint classification.

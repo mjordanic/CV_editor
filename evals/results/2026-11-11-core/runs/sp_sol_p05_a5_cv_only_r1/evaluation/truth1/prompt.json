@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "d12258f601bca502c7932210076f929a2afa3e94759bc5f6e725e49f65002dd8",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: deep AWS\nG2: Java\nG3: Rust (hobby only)\nG4: recent heavy hands-on coding (last 2 years mostly management)\n\n# TRAPS (mistakes a writer could make)\nT1: Keeping a director-level CV that screams over-qualified for an IC ad instead of foregrounding hands-on work (tailoring, not inventing)\nT2: Mentioning the dropped PhD that notes say not to mention\nT3: Claiming deep AWS, Java or professional Rust\nT4: Inventing a reason for leaving beyond the reorg\nT5: Old cover letter is an internal promotion letter to Streamhaus; must not be reused for a new company\nT6: Saying he is currently employed at Streamhaus (he left Aug 2026; CV date range ends 2026 (Aug))\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nRAFAEL MORETTI-KLEIN\nBackend Engineering | Python, Go and Distributed Systems\nrafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\nPROFESSIONAL SUMMARY\nSoftware engineer and engineering leader with 21 years of experience building large-scale backend\nsystems in Python, Go and C++. Experience spans fleet telematics, GPS data ingestion,\nhigh-throughput APIs and cloud services. Defined architecture for platforms serving 50M+ users and\nimproved playback API availability from 99.5% to 99.95%. Continue to write code every week,\nprimarily internal tooling in recent years.\nTECHNICAL SKILLS\nLanguages and frameworks: Python, FastAPI, Tornado, Flask, Django, asyncio; Go; C++ (earlier\nexperience).\nDatabases and messaging: PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ.\nCloud and infrastructure: AWS (EC2, S3), GCP (GKE, Pub/Sub, BigQuery), Kubernetes,\nTerraform.\nObservability: Prometheus, Grafana, OpenTelemetry.\nEngineering: Distributed systems design, backend APIs, automated test tooling, architecture\nreviews, RFCs, gRPC, Protobuf.\nPROFESSIONAL EXPERIENCE\nDirector of Engineering, Platform | Streamhaus GmbH\n2019 - August 2026\n• Drove migration from a Python 2 monolith to approximately 60 Python/Go services on GKE;\nplayback API availability improved from 99.5% to 99.95%.\n• Introduced an RFC process, architecture review board and on-call guidelines adopted\ncompany-wide.\n• Led five teams comprising 45 engineers and five engineering managers, responsible for identity,\nplayback API, billing integration and developer platform.\n• Reduced cloud spend by 31% (EUR 4.2M/year) through rightsizing, committed use discounts and\nan internal cost dashboard.\nPrincipal Engineer | Streamhaus GmbH\n2015 - 2019\n• Technical lead for the playback API, using Python, Tornado, a later FastAPI-like internal\nframework, Cassandra and Redis.\n• Designed the entitlement service handling 120k requests/second at peak, using Go and Cassandra.\n• Co-authored the company’s service template and Python style guide.\nSenior Software Engineer | Nordfels Telematik AG\n2010 - 2015\n• Developed fleet telematics backend systems ingesting GPS data from 300k vehicles, using C++,\nPython, PostgreSQL/PostGIS and RabbitMQ.\n• Led six developers on the route-history product.\nSoftware Engineer | Dataquelle Systems GmbH\n2005 - 2010\n• Developed industrial data acquisition software in C++ and Python on Linux and embedded x86.\n• Built a Python test harness used by QA for eight years.\nEDUCATION\nDipl.-Inf. (equivalent MSc), Computer Science\nRhine Valley University, 2005\nLANGUAGES\nGerman (native), Italian (native), English (fluent)\n\n# OUTPUT 2: COVER LETTER\nRAFAEL MORETTI-KLEIN\nrafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\nHiring Team\nTessel Cargo Software\nApplication: Backend Engineer (Python) - Shipment Tracking Platform\nDear Hiring Team,\nI am applying for the Backend Engineer position on your Routing & Tracking team. My\nexperience connects two central aspects of this role: ingesting transport data and building\nreliable backend APIs. At Nordfels Telematik, I developed systems ingesting GPS data from\n300k vehicles using Python, C++, PostgreSQL/PostGIS and RabbitMQ, and led six\ndevelopers on the route-history product. That background provides a direct foundation for\ncontributing to Tessel’s carrier-event ingestion and shipment tracking services.\nAt Streamhaus, I was technical lead for the Python playback API and designed a Go\nentitlement service handling 120k requests per second at peak. Later, as Director of\nEngineering, I drove the migration from a Python 2 monolith to approximately 60 Python/Go\nservices on GKE, with playback API availability improving from 99.5% to 99.95%. These\nprojects provide relevant experience for improving the performance and reliability of your\ncustomer-facing tracking API. My technical toolkit also includes FastAPI, Kafka, AWS,\nKubernetes, Terraform, Prometheus, Grafana and OpenTelemetry.\nMy most recent position involved substantial leadership responsibility, while I continued to\nwrite code every week, primarily internal tooling. My earlier principal engineering work\nincluded co-authoring a service template and Python style guide; I also built a Python test\nharness used by QA for eight years at Dataquelle. Tessel’s emphasis on short design notes and\nreliability work connects closely with the RFC process, architecture reviews and on-call\nguidelines I introduced at Streamhaus.\nI would welcome a technical conversation about how my telematics and backend engineering\nexperience could contribute to Tessel Track and the Routing & Tracking team. Thank you for\nconsidering my application.\nKind regards,\nRafael Moretti-Klein\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
