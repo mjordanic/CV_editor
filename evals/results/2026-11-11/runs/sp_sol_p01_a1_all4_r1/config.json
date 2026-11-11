@@ -1,0 +1,33 @@
+{
+  "method": "single_prompt",
+  "topology": "exactly one model call per case; PDFs by pdflatex and a fixed fallback layout",
+  "generation": {
+    "model": "openai:gpt-6.1-sol",
+    "calls": 1,
+    "retries": 0,
+    "batch": null
+  },
+  "templates": {
+    "cv": "templates/cv_template.tex",
+    "cover_letter": "templates/cover_letter_template.tex"
+  },
+  "code": {
+    "repo": ".",
+    "commit": "0b42046977b856dd8cfda4cd5d07ce5f1ffe7645",
+    "branch": "fm/cv-eval-pilot",
+    "dirty": false
+  },
+  "packages": {
+    "langgraph": "1.0.3",
+    "langchain": "1.0.5",
+    "langchain-core": "1.0.4",
+    "langchain-openai": "1.0.2",
+    "openai": "2.8.0",
+    "anthropic": "2.8.0",
+    "tavily": "1.1.0",
+    "pdfplumber": "0.11.8",
+    "pypdfium2": "5.0.0",
+    "pypdf": "6.2.0",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+  }
+}

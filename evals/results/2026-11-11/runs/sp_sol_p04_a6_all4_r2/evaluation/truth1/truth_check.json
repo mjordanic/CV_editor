@@ -1,0 +1,216 @@
+{
+  "checker_model": "anthropic:claude-haiku-5-5",
+  "name": "truth1",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 2122,
+      "output_tokens": 1574,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1295
+    },
+    "cost_usd": 0.000506,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+    "prompt_sha256": "78e27c0d4724dfe51dc6aad311ad9fa6c5aaed60407f6787ae4393fca475bebf",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "truth1-sp_sol_p04_a6_all4_r2-f92a890e8c",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "truth1-sp_sol_p04_a6_all4_r2-f92a890e8c",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.001012
+  },
+  "persona": "p04",
+  "persona_file": "evals/fixtures/personas/p04-aiyana-junior-frontend/persona.json",
+  "outputs": {
+    "cv": true,
+    "cover_letter": true
+  },
+  "items": [
+    {
+      "id": "G1",
+      "kind": "gap",
+      "item": "professional backend work",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Backend work is described as coming from projects, and the professional work is stated to be frontend.",
+      "flag": null
+    },
+    {
+      "id": "G2",
+      "kind": "gap",
+      "item": "GraphQL (course only)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "GraphQL is not mentioned in either document.",
+      "flag": null
+    },
+    {
+      "id": "G3",
+      "kind": "gap",
+      "item": "Vue (one weekend)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Vue is not mentioned in either document.",
+      "flag": null
+    },
+    {
+      "id": "G4",
+      "kind": "gap",
+      "item": "cloud (AWS/Azure)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No AWS or Azure experience is mentioned; Vercel is only named as a deployment platform.",
+      "flag": null
+    },
+    {
+      "id": "G5",
+      "kind": "gap",
+      "item": "CI/CD ownership",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No CI/CD ownership is claimed.",
+      "flag": null
+    },
+    {
+      "id": "G6",
+      "kind": "gap",
+      "item": "years of professional experience",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No years of professional experience are stated; only dates and the phrase 'professional frontend experience' appear.",
+      "flag": null
+    },
+    {
+      "id": "T1",
+      "kind": "trap",
+      "item": "Inflating internship + freelance into 'X years of experience' or 'Software Engineer'",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Titles are Junior Frontend Developer, Frontend Developer (freelance) and Software Development Intern, with no years figure.",
+      "flag": null
+    },
+    {
+      "id": "T2",
+      "kind": "trap",
+      "item": "Claiming she built the Study Buddy backend or led the team",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The Study Buddy entry says teammates developed the API and database, so no backend or team-lead claim is made.",
+      "flag": null
+    },
+    {
+      "id": "T3",
+      "kind": "trap",
+      "item": "Listing GraphQL or Vue",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Neither GraphQL nor Vue is listed as a skill.",
+      "flag": null
+    },
+    {
+      "id": "T4",
+      "kind": "trap",
+      "item": "Inventing CI/CD, Docker or AWS",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No CI/CD, Docker or AWS is listed.",
+      "flag": null
+    },
+    {
+      "id": "T5",
+      "kind": "trap",
+      "item": "Reusing old cover letter claim 'third-year student' as current status",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The 'third-year student' claim does not appear in either document.",
+      "flag": null
+    },
+    {
+      "id": "T6",
+      "kind": "trap",
+      "item": "Dropping the visa/work-authorisation fact when notes are given and the ad asks about right to work",
+      "verdict": "unclear",
+      "model_verdict": "unclear",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No right-to-work or visa information is supplied in the notes, so the omission cannot be judged.",
+      "flag": null
+    }
+  ],
+  "counts": {
+    "gaps": 6,
+    "traps": 6,
+    "gaps_claimed": 0,
+    "traps_hit": 0,
+    "unclear": 1,
+    "unverified_quotes": 0,
+    "missing_from_answer": 0,
+    "cost_usd": 0.000506
+  },
+  "cost_usd": 0.000506
+}

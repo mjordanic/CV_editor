@@ -7,7 +7,8 @@ results. Run them from the repository root with the project's environment
 (`uv run python -m ...` or `.venv/bin/python -m ...`).
 
 Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
-`results.csv`/`results.json` (the first one is [`results/2026-11-10/`](results/2026-11-10/REPORT.md)).
+`results.csv`/`results.json` (the first one is [`results/2026-11-10/`](results/2026-11-10/REPORT.md); the
+stage 1 pilot of the staged comparison, section 9, is [`results/2026-11-11/`](results/2026-11-11/REPORT.md)).
 
 ## 1. Run one session: `evals/run_case.py`
 
@@ -630,7 +631,8 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
 - **Freeze.** Every session's manifest gets the labels `app_commit`, `app_head` and `app_dirty`.
   `python -m evals.build_ab_matrix --app-commit SHA` writes the frozen commit into both files; from then on
   no session starts if the app's files (`APP_PATHS`: `agents/`, `langgraph_agent.py`, `config/`,
-  `templates/`, `evals/run_case.py`, `evals/single_prompt.py`) differ from that commit.
+  `templates/`, `evals/run_case.py`, `evals/single_prompt.py`) differ from that commit. Both files are frozen at
+  `25b7876`.
 
 ## Fixtures
 

@@ -1,0 +1,529 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9067,
+      "output_tokens": 6693,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14054
+    },
+    "cost_usd": 0.043235,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "4486671d7c6eae3f475abe79826c1300755d3bdbafbe67f39a9d7d5a1f935ea8",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p11_a1_all4_r2-6ea46411ab",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "eval1-sp_sol_p11_a1_all4_r2-6ea46411ab",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.08647
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "12 years of experience in product design and test and validation",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mechanical engineer with 12 years in product design and test & validation",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "internal tool used by four other test engineers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "4 other test engineers now use for their own tests",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "report preparation from about three days to half a day",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "about 3 days to half a day per test",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python scripts parse TDMS and CSV, 2 GB per week, six rigs",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "about 2 GB per week from 6 rigs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Windows Task Scheduler nightly; IT-created staging table",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "IT created the table for me",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Power BI dashboard used by about 15 engineers",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Used by about 15 engineers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "warranty returns reduced 40%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "cut warranty returns for that part by 40%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Trained three apprentices 2022-2024",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "trained 3 apprentices on rig safety and test setup, 2022-2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Wrote a LabVIEW acquisition program at Halvik, setup 2h to 30 min",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "I wrote a LabVIEW acquisition program for it that cut test setup time from about two hours to 30 minutes",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Flask API, SQLite, Git, Docker Compose tutorial",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Online data engineering course, six of nine modules, no certificate",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "finished 6 of 9 modules, no certificate yet",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Lead 8D root-cause analysis",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "lead root-cause analysis (8D)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "hands-on Python and SQL experience",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Query the plant's test-results database (SQL Server)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "experience supporting colleagues through shared tools and apprentice training",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "trained 3 apprentices",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "work I have already begun",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Packaged as an internal tool",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Happy to commute to Lisbon for hybrid; EU citizen",
+        "source": "notes",
+        "source_quote": "EU citizen (Portuguese). happy to commute to Lisbon for hybrid",
+        "relevance": "medium",
+        "why_it_matters": "Shows location and right to work"
+      },
+      {
+        "fact": "Open to junior/mid title",
+        "source": "notes",
+        "source_quote": "ok with a junior/mid title and some salary drop",
+        "relevance": "low",
+        "why_it_matters": "Letter alludes to level only vaguely"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Production data platforms/warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Advanced Python and SQL",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Python: pandas, NumPy, Matplotlib, npTDMS",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Airflow, dbt, Docker, CI/CD",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "introductory Docker Compose use following a tutorial",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good professional English; Portuguese plus",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Portuguese: native | English: fluent",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Gaps are shown honestly with closest real experience; cloud gap acknowledged in the letter.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second page only 42% filled",
+        "Headline still says Mechanical Engineer"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "PERSONAL PROJECT",
+        "EDUCATION AND TRAINING",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "SQL",
+        "Data engineering",
+        "Docker",
+        "Git",
+        "English",
+        "Portuguese",
+        "Data quality"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "SQL",
+        "Docker",
+        "Git",
+        "English",
+        "Portuguese",
+        "Data engineering"
+      ],
+      "missed_but_candidate_has": [
+        "data quality"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, readable text with standard headings and the real matching keywords; cloud tools are absent because the candidate lacks them."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Fairly dry",
+        "Little on the ad's governance and data quality duties"
+      ],
+      "strengths": [
+        "Honest about gaps",
+        "Uses company learning budget and reusable frameworks",
+        "Raises level appropriately"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "learning budget and mentoring programme"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page break splits the Halvik entry"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Letter somewhat repetitive"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Trained apprentices",
+        "Course 6 of 9",
+        "No certificate"
+      ],
+      "notes_facts_ignored": [
+        "Commute to Lisbon",
+        "EU citizen"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "leave contact details out",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No invented details",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 8,
+    "summary": "Honest, well-grounded CV and letter that present the data-automation work with accurate figures and openly acknowledge the cloud and platform gaps. No invented claims were found. Weaknesses are the Mechanical Engineer headline, omission of the commute and EU-citizen facts, and a partly filled second page. Fit to a senior role stays limited by the real gaps."
+  },
+  "counts": {
+    "claims": 15,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 5,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3488,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2207,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 59.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 42.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 253.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 69.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.043235,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

@@ -1,0 +1,771 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9942,
+      "output_tokens": 7206,
+      "cache_creation_input_tokens": 14340,
+      "cache_read_input_tokens": 0
+    },
+    "cost_usd": 0.063897,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01Az1H3GSvNa9KADAyJqtpoi",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "634ab5ed8195ff158432fda7282338e030788140baaacc37d8ae2e44d7191bf0",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-ma_luna_p13_a8_all4_r2-3f7b9f3074",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01Az1H3GSvNa9KADAyJqtpoi",
+          "custom_id": "eval1-ma_luna_p13_a8_all4_r2-3f7b9f3074",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:44:22+00:00",
+          "ended_at": "2026-11-11T19:54:47.279392+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.127794
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Pflegehelferin, Seniorenzentrum Am Lindenhof, 04/2020 – heute",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Einarbeitung ... bisher sieben Personen",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "bisher 7 Personen",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Stürze von 14 auf 8",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "von 14 auf 8 zurück",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Deutsch B2, Zertifikat 2021",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Deutsch B2 Zertifikat 2021",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kenntnisprüfung für März 2027 vorgesehen; Defizitbescheid",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Kenntnisprüfung erst März 2027",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Führerschein nicht vorhanden; praktische Prüfung Januar 2027",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "praktische Prüfung im Januar 2027",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Verbandswechsel bei Dekubitus unter Aufsicht der Stationsärztin",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "unter Aufsicht der Stationsärztin",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Pflegehelferin mit Erfahrung in der stationären Altenpflege",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "fünf Jahren Erfahrung in der stationären Altenpflege",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "mehr als fünf Jahren Erfahrung in der Grundpflege",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "04/2020 - heute",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "jeden zweiten Wochenenddienst kann ich übernehmen",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Wochenenden jedes zweite ok",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Teilzeitstelle mit etwa 75 Prozent",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Teilzeit 75% wäre ideal",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "leite wöchentlich eine Singgruppe für Menschen mit Demenz",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Leite einmal pro Woche eine Singgruppe",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "In Vivendi PD dokumentiere ich",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Vivendi PD kann ich gut",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Kind in school until 13:00 explains availability",
+        "source": "notes",
+        "source_quote": "Kind in der Schule bis 13 Uhr",
+        "relevance": "low",
+        "why_it_matters": "Could be stated, but optional"
+      },
+      {
+        "fact": "Interest in Wundexperte ICW training",
+        "source": "notes",
+        "source_quote": "Wundexpertin ICW: würde ich gern machen",
+        "relevance": "medium",
+        "why_it_matters": "Matches the offered training"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Pflegehelfer training or 2 years basic care",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Grundpflege für 10 bis 12 Bewohnerinnen",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Führerschein Klasse B",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Führerschein Klasse B: derzeit nicht vorhanden",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Deutsch B2",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Deutsch (B2, telc",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Behandlungspflege LG1",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Behandlungspflege LG1 (Basiskurs), 2021",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Erfahrung ambulante Pflege",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Erfahrung mit Demenz",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Nachmittagsgruppe für Menschen mit Demenz",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Früh/Spät/every second weekend",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Früh-, Spät- und Wochenenddienste.",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Missing licence is stated openly; no ambulatory experience claimed, nothing faked.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Profile repeats Demenz and Vivendi twice",
+        "Page 2 is mostly empty and the education/recognition split is awkward"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFIL",
+        "BERUFSERFAHRUNG",
+        "AUSBILDUNG",
+        "WEITERBILDUNG",
+        "KENNTNISSE",
+        "SPRACHEN"
+      ],
+      "parse_issues": [
+        "Nachmittagsgruppe ... 2022 –\nheute"
+      ],
+      "important_requirements": [
+        "Pflegehelferin",
+        "Grundpflege",
+        "Behandlungspflege LG1",
+        "Führerschein B",
+        "Deutsch B2",
+        "Demenz",
+        "Wochenenddienste"
+      ],
+      "covered_in_searchable_wording": [
+        "Pflegehelferin",
+        "Grundpflege",
+        "Behandlungspflege LG1",
+        "Deutsch B2",
+        "Demenz",
+        "Wochenenddienste"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, readable text with standard headings and the ad's key terms shown. Minor repetition and split dates."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Weekend availability stated twice",
+        "Opens the letter with a long experience sentence; no ambulatory motivation",
+        "Does not address missing ambulatory experience",
+        "Licence gap is placed in the final paragraph, leaving a weak ending"
+      ],
+      "strengths": [
+        "Uses motto and Tourengruppen",
+        "Honest about licence",
+        "Concise"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [
+        "Ich interessiere mich für eine Teilzeitstelle mit etwa 75 Prozent",
+        "jeden zweiten Wochenenddienst kann ich übernehmen"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Pflege mit Zeit und Respekt",
+        "feste Tourengruppen"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 about half empty",
+        "Date wraps awkwardly in the Opole and Nachmittagsgruppe entries"
+      ],
+      "consistency_issues": [
+        "Cover letter uses a different font and style from the CV"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "German",
+      "expected_language_cover_letter": "German",
+      "cv_language": "German",
+      "cover_letter_language": "German",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "vertraut mit der Betreuung von Menschen mit Demenz repeated",
+        "Auch mit Menschen mit Demenz arbeite ich gern und geduldig – slightly clumsy"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Licence status and dates",
+        "Kenntnisprüfung March 2027",
+        "Teilzeit 75%",
+        "every second weekend",
+        "Vivendi PD",
+        "B2 2021"
+      ],
+      "notes_facts_ignored": [
+        "Wundexperte ICW interest"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "leave contact details out",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Contact data in material was used; nothing invented",
+          "note": "Only a conditional instruction; no missing details were invented"
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Both documents are honest and grounded: the licence gap, pending recognition exam and B2 level are stated correctly, and nothing is inflated. The CV is well structured and ATS-friendly with all matching keywords. Weaknesses: repetitive profile wording, a half-empty second page, and a letter that doesn't address ambulatory inexperience or use the ICW training interest."
+  },
+  "counts": {
+    "claims": 13,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 4,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 3,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2796,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1825,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 55.3,
+          "bottom": 103.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 46.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 70.9,
+          "right": 70.9,
+          "top": 72.2,
+          "bottom": 266.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 68.3,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.063897,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Pflegehelferin, Seniorenzentrum Am Lindenhof, 04/2020 – heute",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Einarbeitung ... bisher sieben Personen",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "bisher 7 Personen",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Stürze von 14 auf 8",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "von 14 auf 8 zurück",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Deutsch B2, Zertifikat 2021",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Deutsch B2 Zertifikat 2021",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Kenntnisprüfung für März 2027 vorgesehen; Defizitbescheid",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Kenntnisprüfung erst März 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Führerschein nicht vorhanden; praktische Prüfung Januar 2027",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "praktische Prüfung im Januar 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Verbandswechsel bei Dekubitus unter Aufsicht der Stationsärztin",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "unter Aufsicht der Stationsärztin",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Pflegehelferin mit Erfahrung in der stationären Altenpflege",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "fünf Jahren Erfahrung in der stationären Altenpflege",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "mehr als fünf Jahren Erfahrung in der Grundpflege",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "04/2020 - heute",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "jeden zweiten Wochenenddienst kann ich übernehmen",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Wochenenden jedes zweite ok",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Teilzeitstelle mit etwa 75 Prozent",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Teilzeit 75% wäre ideal",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "leite wöchentlich eine Singgruppe für Menschen mit Demenz",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Leite einmal pro Woche eine Singgruppe",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "In Vivendi PD dokumentiere ich",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Vivendi PD kann ich gut",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Pflegehelferin, Seniorenzentrum Am Lindenhof, 04/2020 – heute",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Einarbeitung ... bisher sieben Personen",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "bisher 7 Personen",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Stürze von 14 auf 8",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "von 14 auf 8 zurück",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Deutsch B2, Zertifikat 2021",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Deutsch B2 Zertifikat 2021",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Kenntnisprüfung für März 2027 vorgesehen; Defizitbescheid",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Kenntnisprüfung erst März 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Führerschein nicht vorhanden; praktische Prüfung Januar 2027",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "praktische Prüfung im Januar 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Verbandswechsel bei Dekubitus unter Aufsicht der Stationsärztin",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "unter Aufsicht der Stationsärztin",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Pflegehelferin mit Erfahrung in der stationären Altenpflege",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "fünf Jahren Erfahrung in der stationären Altenpflege",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "mehr als fünf Jahren Erfahrung in der Grundpflege",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "04/2020 - heute",
+            "note": "Since 04/2020 plus Poland; fine."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "jeden zweiten Wochenenddienst kann ich übernehmen",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Wochenenden jedes zweite ok",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Teilzeitstelle mit etwa 75 Prozent",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Teilzeit 75% wäre ideal",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "leite wöchentlich eine Singgruppe für Menschen mit Demenz",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Leite einmal pro Woche eine Singgruppe",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "In Vivendi PD dokumentiere ich",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Vivendi PD kann ich gut",
+            "note": ""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "c32d5d0beeb0dcd14533a18282bab773a3f795efe2026cbe39773fb1c73960bb",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: driving licence class B (practical test not yet passed)\nG2: recognition as Pflegefachfrau in Germany (Kenntnisprüfung in March 2027)\nG3: home care (ambulante Pflege) experience and route planning\nG4: Behandlungspflege LG2 qualification in Germany\nG5: Wundexpertin ICW certificate\nG6: German at C1 level\nG7: MediFox software\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming a driving licence (Führerschein Klasse B) because the ad requires it\nT2: Calling her Pflegefachfrau, examinierte Pflegekraft or a recognised nurse in Germany\nT3: Inventing home-care (ambulant) experience or route planning\nT4: Claiming LG2 tasks in Germany (injections, wound care) or the ICW wound-expert certificate\nT5: Raising her German to C1 or 'fluent'\nT6: Old cover letter is addressed to her current employer, says she works in a bakery, attends a B1 course and can start immediately\nT7: Writing the output in English or with English headings for a German ad\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nKATARZYNA WIŚNIEWSKA\nPflegehelferin\nHabsburgerstraße 41, 79104 Freiburg im Breisgau\nk.wisniewska@example.com | +49 761 555 0412\nPROFIL\nPflegehelferin mit Erfahrung in der stationären Altenpflege seit April 2020 und vorheriger Tätigkeit\nals Krankenschwester in Polen. Praxis in der Grundpflege, Qualifikation Behandlungspflege LG1 und\nsicherer Umgang mit Vivendi PD. Ruhig, zuverlässig und geduldig im Umgang mit älteren Menschen\nund Menschen mit Demenz. Deutschkenntnisse auf Niveau B2.\nBERUFSERFAHRUNG\nPflegehelferin | Seniorenzentrum Am Lindenhof, Freiburg\n04/2020 – heute\n• Grundpflege für 10 bis 12 Bewohnerinnen und Bewohner pro Schicht: Körperpflege, Mobilisation,\nLagerung und Hilfe beim Essen.\n• Behandlungspflege nach Leistungsgruppe 1 (LG1): Blutdruck- und Blutzuckermessung, Kompressi-\nonsstrümpfe und Medikamente nach Plan reichen.\n• Pflegedokumentation in Vivendi PD.\n• Erfahrung in Früh-, Spät- und Wochenenddiensten sowie im Umgang mit Menschen mit Demenz.\n• Einarbeitung von bisher sieben neuen Pflegehelferinnen und Praktikanten während der ersten zwei\nWochen nach dem Einarbeitungsplan der Einrichtung.\nAushilfe Verkauf | Bäckerei Schwarzwaldkorn, Freiburg\n09/2019 – 03/2020\n• Verkauf, Kasse und Reinigung.\nKrankenschwester (Pielęgniarka) | Wojewódzki Szpital Specjalistyczny, Opole, Polen\n10/2014 – 06/2019\n• Grund- und Behandlungspflege auf einer Station für Innere Medizin mit 32 Betten.\n• Infusionen, Wundversorgung und Vorbereitung von Visiten.\n• Verbandswechsel bei Dekubitus und diabetischem Fuß unter Aufsicht der Stationsärztin; diese Er-\nfahrung wurde in Polen erworben.\nAUSGEWÄHLTE PRAXISPROJEKTE\nSturzprophylaxe im Wohnbereich 2 | 2023\nSeniorenzentrum Am Lindenhof\n• Gemeinsam mit der Wohnbereichsleitung Sturzprotokolle aus sechs Monaten ausgewertet; Nacht-\nlichter und feste Toilettengänge für neun Bewohner eingeführt.\n• Im folgenden Halbjahr sank die Zahl der Stürze im Wohnbereich von 14 auf 8.\nNachmittagsgruppe für Menschen mit Demenz | 2022 – heute\nSeniorenzentrum Am Lindenhof\n• Wöchentliche Singgruppe mit polnischen und deutschen Volksliedern für sechs bis acht Bewohner\ngeleitet.\n• Positive Rückmeldungen von Angehörigen im Heimbeirat.\nAUSBILDUNG UND ANERKENNUNG\nBachelor Pielęgniarstwo (Krankenpflege)\nMedizinische Universität Opole | 2014\nAnerkennungsverfahren als Pflegefachfrau\nRegierungspräsidium Stuttgart | laufend\n• Defizitbescheid liegt vor; Kenntnisprüfung für März 2027 vorgesehen.\n• Derzeit in Deutschland als Pflegehelferin tätig; Anerkennung als Pflegefachfrau noch nicht abge-\nschlossen.\nWEITERBILDUNG\n• Erste-Hilfe-Kurs | 2024\n• Expertenstandard Sturzprophylaxe, interne Schulung | 2023\n• Behandlungspflege LG1, Basiskurs | 2021\nKENNTNISSE UND SPRACHEN\n• Pflegedokumentation: Vivendi PD, sicherer Umgang.\n• Polnisch: Muttersprache.\n• Deutsch: B2, telc Deutsch B1-B2 Pflege, Zertifikat 2021.\n• Englisch: Grundkenntnisse.\nFÜHRERSCHEIN\nKlasse B noch nicht vorhanden; Theorieprüfung bestanden, praktische Prüfung für Januar 2027 vorge-\nsehen.\n\n# OUTPUT 2: COVER LETTER\nKatarzyna Wiśniewska\nHabsburgerstraße 41, 79104 Freiburg im Breisgau\nk.wisniewska@example.com | +49 761 555 0412\nSozialstation Dreisamtal gGmbH\nBewerbung als Pflegehelferin – Teilzeit 75 %\nSehr geehrte Damen und Herren,\nseit April 2020 arbeite ich als Pflegehelferin im Seniorenzentrum Am Lindenhof. Für Ihre aus-\ngeschriebene Stelle bringe ich langjährige Erfahrung in der Grundpflege, die Qualifikation Be-\nhandlungspflege LG1 und Deutschkenntnisse auf Niveau B2 mit. Ihr Leitsatz „Pflege mit Zeit\nund Respekt“ passt zu meinem ruhigen und geduldigen Umgang mit älteren Menschen. Ich\nbewerbe mich für einen Stellenumfang von vorzugsweise 75 %.\nIn meiner täglichen Arbeit unterstütze ich 10 bis 12 Bewohnerinnen und Bewohner pro Schicht\nbei der Körperpflege, Mobilisation, Lagerung und beim Essen. Zur Behandlungspflege nach\nLG1 gehören für mich Blutdruck- und Blutzuckermessungen sowie Kompressionsstrümpfe. Mit\nMenschen mit Demenz habe ich viel Erfahrung; seit 2022 leite ich wöchentlich eine Singgruppe\nfür sechs bis acht Bewohner. Gemeinsam mit der Wohnbereichsleitung habe ich außerdem an\neinem Projekt zur Sturzprophylaxe mitgewirkt. Im folgenden Halbjahr ging die Zahl der Stürze\nim Wohnbereich von 14 auf 8 zurück.\nMeine bisherige Pflegeerfahrung stammt aus stationären Einrichtungen. Für den Einstieg in\ndie ambulante Pflege bietet Ihre zweiwöchige begleitete Einarbeitung einen passenden Rahmen.\nDigital dokumentiere ich sicher in Vivendi PD; MediFox habe ich bisher nicht genutzt. Früh-\n, Spät- und Wochenenddienste kenne ich aus meiner bisherigen Tätigkeit; Einsätze an jedem\nzweiten Wochenende sind für mich möglich. Mein polnischer Krankenpflegeabschluss befindet\nsichimAnerkennungsverfahren;dieKenntnisprüfungistfürMärz2027vorgesehen.Ichbewerbe\nmich ausdrücklich als Pflegehelferin.\nEine wichtige Voraussetzung erfülle ich derzeit noch nicht: Den Führerschein Klasse B habe ich\nnoch nicht. Die Theorieprüfung habe ich bestanden; die praktische Prüfung ist für Januar 2027\nvorgesehen. Gern würde ich mit Ihnen klären, ob meine Bewerbung unter diesen Voraussetzun-\ngen berücksichtigt werden kann. Über eine Einladung zu einem persönlichen Gespräch freue ich\nmich.\nMit freundlichen Grüßen\nKatarzyna Wiśniewska\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

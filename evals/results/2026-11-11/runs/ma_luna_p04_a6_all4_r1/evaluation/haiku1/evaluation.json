@@ -1,0 +1,957 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9029,
+      "output_tokens": 16720,
+      "cache_creation_input_tokens": 4244,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.004948,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "59aaabd4d00614d68e34fa5ed2432114a0c86d77f5da602f2a225685d3d5fd1e",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku1-ma_luna_p04_a6_all4_r1-bbd525f868",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku1-ma_luna_p04_a6_all4_r1-bbd525f868",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.009896
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Junior Frontend / Full-Stack Developer",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Junior Frontend Developer",
+        "note": "No backend job experience; Full-Stack overstates the role"
+      },
+      {
+        "document": "cv",
+        "claim": "Figma",
+        "kind": "skill_or_tool",
+        "verdict": "unsupported",
+        "source": "none",
+        "evidence_quote": "",
+        "note": "Figma appears in no candidate material"
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Hands-on experience building a Node.js/Express API backed by PostgreSQL",
+        "kind": "skill_or_tool",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Node.js/Express API, PostgreSQL for user favourites",
+        "note": "Backend experience comes only from an academic project, not work"
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Practical experience across frontend and backend development",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Node.js/Express API caching data",
+        "note": "Backend work is academic only; no backend job experience"
+      },
+      {
+        "document": "cv",
+        "claim": "Frontend Developer (Part-time, Freelance) | Self-employed | Oct 2025-Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Frontend Developer (part-time, freelance) - self-employed (Oct 2025 - present)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Software Development Intern | Harbourline Media | May 2024-Aug 2024",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Software Development Intern - Harbourline Media, Dublin (May 2024 - Aug 2024)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Teaching Assistant, Spring 2025, helped approximately 30 students",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "teaching assistant for 1st year web dev lab, 1 semester (spring 2025)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Second place, student hackathon (2024), developed the frontend",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "2nd place at a student hackathon (2024), team of 3",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Lighthouse accessibility score of 100 and project grade 82% (First Class)",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Lighthouse accessibility score 100; Grade: 82% (First Class)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fixed accessibility issues across 20+ components",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Fixed accessibility issues found in an audit ... on 20+ components.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a booking website for a local yoga studio using Next.js and Tailwind CSS",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Built a booking website for a local yoga studio (Next.js, Tailwind CSS, hosted on Vercel).",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BSc (Hons) Computing, 2021-2025, First Class Honours",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "BSc (Hons) Computing - Software Development, Liffey Institute of Technology, 2021-2025, First Class Honours",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "WCAG 2.1",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "accessibility (WCAG 2.1)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Mandarin (conversational)",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mandarin (conversational)",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Volunteer social media for a sea swimming club",
+        "source": "notes",
+        "source_quote": "volunteer: run social media for a sea swimming club",
+        "relevance": "low",
+        "why_it_matters": "Shows community and content work; minor for a developer role"
+      },
+      {
+        "fact": "Free online GraphQL course, not used in a project",
+        "source": "notes",
+        "source_quote": "did a free online course on GraphQL but never used it in a project",
+        "relevance": "low",
+        "why_it_matters": "Only a course; correctly left out, could be mentioned as a learning item if flagged as a course"
+      },
+      {
+        "fact": "Stamp 1G graduate visa, can work full time in Ireland",
+        "source": "notes",
+        "source_quote": "I'm on a Stamp 1G visa (graduate)",
+        "relevance": "low",
+        "why_it_matters": "Right to work is relevant to Austria/Germany applications only and the job is in Austria or remote; not needed in outputs"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years professional React and TypeScript",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Software Development Intern (May 2024 - Aug 2024)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Node.js backend and SQL databases",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Used PostgreSQL to store users’ favourite locations",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Semantic HTML, responsive layouts, accessibility basics",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Accessibility: WCAG 2.1; keyboard and screen-reader accessibility",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated unit and end-to-end testing; Git workflows",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Jest, React Testing Library, Git/GitHub",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Web security fundamentals and health data privacy",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fluent English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (native)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "German or Croatian",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Next.js",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Built a booking website for a local yoga studio using Next.js and Tailwind CSS",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Healthcare or regulated environment",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "AWS and Docker",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Storybook design systems",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "documented it with Storybook stories",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Gaps in professional experience, backend work, e2e testing, security and health data are mostly left visible; the cover letter's backend wording stretches the academic project.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 7,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Title Full-Stack overstated",
+        "Figma unsupported",
+        "Second page mostly empty"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "EXPERIENCE",
+        "SELECTED PROJECTS",
+        "EDUCATION",
+        "ADDITIONAL ACHIEVEMENTS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "Jest",
+        "Git",
+        "Storybook",
+        "Next.js",
+        "WCAG",
+        "Full-Stack",
+        "English",
+        "End-to-end testing"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "Jest",
+        "Git",
+        "Storybook",
+        "Next.js",
+        "WCAG",
+        "English"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [
+        "Figma",
+        "Full-Stack Developer title"
+      ],
+      "score": 7,
+      "reason": "Clean, readable text with standard headings; most must-have keywords appear, but Figma and the Full-Stack title lack support and WCAG 2.1 is below the ad's 2.2."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Backend experience wording overstated"
+      ],
+      "strengths": [
+        "Links patients-first values to own accessibility work",
+        "One page, concrete facts"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Patients first"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV page 2 only 27.7 percent filled"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Teaching assistant spring 2025",
+        "Hackathon second place"
+      ],
+      "notes_facts_ignored": [
+        "GraphQL course",
+        "Volunteer social media"
+      ],
+      "chat_facts_used": [
+        "Contact details included as given"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist in final outputs",
+          "note": ""
+        }
+      ],
+      "score": 9
+    },
+    "invented_content_score": 6,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "The CV is clean, readable and well-sectioned, showing real evidence such as accessibility work, Storybook, React/TypeScript projects and a First Class degree. The main problems are the Full-Stack title, the unsupported Figma skill, and cover-letter wording that presents academic backend work as practical experience. Fit is limited by the lack of professional experience, e2e testing, security and health-data evidence, which the outputs leave visible. Layout and language are good."
+  },
+  "counts": {
+    "claims": 14,
+    "cv_unsupported": 1,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 2,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3748,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1611,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 48.5,
+          "right": 47.1,
+          "top": 46.9,
+          "bottom": 49.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 27.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMMono10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 71.6,
+          "right": 71.7,
+          "top": 74.2,
+          "bottom": 428.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 49.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.004948,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Junior Frontend / Full-Stack Developer",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Junior Frontend Developer",
+            "note": "No backend job experience; Full-Stack overstates the role"
+          },
+          {
+            "document": "cv",
+            "claim": "Figma",
+            "kind": "skill_or_tool",
+            "verdict": "unsupported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "Figma appears in no candidate material"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Hands-on experience building a Node.js/Express API backed by PostgreSQL",
+            "kind": "skill_or_tool",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Node.js/Express API, PostgreSQL for user favourites",
+            "note": "Backend experience comes only from an academic project, not work"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Practical experience across frontend and backend development",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Node.js/Express API caching data",
+            "note": "Backend work is academic only; no backend job experience"
+          },
+          {
+            "document": "cv",
+            "claim": "Frontend Developer (Part-time, Freelance) | Self-employed | Oct 2025-Present",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Frontend Developer (part-time, freelance) - self-employed (Oct 2025 - present)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Software Development Intern | Harbourline Media | May 2024-Aug 2024",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Software Development Intern - Harbourline Media, Dublin (May 2024 - Aug 2024)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Teaching Assistant, Spring 2025, helped approximately 30 students",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "teaching assistant for 1st year web dev lab, 1 semester (spring 2025)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Second place, student hackathon (2024), developed the frontend",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "2nd place at a student hackathon (2024), team of 3",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Lighthouse accessibility score of 100 and project grade 82% (First Class)",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Lighthouse accessibility score 100; Grade: 82% (First Class)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Fixed accessibility issues across 20+ components",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Fixed accessibility issues found in an audit ... on 20+ components.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a booking website for a local yoga studio using Next.js and Tailwind CSS",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Built a booking website for a local yoga studio (Next.js, Tailwind CSS, hosted on Vercel).",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "BSc (Hons) Computing, 2021-2025, First Class Honours",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "BSc (Hons) Computing - Software Development, Liffey Institute of Technology, 2021-2025, First Class Honours",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "WCAG 2.1",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "accessibility (WCAG 2.1)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mandarin (conversational)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mandarin (conversational)",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Junior Frontend / Full-Stack Developer",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Junior Frontend Developer",
+            "note": "Candidate has no backend job experience (notes); Full-Stack overstates the role"
+          },
+          {
+            "document": "cv",
+            "claim": "Frontend Developer (Part-time, Freelance) | Self-employed | Oct 2025-Present",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Frontend Developer (part-time, freelance) - self-employed (Oct 2025 - present)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Software Development Intern | Harbourline Media | May 2024-Aug 2024",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Software Development Intern - Harbourline Media, Dublin (May 2024 - Aug 2024)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Teaching Assistant, First-Year Web Development Lab | Liffey Institute of Technology | Spring 2025",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "teaching assistant for 1st year web dev lab, 1 semester (spring 2025)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Helped approximately 30 first-year students",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "helped ~30 students",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Barista, Corner Bean Cafe, 2021-2025",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Barista - Corner Bean Cafe, Dublin (2021 - 2025, part-time during studies)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Figma",
+            "kind": "skill_or_tool",
+            "verdict": "unsupported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "Figma appears in no candidate material"
+          },
+          {
+            "document": "cv",
+            "claim": "Second place, student hackathon (2024), three-person team, transit delay notifier in 24 hours, developed the frontend",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "hackathon: 2nd place at a student hackathon (2024), team of 3, built transit delay notifier in 24h. I did the frontend",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Lighthouse accessibility score of 100",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Lighthouse accessibility score 100",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Project grade of 82% (First Class)",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Grade: 82% (First Class)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Tested the app with NVDA and VoiceOver screen readers",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Tested with screen readers (NVDA, VoiceOver)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Chart.js used in Tidewatch",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Technologies: React, TypeScript, Node.js, Express, PostgreSQL, Chart.js, Jest.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Developed the React and TypeScript frontend plus Node.js/Express API for Tidewatch",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "React + TypeScript frontend, Node.js/Express API",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Fixed accessibility issues across 20+ components",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Fixed accessibility issues found in an audit ... on 20+ components.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a booking website for a local yoga studio using Next.js and Tailwind CSS, deployed on Vercel",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Built a booking website for a local yoga studio (Next.js, Tailwind CSS, hosted on Vercel).",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Made small updates to two WordPress websites",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Small updates for two WordPress sites.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "WCAG 2.1",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "accessibility (WCAG 2.1)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mandarin (conversational)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mandarin (conversational)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "BSc (Hons) Computing, Liffey Institute of Technology, 2021-2025, First Class Honours",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "BSc (Hons) Computing - Software Development, Liffey Institute of Technology, 2021-2025, First Class Honours",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Storybook and Jest/React Testing Library experience",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Wrote unit tests with Jest and React Testing Library.",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Computing graduate with First Class Honours",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "First Class Honours",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Hands-on experience building React and TypeScript applications and a Node.js/Express API backed by PostgreSQL",
+            "kind": "skill_or_tool",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Node.js/Express API, PostgreSQL for user favourites",
+            "note": "The backend experience comes only from an academic project, not work; wording implies more"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Practical experience across frontend and backend development",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Node.js/Express API caching data",
+            "note": "Backend work is academic only; candidate has no backend job experience"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Fixed accessibility issues across more than 20 components during Harbourline internship",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Fixed accessibility issues found in an audit ... on 20+ components.",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Tidewatch tested with NVDA and VoiceOver; Lighthouse score 100",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Tested with screen readers (NVDA, VoiceOver); Lighthouse accessibility score 100",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Built a Next.js booking site for a local yoga studio",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Yoga Studio Booking Site (freelance, 2025)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Portfolio at aiyana-bt.example.com",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "aiyana-bt.example.com",
+            "note": ""
+          }
+        ]
+      },
+      {
+        "field": "ats.missed_but_candidate_has",
+        "guaranteed": [],
+        "full": [
+          "Full-Stack title only as overstated wording"
+        ]
+      },
+      {
+        "field": "summary",
+        "guaranteed": "The CV is clean, readable and well-sectioned, showing real evidence such as accessibility work, Storybook, React/TypeScript projects and a First Class degree. The main problems are the Full-Stack title, the unsupported Figma skill, and cover-letter wording that presents academic backend work as practical experience. Fit is limited by the lack of professional experience, e2e testing, security and health-data evidence, which the outputs leave visible. Layout and language are good.",
+        "full": "The CV is clean, readable and well-sectioned, and it shows the strongest real evidence: accessibility work, Storybook, React/TypeScript projects and a First Class degree. The main problems are the Full-Stack title, the unsupported Figma skill, and cover-letter wording that presents academic backend work as practical experience. Fit is limited by the lack of professional experience, e2e testing, security and health-data evidence, which the outputs leave honestly visible. Layout and language are good."
+      }
+    ]
+  }
+}
