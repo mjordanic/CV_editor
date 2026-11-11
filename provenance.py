@@ -35,6 +35,18 @@ PRICES_PER_1M = {
     "gpt-5-nano": (0.05, 0.005, 0.40),
     "gpt-5.6-luna": (0.20, 0.02, 1.20),
     "text-embedding-3-small": (0.02, 0.02, 0.0),
+    # Anthropic list prices (input, cache hit, output), read 2026-11-11 from
+    # https://platform.claude.com/docs/en/about-claude/pricing. Haiku 5.5's apply to prompts up to 100k tokens.
+    # Anthropic reports uncached input, cache writes and cache reads apart: evals/grader.py prices them.
+    "claude-opus-5-5": (4.00, 0.20, 20.00),
+    "claude-sonnet-5-5": (2.00, 0.10, 10.00),
+    "claude-haiku-5-5": (0.10, 0.01, 0.50),
+}
+# Anthropic 5-minute cache-write prices, USD per 1M tokens (1.25x input). Batch halves every price.
+CACHE_WRITE_PER_1M = {
+    "claude-opus-5-5": 5.00,
+    "claude-sonnet-5-5": 2.50,
+    "claude-haiku-5-5": 0.125,
 }
 
 logger = logging.getLogger(__name__)

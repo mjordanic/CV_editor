@@ -45,8 +45,7 @@ def round_dir(tmp_path):
     cell = {"persona": "p01", "ad": "a1", "input_set": "all4"}
     _run(runs, "p01_a1_all4_luna_r1", {**cell, "model": "openai:gpt-6-luna", "rep": "1"},
          {"eval1": (f"openai:{SOL}", 7), "eval2": (f"openai:{SOL}", 8), "b1": (f"other:{OTHER}", 6)},
-         ats={"ad_keywords": list("abcdefghij"), "keywords_in_cv": list("abcd"),
-              "keywords_missing_but_candidate_has": ["e"], "keyword_coverage_pct": 40, "pass_likelihood": "medium"})
+         ats={"text_readable_in_order": True, "clear_sections": True, "score": 7, "reason": "clean text"})
     _run(runs, "p01_a1_all4_luna_r2", {**cell, "model": "openai:gpt-6-luna", "rep": "2"},
          {"eval1": (f"openai:{SOL}", 9), "b1": (f"other:{OTHER}", 8)})
     _run(runs, "sp_p01_a1_all4_sol_r1", {**cell, "model": "openai:gpt-6.1-sol", "rep": "1",
@@ -111,12 +110,11 @@ def test_repeat_regrade_and_grader_groups(round_dir):
 def test_ats_and_truthfulness_fields(round_dir):
     rows = load.read_rows(round_dir)
     r = next(x for x in rows if x["run_id"] == "p01_a1_all4_luna_r1" and x["eval_name"] == "eval1")
-    assert r["ats_honest_coverage"] == pytest.approx(0.8)    # 4 in the CV of 5 claimable
-    assert r["ats_reachable_share"] == pytest.approx(0.5)    # 5 claimable of 10 in the ad
-    assert r["ats_pass"] == 1 and r["ats_keyword_coverage_pct"] == 40
+    assert r["ats"] == 7                                       # the grader's one ATS score
+    assert not any(k.startswith("ats_") for k in r)           # and no other ATS measure
     assert r["n_unsupported"] == 0 and r["any_unsupported"] == 0 and r["n_partly"] == 2
     low = next(x for x in rows if x["run_id"] == "p02_a5_cv_only_luna_r1")
-    assert low["any_unsupported"] == 1 and low["ats_pass"] is None
+    assert low["any_unsupported"] == 1 and low["ats"] is None  # graded without an ATS score
 
 
 def test_paired_statistics():

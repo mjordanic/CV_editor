@@ -8,7 +8,7 @@ without the trailing _rN. For every metric it reports:
     eval_sd     the mean, over runs with two or more evaluations, of the spread between them
                 (how much the evaluator alone moves the score)
 
-Metrics: overall, invented-content, completeness, fit, CV-standards and cover-letter scores, the
+Metrics: overall, invented-content, completeness, fit, CV-standards, cover-letter and ATS scores, the
 evaluator's counts (unsupported and stretched claims, high-relevance omissions, overstated gaps,
 invented work arrangement), and the truth check's counts when a truth_check.json exists.
 
@@ -64,6 +64,7 @@ EVAL_METRICS = {
     "language_quality": lambda r: r["evaluation"]["language_quality"]["score"],
     "additional_information": lambda r: r["evaluation"]["additional_information"]["score"],
     "user_requests": lambda r: r["evaluation"]["user_requests"]["score"],
+    "ats": lambda r: r["evaluation"]["ats"]["score"],
     "untruthful_followed": lambda r: r["counts"]["untruthful_followed"],
     "requests_ignored": lambda r: r["counts"]["requests_ignored"],
 }

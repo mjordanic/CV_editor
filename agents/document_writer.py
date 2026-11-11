@@ -10,7 +10,8 @@ Each writer node does one of four things, decided from state:
 - critique-driven redraft: the critic's suggestions, filtered against the user's earlier requests,
   plus the removal of every claim the grounding check could not support (never filtered);
 - finalize: the best draft of the current request; if it still has unsupported claims, one
-  removal-only pass and a fixed notice listing any claims that remain.
+  removal-only pass and a fixed notice listing any claims that remain. A cover letter whose every
+  draft repeats the CV has the CV cut out without a model call, with a fixed notice.
 
 The writers always see the candidate's original material (CV, earlier letter, notes, portfolio
 and what the user said in the chat) as source facts next to the document they edit, so a fact a
@@ -37,6 +38,7 @@ from agents.critique import (
     format_job_description,
 )
 from agents.job_description import output_language_instruction
+from agents.letter_cv_check import session_cvs, strip_cv
 from agents.notices import NOTICES_KEY, set_notices
 from agents.pdf_text_check import find_placeholders
 from agents.refinement import best_draft
@@ -309,7 +311,13 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         is_refinement = bool(state.get(f"{kind}_needs_refinement")) and bool(suggestions or claims) and bool(generated)
 
         if is_refinement:
-            filtered = self._filter_critique_instructions_by_user_preferences(suggestions, previous_requests) if suggestions else ""
+            latest = (state.get(f"{kind}_history") or [{}])[-1]
+            if latest.get("repeats_cv"):
+                # Not a critic suggestion but the fixed instruction to delete the CV: the preference
+                # filter must not drop it.
+                filtered = suggestions
+            else:
+                filtered = self._filter_critique_instructions_by_user_preferences(suggestions, previous_requests) if suggestions else ""
             if not filtered and not claims:
                 # Every critique suggestion conflicts with the user's earlier requests and nothing has
                 # to be removed: keep the draft as it is.
@@ -430,6 +438,33 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         logger.info(f"Selected best version: Iteration {best.get('iteration')} with score {best.get('score')}")
 
         updates = {}
+        cv_repeat_notice = None
+        if best.get("repeats_cv"):
+            # Every draft of this request repeats the CV (a cover letter; see agents/letter_cv_check.py):
+            # cut the CV out of the latest draft where that works, without a model call.
+            cvs = session_cvs(state)
+            stripped = next(((d, text) for d in reversed(candidates) if (text := strip_cv(d.get("content", ""), cvs))), None)
+            if stripped:
+                source, text = stripped
+                best = {
+                    "iteration": len(history) + 1,
+                    "content": text,
+                    "score": None,
+                    "critique": None,
+                    "unsupported_claims": [],
+                    "grounding_checked": False,  # checked below, as for any unchecked draft
+                    "defects": None,
+                    "cv_cut_from": source.get("iteration"),
+                }
+                history.append(best)
+                updates[f"{kind}_history"] = history
+                logger.info(f"Every {label} draft repeats the CV - cut it out of iteration {source.get('iteration')}")
+                cv_repeat_notice = (f"Note: every draft of the {label} repeated your CV, so the CV part was cut out "
+                                    f"of it automatically. Read the {label} before you send it.")
+            else:
+                logger.info(f"Every {label} draft repeats the CV and it could not be cut out - keeping the chosen draft")
+                cv_repeat_notice = (f"Warning: the final {label} repeats your CV, and the CV part could not be cut out "
+                                    f"automatically. Delete it before you send the {label}, or ask me to redraft it.")
         claims = list(best.get("unsupported_claims") or [])
         checked = best.get("grounding_checked") is not False
         checker = getattr(self, "grounding_checker", None)
@@ -488,7 +523,10 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                       f"Read it before you send it.")
         if notice:
             message += "\n\n" + notice
-        updates[NOTICES_KEY] = set_notices(state, updates, {f"{kind}_claims": notice, f"{kind}_pdf": None})
+        changes = {f"{kind}_claims": notice, f"{kind}_pdf": None}
+        if kind == "cover_letter":
+            changes[f"{kind}_cv_repeat"] = cv_repeat_notice
+        updates[NOTICES_KEY] = set_notices(state, updates, changes)
 
         placeholders = find_placeholders(final_text)
         if placeholders:

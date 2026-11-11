@@ -322,9 +322,11 @@ def _evaluation(**overrides) -> dict:
         "cv_standards": {"score": 7, "has_contact_details": True, "has_summary_or_profile": True,
                          "experience_reverse_chronological": True, "dates_consistent": True,
                          "length_appropriate": True, "language_matches_ad": True, "artefacts": [], "issues": []},
-        "ats": {"pdf_text_parseable": True, "standard_headings": True, "headings_found": [], "ad_keywords": [],
-                "keywords_in_cv": [], "keywords_missing_from_cv": [], "keywords_missing_but_candidate_has": [],
-                "keyword_coverage_pct": 50, "pass_likelihood": "medium", "reasons": []},
+        "ats": {"text_readable_in_order": True, "clear_sections": True, "headings_found": ["Experience"],
+                "parse_issues": [], "important_requirements": ["Python", "Kubernetes"],
+                "covered_in_searchable_wording": ["Python"], "missed_but_candidate_has": [],
+                "keyword_stuffing": [], "unsupported_keywords": ["Kubernetes"], "score": 6,
+                "reason": "Clean text, but Kubernetes is claimed without support."},
         "cover_letter": {"score": 6, "addressed_to_this_company_and_role": True, "specific_to_company": True,
                          "consistent_with_cv": True, "stale_framing": [], "tone_and_length_ok": True, "issues": [],
                          "strengths": []},
@@ -458,7 +460,8 @@ def test_an_evaluation_out_of_credit_is_marked_interrupted_and_exits_75(tmp_path
     run = _run_folder(tmp_path)
     env = tmp_path / "empty.env"
     env.write_text("")
-    assert ev_mod.main([str(run), "--env-file", str(env)]) == EXIT_OUT_OF_CREDIT
+    assert ev_mod.main([str(run), "--grader-model", "openai:gpt-6.1-sol", "--grading-mode", "conversation",
+                        "--env-file", str(env)]) == EXIT_OUT_OF_CREDIT
     summary = json.loads((run / "evaluation" / "eval1" / "summary.json").read_text())
     assert summary["status"] == INTERRUPTED_STATUS and not (run / "evaluation" / "eval1" / "evaluation.json").exists()
     # an ordinary error is not turned into an out-of-credit exit

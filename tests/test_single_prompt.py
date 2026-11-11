@@ -236,6 +236,71 @@ def test_out_of_credit_marks_the_run_interrupted_and_exits_75(tmp_path, stubbed,
     assert json.loads((run_dir / "manifest.json").read_text())["status"] == INTERRUPTED_STATUS
 
 
+@pytest.mark.parametrize("model", ["openai:gpt-6-luna", "openai:gpt-6.1-terra", "openai:gpt-6.1-sol"])
+def test_each_comparison_model_runs_built_as_the_app_builds_its_writers(tmp_path, stubbed, monkeypatch, model):
+    from evals import single_prompt
+    from provenance import cost_usd
+    built = []
+    inner = single_prompt.init_chat_model
+
+    def recording_init(name, **kwargs):
+        built.append((name, kwargs))
+        return inner(name, **kwargs)
+
+    monkeypatch.setattr(single_prompt, "init_chat_model", recording_init)
+    code, run_dir = _run(tmp_path, stubbed, extra=("--model", model))
+    assert code == 0 and CALLS == ["SinglePromptResponse"]
+    assert built == [(model, {"temperature": None})]  # luna accepts only its default temperature
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert manifest["model"] == model and manifest["failure"] is None
+    logged = json.loads((run_dir / "llm_calls.jsonl").read_text().splitlines()[0])
+    assert logged["model"] == model.split(":", 1)[1]
+    assert manifest["cost_usd"] == pytest.approx(cost_usd(model, 6000, 9000))  # priced from provenance
+
+
+def test_a_model_without_a_price_is_refused_before_anything_runs(tmp_path, stubbed):
+    with pytest.raises(SystemExit, match="no price"):
+        _run(tmp_path, stubbed, extra=("--model", "openai:not-a-priced-model"))
+    assert CALLS == [] and not (tmp_path / "run").exists()
+
+
+def test_the_prompt_and_the_transcript_carry_the_default_users_words(tmp_path, stubbed):
+    from evals import evaluate
+    from evals.run_case import DEFAULT_SCRIPT
+    from evals.single_prompt import build_messages
+    _, human = build_messages({"cv": "a cv"}, "ad", "(none)")
+    assert f'"{DEFAULT_SCRIPT["first"]}"' in human.content
+    assert f'"{DEFAULT_SCRIPT["missing_details"]}"' in human.content
+    code, run_dir = _run(tmp_path, stubbed)
+    assert code == 0
+    transcript = json.loads((run_dir / "transcript.json").read_text())
+    assert [t["user"] for t in transcript["turns"]] == [
+        "<path to job ad>", DEFAULT_SCRIPT["first"], DEFAULT_SCRIPT["missing_details"]]
+    assert all(t["assistant"] is None for t in transcript["turns"])
+    assert transcript["user_instructions"] == [{"key": "first", "text": DEFAULT_SCRIPT["first"]},
+                                               {"key": "missing_details", "text": DEFAULT_SCRIPT["missing_details"]}]
+    assert transcript["requests"] == [] and evaluate.request_checklist(run_dir) == []
+    shown = evaluate.conversation_text(run_dir)
+    assert DEFAULT_SCRIPT["first"] in shown and "no conversation was recorded" not in shown
+    # the same user turns as an app session in which the app asked for missing details
+    assert json.loads((run_dir / "inputs" / "script.json").read_text()) == DEFAULT_SCRIPT
+
+
+def test_an_answer_that_does_not_parse_is_a_failed_session_that_is_still_graded(tmp_path, stubbed, monkeypatch):
+    from evals import evaluate, single_prompt
+
+    def unparsed(llm, messages, callbacks):
+        raise single_prompt.AnswerNotParsed("the model's answer did not parse: truncated")
+
+    monkeypatch.setattr(single_prompt, "generate", unparsed)
+    code, run_dir = _run(tmp_path, stubbed)
+    assert code == 1
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert manifest["status"].startswith("error: AnswerNotParsed") and manifest["failure"] == "parse_error"
+    values, _ = evaluate.build_prompt(run_dir)
+    assert values["cv"] == "(no CV was produced)" and values["cover_letter"] == "(no cover letter was produced)"
+
+
 # --- the fallback layout, compiled for real -----------------------------------------------------------
 needs_pdflatex = pytest.mark.skipif(shutil.which("pdflatex") is None, reason="pdflatex is not installed")
 

@@ -1,8 +1,9 @@
 # Testing mode and evaluation
 
 Tools for running the CV editor end to end from prepared inputs, recording everything it did, and
-scoring the result with an independent model. They make paid OpenAI calls (and Tavily calls only
-when you record search results). Run them from the repository root with the project's environment
+scoring the result with an independent model. They make paid OpenAI calls, paid Anthropic calls when
+a Claude model grades (`ANTHROPIC_API_KEY` in `.env`), and Tavily calls only when you record search
+results. Run them from the repository root with the project's environment
 (`uv run python -m ...` or `.venv/bin/python -m ...`).
 
 Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
@@ -164,12 +165,16 @@ In replay the answer for the same query is used, else the first one.
 ## 4. Score a run: `evals/evaluate.py`
 
 ```bash
-uv run python -m evals.evaluate runs/p03_a3_all4 [--model openai:gpt-6.1-sol] [--name eval1]
+uv run python -m evals.evaluate runs/p03_a3_all4 [--grader-model anthropic:claude-sonnet-5-5] [--eval-name eval1] \
+    [--grading-mode document-only|conversation] [--effort medium]
 ```
+
+(`--model` and `--name` still work as the old spellings of `--grader-model` and `--eval-name`.)
 
 The evaluator sees the job ad, the company information from the search fixture, the candidate
 documents that were given (omitted ones are absent), and the final CV and cover letter as text and
-as extracted PDF text. It does not see the model, the input-set name or the run id. It returns one
+as plain text extracted from the PDFs (pdfplumber, no model). The CV's extracted text is labelled *what
+an ATS would read*. It does not see the model, the input-set name or the run id. It returns one
 JSON answer with quoted evidence:
 
 - **claims**: every skill, tool, employer, title, date, number, degree, certificate in both outputs,
@@ -182,8 +187,16 @@ JSON answer with quoted evidence:
   culture actually used, and whether a preference was stated only if the candidate gave one and a
   conflict with the job was not hidden. Without a stated preference the candidate counts as open:
   neutral wording is fine, an invented commitment or presenting the arrangement as a weakness is not
-- **cv_standards**, **ats** (PDF text parseable, headings, keyword coverage, pass likelihood low/medium/high
-  with reasons) and **cover_letter**
+- **cv_standards** and **cover_letter**
+- **ats**: one ATS score 0-10 with a short `reason`, judged inside the same grading call from what an ATS
+  would read (the CV PDF's extracted text), the ad and the candidate's material. Behind it, three
+  judgements: the text is readable and in order with clear sections (`text_readable_in_order`,
+  `clear_sections`, `headings_found`, `parse_issues`); the ad's important requirements that the candidate
+  has are visible in wording a recruiter's search would find (`important_requirements`,
+  `covered_in_searchable_wording`, `missed_but_candidate_has`); keyword stuffing and skills the candidate
+  does not have are flagged (`keyword_stuffing`, `unsupported_keywords`) and lower the score.
+  Requirements the candidate lacks cost nothing when left out. No extra model call and no extra input
+  files; `counts.ats_score` carries the score, and it is the only ATS measure the analysis reads
 - **visual_layout**: from PNG images of the first pages (up to 3 of the CV and 2 of the letter, about
   110 dpi) and deterministic measurements (`evals/pdf_layout.py`: pages, fonts, body and smallest font
   size, margins, characters past the page edge, a nearly empty last page, unmapped glyphs): overflow or
@@ -197,8 +210,19 @@ JSON answer with quoted evidence:
   followed_untruthful
 - scores 0-10 for invented content, completeness and overall
 
-It also sees the conversation (the tool's messages shortened to 700 characters, the user's replies
-in full) and the test checklist built from `inputs/script.json` and `transcript.json`. Only requests
+**Grading modes.** `--grading-mode document-only` (the default, and the mode of the method
+comparison) shows the grader the documents and the inputs above plus a fixed block, *the user's
+instructions to the writing tool*, in place of the chat: the script's replies quoted verbatim (for the
+default script: "Please write my CV first, then the cover letter.", the reply declining missing contact
+details, the reply about the job ad) and "The user made no other requests." It never shows the app's
+messages, the transcript, the manifest, the method or the writer model, so a multi-agent session and a
+single-prompt session of the same case get the same block, and their requests differ only in the output
+sections (`tests/test_grader.py` checks this). The block is built by `user_instructions()` from
+`inputs/script.json`; a scripted change request is added, with its expected behaviour, only if it was
+sent (the rule below). `--grading-mode conversation` is the 2026-11-10 mode, described next.
+
+In conversation mode the evaluator also sees the conversation (the tool's messages shortened to 700
+characters, the user's replies in full) and the test checklist built from `inputs/script.json` and `transcript.json`. Only requests
 the user actually sent are in the checklist: whether each scripted reply or request was sent is decided
 in code from the transcript (`scripted_request_status`), never by the model. One that was never sent
 (the app took another path) is "not exercised": it is not named to the evaluator and so changes no
@@ -210,25 +234,111 @@ to state something the user says is untrue. Still one model call per evaluation.
 `requests`, `requests_followed`, `requests_ignored`, `untruthful_refused`, `untruthful_followed`,
 `requests_not_exercised`, `layout_problems`, `wrong_language` and `language_errors`.
 
-`RUN/evaluation/<name>/` keeps `prompt.json` (image data replaced by file names), `raw_response.json`,
-`evaluation.json` (the answer plus counts and deterministic PDF checks: pages, extractable text, how
-much of the text version is in the PDF, and the layout measurements), `pages/` (the images) and the cost. Score the same run again with `--name eval2` to measure evaluator consistency.
+`RUN/evaluation/<name>/` keeps `prompt.json` (the exact request, image data replaced by file names),
+`raw_response.json` (every attempt: answer text, usage, stop reason), `evaluation.json` (the answer plus
+counts and deterministic PDF checks: pages, extractable text, how much of the text version is in the
+PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (the images) and the cost.
+`evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
+returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
+templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
+cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids and
+`batch_id` (set when the grading came from a batch).
+
+Grade the same session several times under different names, side by side: `eval1` and `eval2` (the
+primary grader twice, for its noise), `opus1` (`--grader-model anthropic:claude-opus-5-5`), `haiku1`
+(`--grader-model anthropic:claude-haiku-5-5`). An existing `RUN/evaluation/<name>/` is never overwritten.
 The company text and the PDF checks use the app's own functions (`agents.search.search_result_texts`,
 `agents/pdf_text_check.py`), so the evaluator sees the same page text the writer had.
+
+### Graders: `evals/grader.py`
+
+| grader | role | prices per 1M tokens (input / cache write / cache hit / output) |
+|---|---|---|
+| `anthropic:claude-sonnet-5-5` | primary grader (default of `evaluate.py`) | $2 / $2.50 / $0.10 / $10 |
+| `anthropic:claude-opus-5-5` | second grader on a fixed subset | $4 / $5 / $0.20 / $20 |
+| `anthropic:claude-haiku-5-5` | trap check (default of `score_truth.py`), cheap re-grader | $0.10 / $0.125 / $0.01 / $0.50 |
+| `openai:<model>` | the earlier LangChain path, e.g. `openai:gpt-6.1-sol` | `provenance.PRICES_PER_1M` |
+
+Batch halves every price. The Anthropic prices are in `provenance.PRICES_PER_1M` and
+`provenance.CACHE_WRITE_PER_1M` (Haiku's apply to prompts up to 100k tokens). Claude graders go through
+the official `anthropic` SDK:
+
+- **Pinned model.** Only the three ids above are accepted; the id the API returns is recorded per call.
+- **Structured output.** `output_config.format` with a JSON schema made from the pydantic answer model
+  (`json_schema_for`: every object closed and every field required; numeric limits such as the 0-10
+  score ranges are not part of the API's schema subset, so the answer is validated against the pydantic
+  model in code). Forced tool use is not used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
+  (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
+  not retried.
+- **Thinking and effort.** Thinking is adaptive (it cannot be turned off on these models); the effort is
+  set explicitly, `medium` by default (`--effort low|medium|high|xhigh|max`).
+- **Temperature.** Not settable: Opus 5.5 rejects any `temperature`, and Sonnet 5.5 and Haiku 5.5 reject
+  non-default values, so nothing is sent and the record says `temperature: not settable`. Repeat
+  gradings (`eval1`/`eval2`) measure the noise instead. OpenAI graders run at the provider default.
+- **Images.** PNG page images as Anthropic `image` blocks (base64).
+- **Caching.** Breakpoints after the system prompt and after the shared block (job ad, company text,
+  candidate material, work preference, user's instructions), which is identical for every arm of a
+  case: grade a case's arms back to back.
+- **No silent fallback.** No server-side `fallbacks`: a refusal is recorded (`stop_reason`,
+  `stop_details`), `summary.json` says `refused`, nothing is written to `evaluation.json` and the exit
+  code is 1. Re-grade it or report it.
+- **Out of credit.** A used-up Anthropic balance ("credit balance is too low", `billing_error`) or a
+  reached spend cap (`enforced_spend_limit_reached`) stops the grading like an OpenAI quota error:
+  `interrupted: out of credit`, exit code 75 (`evals/credit.py`).
+
+### Building a grading without sending it (for Batch)
+
+Every grading is built first and sent second, so a batch submitter can take the request and leave the
+sending out:
+
+```python
+from evals.evaluate import build_grading_request, finish_evaluation, write_prompt
+from evals.grader import result_from_message, send
+from provenance import RunRecorder
+
+out_dir = run_dir / "evaluation" / "eval1"
+request, checks, images = build_grading_request(run_dir, "anthropic:claude-sonnet-5-5", out_dir, "document-only")
+params = request.anthropic_params()   # the Messages API params of one batch request (no "stream")
+recorder = RunRecorder(out_dir)
+write_prompt(recorder, request, "document-only", images)
+
+# synchronous: result = send(request, recorder, node="evaluator")
+# from a batch: one succeeded result's message, keyed by your custom_id
+result = result_from_message(request, message, batch_id=batch.id)   # prices at the Batch rate
+from evals.grader import log_attempts
+log_attempts(recorder, result, request, node="evaluator")            # llm_calls.jsonl and summary totals
+record = finish_evaluation(run_dir, "eval1", request, result, checks, "document-only", recorder)
+```
+
+- `build_grading_request(run_dir, grader, out_dir, mode)` renders the page images into `out_dir/pages/`
+  and returns `(GradingRequest, checks, images)`; no model call. `grader` is a `"provider:model"` string
+  or a `GraderSpec` (`parse_grader(name, effort)`).
+- `GradingRequest` holds `grader`, `system`, `shared_text`, `document_text`, `images`, `schema`,
+  `max_tokens` and `rubric_sha256`. `anthropic_params()` is the Messages API params dict;
+  `langchain_messages()` the OpenAI form; `loggable()` the request for `prompt.json`; `prompt_hash()`.
+- `result_from_message(request, message, seconds, batch_id)` reads one Anthropic `Message` (streamed or
+  from a batch) into a `GradingResult` (`status` ok / parse_error / refused, `answer`, `attempts`,
+  `cost_usd`, `record()`). A batch has no automatic second attempt: re-submit a `parse_error`.
+- `finish_evaluation(...)` writes `raw_response.json`, `evaluation.json` and `summary.json`, exactly as a
+  synchronous grading does, and raises `GradingFailed` after recording a refusal or a parse error.
+- The trap check has the same shape: `score_truth.build_check_request(grader, values)`.
 
 ## 5. Check against the persona's ground truth: `evals/score_truth.py`
 
 ```bash
-uv run python -m evals.score_truth runs/p12_a7_all4_luna_r1 [--model openai:gpt-6-luna] [--name truth1] [--persona p12]
+uv run python -m evals.score_truth runs/p12_a7_all4_luna_r1 [--grader-model anthropic:claude-haiku-5-5] [--name truth1] [--persona p12]
 ```
 
-A second signal that does not depend on the evaluator. One call to a cheap model reads the final CV
+A second signal that does not depend on the evaluator. One call to a cheap model (Claude Haiku 5.5 by
+default, through the same grader layer; any `provider:model` above works) reads the final CV
 and cover letter and answers, for every `deliberate_gaps` and `traps` entry of the run's `persona.json`
 (found from the manifest's `persona` label, or `--persona`): `claimed_as_met` (the gap is claimed or
 the trap is hit, with a verbatim quote), `not_claimed` or `unclear`. Each quote is then looked up in
 the outputs in code (case, spacing, quotes and dashes ignored); a claim whose quote is not there is
 downgraded to `unclear` and counted in `unverified_quotes`. `RUN/evaluation/<name>/truth_check.json`
-has every item and the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, and the cost.
+has every item, the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, the cost and the
+same `grader` record as an evaluation.
 
 ## 6. Spread across repeats: `evals/summarize.py`
 
@@ -242,7 +352,7 @@ scores (overall, invented content, completeness, fit, CV standards, cover letter
 mean and standard deviation across repeats (each run counts once, as the mean of its evaluations) and
 `eval_sd`, the mean spread between evaluator re-scores of the same run. It prints a table and writes
 `RUNS/repeats_summary.json`. The new rubric scores (visual layout, language, additional information,
-user requests) and the counts `untruthful_followed` and `requests_ignored` are among the metrics.
+user requests, ATS) and the counts `untruthful_followed` and `requests_ignored` are among the metrics.
 
 It also writes `RUNS/sessions_summary.json`: how many sessions actually redrafted each document
 (critique-driven and user-driven, from `events.jsonl`), the removal passes, and per script the request
@@ -277,9 +387,10 @@ app's company research and the evaluator read). It also holds the app's two LaTe
 not copied: the goal sentences of both writer system prompts, `TRUTHFULNESS_PROTOCOL`, the writers'
 fresh-draft ("creative liberty") instructions and general guidelines, the output-language and
 work-arrangement rules, and the LaTeX formatters' rules (`CV_LATEX_SYSTEM_PROMPT`,
-`COVER_LETTER_LATEX_SYSTEM_PROMPT`: copy the text word for word, escape specials). The default script
-declines missing contact details, so the prompt says the candidate declined them and asks for no
-placeholders. The answer has five fields: the CV as plain text and as full LaTeX, the same for the
+`COVER_LETTER_LATEX_SYSTEM_PROMPT`: copy the text word for word, escape specials). It carries the default
+scripted user's own words verbatim (`DEFAULT_SCRIPT` in `run_case.py`): the request "Please write my CV
+first, then the cover letter." and the answer to the app's question for missing contact details ("I'd
+rather leave those details out."), so the prompt also asks for no placeholders. The answer has five fields: the CV as plain text and as full LaTeX, the same for the
 letter, and notes. The prompt as sent is in `RUN/prompt.json`.
 
 **PDFs, no model:** each document's LaTeX goes through the app's deterministic helpers
@@ -293,13 +404,20 @@ model's LaTeX made. The model's LaTeX is kept as `outputs/final_cv.tex` and `fin
 **The run folder** has `run_case`'s layout, so `evals/evaluate.py` grades it unchanged; the plain text
 versions are `final_*.txt`, so its text-vs-PDF checks work as for the app. The grader stays blind: it reads
 `inputs/`, `outputs/`, `transcript.json` and `inputs/script.json` (the default script), never the manifest,
-so it sees neither the method nor the model. There is no conversation, so `transcript.json` has no turns
-and the grader's conversation section says none was recorded (the baseline's default-script
-conversation only asks for the two documents). The manifest has `"method": "single_prompt"`, the labels
+so it sees neither the method nor the model. `transcript.json` records the user's words the prompt carries as
+the run's user turns, as `run_case` records the default user's (the job ad, shown as `<path to job ad>`, then
+the request and the missing-details answer), with no tool messages, and lists them under `user_instructions`.
+So both arms' run folders give the grader's input builder the same user wording. The manifest has `"method": "single_prompt"`, the labels
 `method` and `baseline`, and `"calls": 1` (every model call made, from `llm_calls.jsonl`; a test fails if
 any other call happens). `summarize.py` writes `methods_summary.json` with every metric split by method
 (runs without a method are `multi_agent`) and, per single-prompt run, the pair with its baseline run and
 the difference (`paired_mean_diff`).
+
+**Models.** `--model` takes any model with a price in `provenance.PRICES_PER_1M` (or a local `ollama:` one);
+the comparison uses `openai:gpt-6-luna`, `openai:gpt-6.1-terra` and `openai:gpt-6.1-sol`. The model is built
+as the app builds its writers (`temperature=None`: gpt-6-luna accepts only its default). An answer that does
+not parse is a failed session (`"failure": "parse_error"`, status `error: ...`): never retried, and graded
+as it is ("no CV was produced").
 
 **`matrix_single_prompt.json`** (39 cases, ids `sp_<persona>_<ad>_<input set>_sol_r1`): every persona
 p01-p13 on its primary ad with the input sets `all4`, `cv_only` and `no_cv`. Each case's `baseline` is
@@ -331,8 +449,8 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   - paired differences: bootstrap CIs, Wilcoxon and sign tests, Holm over the primary contrasts;
   - a noise floor from repeats and re-gradings;
   - breakdowns by input set, ad and persona, plus cost and latency;
-  - an ATS measure, `ats_honest_coverage`: of the ad's keywords that the candidate can truthfully
-    claim, the share the CV shows;
+  - the grader's ATS score (`ats`, 0-10; rounds graded before it, such as 2026-11-10, have none)
+    next to the claims the grader flags, so a high ATS score bought by cheating shows;
   - grader calibration, when two graders graded the same sessions;
   - power, sample sizes and the cost of candidate designs.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
@@ -340,6 +458,61 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
   are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
   `tests/test_analysis_load.py`.
+
+## 9. The staged comparison (experiment plan, stages 1-3)
+
+`evals/build_ab_matrix.py` writes two matrices (no model calls; `--check` fails if they are out of date,
+and a test runs it):
+
+- **`matrix_ab_stage12.json`**, 147 sessions: arms **A** MA-luna (the app, default script, gpt-6-luna),
+  **C** SP-luna and **E** SP-sol on the 39 matched cases (p01-p13 on their primary ad x `all4`,
+  `cv_only`, `no_cv`), in two stages. **pilot** (36): the 6 pilot cases (p01/a1, p03/a3, p04/a6, p11/a1,
+  p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (111): the other 33 cases x 3 arms, plus a
+  second writer run of the 4 extra repeat cases.
+- **`matrix_ab_stage3.json`**, 78 sessions, run only if the core run calls for it: **B** MA-terra and
+  **D** SP-terra on the 39 cases.
+
+Every session has the labels `arm`, `method`, `writer_model`, `rep`, `stage` and `case` (the matched case,
+the same in every arm: `p03_a3_all4`), and its own gradings (`gradings`: `eval1` by Sonnet for every
+session; `eval2` by Sonnet on the first runs of the 10 repeat cases; `opus1` on the first runs of the 12
+Opus cases (6 pilot + 6 check cases); `haiku1`, `haiku2` on the 18 pilot first runs) and a trap check
+(`truth1`). The check cases are 6 of the 7 non-pilot personas, two per input set, drawn with the file's
+seed; the 4 extra repeat cases are the check cases with `cv_only` and `no_cv`. Stage 3's Opus grades the
+first runs of 10 of the 12 Opus cases per arm (seeded draw). Within a stage, the cases come in a seeded
+random order and each case's sessions back to back in random arm order: the order the gradings run in.
+
+```bash
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --estimate [--stage pilot] [--json]
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --dry-run
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --env-file PATH/.env
+# or: sessions here, gradings through the Batch grader
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --sessions-only --env-file PATH/.env
+uv run python -m evals.run_matrix --matrix evals/matrix_ab_stage12.json --out ../runs-ab --stage pilot --gradings-out ../runs-ab/pilot_gradings.json
+```
+
+- **`--estimate`** prints the plan's cost table: per arm, app sessions, Sonnet grading, re-gradings,
+  Opus, Haiku and trap check at standard rates, the total and the total with Batch grading (50% off
+  every grading line; the sessions run interactively on OpenAI), then each stage and the total against
+  the plan's figures and caps. Unit prices (`AB_UNIT_USD` in `run_matrix.py`): app sessions the measured
+  2026-11-10 means (luna 0.027, terra 0.085); single-prompt sessions 6k input and 10k output tokens at
+  provenance's prices, rounded up to a cent (luna 0.01, terra 0.06, sol 0.12); a grading 16k input and
+  12k output tokens (Sonnet 0.15, Opus 0.30, Haiku 0.008; the ATS score needs no extra input, the CV's PDF
+  text was already in the prompt, and its answer replaces the earlier ATS section of about the same
+  length); the trap check 0.002. Stages 1-2: **45.62 USD
+  standard, 26.66 USD with Batch** (pilot 15.74 / 8.81, core 29.88 / 17.85); stage 3: 23.51 / 14.58.
+- **Caps** (the plan's +25%): each stage's own spend (its sessions' rows in `ledger.tsv`) and the whole
+  ledger. Stages 1-2: pilot 20 / 12, core 38 / 23, total **57 / 34** (standard / Batch); stage 3: 30 / 19,
+  run into the same folder, so its total cap (87 / 53) includes stages 1-2. The standard caps apply when
+  the gradings run here, the Batch caps with `--sessions-only`. `--total-cap` overrides the total.
+- **`--stage`** is required to run a staged matrix; `--only` narrows it further. Resume, the ledger and
+  the out-of-credit stop work as in section 2; each grading is recorded as `eval:<name>`. A staged
+  matrix names its own repeats and gradings, so `--repeats`, `--rescore`, `--eval-name` and
+  `--truth-check` are refused. The matrix's `evaluate_args` are added to every evaluation command (for
+  the grader's options, such as a document-only mode).
+- **Freeze.** Every session's manifest gets the labels `app_commit`, `app_head` and `app_dirty`.
+  `python -m evals.build_ab_matrix --app-commit SHA` writes the frozen commit into both files; from then on
+  no session starts if the app's files (`APP_PATHS`: `agents/`, `langgraph_agent.py`, `config/`,
+  `templates/`, `evals/run_case.py`, `evals/single_prompt.py`) differ from that commit.
 
 ## Fixtures
 

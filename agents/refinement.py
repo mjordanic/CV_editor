@@ -4,34 +4,37 @@ from typing import Callable, Optional
 
 def _honesty_key(draft: dict) -> tuple:
     """
-    Checked drafts first (a draft whose grounding check could not run has no known claims, which
-    is not the same as none), then fewer unsupported claims, then fewer requirements left unshown.
+    A cover letter that does not repeat the CV first (see agents/letter_cv_check.py), then checked
+    drafts (a draft whose grounding check could not run has no known claims, which is not the same
+    as none), then fewer unsupported claims, then fewer requirements left unshown.
     """
     checked = draft.get("grounding_checked") is not False
-    return (checked, -len(draft.get("unsupported_claims") or []), -(draft.get("defects") or 0))
+    return (not draft.get("repeats_cv"), checked, -len(draft.get("unsupported_claims") or []), -(draft.get("defects") or 0))
 
 
 def best_draft(drafts: list[dict], compare: Optional[Callable[[dict, dict], Optional[str]]] = None) -> dict:
     """
     The draft to keep from one request's drafts (history entries).
 
-    A draft with fewer claims the grounding check could not support wins over one with more: the
-    critic's score does not count invented experience against a draft, so on score alone a draft
-    the check flagged beat the redraft that removed the claim. Next, fewer requirements of the ad
-    that the candidate meets but the draft does not show (the critic's requirements check).
+    A cover letter that repeats the CV is kept only if every draft does. Then a draft with fewer
+    claims the grounding check could not support wins over one with more: the critic's score does
+    not count invented experience against a draft, so on score alone a draft the check flagged beat
+    the redraft that removed the claim. Next, fewer requirements of the ad that the candidate meets
+    but the draft does not show (the critic's requirements check).
 
     Among drafts still tied, compare(a, b) (the critic reading the last two side by side) decides
-    when given; it returns 'A', 'B' or None. Two separate 0-100 scores from a light model are
-    noisy, so they decide only without a comparison, and on a tie the later draft wins.
+    when given; it returns 'A', 'B' or None (it is not asked to choose between two letters that
+    both repeat the CV). Two separate 0-100 scores from a light model are noisy, so they decide
+    only without a comparison, and on a tie the later draft wins.
     """
     best_key = max(_honesty_key(d) for d in drafts)
     tied = sorted((d for d in drafts if _honesty_key(d) == best_key), key=lambda d: d.get("iteration", 0))
-    if compare is not None and len(tied) >= 2:
+    if compare is not None and len(tied) >= 2 and best_key[0]:
         a, b = tied[-2], tied[-1]
         verdict = compare(a, b)
         if verdict in ("A", "B"):
             return a if verdict == "A" else b
-    return max(tied, key=lambda d: (d.get("score", 0), d.get("iteration", 0)))
+    return max(tied, key=lambda d: (d.get("score") or 0, d.get("iteration", 0)))
 
 
 def should_refine(
