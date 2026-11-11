@@ -48,8 +48,7 @@ def round_dir(tmp_path):
          ats={"text_readable_in_order": True, "clear_sections": True, "score": 7, "reason": "clean text"})
     _run(runs, "p01_a1_all4_luna_r2", {**cell, "model": "openai:gpt-6-luna", "rep": "2"},
          {"eval1": (f"openai:{SOL}", 9), "b1": (f"other:{OTHER}", 8)})
-    _run(runs, "sp_p01_a1_all4_sol_r1", {**cell, "model": "openai:gpt-6.1-sol", "rep": "1",
-                                         "baseline": "p01_a1_all4_luna_r1"},
+    _run(runs, "sp_p01_a1_all4_sol_r1", {**cell, "model": "openai:gpt-6.1-sol", "rep": "1"},
          {"eval1": (f"openai:{SOL}", 8)}, method="single_prompt", cost=0.11)
     # a cell only the multi-agent arm has, and the same persona/ad/inputs with another script
     _run(runs, "p02_a5_cv_only_luna_r1", {"persona": "p02", "ad": "a5", "input_set": "cv_only",
@@ -73,7 +72,7 @@ def test_rows_are_one_per_grading_with_arms_and_interrupted_sessions_left_out(ro
     assert {r["arm"] for r in rows} == {MA, SP}
     assert {r["grader"] for r in rows} == {SOL, OTHER}
     sp = next(r for r in rows if r["run_id"] == "sp_p01_a1_all4_sol_r1")
-    assert sp["method"] == "single_prompt" and sp["baseline"] == "p01_a1_all4_luna_r1" and sp["llm_calls"] == 1
+    assert sp["method"] == "single_prompt" and sp["llm_calls"] == 1
     assert sp["round"] == "round"
     with_interrupted = load.read_rows(round_dir, include_interrupted=True)
     assert any(r["interrupted"] and r["eval_name"] == "" for r in with_interrupted)
@@ -99,12 +98,25 @@ def test_pairing_averages_regradings_then_repeats_and_lists_unpaired_cells(round
 def test_repeat_regrade_and_grader_groups(round_dir):
     rows = load.read_rows(round_dir)
     reps = load.repeat_groups(rows, "overall_score", grader=SOL)
-    assert len(reps) == 1 and reps[0]["arm"] == MA and reps[0]["values"] == [7.5, 9.0]
+    assert len(reps) == 1 and reps[0]["arm"] == MA and reps[0]["values"] == [7.5, 9.0] and reps[0]["k"] == [2, 1]
     regr = load.regrade_groups(rows, "overall_score", grader=SOL)
     assert [(g["run_id"], g["values"]) for g in regr] == [("p01_a1_all4_luna_r1", [7, 8])]
     gp = load.grader_pairs(rows, "overall_score", SOL, OTHER)
     assert [(g["run_id"], g["a"], g["b"]) for g in gp] == [("p01_a1_all4_luna_r1", 7.5, 6.0),
                                                           ("p01_a1_all4_luna_r2", 9.0, 8.0)]
+
+
+def test_trap_checks_load_as_rows_and_pair_by_cell(round_dir):
+    runs = round_dir / "runs"
+    for run, hits in (("p01_a1_all4_luna_r1", 0), ("sp_p01_a1_all4_sol_r1", 2)):
+        folder = runs / run / "evaluation" / "truth1"
+        folder.mkdir(parents=True)
+        (folder / "truth_check.json").write_text(json.dumps({"checker_model": "anthropic:claude-haiku-5-5", "counts": {
+            "gaps": 2, "traps": 2, "gaps_claimed": hits, "traps_hit": 0, "unclear": 1, "unverified_quotes": 0}}))
+    rows = load.truth_rows(round_dir)
+    assert {(r["run_id"], r["grader"], r["truth_rate"]) for r in rows} == {
+        ("p01_a1_all4_luna_r1", "claude-haiku-5-5", 0.0), ("sp_p01_a1_all4_sol_r1", "claude-haiku-5-5", 0.5)}
+    assert load.pair_arms(rows, MA, SP, "truth_rate")["pairs"][0]["diff"] == 0.5
 
 
 def test_ats_and_truthfulness_fields(round_dir):
@@ -125,6 +137,8 @@ def test_paired_statistics():
     assert (s["wins_b"], s["ties"], s["wins_a"]) == (5, 2, 1)
     assert s["p_sign"] == pytest.approx(0.21875)   # exact two-sided: 2 * P(X <= 1 | n = 6)
     assert 0 < s["p_signflip"] <= 1
+    # four personas (clusters) of two cells: the persona-level test sees 4 units, never significant at 5%
+    assert s["p_signflip_cluster"] == stats.persona_signflip_test(diffs, list("aabbccdd")) == 0.125
     assert stats.holm({"a": 0.01, "b": 0.04, "c": None}) == {"a": 0.02, "b": 0.04, "c": None}
     p, lo, hi = stats.wilson_ci(0, 20)
     assert p == 0 and lo == 0 and 0.1 < hi < 0.2
@@ -132,6 +146,9 @@ def test_paired_statistics():
     assert stats.agreement([5, 6, 7, 8], [6, 7, 8, 9])["bias"] == pytest.approx(1.0)
     var, dof = stats.pooled_within_var([[7, 9], [8, 8], [6]])
     assert dof == 2 and var == pytest.approx(1.0)
+    # run 1 graded twice, run 2 once: within-variance 1.0 = writer + (1/2 + 1)/2 x grader 0.4 -> writer 0.7
+    assert stats.writer_var([[7, 9], [8, 8]], [[2, 1], [2, 1]], 0.4) == pytest.approx(0.7)
+    assert math.isnan(stats.writer_var([[7, 9]], [[1, 1]], math.nan))
     assert stats.pairs_needed(1.0, 1.0) < stats.pairs_needed(0.5, 1.0)
     assert stats.diff_sd(0.5, 0.4, 0.3, reps=2, gradings=2) < stats.diff_sd(0.5, 0.4, 0.3)
     d = stats.simulate_diffs(30, 0.5, 0.5, 0.3, 0.3, n_sim=4)

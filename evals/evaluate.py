@@ -334,7 +334,10 @@ it. Grade user_requests against the user's instructions only, with the expected 
 judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking \
 for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.
 """
-_RULES_END = """- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
+_RULES_END = """- The PDF is the document the employer receives; the plain text is the tool's own copy of it. Judge \
+claims, layout and ATS from the PDF (its extracted text and page images); a difference between the PDF and the text \
+is itself an issue.
+- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge \
 the visual layout from both.
 - Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; \
 the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements \
@@ -390,7 +393,6 @@ DOCUMENTS_TEMPLATE = _OUTPUTS_TEMPLATE + """# CONVERSATION BETWEEN THE USER AND 
 {checklist}
 
 """ + _LAYOUT_TEMPLATE
-HUMAN_TEMPLATE = SHARED_TEMPLATE + DOCUMENTS_TEMPLATE
 
 # Document-only mode: the user's instructions (the same words for every arm of a case) take the place of
 # the conversation and the checklist, and sit in the shared part.
@@ -730,7 +732,7 @@ def prompt_parts(values: dict, mode: str = DEFAULT_MODE) -> tuple[str, str, str]
     return system, shared.format(**values), documents.format(**values)
 
 
-def format_messages(values: dict, images: dict | None = None, mode: str = CONVERSATION) -> list:
+def format_messages(values: dict, images: dict | None = None, mode: str = DEFAULT_MODE) -> list:
     """The system and human messages for a LangChain (OpenAI) evaluator; page images go in the human message
     after the text, as base64 PNG image parts."""
     from evals.grader import GraderSpec, build_request
@@ -770,8 +772,9 @@ def finish_evaluation(run_dir: Path, name: str, request, result, checks: dict, m
     evals.grader.GradingResult from send() or from a batch reply). Raises GradingFailed after recording
     a refusal or an unparseable answer."""
     recorder.write_json("raw_response.json", {"attempts": result.attempts})
+    from evals.run_case import _package_versions
     grading = {**result.record(), "grading_mode": mode, "rubric_sha256": request.rubric_sha256,
-               "prompt_sha256": request.prompt_hash(), **(extra or {})}
+               "prompt_sha256": request.prompt_hash(), "packages": _package_versions(), **(extra or {})}
     if result.answer is None:
         recorder.write_summary(status=result.status, grading=grading)
         why = "the grader refused" if result.status == "refused" else "evaluator output did not parse"

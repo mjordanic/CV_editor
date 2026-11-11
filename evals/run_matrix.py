@@ -21,10 +21,14 @@ re-scored. --dry-run prints the commands without running anything.
 --truth-check also runs evals/score_truth.py (truth1) after the evaluations.
 --estimate prints the expected cost of the selected cases (ESTIMATE_USD below) and runs nothing.
 
-A case with "method": "single_prompt" (evals/matrix_single_prompt.json) runs evals/single_prompt.py
-(exactly one model call writes both documents as text and LaTeX; pdflatex makes the PDFs) instead of the multi-agent session; the
-ledger, caps, resume, evaluation and out-of-credit handling are the same. --total-cap defaults to the
-matrix file's "total_cap" (12 USD for the single-prompt matrix), else 24.
+A case with "method": "single_prompt" runs evals/single_prompt.py (exactly one model call writes both documents as
+text and LaTeX; pdflatex makes the PDFs) instead of the multi-agent session; the ledger, caps, resume, evaluation and
+out-of-credit handling are the same. --total-cap defaults to the matrix file's "total_cap", else 24.
+
+Infrastructure errors: a session that ended on a provider or network failure (connection error, timeout, HTTP 5xx,
+rate limit; status "interrupted: infrastructure", evals/credit.py) is not the system's failure. It is never graded,
+and it is run again at once, one time, for both methods alike (its manifest label "attempt" says 2). If it fails the
+same way again it stays unfinished: run the same command later to redo it.
 
 Staged comparison matrices (evals/matrix_ab_stage12.json, matrix_ab_stage3.json; built by evals/build_ab_matrix.py)
 give every session a stage, an arm and its own gradings ({"name", "grader", "model"}: eval1/eval2 by Sonnet, opus1,
@@ -76,25 +80,21 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from evals.cases import DEFAULT_MATRIX, load_matrix, matrix_total_cap, resolve_case
-from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
+from evals.credit import EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS
 from provenance import BATCH_PRICE_FACTOR, cost_usd
 
 REPO = Path(__file__).resolve().parent.parent
 _LOCK = threading.Lock()
 OUT_OF_CREDIT = threading.Event()  # set on the first exit code 75; nothing new starts after it
 
-# Expected cost per step in USD, from the measured partial runs (2026-11): a gpt-6-luna session about
-# 0.013, a gpt-6.1-terra session about 0.06, one gpt-6.1-sol evaluation 0.11-0.14 (text only). The
-# evaluation now also reads the conversation, page images (about 1.5k tokens a page, up to 5 pages at
-# $2/1M input) and answers four more rubric sections (about 2k more output tokens at $10/1M): about
-# +0.04, so 0.18 at the high end. A script with change requests redrafts more: its session is
-# estimated at twice the default session. The truth check is one short luna call.
-# A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex).
-# gpt-6.1-sol at $2 / $10 per 1M tokens: the prompt is the app's writer and LaTeX rules, both LaTeX templates
-# and the case's inputs, job ad and search results (about 4-7k tokens on these fixtures, ~0.015); the answer is
-# both documents as text and as LaTeX plus notes (about 4-5k tokens) and reasoning (up to about 5k): up to
-# about 10k output tokens, ~0.10. So 0.12 at the high end.
-# A single-prompt session with luna or terra is priced the same way from provenance's prices (sp_session_usd).
+# Expected cost per step in USD for a matrix without stages (evals/matrix.json), from the measured partial runs
+# (2026-11): a gpt-6-luna session about 0.013, a gpt-6.1-terra session about 0.06. A script with change requests
+# redrafts more: its session is estimated at twice the default session. "eval" is one Claude Sonnet 5.5 grading and
+# "truth" one Claude Haiku 5.5 trap check, as AB_UNIT_USD below prices them.
+# A single-prompt session (evals/single_prompt.py) is exactly one call and nothing else (PDFs by pdflatex): the prompt
+# is the app's writer and LaTeX rules, both LaTeX templates and the case's inputs, job ad and search results (about
+# 4-7k tokens on these fixtures); the answer is both documents as text and as LaTeX plus notes (about 4-5k tokens) and
+# reasoning (up to about 5k): up to about 10k output tokens. sp_session_usd prices it from provenance's prices.
 SP_TOKENS = (6_000, 10_000)  # input, output tokens of one single-prompt call
 
 
@@ -107,7 +107,7 @@ def sp_session_usd(model: str) -> float:
     return math.ceil(round(usd * 100, 6)) / 100
 
 
-ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval": 0.18, "truth": 0.005,
+ESTIMATE_USD = {"session": {"gpt-6-luna": 0.013, "gpt-6.1-terra": 0.06}, "eval": 0.15, "truth": 0.002,
                 "scripted_session_factor": 2.0,
                 "single_prompt": {m: sp_session_usd(m) for m in ("gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol")}}
 DEFAULT_TOTAL_CAP = 24.0  # USD, when the matrix file sets no "total_cap"
@@ -195,7 +195,7 @@ def session_command(case: dict, run_dir: Path, env_file: str | None, cost_cap: f
     # "case" is the matched case of a comparison matrix (the same for every arm), else the id without _rN.
     cmd += ["--label", f"case={case.get('case') or base_id(case['id'])}",
             "--label", f"script={case.get('script') or 'default'}"]
-    for key in ("method", "baseline", "arm", "stage", "writer_model"):
+    for key in ("method", "arm", "stage", "writer_model"):
         if case.get(key):
             cmd += ["--label", f"{key}={case[key]}"]
     for key, value in (labels or {}).items():
@@ -205,14 +205,14 @@ def session_command(case: dict, run_dir: Path, env_file: str | None, cost_cap: f
 
 def evaluate_command(run_dir: Path, env_file: str | None, name: str = "eval1", model: str | None = None,
                      extra: list[str] | tuple = ()) -> list[str]:
-    cmd = [sys.executable, "-m", "evals.evaluate", str(run_dir), "--name", name]
-    cmd += (["--model", model] if model else []) + list(extra)
+    cmd = [sys.executable, "-m", "evals.evaluate", str(run_dir), "--eval-name", name]
+    cmd += (["--grader-model", model] if model else []) + list(extra)
     return cmd + (["--env-file", env_file] if env_file else [])
 
 
 def truth_command(run_dir: Path, env_file: str | None, name: str = "truth1", model: str | None = None) -> list[str]:
     cmd = [sys.executable, "-m", "evals.score_truth", str(run_dir), "--name", name]
-    cmd += ["--model", model] if model else []
+    cmd += ["--grader-model", model] if model else []
     return cmd + (["--env-file", env_file] if env_file else [])
 
 
@@ -235,6 +235,13 @@ def _manifest_status(manifest: Path) -> str | None:
         return json.loads(manifest.read_text()).get("status")
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def session_done(run_dir: Path) -> bool:
+    """The session ended with a result to grade: its manifest has a final status (not running, not missing, not
+    interrupted by an out-of-credit or infrastructure error)."""
+    status = _manifest_status(run_dir / "manifest.json")
+    return not (status is None or status == "running" or str(status).startswith("interrupted"))
 
 
 def _partial_cost(folder: Path) -> float:
@@ -260,9 +267,8 @@ def run_one(case: dict, opts) -> tuple[str, str]:
     truth_spec = None if sessions_only else case_truth(case, opts)
     truth = run_dir / "evaluation" / (truth_spec or ("truth1",))[0] / "truth_check.json"
     manifest = run_dir / "manifest.json"
-    status = _manifest_status(manifest) if manifest.exists() else None
-    session_done = not (status is None or status == "running" or str(status).startswith("interrupted"))
-    if sessions_only and session_done:
+    done = session_done(run_dir)
+    if sessions_only and done:
         return cid, "skip (session done)"
     if not sessions_only and all(f.exists() for f, _ in evals.values()) and (truth_spec is None or truth.exists()):
         return cid, "skip (done)"
@@ -273,22 +279,27 @@ def run_one(case: dict, opts) -> tuple[str, str]:
     stage, stage_caps = case.get("stage"), getattr(opts, "stage_caps", None) or {}
     if stage in stage_caps and spent(ledger, opts.stage_ids[stage]) > stage_caps[stage]:
         return cid, f"skip (stage {stage} cap reached)"
-    if not session_done and getattr(opts, "sp_batch", False) and case.get("method") == "single_prompt":
+    if not done and getattr(opts, "sp_batch", False) and case.get("method") == "single_prompt":
         from evals.batch_sp import pending_note
         return cid, pending_note((getattr(opts, "sp_batch_status", None) or {}).get(cid))
-    if not session_done:
-        shutil.rmtree(run_dir, ignore_errors=True)  # an unfinished or interrupted session is redone from scratch
-        with open(log, "w") as f:
-            proc = subprocess.run(session_command(case, run_dir, opts.env_file, opts.cost_cap,
-                                                  getattr(opts, "app_labels", None)), cwd=str(REPO),
-                                  stdout=f, stderr=subprocess.STDOUT)
-        if not manifest.exists():
-            if proc.returncode == EXIT_OUT_OF_CREDIT:
-                return _mark_out_of_credit(cid, "the session")
-            return cid, "session failed before writing a manifest"
-        _record(ledger, cid, "app", json.loads(manifest.read_text()).get("cost_usd") or 0)
-        if proc.returncode == EXIT_OUT_OF_CREDIT or _manifest_status(manifest) == INTERRUPTED_STATUS:
-            return _mark_out_of_credit(cid, "the session")  # not evaluated: redone after a top-up
+    if not done:
+        for attempt in (1, 2):  # an infrastructure error is run again once, at once
+            shutil.rmtree(run_dir, ignore_errors=True)  # an unfinished or interrupted session is redone from scratch
+            labels = {**(getattr(opts, "app_labels", None) or {}), **({"attempt": attempt} if attempt > 1 else {})}
+            with open(log, "w" if attempt == 1 else "a") as f:
+                proc = subprocess.run(session_command(case, run_dir, opts.env_file, opts.cost_cap, labels),
+                                      cwd=str(REPO), stdout=f, stderr=subprocess.STDOUT)
+            if not manifest.exists():
+                if proc.returncode == EXIT_OUT_OF_CREDIT:
+                    return _mark_out_of_credit(cid, "the session")
+                return cid, "session failed before writing a manifest"
+            _record(ledger, cid, "app", json.loads(manifest.read_text()).get("cost_usd") or 0)
+            if proc.returncode == EXIT_OUT_OF_CREDIT or _manifest_status(manifest) == INTERRUPTED_STATUS:
+                return _mark_out_of_credit(cid, "the session")  # not evaluated: redone after a top-up
+            if _manifest_status(manifest) != INFRASTRUCTURE_STATUS:
+                break
+        else:
+            return cid, "interrupted (infrastructure error, twice): not graded; run again later to redo it"
     if sessions_only:
         return cid, "session done (not graded)"
     failed = []

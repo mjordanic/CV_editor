@@ -39,8 +39,11 @@ reads both arms' run folders alike. There are no tool messages: the turns' `assi
 
 Models: any `--model` with a price in provenance.PRICES_PER_1M (or a local `ollama:` model); the comparison uses
 openai:gpt-6-luna, openai:gpt-6.1-terra and openai:gpt-6.1-sol. The model is built as the app builds its writers
-(`temperature=None`, the model's default: gpt-6-luna accepts no other). An answer that does not parse is a failed
-session (`"failure": "parse_error"`, status `error: ...`, exit 1); it is not retried and is graded as it is.
+(`temperature=None`, the model's default: gpt-6-luna accepts no other). An answer that does not parse, or is cut
+off at the output limit, is a failed session (`"failure": "parse_error"`, status `error: ...`, exit 1; the
+manifest's `finish_reason` tells the two apart); it is not retried and is graded as it is. A provider or network
+failure (connection error, timeout, HTTP 5xx, rate limit) is not the method's: the session is
+`interrupted: infrastructure`, is not graded, and run_matrix runs it again.
 
 OpenAI Batch (evals/batch_sp.py, `run_matrix --sp-batch`): the same call can go through /v1/batches at half price.
 `batch_request()` builds the case's prompt and captures, offline, the exact HTTP request the synchronous call would
@@ -82,7 +85,7 @@ from agents.cover_letter_writer import (COVER_LETTER_GENERATION_HUMAN_PROMPT,  #
                                         COVER_LETTER_GENERATION_SYSTEM_PROMPT, CoverLetterGenerationResponse,
                                         CoverLetterWriterAgent)
 from agents.cv_pdf_generator import CV_LATEX_SYSTEM_PROMPT  # noqa: E402
-from agents.cv_writer import (CV_GENERATION_HUMAN_PROMPT, CV_GENERATION_SYSTEM_PROMPT, NO_CV_TEXT,  # noqa: E402
+from agents.cv_writer import (CV_GENERATION_HUMAN_PROMPT, CV_GENERATION_SYSTEM_PROMPT,  # noqa: E402
                               CVGenerationResponse, CVWriterAgent)
 from agents.document_writer import TRUTHFULNESS_PROTOCOL  # noqa: E402
 from agents.job_description import output_language_instruction  # noqa: E402
@@ -110,6 +113,10 @@ INPUT_SECTIONS = {
     "portfolio": "**Candidate's Portfolio (projects and past work the candidate supplied; their own facts):**",
 }
 INPUT_ORDER = ("cv", "cover_letter", "notes", "portfolio")
+# The app's no-CV sentence (agents/cv_writer.NO_CV_TEXT) asks for [EMAIL]-style placeholders and names "this chat";
+# the app then asks the user for the missing details, which the single prompt answers up front (leave them out).
+NO_CV_TEXT = ("No existing CV was provided. Build the CV only from the facts in the candidate's notes, portfolio and "
+              "earlier cover letter; leave out anything they do not state.")
 
 
 def _between(text: str, start: str, end: str | None) -> str:
@@ -261,17 +268,29 @@ def read_given_inputs(inputs_dir: Path, given_keys: list[str]) -> dict[str, str]
 class AnswerNotParsed(RuntimeError):
     """The one call returned an answer that is not the five fields: a failed session, never retried."""
 
+    def __init__(self, message: str, finish_reason: str | None = None):
+        super().__init__(f"{message} (finish_reason: {finish_reason})")
+        self.finish_reason = finish_reason
 
-def generate(llm, messages: list, callbacks: list, batch_id: str | None = None) -> SinglePromptResponse:
-    """The one model call of the case (no retries: a second call would change the topology). `batch_id`: the
-    reply comes from that OpenAI batch (the recorder prices it at the Batch rate)."""
+
+def generate(llm, messages: list, callbacks: list,
+             batch_id: str | None = None) -> tuple[SinglePromptResponse, str | None]:
+    """The one model call of the case (no retries: a second call would change the topology): (answer, finish_reason).
+    `batch_id`: the reply comes from that OpenAI batch (the recorder prices it at the Batch rate)."""
+    import openai
     chain = llm.with_structured_output(SinglePromptResponse, include_raw=True)
     metadata = {"langgraph_node": GENERATION_NODE, **({"batch_id": batch_id} if batch_id else {})}
-    result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": metadata, "run_name": GENERATION_NODE})
+    try:
+        result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": metadata,
+                                                "run_name": GENERATION_NODE})
+    except openai.LengthFinishReasonError as e:  # the SDK refuses to parse an answer cut off at the output limit
+        raise AnswerNotParsed("the model's answer was cut off", "length") from e
+    raw = result.get("raw") if isinstance(result, dict) else None
+    finish_reason = (getattr(raw, "response_metadata", None) or {}).get("finish_reason")
     parsed = result.get("parsed") if isinstance(result, dict) else result
     if parsed is None:
-        raise AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}")
-    return parsed
+        raise AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}", finish_reason)
+    return parsed, finish_reason
 
 
 # ---------------------------------------------------------------------------------------------- OpenAI Batch
@@ -486,7 +505,8 @@ def main(argv=None) -> int:
     load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
     from provenance import BATCH_PRICE_FACTOR, RunRecorder
-    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
+    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, CreditGuard, OutOfCredit,
+                              install_no_retry_patch, is_infrastructure_error)
     from evals.run_case import _git, _package_versions
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
     install_no_retry_patch()
@@ -505,7 +525,7 @@ def main(argv=None) -> int:
     messages = prompt_messages(run_dir, manifest["inputs_given"], args.work_preference)
     recorder.write_json("prompt.json", [{"role": m.type, "content": m.content} for m in messages])
 
-    status, response, pdfs, failure = "completed", None, {}, None
+    status, response, pdfs, failure, finish_reason = "completed", None, {}, None, None
     t0 = time.time()
     try:
         if batch:
@@ -513,9 +533,9 @@ def main(argv=None) -> int:
                 raise RequestChanged("this run's request differs from the one the batch answered "
                                      "(inputs or code changed since it was submitted)")
             llm = replay_model(args.model, batch["response"], batch["request_sha256"])
-            response = generate(llm, messages, callbacks, batch_id=batch["batch_id"])
+            response, finish_reason = generate(llm, messages, callbacks, batch_id=batch["batch_id"])
         else:
-            response = generate(init_model(args.model), messages, callbacks)
+            response, finish_reason = generate(init_model(args.model), messages, callbacks)
         recorder.event("generation", model=args.model, **{f"{f}_chars": len(getattr(response, f)) for f in
                                                           ("cv_content", "cv_latex", "cover_letter_content",
                                                            "cover_letter_latex")})
@@ -527,8 +547,12 @@ def main(argv=None) -> int:
         status = INTERRUPTED_STATUS
         recorder.record_error("session", e)
     except Exception as e:  # noqa: BLE001 - record what happened
-        status = f"error: {type(e).__name__}: {e}"[:500]
-        failure = "parse_error" if isinstance(e, AnswerNotParsed) else "error"
+        if is_infrastructure_error(e):  # not the method's failure: not graded, and run_matrix runs it again
+            status = INFRASTRUCTURE_STATUS
+        else:
+            status = f"error: {type(e).__name__}: {e}"[:500]
+            failure = "parse_error" if isinstance(e, AnswerNotParsed) else "error"
+            finish_reason = getattr(e, "finish_reason", None)
         recorder.record_error("session", e)
 
     out = run_dir / "outputs"
@@ -553,7 +577,8 @@ def main(argv=None) -> int:
     # The default user's words as the run's user turns (no tool messages); no scripted request, so no checklist.
     recorder.write_json("transcript.json", transcript_record())
     calls = recorder.totals["llm_calls"] + recorder.totals["llm_errors"]
-    summary = {"status": status, "method": METHOD, "failure": failure, "minutes": round((time.time() - t0) / 60, 2), "outputs": files,
+    summary = {"status": status, "method": METHOD, "failure": failure, "finish_reason": finish_reason,
+               "minutes": round((time.time() - t0) / 60, 2), "outputs": files,
                "calls": calls, "calls_by_node": {n: v["calls"] for n, v in recorder.totals["by_node"].items()},
                "pdfs": {k: {kk: v.get(kk) for kk in ("source", "compiled", "compile_error", "fallback_error",
                                                        "fallback_dropped_chars", "pdf")} for k, v in pdfs.items()},

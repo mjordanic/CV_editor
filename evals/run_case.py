@@ -118,13 +118,45 @@ def _git(*args: str) -> str | None:
 
 
 def _package_versions() -> dict:
+    """Versions of the packages a session or a grading depends on (pdfplumber makes the PDF text the grader and
+    the trap check read, pypdfium2 the page images), and of pdflatex."""
     from importlib import metadata
     out = {}
-    for name in ("langgraph", "langchain", "langchain-core", "langchain-openai", "openai", "tavily-python", "tavily"):
+    for name in ("langgraph", "langchain", "langchain-core", "langchain-openai", "openai", "anthropic", "tavily-python",
+                 "tavily", "pdfplumber", "pypdfium2", "pypdf"):
         try:
             out[name] = metadata.version(name)
         except metadata.PackageNotFoundError:
             pass
+    try:
+        out["pdflatex"] = subprocess.run(["pdflatex", "--version"], capture_output=True, text=True,
+                                         timeout=10).stdout.splitlines()[0]
+    except (OSError, IndexError, subprocess.SubprocessError):
+        out["pdflatex"] = None
+    return out
+
+
+def degradations(values: dict, workspace: Path) -> list[str]:
+    """What the app quietly did without in a session that still completed: company research that found nothing or
+    failed (the description is the app's "no information" text), a delivered draft whose fact check could not run,
+    or a document whose final PDF was not made."""
+    from agents.search import NO_COMPANY_INFO
+    out = []
+    description = str((values.get("company_info") or {}).get("company_description") or "")
+    if description == NO_COMPANY_INFO or description.startswith("Could not identify the company"):
+        out.append("company_research_failed")
+    unchecked = pdf_failed = False
+    for kind in ("cv", "cover_letter"):
+        history = values.get(f"{kind}_history") or []
+        final = values.get(f"{kind}_final_iteration")
+        delivered = [d for d in history if d.get("iteration") == final] if final is not None else history[-1:]
+        unchecked |= any(d.get("grounding_checked") is False and not d.get("repeats_cv") for d in delivered)
+        pdf = values.get(f"{kind}_pdf_path")
+        pdf_failed |= bool(values.get(f"generated_{kind}")) and not (pdf and (workspace / pdf).is_file())
+    if unchecked:
+        out.append("grounding_unchecked")
+    if pdf_failed:
+        out.append("pdf_failed")
     return out
 
 
@@ -394,7 +426,8 @@ def main(argv=None) -> int:
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--search-fixture", help="prepared web-search results to replay (no live search)")
     group.add_argument("--record-search", help="live Tavily search, saved to this fixture file")
-    group.add_argument("--no-search", action="store_true", help="company research finds nothing (default)")
+    group.add_argument("--no-search", action="store_true",
+                       help="company research finds nothing (the default when neither --ad nor --search-fixture is given)")
     parser.add_argument("--model", help="use this model for every writer-side agent; never the critic's two calls (sets CV_EDITOR_MODEL)")
     parser.add_argument("--critic-model", dest="critic_model",
                         help="use this model for the critic's quality review, 'critique' (sets CV_EDITOR_CRITIC_MODEL)")
@@ -451,7 +484,8 @@ def main(argv=None) -> int:
     subprocess.run = run_with_timeout
 
     from provenance import CountingEmbeddings, RunRecorder, stream_turn
-    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
+    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, CreditGuard, OutOfCredit,
+                              install_no_retry_patch, is_infrastructure_error)
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
     credit_guard = CreditGuard()  # out of credit: no retries, the session ends at once (evals/credit.py)
     install_no_retry_patch()
@@ -530,7 +564,8 @@ def main(argv=None) -> int:
         recorder.record_error("session", e)
         user.observations.append(f"interrupted: the model provider reported no credit left ({e})"[:300])
     except Exception as e:  # noqa: BLE001 - record what happened
-        status = f"error: {type(e).__name__}: {e}"[:500]
+        # A provider or network failure is not the app's: the session is not graded and run_matrix re-runs it.
+        status = INFRASTRUCTURE_STATUS if is_infrastructure_error(e) else f"error: {type(e).__name__}: {e}"[:500]
         recorder.record_error("session", e)
     if agent is not None:
         try:
@@ -552,6 +587,7 @@ def main(argv=None) -> int:
         "cover_letter_final_iteration": values.get("cover_letter_final_iteration"),
         "outputs": files,
         "observations": user.observations,
+        "degraded": degradations(values, workspace) if status == "completed" else [],
         "work_context": (values.get("company_info") or {}).get("work_context"),
         "work_preference_final": values.get("work_preference"),
         "redrafts": redrafts(run_dir),

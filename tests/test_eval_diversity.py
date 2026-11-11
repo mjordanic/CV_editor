@@ -296,7 +296,7 @@ def test_the_evaluator_sees_the_conversation_the_checklist_and_the_layout(tmp_pa
     images = page_images(run, tmp_path / "ev")
     values, _ = build_prompt(run, images)
     assert "CV: 1 page image(s) attached of 1" in values["images_note"]
-    messages = format_messages(values, images)
+    messages = format_messages(values, images, "conversation")
     parts = messages[1].content
     assert parts[0]["type"] == "text" and "TEST CHECKLIST" in parts[0]["text"]
     assert [p["type"] for p in parts[1:]] == ["image_url", "image_url"]
@@ -398,6 +398,18 @@ def test_credit_errors_are_told_apart_from_rate_limits():
     assert is_out_of_credit(wrapped) and is_out_of_credit(OutOfCredit("x"))
     assert is_out_of_credit("Error code: 429 - insufficient_quota") and not is_out_of_credit("429 Too Many Requests")
     assert not issubclass(OutOfCredit, Exception)  # the agents' `except Exception` cannot swallow it
+
+
+def test_provider_and_network_failures_are_told_apart_from_credit_and_app_errors():
+    from evals.credit import is_infrastructure_error
+    request = httpx.Request("POST", "https://api.example/v1/chat")
+    server_error = openai.InternalServerError("Error code: 503", response=httpx.Response(503, request=request), body=None)
+    wrapped = RuntimeError("the writer failed")
+    wrapped.__cause__ = openai.APIConnectionError(request=request)
+    for error in (openai.APIConnectionError(request=request), openai.APITimeoutError(request=request), server_error,
+                  wrapped, _rate_limit_error()):
+        assert is_infrastructure_error(error), error
+    assert not is_infrastructure_error(_quota_error()) and not is_infrastructure_error(ValueError("boom"))
 
 
 def test_the_openai_client_does_not_retry_a_credit_error_but_still_retries_rate_limits():
@@ -553,7 +565,7 @@ def test_the_matrix_stops_on_out_of_credit_and_resumes_after_a_top_up(tmp_path, 
             (target / "manifest.json").write_text(json.dumps(
                 {"status": INTERRUPTED_STATUS if out_of_credit else "completed", "cost_usd": 0.01}))
             return done(EXIT_OUT_OF_CREDIT if out_of_credit else 0)
-        folder = target / "evaluation" / cmd[cmd.index("--name") + 1]
+        folder = target / "evaluation" / cmd[cmd.index("--eval-name" if "--eval-name" in cmd else "--name") + 1]
         folder.mkdir(parents=True)
         (folder / "evaluation.json").write_text(json.dumps({"cost_usd": 0.1}))
         return done(0)
@@ -626,6 +638,7 @@ def test_aggregates_leave_out_and_list_interrupted_sessions(tmp_path):
         folder = run / "evaluation" / "eval1"
         folder.mkdir(parents=True)
         (folder / "evaluation.json").write_text(json.dumps({
+            "evaluator_model": "anthropic:claude-sonnet-5-5",
             "evaluation": {"overall_score": 9 if name == "c_r1" else 5, "visual_layout": {"score": 7}},
             "counts": {"requests": 1, "untruthful_followed": 1 if name == "a_r1" else 0}}))
     summary = summarize.summarize(runs)

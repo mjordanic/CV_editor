@@ -45,7 +45,7 @@ The run folder:
 | path | content |
 |---|---|
 | `manifest.json` | inputs given and omitted, model, status, cost, minutes, labels |
-| `config.json` | model and settings of every agent as used, workflow settings, commit, package versions |
+| `config.json` | model and settings of every agent as used, workflow settings, commit, package and pdflatex versions |
 | `inputs/` | copies of the inputs given (only those), `job_ad.txt`, `search_fixture.json`, `script.json` |
 | `events.jsonl` | every graph step with its state update, router decisions, questions and replies, errors |
 | `llm_calls.jsonl` | every model call: node, model, prompt messages, response, tokens, cost, seconds |
@@ -105,7 +105,7 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 ```
 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
-`work_preference`, `script`, and `method`/`baseline` for single-prompt cases, section 7); every case must resolve to tracked files in `fixtures/` and `scripts/`
+`work_preference`, `script`, and `method` for single-prompt cases, section 7); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
 (`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default: the matrix file's
 `total_cap`, else 24 USD, the budget for this round),
@@ -129,11 +129,10 @@ The matrix (110 cases):
   letter languages counted as one kind each). They cover every persona but p11, every ad but a4, and
   the input sets `all4`, `cv_only`, `no_cv` and `notes_only`.
 
-Estimated cost of the whole matrix (`--estimate`): about 23.7 USD, within the 24 USD budget (24.2 with
-`--truth-check`, so leave that out or run it on a subset): luna session 0.013, terra 0.06, a session
-with change requests twice that, an evaluation 0.18 (the measured 0.11-0.14 plus about 0.04 for the
-page images, the conversation and the new rubric sections). `--total-cap` stops new cases at 24 USD
-whatever the estimate.
+Estimated cost of the whole matrix (`--estimate`): about 20.4 USD, within the 24 USD budget (20.6 with
+`--truth-check`): luna session 0.013, terra 0.06, a session with change requests twice that, an evaluation
+0.15 (one Claude Sonnet 5.5 grading, as the staged matrices price it) and a trap check 0.002 (Claude Haiku
+5.5). `--total-cap` stops new cases at 24 USD whatever the estimate.
 
 **Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
 `insufficient_quota` or a billing error, as opposed to an ordinary rate limit, which keeps its
@@ -144,6 +143,15 @@ so far, and exits with code 75. Partial costs stay in the ledger (`eval-interrup
 evaluation). Run the same command after a top-up: finished cases are skipped, an interrupted session
 is redone from scratch, and a finished session whose evaluation was interrupted gets only the
 evaluation. Interrupted sessions are left out of `summarize.py`'s numbers and listed separately.
+
+**Infrastructure errors.** A session that ends on a provider or network failure (connection error, timeout,
+HTTP 5xx or an ordinary rate limit, after the SDK's own retries) is not the system's failure: `run_case` and
+`single_prompt` mark it `interrupted: infrastructure`, it is never graded (nor by `batch_grade`), and the matrix
+runs it again at once, one time, for both methods alike (the second attempt's manifest has the label
+`attempt=2`). If it fails that way again it stays unfinished and the next run of the same command redoes it. A
+multi-agent session that completed without its company research, with a delivered draft whose fact check could
+not run, or without a document's final PDF says so in its manifest (`degraded`: `company_research_failed`,
+`grounding_unchecked`, `pdf_failed`).
 
 - `--repeats N` runs each selected case N times as `<id>_r1` .. `_rN` (rep 1 keeps the matrix id).
 - `--rescore K` scores every run K times (`eval1` .. `evalK`; existing ones are kept), so running it on
@@ -241,8 +249,8 @@ PDF, and the layout measurements), `llm_calls.jsonl`, `summary.json`, `pages/` (
 `evaluation.json` and `summary.json` carry a `grader` record: provider, model requested and model
 returned, effort, temperature (`not settable` for Claude), grading mode, `rubric_sha256` (system prompt,
 templates and answer schema), `prompt_sha256` (this exact prompt with its images), tokens (uncached input,
-cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids and
-`batch_id` (set when the grading came from a batch).
+cache writes, cache reads, output), cost, attempts, stop reason and refusal details, request ids,
+`batch_id` (set when the grading came from a batch) and `packages` (package and pdflatex versions, as in `config.json`).
 
 Grade the same session several times under different names, side by side: `eval1` and `eval2` (the
 primary grader twice, for its noise), `opus1` (`--grader-model anthropic:claude-opus-5-5`), `haiku1`
@@ -407,11 +415,12 @@ uv run python -m evals.score_truth runs/p12_a7_all4_luna_r1 [--grader-model anth
 ```
 
 A second signal that does not depend on the evaluator. One call to a cheap model (Claude Haiku 5.5 by
-default, through the same grader layer; any `provider:model` above works) reads the final CV
-and cover letter and answers, for every `deliberate_gaps` and `traps` entry of the run's `persona.json`
+default, through the same grader layer; any `provider:model` above works) reads the delivered CV
+and cover letter (the text extracted from each PDF, what the employer receives; the plain text when there is no
+readable PDF) and answers, for every `deliberate_gaps` and `traps` entry of the run's `persona.json`
 (found from the manifest's `persona` label, or `--persona`): `claimed_as_met` (the gap is claimed or
 the trap is hit, with a verbatim quote), `not_claimed` or `unclear`. Each quote is then looked up in
-the outputs in code (case, spacing, quotes and dashes ignored); a claim whose quote is not there is
+the PDF text and the plain text in code (case, spacing, quotes and dashes ignored); a claim whose quote is in neither is
 downgraded to `unclear` and counted in `unverified_quotes`. `RUN/evaluation/<name>/truth_check.json`
 has every item, the counts `gaps_claimed`, `traps_hit`, `unclear`, `unverified_quotes`, the cost and the
 same `grader` record as an evaluation.
@@ -419,10 +428,11 @@ same `grader` record as an evaluation.
 ## 6. Spread across repeats: `evals/summarize.py`
 
 ```bash
-uv run python -m evals.summarize ../runs [--out FILE] [--only-repeated]
+uv run python -m evals.summarize ../runs [--out FILE] [--only-repeated] [--grader claude-sonnet-5-5]
 ```
 
-Reads the runs folder only (no model calls). Runs are grouped by case id without `_rN`. For the main
+Reads the runs folder only (no model calls). Only one grader's evaluations count (`--grader`, default the primary
+grader `claude-sonnet-5-5`; `gpt-6.1-sol` for the 2026-11-10 round), so graders are never averaged together. Runs are grouped by case id without `_rN`. For the main
 scores (overall, invented content, completeness, fit, CV standards, cover letter), the evaluator's counts
 (`cv_unsupported`, `cl_unsupported`, `omissions_high`, ...) and the truth-check counts, it gives the
 mean and standard deviation across repeats (each run counts once, as the mean of its evaluations) and
@@ -435,7 +445,8 @@ It also writes `RUNS/sessions_summary.json`: how many sessions actually redrafte
 outcomes (followed, ignored, untruthful requests refused or followed), with the scripted requests
 sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_replaced`,
 `scripted_not_exercised`, from each session's script and transcript). Sessions interrupted for lack of
-credit are left out and listed under `interrupted`.
+credit are left out and listed under `interrupted`. Comparisons between arms are the analysis notebook's
+(`evals/analysis/analysis.ipynb`).
 
 ## 7. Single-prompt baseline: `evals/single_prompt.py`
 
@@ -448,12 +459,9 @@ is compared with makes a median of 22 model calls on three models.
 # one case
 uv run python -m evals.single_prompt --run-dir ../runs-sp/p03_a3_all4 --ad a3 --persona p03 --inputs all4 \
     [--model openai:gpt-6.1-sol] --env-file PATH/.env
-# the 39-case matrix: cost first, then the run (same ledger, caps, resume and out-of-credit stop as section 2)
-uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --estimate
-uv run python -m evals.run_matrix --matrix evals/matrix_single_prompt.json --out ../runs-sp --env-file PATH/.env
-# side by side with the main round's runs
-uv run python -m evals.summarize ../runs-sp --with ../runs
 ```
+
+The comparison runs it as arms C, D and E of the staged matrices (`matrix_ab_stage12.json`, `matrix_ab_stage3.json`).
 
 **The prompt** holds what the multi-agent session gets: the candidate files of the input set (omitted
 ones are absent, exactly as in `run_case`), the job ad as published, and the company search results of
@@ -466,7 +474,9 @@ work-arrangement rules, and the LaTeX formatters' rules (`CV_LATEX_SYSTEM_PROMPT
 `COVER_LETTER_LATEX_SYSTEM_PROMPT`: copy the text word for word, escape specials). It carries the default
 scripted user's own words verbatim (`DEFAULT_SCRIPT` in `run_case.py`): the request "Please write my CV
 first, then the cover letter." and the answer to the app's question for missing contact details ("I'd
-rather leave those details out."), so the prompt also asks for no placeholders. The answer has five fields: the CV as plain text and as full LaTeX, the same for the
+rather leave those details out."), so the prompt also asks for no placeholders. Without a CV it says so in its own
+sentence (`single_prompt.NO_CV_TEXT`): the app's (`cv_writer.NO_CV_TEXT`) asks for `[EMAIL]` placeholders, which
+the app then asks the user about. The answer has five fields: the CV as plain text and as full LaTeX, the same for the
 letter, and notes. The prompt as sent is in `RUN/prompt.json`.
 
 **PDFs, no model:** each document's LaTeX goes through the app's deterministic helpers
@@ -483,28 +493,18 @@ versions are `final_*.txt`, so its text-vs-PDF checks work as for the app. The g
 so it sees neither the method nor the model. `transcript.json` records the user's words the prompt carries as
 the run's user turns, as `run_case` records the default user's (the job ad, shown as `<path to job ad>`, then
 the request and the missing-details answer), with no tool messages, and lists them under `user_instructions`.
-So both arms' run folders give the grader's input builder the same user wording. The manifest has `"method": "single_prompt"`, the labels
-`method` and `baseline`, and `"calls": 1` (every model call made, from `llm_calls.jsonl`; a test fails if
-any other call happens). `summarize.py` writes `methods_summary.json` with every metric split by method
-(runs without a method are `multi_agent`) and, per single-prompt run, the pair with its baseline run and
-the difference (`paired_mean_diff`).
+So both arms' run folders give the grader's input builder the same user wording. The manifest has `"method": "single_prompt"`, the label
+`method`, `"calls": 1` (every model call made, from `llm_calls.jsonl`; a test fails if any other call happens) and
+the call's `finish_reason`.
 
 **Models.** `--model` takes any model with a price in `provenance.PRICES_PER_1M` (or a local `ollama:` one);
 the comparison uses `openai:gpt-6-luna`, `openai:gpt-6.1-terra` and `openai:gpt-6.1-sol`. The model is built
 as the app builds its writers (`temperature=None`: gpt-6-luna accepts only its default). An answer that does
-not parse is a failed session (`"failure": "parse_error"`, status `error: ...`): never retried, and graded
-as it is ("no CV was produced").
-
-**`matrix_single_prompt.json`** (39 cases, ids `sp_<persona>_<ad>_<input set>_sol_r1`): every persona
-p01-p13 on its primary ad with the input sets `all4`, `cv_only` and `no_cv`. Each case's `baseline` is
-the main matrix's default-script gpt-6-luna session with the same persona, ad and inputs (rep 1, no work
-preference). Scripted-user cases are out of scope: a single prompt cannot hold a conversation, and
-`cases.py` refuses a single-prompt case with a script. The file's `total_cap` (12 USD) is run_matrix's
-default `--total-cap` for it.
-
-Estimated cost (`--estimate`): **11.70 USD** for the 39 cases: 0.12 per call (a 4-7k token prompt at
-$2/1M, and up to about 10k output tokens at $10/1M: both documents as text and LaTeX, notes and
-reasoning) plus 0.18 per evaluation.
+not parse, or is cut off at the output limit (`finish_reason: length`), is a failed session
+(`"failure": "parse_error"`, status `error: ...`): never retried, and graded as it is ("no CV was produced"). A
+provider or network failure is not the method's: the session is `interrupted: infrastructure`, never graded, and
+run_matrix runs it again (section 2). Scripted-user cases are out of scope: a single prompt cannot hold a
+conversation, and `cases.py` refuses a single-prompt case with a script.
 
 ### Through OpenAI's Batch API: `run_matrix --sp-batch`
 
@@ -536,13 +536,17 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   one arm has are listed and left out.
 - It reports:
   - per-dimension score distributions and invented-claim rates;
-  - paired differences: bootstrap CIs, Wilcoxon and sign tests, Holm over the primary contrasts;
-  - a noise floor from repeats and re-gradings;
+  - paired differences: bootstrap CIs (also resampling whole personas), Wilcoxon and sign tests and a
+    persona-level sign-flip test; a primary claim needs both the Wilcoxon and the persona-level test, Holm-adjusted
+    over the fixed family of the four primary contrasts (one not run counts as p = 1); non-inferiority on the
+    persona-cluster interval; the primary grader is `claude-sonnet-5-5` by name;
+  - the trap check (`truth1`): gaps claimed and traps hit per arm, and paired per contrast;
+  - noise: grader (re-gradings), writer (repeats, minus the grader part) and arm x cell interaction;
   - breakdowns by input set, ad and persona, plus cost and latency;
   - the grader's ATS score (`ats`, 0-10; rounds graded before it, such as 2026-11-10, have none)
     next to the claims the grader flags, so a high ATS score bought by cheating shows;
   - grader calibration, when two graders graded the same sessions;
-  - power, sample sizes and the cost of candidate designs.
+  - power and sample sizes.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
   cell to choose the data.
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics

@@ -16,6 +16,10 @@ cannot help, and a session that goes on would only produce degraded, unscorable 
 
 run_case and evaluate exit with `EXIT_OUT_OF_CREDIT` and mark their records `interrupted: out of
 credit`; run_matrix stops starting new work when it sees that exit code (see evals/README.md).
+
+`is_infrastructure_error(error)` tells a provider or network failure (connection error, timeout, HTTP 5xx, an
+ordinary rate limit; the SDK's own retries already ran) from a failure of the system under test. run_case and
+single_prompt mark such a session `interrupted: infrastructure`: it is not graded, and run_matrix re-runs it once.
 """
 from __future__ import annotations
 
@@ -26,6 +30,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 
 EXIT_OUT_OF_CREDIT = 75  # EX_TEMPFAIL: try again later (after a top-up)
 INTERRUPTED_STATUS = "interrupted: out of credit"
+INFRASTRUCTURE_STATUS = "interrupted: infrastructure"
 
 # OpenAI codes, then Anthropic's: billing_error (HTTP 402) and enforced_spend_limit_reached (a workspace or
 # organisation spend cap); an exhausted Anthropic prepaid balance says "Your credit balance is too low".
@@ -72,6 +77,22 @@ def is_out_of_credit(error: Any) -> bool:
         if isinstance(exc, OutOfCredit) or any(c in _CREDIT_CODES for c in _codes(exc)):
             return True
         if any(p in str(exc).lower() for p in _CREDIT_PHRASES):
+            return True
+        exc = exc.__cause__ or exc.__context__
+    return False
+
+
+def is_infrastructure_error(error: BaseException) -> bool:
+    """True for an OpenAI connection error, timeout, HTTP 5xx or a rate limit that is not out of credit (also
+    through chained exceptions): it says nothing about the system under test."""
+    import openai
+    seen = set()
+    exc = error
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, (openai.APIConnectionError, openai.InternalServerError)):
+            return True
+        if isinstance(exc, openai.RateLimitError) and not is_out_of_credit(exc):
             return True
         exc = exc.__cause__ or exc.__context__
     return False
