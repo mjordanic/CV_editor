@@ -283,7 +283,8 @@ class _FakeModels:
         raise AssertionError(f"unexpected structured call: {name}")
 
 
-def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
+def _run_case_offline(tmp_path, monkeypatch, fake) -> tuple[int, Path]:
+    """run_case.main on a fixture persona and ad with `fake` as every chat model (no model or search call)."""
     import subprocess
     from evals import run_case
     from agents import (cover_letter_pdf_generator, cover_letter_writer, cv_pdf_generator, cv_writer,
@@ -301,7 +302,6 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "dummy-no-calls")
     monkeypatch.setenv("TAVILY_API_KEY", "dummy-no-calls")
 
-    fake = _FakeModels()
     # The writers and PDF generators create their models in their shared base modules.
     for module in (router, document_writer, critique, job_description, search, rag_agent,
                    latex_pdf_generator, latex_fixer):
@@ -329,7 +329,13 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
         "--model", "openai:writer-model", "--critic-model", "openai:critic-model",
         "--grounding-model", "openai:fact-check-model",
     ])
+    return code, run_dir
 
+
+def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
+    fake = _FakeModels()
+    code, run_dir = _run_case_offline(tmp_path, monkeypatch, fake)
+    persona = REPO / "evals" / "fixtures" / "personas" / "p07-samuel-cloud-gaps"
     manifest = json.loads((run_dir / "manifest.json").read_text())
     assert code == 0, manifest["status"]
     assert manifest["inputs_given"] == ["cv", "notes"]
@@ -369,18 +375,46 @@ def test_run_case_writes_a_complete_run_folder_offline(tmp_path, monkeypatch):
     assert manifest["status"] == "completed" and manifest["degraded"] == ["company_research_failed"]
 
 
-def test_a_completed_session_that_did_without_research_or_a_fact_check_says_so():
+class _ProviderDown(_FakeModels):
+    def _answer(self, schema, prompt):
+        if schema.__name__ == "CVGenerationResponse":
+            import httpx
+            import openai
+            raise openai.APIConnectionError(request=httpx.Request("POST", "https://api.example/v1/chat"))
+        return super()._answer(schema, prompt)
+
+
+def test_a_provider_failure_interrupts_the_session_instead_of_failing_it(tmp_path, monkeypatch):
+    from evals.credit import INFRASTRUCTURE_STATUS
+    code, run_dir = _run_case_offline(tmp_path, monkeypatch, _ProviderDown())
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert code == 1 and manifest["status"] == INFRASTRUCTURE_STATUS
+
+
+def test_a_completed_session_that_did_without_research_a_fact_check_or_a_pdf_says_so(tmp_path):
     from agents.search import NO_COMPANY_INFO, NO_COMPANY_NAME
     from evals.run_case import degradations
-    checked = {"grounding_checked": True}
-    assert degradations({"company_info": {"company_description": "A bank."}, "cv_history": [checked]}) == []
-    assert degradations({"company_info": {"company_description": NO_COMPANY_NAME}}) == []  # the ad names none
-    assert degradations({"company_info": {"company_description": NO_COMPANY_INFO}}) == ["company_research_failed"]
+    checked, unchecked = {"iteration": 1, "grounding_checked": True}, {"iteration": 2, "grounding_checked": False}
+    assert degradations({"company_info": {"company_description": "A bank."}, "cv_history": [checked]}, tmp_path) == []
+    assert degradations({"company_info": {"company_description": NO_COMPANY_NAME}}, tmp_path) == []  # names none
+    assert degradations({"company_info": {"company_description": NO_COMPANY_INFO}}, tmp_path) == \
+        ["company_research_failed"]
     assert degradations({"company_info": {"company_description": "Could not identify the company in the search "
-                                                                 "results."}}) == ["company_research_failed"]
-    letters = [checked, {"grounding_checked": False, "repeats_cv": True}]  # a CV-repeat draft is never checked
-    assert degradations({"cv_history": [checked], "cover_letter_history": letters}) == []
-    assert degradations({"cv_history": [{"grounding_checked": False}]}) == ["grounding_unchecked"]
+                                                                 "results."}}, tmp_path) == ["company_research_failed"]
+    repeat = {"iteration": 2, "grounding_checked": False, "repeats_cv": True}  # a CV-repeat draft is never checked
+    assert degradations({"cv_history": [checked], "cover_letter_history": [checked, repeat]}, tmp_path) == []
+    # only the delivered draft counts: the last one, or the one the app chose as final
+    assert degradations({"cv_history": [checked, unchecked]}, tmp_path) == ["grounding_unchecked"]
+    assert degradations({"cv_history": [unchecked | {"iteration": 1}, checked | {"iteration": 2}]}, tmp_path) == []
+    assert degradations({"cv_history": [checked, unchecked], "cv_final_iteration": 1}, tmp_path) == []
+    assert degradations({"cv_history": [checked, unchecked], "cv_final_iteration": 2}, tmp_path) == \
+        ["grounding_unchecked"]
+    # a final text without its PDF
+    (tmp_path / "cv.pdf").write_bytes(b"%PDF")
+    assert degradations({"generated_cv": "CV", "cv_pdf_path": "cv.pdf"}, tmp_path) == []
+    assert degradations({"generated_cv": "CV", "cv_pdf_path": "missing.pdf"}, tmp_path) == ["pdf_failed"]
+    assert degradations({"generated_cv": "CV", "cv_pdf_path": "cv.pdf", "generated_cover_letter": "Dear"},
+                        tmp_path) == ["pdf_failed"]
 
 
 # --- work arrangement, culture and preference -------------------------------------------------

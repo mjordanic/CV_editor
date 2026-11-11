@@ -136,17 +136,24 @@ def _package_versions() -> dict:
     return out
 
 
-def degradations(values: dict) -> list[str]:
+def degradations(values: dict, workspace: Path) -> list[str]:
     """What the app quietly did without in a session that still completed: company research that found nothing or
-    failed (the description is the app's "no information" text), or a draft whose fact check could not run."""
+    failed (the description is the app's "no information" text), a delivered draft whose fact check could not run,
+    or a document whose final PDF was not made."""
     from agents.search import NO_COMPANY_INFO
     out = []
     description = str((values.get("company_info") or {}).get("company_description") or "")
     if description == NO_COMPANY_INFO or description.startswith("Could not identify the company"):
         out.append("company_research_failed")
-    drafts = (values.get("cv_history") or []) + (values.get("cover_letter_history") or [])
-    if any(d.get("grounding_checked") is False and not d.get("repeats_cv") for d in drafts):
-        out.append("grounding_unchecked")
+    unchecked = pdf_failed = False
+    for kind in ("cv", "cover_letter"):
+        history = values.get(f"{kind}_history") or []
+        final = values.get(f"{kind}_final_iteration")
+        delivered = [d for d in history if d.get("iteration") == final] if final is not None else history[-1:]
+        unchecked |= any(d.get("grounding_checked") is False and not d.get("repeats_cv") for d in delivered)
+        pdf = values.get(f"{kind}_pdf_path")
+        pdf_failed |= bool(values.get(f"generated_{kind}")) and not (pdf and (workspace / pdf).is_file())
+    out += ["grounding_unchecked"] * unchecked + ["pdf_failed"] * pdf_failed
     return out
 
 
@@ -577,7 +584,7 @@ def main(argv=None) -> int:
         "cover_letter_final_iteration": values.get("cover_letter_final_iteration"),
         "outputs": files,
         "observations": user.observations,
-        "degraded": degradations(values),
+        "degraded": degradations(values, workspace),
         "work_context": (values.get("company_info") or {}).get("work_context"),
         "work_preference_final": values.get("work_preference"),
         "redrafts": redrafts(run_dir),

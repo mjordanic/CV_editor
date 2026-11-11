@@ -149,8 +149,9 @@ HTTP 5xx or an ordinary rate limit, after the SDK's own retries) is not the syst
 `single_prompt` mark it `interrupted: infrastructure`, it is never graded (nor by `batch_grade`), and the matrix
 runs it again at once, one time, for both methods alike (the second attempt's manifest has the label
 `attempt=2`). If it fails that way again it stays unfinished and the next run of the same command redoes it. A
-multi-agent session that completed without its company research or with a draft whose fact check could not run
-says so in its manifest (`degraded`: `company_research_failed`, `grounding_unchecked`).
+multi-agent session that completed without its company research, with a delivered draft whose fact check could
+not run, or without a document's final PDF says so in its manifest (`degraded`: `company_research_failed`,
+`grounding_unchecked`, `pdf_failed`).
 
 - `--repeats N` runs each selected case N times as `<id>_r1` .. `_rN` (rep 1 keeps the matrix id).
 - `--rescore K` scores every run K times (`eval1` .. `evalK`; existing ones are kept), so running it on

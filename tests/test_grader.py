@@ -414,7 +414,7 @@ def test_the_trap_check_runs_on_haiku_through_the_same_layer(tmp_path):
 
 
 def test_the_trap_check_reads_the_delivered_pdf_and_the_grader_is_told_it_counts(tmp_path):
-    from evals.evaluate import SYSTEM_PROMPT_DOCUMENT_ONLY
+    from evals.evaluate import build_grading_request
     from evals.score_truth import score_truth
     run = tmp_path / "run"
     (run / "outputs").mkdir(parents=True)
@@ -429,7 +429,9 @@ def test_the_trap_check_reads_the_delivered_pdf_and_the_grader_is_told_it_counts
     assert "Forklift licence" in shown and "Warehouse assistant" not in shown  # what the employer receives
     assert record["counts"]["gaps_claimed"] == 1 and record["items"][0]["quote_found"]
     assert "pdfplumber" in record["grader"]["packages"]
-    assert "The PDF is the document the employer receives" in SYSTEM_PROMPT_DOCUMENT_ONLY
+    request, _, _ = build_grading_request(_case_run(tmp_path, "ma"), "anthropic:claude-sonnet-5-5",
+                                          tmp_path / "graded", "document-only")
+    assert "The PDF is the document the employer receives" in request.system
 
 
 def test_the_real_sdk_streams_the_request_offline():

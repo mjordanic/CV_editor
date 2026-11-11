@@ -400,6 +400,18 @@ def test_credit_errors_are_told_apart_from_rate_limits():
     assert not issubclass(OutOfCredit, Exception)  # the agents' `except Exception` cannot swallow it
 
 
+def test_provider_and_network_failures_are_told_apart_from_credit_and_app_errors():
+    from evals.credit import is_infrastructure_error
+    request = httpx.Request("POST", "https://api.example/v1/chat")
+    server_error = openai.InternalServerError("Error code: 503", response=httpx.Response(503, request=request), body=None)
+    wrapped = RuntimeError("the writer failed")
+    wrapped.__cause__ = openai.APIConnectionError(request=request)
+    for error in (openai.APIConnectionError(request=request), openai.APITimeoutError(request=request), server_error,
+                  wrapped, _rate_limit_error()):
+        assert is_infrastructure_error(error), error
+    assert not is_infrastructure_error(_quota_error()) and not is_infrastructure_error(ValueError("boom"))
+
+
 def test_the_openai_client_does_not_retry_a_credit_error_but_still_retries_rate_limits():
     from openai._base_client import SyncAPIClient
 
