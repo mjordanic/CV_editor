@@ -36,7 +36,8 @@ Usage (from the repo root; submitting and collecting make paid calls, nothing el
 The state folder defaults to <the run folders' parent>/batches/grading. --status only reads state.json (no call).
 --dry-run builds every request and prints the counts and sizes, writing nothing and calling nothing.
 Costs of collected gradings are added to the ledger (default <the run folders' parent>/ledger.tsv when it exists,
-as run_matrix writes it): eval:<name>, truth, and *-failed rows for paid failures.
+as run_matrix writes it): eval:<name>, truth, *-failed rows for paid failures,
+*-attempt1 for a re-asked first answer and *-discarded for a billed reply that was not written.
 Out of credit while submitting: nothing more is submitted and the exit code is 75 (evals/credit.py).
 """
 from __future__ import annotations

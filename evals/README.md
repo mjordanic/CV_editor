@@ -363,8 +363,9 @@ uv run python -m evals.batch_grade --jobs FILE --status | --dry-run      # no ca
   batches and submits only what is due; a grading already on disk is never redone. A run that died inside a
   submission stops the next one until it is settled: `--adopt b003=msgbatch_...` if the console shows the batch,
   `--forget-pending` if not.
-- **Ledger.** Collected costs go to `<runs>/ledger.tsv` when it exists (`eval:<name>`, `truth`, `*-failed`, and
-  `*-attempt1` for a re-asked first answer), so run_matrix's caps see them.
+- **Ledger.** Collected costs go to `<runs>/ledger.tsv` when it exists (`eval:<name>`, `truth`, `*-failed`,
+  `*-attempt1` for a re-asked first answer, and `*-discarded` for a billed reply that was not written), so
+  run_matrix's caps see them.
 - **Anthropic graders only.** An `openai:*` grader is refused: its LangChain path re-asks inside the call loop,
   which a batch cannot replay without a second structure; grade those with `evaluate.py`.
 
@@ -586,7 +587,7 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
   and ended times. Each run collects ended batches and submits what is new. An SP case still in a batch is reported
   and graded on a later run. A case is submitted only while the ledger's spend plus the Batch-price estimates of the
   requests in flight stay within the total and stage caps. Collected sessions add their billed cost to
-  `ledger.tsv` (`app`). State: `RUNS_DIR/batches/sp_openai/`.
+  `ledger.tsv` (`app`; `app-discarded` for a billed reply that was not run). State: `RUNS_DIR/batches/sp_openai/`.
 
 - **`--estimate`** prints the plan's cost table: per arm, app sessions, Sonnet grading, re-gradings,
   Opus, Haiku and trap check at standard rates, the total and the total with Batch grading (50% off
