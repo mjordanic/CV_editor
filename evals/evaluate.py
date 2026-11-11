@@ -292,6 +292,87 @@ class Evaluation(BaseModel):
     summary: str = Field(description="Three to five sentences: the main strengths and problems")
 
 
+_SCORE = Field(ge=0, le=10)
+
+
+class CompactEvaluation(BaseModel):
+    """What an Anthropic grader answers, as native structured output. The Evaluation schema (103 properties) is
+    over the API's compiled-grammar limit (a 46-property schema was accepted, 55 were rejected), so the complete
+    evaluation comes back first as one JSON string, and the fields after it repeat, schema-guaranteed, everything
+    an analysed measure reads. Those repeated fields are authoritative (compose_evaluation)."""
+    full_evaluation_json: str = Field(description="The complete evaluation: one JSON object, as a string, that "
+                                                  "follows the Evaluation JSON schema in the system prompt, every "
+                                                  "field filled")
+    claims: list[Claim]
+    fit_requirements: list[Requirement]
+    fit_score: int = _SCORE
+    cv_standards_score: int = _SCORE
+    ats_reason: str
+    ats_covered_in_searchable_wording: list[str]
+    ats_missed_but_candidate_has: list[str]
+    ats_score: int = _SCORE
+    cover_letter_score: int = _SCORE
+    work_arrangement_invented_or_wrong: list[str]
+    work_arrangement_score: int = _SCORE
+    visual_layout_score: int = _SCORE
+    language_quality_score: int = _SCORE
+    additional_information_score: int = _SCORE
+    user_requests: list[RequestCompliance]
+    user_requests_score: int = _SCORE
+    invented_content_score: int = _SCORE
+    completeness_score: int = _SCORE
+    overall_score: int = _SCORE
+    summary: str
+
+
+# Where each guaranteed CompactEvaluation field sits in an Evaluation.
+GUARANTEED_PATHS = {
+    "claims": ("claims",), "fit_requirements": ("fit", "requirements"),
+    "fit_score": ("fit", "score"), "cv_standards_score": ("cv_standards", "score"),
+    "ats_reason": ("ats", "reason"),
+    "ats_covered_in_searchable_wording": ("ats", "covered_in_searchable_wording"),
+    "ats_missed_but_candidate_has": ("ats", "missed_but_candidate_has"), "ats_score": ("ats", "score"),
+    "cover_letter_score": ("cover_letter", "score"),
+    "work_arrangement_invented_or_wrong": ("work_arrangement", "invented_or_wrong"),
+    "work_arrangement_score": ("work_arrangement", "score"), "visual_layout_score": ("visual_layout", "score"),
+    "language_quality_score": ("language_quality", "score"),
+    "additional_information_score": ("additional_information", "score"),
+    "user_requests": ("user_requests", "requests"), "user_requests_score": ("user_requests", "score"),
+    "invented_content_score": ("invented_content_score",), "completeness_score": ("completeness_score",),
+    "overall_score": ("overall_score",), "summary": ("summary",),
+}
+
+ANSWER_FORMAT = """
+
+# ANSWER FORMAT
+Write the complete evaluation first, as one JSON string in full_evaluation_json. It must follow this JSON schema \
+exactly: every property is required and no other property is allowed.
+{schema}
+Then fill the remaining fields with the same values as in that complete evaluation."""
+
+
+def compose_evaluation(answer: dict) -> tuple[dict, dict]:
+    """(evaluation, full_copy) from a CompactEvaluation answer. The evaluation has the Evaluation shape: the parsed
+    full copy with every guaranteed field written over it, or only the guaranteed fields when the full copy does
+    not validate (that never fails the grading). full_copy says whether it parsed (else the error and the raw
+    string) and lists each guaranteed field the full copy states differently."""
+    from evals.grader import parse_answer
+    full, error = parse_answer(answer["full_evaluation_json"], Evaluation)
+    evaluation = full if full is not None else {}
+    disagreements = []
+    for name, path in GUARANTEED_PATHS.items():
+        node = evaluation
+        for key in path[:-1]:
+            node = node.setdefault(key, {})
+        if full is not None and node.get(path[-1]) != answer[name]:
+            disagreements.append({"field": ".".join(path), "guaranteed": answer[name], "full": node.get(path[-1])})
+        node[path[-1]] = answer[name]
+    full_copy = {"parsed": full is not None, "disagreements": disagreements}
+    if full is None:
+        full_copy.update(error=error, raw=answer["full_evaluation_json"])
+    return evaluation, full_copy
+
+
 _SYSTEM_INTRO = """You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover \
 letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents \
 given to you. You do not know how the documents were produced and you must not guess.
@@ -410,11 +491,21 @@ _MODE_PROMPTS = {CONVERSATION: (SYSTEM_PROMPT, SHARED_TEMPLATE, DOCUMENTS_TEMPLA
                                  DOCUMENTS_TEMPLATE_DOCUMENT_ONLY)}
 
 
-def rubric_sha256(mode: str = DEFAULT_MODE) -> str:
+def rubric_sha256(mode: str = DEFAULT_MODE, provider: str = "openai") -> str:
     """Hash of the rubric a grading in this mode uses (system prompt, templates, answer schema)."""
     from evals.grader import rubric_hash
     system, shared, documents = _MODE_PROMPTS[mode]
-    return rubric_hash(system, [shared, documents], Evaluation)
+    system, schema = _for_provider(system, provider)
+    return rubric_hash(system, [shared, documents], schema)
+
+
+def _for_provider(system: str, provider: str) -> tuple[str, type[BaseModel]]:
+    """(system prompt, answer schema): an Anthropic grader answers a CompactEvaluation, its system prompt ending
+    with the full Evaluation schema; an OpenAI grader answers the Evaluation natively, as before."""
+    if provider != "anthropic":
+        return system, Evaluation
+    from evals.grader import json_schema_for
+    return system + ANSWER_FORMAT.format(schema=json.dumps(json_schema_for(Evaluation))), CompactEvaluation
 
 
 # ---------------------------------------------------------------------------------------------
@@ -686,24 +777,30 @@ def counts(ev: dict, scripted: list[dict] | None = None) -> dict:
     by = lambda doc, v: sum(1 for c in claims if c["document"] == doc and c["verdict"] == v)  # noqa: E731
     reqs = (ev.get("fit") or {}).get("requirements") or []
     must = [r for r in reqs if r["priority"] == "must_have"]
+    layout, language = ev.get("visual_layout") or {}, ev.get("language_quality") or {}
+    # omissions, layout and language counts are not among CompactEvaluation's guaranteed fields: None when an
+    # Anthropic grading's full copy did not parse
     return {
         "claims": len(claims),
         "cv_unsupported": by("cv", "unsupported"), "cv_partly": by("cv", "partly_supported"),
         "cl_unsupported": by("cover_letter", "unsupported"), "cl_partly": by("cover_letter", "partly_supported"),
-        "omissions_high": sum(1 for o in ev.get("omissions") or [] if o["relevance"] == "high"),
+        "omissions_high": _total(ev, ("omissions",), lambda o: sum(1 for x in o if x["relevance"] == "high")),
         "must_haves": len(must),
         "must_haves_shown": sum(1 for r in must if r["shown_in_cv"] == "yes"),
         "gaps_overstated": sum(1 for r in reqs if r["gap_handling"] == "overstated"),
         "work_arrangement_invented": len((ev.get("work_arrangement") or {}).get("invented_or_wrong") or []),
         **request_counts(ev),
         "requests_not_exercised": sum(1 for i in scripted or [] if i["status"] == NOT_EXERCISED),
-        "layout_problems": sum(len((ev.get("visual_layout") or {}).get(k) or [])
-                               for k in ("overflow_or_cutoff", "spacing_issues", "consistency_issues")),
-        "wrong_language": sum(1 for k in ("right_language_cv", "right_language_cover_letter")
-                              if (ev.get("language_quality") or {}).get(k) is False),
-        "language_errors": len((ev.get("language_quality") or {}).get("grammar_and_spelling_errors") or []),
+        "layout_problems": _total(layout, ("overflow_or_cutoff", "spacing_issues", "consistency_issues"), len),
+        "wrong_language": _total(language, ("right_language_cv", "right_language_cover_letter"),
+                                 lambda v: int(v is False)),
+        "language_errors": _total(language, ("grammar_and_spelling_errors",), len),
         "ats_score": (ev.get("ats") or {}).get("score"),
     }
+
+
+def _total(section: dict, keys: tuple, measure) -> int | None:
+    return sum(measure(section[k]) for k in keys) if all(k in section for k in keys) else None
 
 
 def request_counts(ev: dict) -> dict:
@@ -752,9 +849,9 @@ def build_grading_request(run_dir: Path, grader, out_dir: Path, mode: str = DEFA
     images = page_images(run_dir, out_dir, reuse=reuse_pages)
     values, checks = build_prompt(run_dir, images)
     system, shared, documents = prompt_parts(values, mode)
-    # schema_in_prompt: the Evaluation schema is too large for Anthropic's structured outputs (see evals/grader.py)
-    request = build_request(grader, system, shared, documents, Evaluation, _image_paths(images),
-                            rubric_sha256=rubric_sha256(mode), schema_in_prompt=True)
+    system, schema = _for_provider(system, grader.provider)
+    request = build_request(grader, system, shared, documents, schema, _image_paths(images),
+                            rubric_sha256=rubric_sha256(mode, grader.provider))
     return request, checks, images
 
 
@@ -780,11 +877,15 @@ def finish_evaluation(run_dir: Path, name: str, request, result, checks: dict, m
         recorder.write_summary(status=result.status, grading=grading)
         why = "the grader refused" if result.status == "refused" else "evaluator output did not parse"
         raise GradingFailed(f"{why}: {result.attempts[-1].get('parse_error') if result.attempts else ''}")
-    ev = result.answer
+    ev, full_copy = result.answer, None
+    if request.schema is CompactEvaluation:
+        ev, full_copy = compose_evaluation(ev)
     scripted = scripted_request_status(run_dir)
     record = {"evaluator_model": request.grader.name, "name": name, "grading_mode": mode, "grader": grading,
               "evaluation": ev, "counts": counts(ev, scripted), "scripted_requests": scripted,
               "pdf_checks": checks, "cost_usd": result.cost_usd}
+    if full_copy is not None:
+        record["full_evaluation"] = full_copy
     recorder.write_json("evaluation.json", record)
     recorder.write_summary(status="ok", grading=grading)
     return record

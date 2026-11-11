@@ -272,13 +272,22 @@ Batch halves every price. The Anthropic prices are in `provenance.PRICES_PER_1M`
 the official `anthropic` SDK:
 
 - **Pinned model.** Only the three ids above are accepted; the id the API returns is recorded per call.
-- **Structured output.** A JSON schema made from the pydantic answer model (`json_schema_for`: every
-  object closed and every field required) is sent as native `output_config.format` when it fits (the
-  trap check). The 103-property evaluation schema exceeds the API's compiled-grammar limit ("The
-  compiled grammar is too large"), so that request gives the same JSON schema in the cached system
-  prompt instead. Either way the answer is validated against the pydantic model in code (which also
-  checks the 0-10 score ranges); a ```` ```json ```` fence around it is accepted. Forced tool use is not
-  used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Structured output.** `output_config.format` with a JSON schema made from the pydantic answer model
+  (`json_schema_for`: every object closed and every field required; numeric limits such as the 0-10
+  score ranges are not part of the API's schema subset, so the answer is validated against the pydantic
+  model in code). Forced tool use is not used: it returns a 400 on Sonnet 5.5 and Opus 5.5.
+- **Compact answer for the evaluation.** The full `Evaluation` schema (103 properties) is over the API's
+  compiled-grammar limit (400 "The compiled grammar is too large"; a 46-property schema was accepted, 55 were
+  rejected), so a Claude grader answers a `CompactEvaluation` (40 properties) natively instead. Its first field,
+  `full_evaluation_json`, is the complete evaluation as a JSON string; the full `Evaluation` schema is at the end
+  of the cached system prompt. The fields after it are schema-guaranteed: all 12 scores, the summary, the claims,
+  the fit requirements, the ATS reason and keyword lists, the invented work-arrangement statements and the user
+  requests. They are authoritative: `evaluation.json`'s `evaluation` is the parsed full copy with every
+  guaranteed field written over it (`GUARANTEED_PATHS`), so readers find every score at its usual place.
+  `full_evaluation` records whether the full copy parsed (if not: its error and the raw string, and the
+  grading still succeeds on the guaranteed part, with the omissions, layout and language counts left empty)
+  and every guaranteed field the full copy states differently (`disagreements`; `load.py` columns
+  `full_eval_parsed`, `n_full_disagreements`). OpenAI graders still answer the full `Evaluation` natively.
 - **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
   (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
   not retried.
@@ -326,8 +335,7 @@ record = finish_evaluation(run_dir, "eval1", request, result, checks, "document-
   and returns `(GradingRequest, checks, images)`; no model call. `grader` is a `"provider:model"` string
   or a `GraderSpec` (`parse_grader(name, effort)`).
 - `GradingRequest` holds `grader`, `system`, `shared_text`, `document_text`, `images`, `schema`,
-  `max_tokens`, `rubric_sha256` and `schema_in_prompt` (Anthropic then sends `anthropic_system`: `system`
-  plus the ANSWER FORMAT block). `anthropic_params()` is the Messages API params dict;
+  `max_tokens` and `rubric_sha256`. `anthropic_params()` is the Messages API params dict;
   `langchain_messages()` the OpenAI form; `loggable()` the request for `prompt.json`; `prompt_hash()`.
 - `result_from_message(request, message, seconds, batch_id)` reads one Anthropic `Message` (streamed or
   from a batch) into a `GradingResult` (`status` ok / parse_error / refused, `answer`, `attempts`,

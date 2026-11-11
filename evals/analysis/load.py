@@ -139,6 +139,11 @@ def _eval_fields(path: Path | None) -> dict:
         "eval_name": path.parent.name if path else "",
         "grader": short_model(record.get("evaluator_model")) if record else "",
         "eval_usd": record.get("cost_usd"),
+        # Anthropic gradings: did the full copy parse, and how many guaranteed fields does it state differently
+        # (the scores always come from the guaranteed fields; empty for OpenAI gradings)
+        "full_eval_parsed": (record.get("full_evaluation") or {}).get("parsed"),
+        "n_full_disagreements": len((record.get("full_evaluation") or {}).get("disagreements") or [])
+        if record.get("full_evaluation") else None,
     }
     for col, keys in SCORES.items():
         row[col] = _dig(evaluation, keys)

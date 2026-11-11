@@ -20,11 +20,8 @@ Anthropic calls go through the official `anthropic` SDK:
 - the model id is pinned (only the ids in ANTHROPIC_MODELS are accepted) and the id the API returns is
   recorded with every call;
 - structured output is native (`output_config.format` with a JSON schema made from the pydantic model;
-  forced tool use returns a 400 on Sonnet 5.5 and Opus 5.5) when the schema fits. The full evaluation
-  schema does not: the API rejects it with "The compiled grammar is too large" (any schema over about 50
-  properties; the evaluation has 103), so that request sets `schema_in_prompt` and gives the same JSON
-  schema in the system prompt instead. Either way the answer is validated against the pydantic model
-  client-side, which also checks what the API's schema subset cannot express (the 0-10 score ranges);
+  forced tool use returns a 400 on Sonnet 5.5 and Opus 5.5). Ranges the API's schema subset cannot
+  express (0-10 scores) are checked client-side by validating the answer against the pydantic model;
 - thinking is adaptive (it cannot be turned off on these models) and the effort is set explicitly
   (default "medium"; Opus 5.5 and Haiku 5.5 default to medium, Sonnet 5.5 to high);
 - temperature cannot be set: Opus 5.5 rejects any `temperature`, Sonnet 5.5 and Haiku 5.5 reject
@@ -68,14 +65,6 @@ MAX_ATTEMPTS = 2  # one re-ask after an unparseable answer; never after a refusa
 HAIKU_LONG_PROMPT_TOKENS = 100_000  # Haiku 5.5 list prices apply up to here; longer prompts cost more
 
 OK, PARSE_ERROR, REFUSED = "ok", "parse_error", "refused"
-
-# Appended to the system prompt of a request with schema_in_prompt (Anthropic only).
-ANSWER_FORMAT = """
-
-# ANSWER FORMAT
-Answer with one JSON object and nothing else. It must follow this JSON schema exactly: every property is \
-required, no other property is allowed, and the descriptions say what each field holds.
-{schema}"""
 
 
 # ---------------------------------------------------------------------------------------------
@@ -175,17 +164,10 @@ class GradingRequest:
     images: list[Path] = field(default_factory=list)
     max_tokens: int = MAX_TOKENS
     rubric_sha256: str | None = None
-    schema_in_prompt: bool = False  # Anthropic: the schema goes in the system prompt, not output_config.format
 
     @property
     def user_text(self) -> str:
         return self.shared_text + self.document_text
-
-    @property
-    def anthropic_system(self) -> str:
-        if not self.schema_in_prompt:
-            return self.system
-        return self.system + ANSWER_FORMAT.format(schema=json.dumps(json_schema_for(self.schema)))
 
     def anthropic_params(self) -> dict:
         """Messages API params (no `stream`): the synchronous path streams them, Batch submits them as one
@@ -197,16 +179,14 @@ class GradingRequest:
         for path in self.images:
             data = base64.standard_b64encode(Path(path).read_bytes()).decode("ascii")
             content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": data}})
-        output_config: dict = {"effort": self.grader.effort}
-        if not self.schema_in_prompt:
-            output_config["format"] = {"type": "json_schema", "schema": json_schema_for(self.schema)}
         return {
             "model": self.grader.model,
             "max_tokens": self.max_tokens,
-            "system": [{"type": "text", "text": self.anthropic_system, "cache_control": {"type": "ephemeral"}}],
+            "system": [{"type": "text", "text": self.system, "cache_control": {"type": "ephemeral"}}],
             "messages": [{"role": "user", "content": content}],
             "thinking": {"type": "adaptive"},
-            "output_config": output_config,
+            "output_config": {"effort": self.grader.effort,
+                              "format": {"type": "json_schema", "schema": json_schema_for(self.schema)}},
         }
 
     def langchain_messages(self) -> list:
@@ -239,8 +219,7 @@ class GradingRequest:
     def prompt_hash(self) -> str:
         """Hash of the exact prompt: texts and image bytes."""
         images = [hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in self.images]
-        system = self.anthropic_system if self.grader.provider == "anthropic" else self.system
-        return sha256_text(self.grader.name, system, self.shared_text, self.document_text, *images)
+        return sha256_text(self.grader.name, self.system, self.shared_text, self.document_text, *images)
 
 
 def _loggable_parts(content, names: list[str]):
@@ -253,9 +232,9 @@ def _loggable_parts(content, names: list[str]):
 
 def build_request(grader: GraderSpec, system: str, shared_text: str, document_text: str,
                   schema: type[BaseModel], images: list[Path] | None = None, max_tokens: int = MAX_TOKENS,
-                  rubric_sha256: str | None = None, schema_in_prompt: bool = False) -> GradingRequest:
+                  rubric_sha256: str | None = None) -> GradingRequest:
     return GradingRequest(grader, system, shared_text, document_text, schema, list(images or []), max_tokens,
-                          rubric_sha256, schema_in_prompt)
+                          rubric_sha256)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -286,9 +265,6 @@ def parse_answer(text: str | None, schema: type[BaseModel]) -> tuple[dict | None
     (None, why)."""
     if not text:
         return None, "empty answer"
-    text = text.strip()
-    if text.startswith("```") and text.endswith("```"):  # a schema given in the prompt can come back in a ```json fence
-        text = text.split("\n", 1)[-1].rsplit("```", 1)[0]
     try:
         return schema.model_validate(json.loads(text)).model_dump(mode="json"), None
     except json.JSONDecodeError as e:

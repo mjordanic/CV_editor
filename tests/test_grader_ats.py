@@ -67,7 +67,7 @@ def test_the_ats_section_is_the_text_extracted_from_a_real_compiled_cv_pdf(tmp_p
         if request.grader.provider == "anthropic":
             # the Batch params carry the same input, unchanged, next to the page images
             params = request.anthropic_params()
-            assert params["system"][0]["text"] == request.anthropic_system and request.anthropic_system.startswith(request.system)
+            assert params["system"][0]["text"] == request.system
             assert [b["text"] for b in params["messages"][0]["content"] if b["type"] == "text"] == \
                 [request.shared_text, request.document_text]
             assert [b["type"] for b in params["messages"][0]["content"]].count("image") >= 2
