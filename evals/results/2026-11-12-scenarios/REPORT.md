@@ -5,7 +5,7 @@
 **Answer from this round:**
 - **The app does better than the plain baseline in one place:** asking for missing contact details. A one-line prompt hint closes that gap.
 - **The router fixes of #33 work:** the two editing failures of the frozen app (one change for both documents, PDF styles) are gone.
-- **Elsewhere the fixed app ties the baseline, at 4–9× the cost and 3–5× the time per user turn.**
+- **Elsewhere no difference is detected between the fixed app and the baseline, at 3.7–8.9× the cost and 2.0–5.1× the time per user turn** (S1–S5: cost 5.6, 6.0, 4.2, 8.9, 3.7×; time 3.9, 3.2, 2.0, 5.1, 2.6×). The widest gap favours the baseline: on S1 it passes every check in 5/6 sessions, the app in 1/6.
 - **Two app weaknesses remain:**
   - its fact check removes a job title the user stated about themselves;
   - its cover letters overshoot a word limit the user set.
@@ -34,7 +34,7 @@ The full tables are in [`tables.md`](tables.md) and [`results.json`](results.jso
 | scenario | app (fixed) | app_frozen | b2 | b2_ask | pre-registered reading |
 |---|---|---|---|---|---|
 | **S1** 11 stacked edits, 12 turns (p03, p09) | 1/6 | – | 5/6 | – | no difference detected (app alone 1, b2 alone 5, p=0.22) |
-| **S2** truthfulness under the ground-truth rule (6 cases) | 11/18 | 11/18 | 13/18 | – | no difference detected: app vs b2 0–2, app vs frozen 2–2 |
+| **S2** truthfulness under the ground-truth rule (6 cases) | 11/18 (12/18 read by hand) | 11/18 | 13/18 (15/18 read by hand) | – | no difference detected: app vs b2 0–2, app vs frozen 2–2 |
 | **S3** contact details given only if asked (4 no-CV personas) | **12/12** | – | 7/12 | 10/12 | **app better than b2** (5–0 of 12, p=0.06); app vs b2_ask: no difference (2–0) |
 | **S4** one change for both documents, then a correction everywhere | 6/6 | **0/6** | 6/6 | – | **fixed app better than frozen** (6–0, p=0.03); fixed app vs b2: tie |
 | **S5** appearance and content edits interleaved | 6/6 | **0/6** | 6/6 | – | **fixed app better than frozen** (6–0, p=0.03); fixed app vs b2: tie |
@@ -58,7 +58,7 @@ The full tables are in [`tables.md`](tables.md) and [`results.json`](results.jso
   - **Kubernetes / on-call:** every system declined it, citing the candidate's notes ("the platform team operates the cluster").
 - **S2, the three traps.** The user's own words contradict the claim: CKA "exam booked", Go "only a side project", forklift "don't have it yet".
   - **Claim absent:** 9/9 in every system.
-  - **Told the user why:** 7/9 in every system.
+  - **Told the user why:** 7/9 in every system by the `told-user` check, a keyword proxy. Read by hand: b2 9/9, app 8/9, app_frozen 7/9. The keywords miss three clear explanations (b2 CKA r1: "I left both documents unchanged because … your CKA exam is booked and … you have not yet passed it"; b2 Go r2; app CKA r1: "The CKA remains listed as preparation in progress"). Read by hand, S2's "all checks" is 15/18 for b2 and 12/18 for the app. `told-user` is not a primary check, so the paired verdicts are the same either way.
 - **S3:** the app asked for the missing e-mail and phone number in 12/12 sessions and put them in the CV. b2 asked in 7/12; the other 5 left `[EMAIL]`/`[PHONE]` placeholders. b2_ask asked in 10/12.
 - **S4 / S5 (frozen app):**
   - **S4:** the frozen app put the new link into the CV only, every time.
@@ -85,12 +85,12 @@ The fixed app costs a little more than the frozen one on S4 ($0.021 vs $0.019 pe
    - **Grounding vs the ground-truth rule.** The fact check treats a user's statement about themselves as an unsupported claim and redraft removes it (retitle, 3 of 6 app runs). Pass the user's self-statements to the grounding check as candidate facts, and keep claims the user stated out of `claims_to_remove`.
    - **User-set limits.** The letter overshot "under 200 words" in 5 of 6 sessions. A deterministic word-count check in finalize, with one redraft on a breach, would hold it.
 4. **Both systems' prompts fall short of the ground-truth rule when the chat contradicts the documents** (Kubernetes / on-call, 0/9). If the owner wants the chat to win in that case, the shared truthfulness protocol (`agents/document_writer.py`) should say so explicitly.
-5. **Positioning:** at about 4–9× the cost and 3–5× the latency per turn, the app is a guarded pipeline (missing-details guard, text-invariant appearance edits), not a better interactive editor.
+5. **Positioning:** at about 4–9× the cost and 2–5× the latency per turn, the app is a guarded pipeline (missing-details guard, text-invariant appearance edits), not a better interactive editor.
 
 ## Reproduce
 
 ```bash
-git archive 2320a98 | tar -x -C FROZEN
-.venv/bin/python -m evals.run_scenarios --out OUT --frozen-tree FROZEN --env-file .env --total-cap 6.0 --workers 6
+mkdir FROZEN && git archive 2320a98 | tar -x -C FROZEN
+.venv/bin/python -m evals.run_scenarios --out OUT --frozen-tree FROZEN --frozen-commit 2320a98 --env-file .env --total-cap 6.0 --workers 6
 .venv/bin/python -m evals.run_scenarios --out OUT --report-only --frozen-tree FROZEN --publish evals/results/<date>-scenarios
 ```

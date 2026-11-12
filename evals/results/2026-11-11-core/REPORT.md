@@ -186,7 +186,7 @@ The gaps claimed:
 | overall | 0.38 | 0.34 | 0.24 | 0.65 | 0.36 |
 | invented content | 0.39 | 0.39 | 0.20 | 0.79 | 0.56 |
 | fit | 0.41 | 0.45 | 0.13 | 0.64 | 0.27 |
-| visual layout | 0.67 | 0.41 | 0.56 | 1.23 | 0.80 |
+| visual layout | 0.66 | 0.41 | 0.56 | 1.23 | 0.80 |
 
 Grader noise is at least as large as writer noise, except on visual layout. SP-sol is the most stable arm: within-cell
 SD 0.27 on overall, against 0.43 for MA-luna and 0.42 for SP-luna.

@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import List
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -219,12 +218,11 @@ class ExperienceRetrievalAgent:
 
         if not self.portfolio_text:
             logger.info("No portfolio - the writers get none")
-            return {"relevant_experience": "", "portfolio_text": "", "current_node": "retrieve_experience"}
+            return {"relevant_experience": "", "portfolio_text": ""}
 
         if len(self.portfolio_text) <= self.full_text_limit:
             logger.info(f"Portfolio is small ({len(self.portfolio_text)} characters) - giving it to the writers whole")
-            return {"relevant_experience": self.portfolio_text, "portfolio_text": self.portfolio_text,
-                    "current_node": "retrieve_experience"}
+            return {"relevant_experience": self.portfolio_text, "portfolio_text": self.portfolio_text}
 
         job_description_info = state.get("job_description_info")
         if not job_description_info:
@@ -257,5 +255,4 @@ class ExperienceRetrievalAgent:
         return {
             "relevant_experience": relevant_experience,
             "portfolio_text": self.portfolio_text,
-            "current_node": "retrieve_experience"
         }

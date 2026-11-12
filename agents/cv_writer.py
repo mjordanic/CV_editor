@@ -110,11 +110,3 @@ class CVWriterAgent(DocumentWriterAgent):
             "However, do NOT hallucinate facts - only use the factual information provided in the Existing CV, "
             "the candidate's earlier cover letter, own notes, portfolio and what the user said in this chat."
         )
-
-    def save_cv(self, cv_text: str, filename: str = "generated_CV.txt") -> str:
-        """Save CV text to the output folder."""
-        return self.save_document(cv_text, filename)
-
-    def save_notes(self, notes: str, filename: str = "generated_CV_notes.txt") -> str:
-        """Save the writer's notes to the output folder."""
-        return self.save_document(notes, filename)

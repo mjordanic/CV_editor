@@ -1,10 +1,10 @@
-"""Three router plumbing fixes, run through the real compiled graph with a scripted model (no network).
+"""Router plumbing, run through the real compiled graph with a scripted model (no network).
 
 1. One message with changes for both existing documents: both documents are redrafted, the second
    right after the first is finalized (before, only the routed document's request was kept).
 2. A new PDF style request is added to the earlier ones instead of replacing them.
 3. The writer's notes on the user's request (e.g. a part it did not apply) reach the router's next
-   message to the user, once.
+   message to the user, once, also when that message is the fixed text used for an action not offered.
 """
 from agents.router import STYLE_REQUESTS_HEADER, _accumulate_style
 from tests.test_session_replay import REPO, ScriptedLLM, _build_agent, _play, _route
@@ -108,6 +108,28 @@ def test_accumulate_style_keeps_earlier_requests_in_order_once():
     assert _accumulate_style(three, "") == three
 
 
+def test_a_multi_line_style_request_is_stored_once_line_by_line():
+    once = _accumulate_style(None, "titles blue\nmore compact")
+    assert once == f"{STYLE_REQUESTS_HEADER}\n- titles blue\n- more compact"
+    assert _accumulate_style(once, "titles blue\nmore compact") == once
+    assert _accumulate_style(once, "more compact\nsans-serif font").splitlines()[1:] == [
+        "- titles blue", "- more compact", "- sans-serif font"]
+
+
+def test_the_closing_message_is_shown_on_exit_without_pending_notices(monkeypatch, tmp_path, caplog):
+    import logging
+
+    llm = PlumbingLLM(
+        router_script=[_route("draft_cv"), _route("collect_user_input", "The CV is ready. Any changes?"),
+                       _route("exit", "Good luck with the application!")],
+        critique_scores=[(80, "")],
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+    with caplog.at_level(logging.INFO, logger="agents.router"):
+        _play(agent, [_ad(), "exit"])
+    assert "Good luck with the application!" in caplog.text
+
+
 def test_second_style_request_keeps_the_first(monkeypatch, tmp_path):
     from agents import cv_pdf_generator
 
@@ -181,3 +203,99 @@ def test_notes_of_both_documents_reach_the_reply_after_the_second_one(monkeypatc
 
     # the bypass to the letter does not show a message, so the CV's notes wait for the final reply
     assert "CV writer: Kotlin is already listed" in _writers_notes(llm.router_prompts[-1])
+
+
+def test_writer_notes_survive_the_fallback_when_the_router_repeats_a_finished_redraft(monkeypatch, tmp_path):
+    declined = "Kotlin was NOT added: nothing in your material shows Kotlin."
+    llm = PlumbingLLM(
+        router_script=[
+            _route("draft_cv"),
+            _route("collect_user_input", "The CV is ready. Any changes?"),
+            _route("draft_cv", cv_content_feedback=CV_CHANGE),
+            # draft_cv is withdrawn after the redraft ran; the model picks it again
+            _route("draft_cv", "Redrafting the CV again."),
+            _route("exit", "Done."),
+        ],
+        critique_scores=[(80, ""), (80, "")],
+        cv_notes=["", declined],
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+
+    final = _play(agent, [_ad(), CV_CHANGE, "exit"])
+
+    shown = [m for m in final["messages"] if _role(m) == "assistant" and "The CV draft is ready." in _content(m)]
+    assert len(shown) == 1 and declined in _content(shown[0])
+    assert not final.get("cv_request_notes")
+
+
+def _role(m):
+    return m.get("role") if isinstance(m, dict) else {"ai": "assistant", "human": "user"}.get(m.type, m.type)
+
+
+def _content(m):
+    return m.get("content") if isinstance(m, dict) else m.content
+
+
+def test_a_change_asked_for_one_document_is_not_applied_to_the_other_without_asking(monkeypatch, tmp_path):
+    llm = PlumbingLLM(
+        router_script=[
+            _route("draft_cv"),
+            _route("draft_cover_letter"),
+            _route("collect_user_input", "Both documents are ready. Any changes?"),
+            # the model fills the letter's field too, for a message about the CV only
+            _route("draft_cv", cv_content_feedback=CV_CHANGE, cover_letter_content_feedback=CV_CHANGE),
+            _route("collect_user_input", "The CV is updated."),
+            _route("exit", "Done."),
+        ],
+        critique_scores=[(80, "")] * 3,
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+
+    final = _play(agent, [_ad(), f"In the CV: {CV_CHANGE}", "no, thanks"])
+
+    assert not llm.router_script
+    assert len(llm.letter_instructions) == 1, "the cover letter was redrafted without asking"
+    asked = [_content(m) for m in final["messages"] if _role(m) == "assistant" and "cover letter too" in _content(m)]
+    assert len(asked) == 1 and CV_CHANGE in asked[0] and asked[0].startswith("The CV is updated.")
+    assert not final.get("cover_letter_feedback_to_confirm")
+
+
+def test_yes_to_the_question_applies_the_kept_request_to_the_other_document(monkeypatch, tmp_path):
+    llm = PlumbingLLM(
+        router_script=[
+            _route("draft_cv"),
+            _route("draft_cover_letter"),
+            _route("collect_user_input", "Both documents are ready. Any changes?"),
+            _route("draft_cv", cv_content_feedback=CV_CHANGE, cover_letter_content_feedback=LETTER_CHANGE),
+            _route("collect_user_input", "The CV is updated."),
+            _route("draft_cover_letter"),  # the model leaves the field empty after "yes"
+            _route("exit", "Done."),
+        ],
+        critique_scores=[(80, "")] * 4,
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+
+    final = _play(agent, [_ad(), f"Add Kotlin; and {LETTER_CHANGE}", "yes"])
+
+    assert not llm.router_script
+    assert len(llm.letter_instructions) == 2 and LETTER_CHANGE in llm.letter_instructions[-1]
+    assert not final.get("cover_letter_feedback_to_confirm")
+
+
+def test_a_message_that_says_both_redrafts_both_without_asking(monkeypatch, tmp_path):
+    llm = PlumbingLLM(
+        router_script=[
+            _route("draft_cv"),
+            _route("draft_cover_letter"),
+            _route("collect_user_input", "Both documents are ready. Any changes?"),
+            _route("draft_cv", cv_content_feedback=CV_CHANGE, cover_letter_content_feedback=LETTER_CHANGE),
+            _route("exit", "Both are updated."),
+        ],
+        critique_scores=[(80, "")] * 4,
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+
+    _play(agent, [_ad(), f"Bitte beide anpassen: {CV_CHANGE} {LETTER_CHANGE}"])
+
+    assert not llm.router_script
+    assert len(llm.letter_instructions) == 2 and LETTER_CHANGE in llm.letter_instructions[-1]

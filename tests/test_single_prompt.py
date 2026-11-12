@@ -2,7 +2,7 @@
 
 No paid call of any kind: every chat model the code could build is a counting stub, no .env is read (an
 empty --env-file is passed), and run_matrix's subprocess is faked. pdflatex is stubbed in the run tests;
-the two layout tests that compile for real are skipped where pdflatex is missing."""
+the one layout test that compiles for real is skipped where pdflatex is missing."""
 import json
 import shutil
 import sys
@@ -220,7 +220,14 @@ def test_the_run_folder_is_graded_unchanged_and_blind(tmp_path, stubbed):
     assert checks["cv_pdf"]["exists"] and checks["cover_letter_pdf"]["exists"]
     assert _persona_texts("p03")["notes"].strip() in values["candidate"]
     assert _persona_texts("p03")["cv"].strip() not in values["candidate"]
-    shown = json.dumps([m.content for m in evaluate.format_messages(values)])  # document-only, as compared
+    # the text of the request the grader (Anthropic) is sent: system prompt, shared and document text (page images
+    # aside), as build_grading_request builds it through the provider's own system prompt and schema
+    request, _, _ = evaluate.build_grading_request(run_dir, "anthropic:claude-sonnet-5-5", tmp_path / "grading")
+    params = request.anthropic_params()
+    texts = [b["text"] for b in params["system"]] + [b["text"] for m in params["messages"] for b in m["content"]
+                                                     if b["type"] == "text"]
+    assert any("SUMMARY_FROM_STUB" in t for t in texts)
+    shown = "\n".join(texts)
     for leak in ("single_prompt", "single prompt", "multi_agent", "gpt-6.1-sol", "fallback", "sp_p03"):
         assert leak not in shown, leak
 
@@ -243,17 +250,29 @@ def test_an_infrastructure_error_marks_the_run_interrupted_not_failed(tmp_path, 
     assert evaluate.build_prompt(run_dir)[0]["cv"] == "(no CV was produced)"  # what grading it would have meant
 
 
-def test_an_answer_cut_off_at_the_output_limit_is_a_parse_error_with_its_finish_reason(tmp_path, stubbed, monkeypatch):
+def cut_off_error(model="gpt-6.1-sol", input_tokens=6000, output_tokens=30000):
+    """openai.LengthFinishReasonError as the SDK raises it: the billed completion, with its usage."""
     import openai
     from types import SimpleNamespace
+    usage = SimpleNamespace(prompt_tokens=input_tokens, completion_tokens=output_tokens,
+                            prompt_tokens_details=SimpleNamespace(cached_tokens=0))
+    return openai.LengthFinishReasonError(completion=SimpleNamespace(model=model, usage=usage))
+
+
+def test_an_answer_cut_off_at_the_output_limit_is_a_parse_error_with_its_finish_reason_and_its_cost(
+        tmp_path, stubbed, monkeypatch):
+    from provenance import cost_usd
 
     def cut_off(self, messages, stop=None, run_manager=None, **kwargs):
-        raise openai.LengthFinishReasonError(completion=SimpleNamespace(usage=None))
+        raise cut_off_error()
 
     monkeypatch.setattr(FakeChat, "_generate", cut_off)
     code, run_dir = _run(tmp_path, stubbed)
     manifest = json.loads((run_dir / "manifest.json").read_text())
     assert code == 1 and manifest["failure"] == "parse_error" and manifest["finish_reason"] == "length"
+    billed = cost_usd("gpt-6.1-sol", 6000, 30000)
+    assert billed > 0 and manifest["cost_usd"] == pytest.approx(billed, abs=1e-6)  # billed, though it did not parse
+    assert manifest["calls"] == 1
 
 
 def test_out_of_credit_marks_the_run_interrupted_and_exits_75(tmp_path, stubbed, monkeypatch):

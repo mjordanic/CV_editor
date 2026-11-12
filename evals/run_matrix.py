@@ -246,7 +246,7 @@ def session_done(run_dir: Path) -> bool:
 
 
 def _partial_cost(folder: Path) -> float:
-    """The cost an interrupted evaluation or truth check had made (its summary.json), else 0."""
+    """The cost an interrupted or failed evaluation or truth check had made (its summary.json), else 0."""
     try:
         return float(json.loads((folder / "summary.json").read_text()).get("cost_usd") or 0)
     except (OSError, ValueError, json.JSONDecodeError):
@@ -301,6 +301,8 @@ def run_one(case: dict, opts) -> tuple[str, str]:
                 break
         else:
             return cid, "interrupted (infrastructure error, twice): not graded; run again later to redo it"
+        if not session_done(run_dir):  # stopped by Ctrl+C or SIGTERM, or killed while "running"
+            return cid, f"session not finished ({_manifest_status(manifest)}): not graded; run again to redo it"
     if sessions_only:
         return cid, "session done (not graded)"
     failed = []
@@ -315,12 +317,14 @@ def run_one(case: dict, opts) -> tuple[str, str]:
                             cwd=str(REPO), capture_output=True, text=True)
         with open(log, "a") as f:
             f.write(f"\n--- evaluate {name} ---\n" + ev.stdout[-3000:] + ev.stderr[-3000:])
+        label = f"eval:{name}" if model else "eval"
         if result.exists():
-            _record(ledger, cid, f"eval:{name}" if model else "eval", json.loads(result.read_text())["cost_usd"])
+            _record(ledger, cid, label, json.loads(result.read_text())["cost_usd"])
         elif ev.returncode == EXIT_OUT_OF_CREDIT:
             _record(ledger, cid, "eval-interrupted", _partial_cost(result.parent))
             return _mark_out_of_credit(cid, f"evaluation {name}")
-        else:
+        else:  # refused, did not parse, or crashed: its billed cost goes in the ledger before a retry deletes it
+            _record(ledger, cid, f"{label}-failed", _partial_cost(result.parent))
             failed.append(name)
     if truth_spec and not truth.exists():
         if OUT_OF_CREDIT.is_set():
@@ -334,8 +338,10 @@ def run_one(case: dict, opts) -> tuple[str, str]:
         if truth.exists():
             _record(ledger, cid, "truth", json.loads(truth.read_text())["cost_usd"])
         elif tc.returncode == EXIT_OUT_OF_CREDIT or OUT_OF_CREDIT.is_set():
+            _record(ledger, cid, "truth-interrupted", _partial_cost(truth.parent))
             return _mark_out_of_credit(cid, "the truth check")
         else:
+            _record(ledger, cid, "truth-failed", _partial_cost(truth.parent))
             failed.append(truth_spec[0])
     return cid, f"failed: {', '.join(failed)}" if failed else "ok"
 

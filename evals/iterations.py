@@ -1,4 +1,5 @@
-"""How often a recorded session actually redrafted its documents, read from its events.jsonl.
+"""How often a recorded session actually redrafted its documents, read from its events.jsonl (a published session,
+which leaves that log out, has the same counts in its summary.json's `redrafts` block; they are read from there).
 
 Every `draft_cv` / `draft_cover_letter` step in the event log is one draft. The step before it says
 why it was written:
@@ -39,8 +40,16 @@ def _skipped(update) -> bool:
 
 
 def redrafts(run_dir: str | Path) -> dict:
-    """{kind: {drafts, first, critique_redrafts, critique_skipped, user_redrafts, removal_passes}}."""
+    """{kind: {drafts, first, critique_redrafts, critique_skipped, user_redrafts, removal_passes}}: from events.jsonl,
+    or, without it, from summary.json's `redrafts` block (run_case writes it there at the end of the session)."""
     run_dir = Path(run_dir)
+    if not (run_dir / "events.jsonl").is_file():
+        try:
+            recorded = json.loads((run_dir / "summary.json").read_text(encoding="utf-8")).get("redrafts")
+        except (OSError, json.JSONDecodeError):
+            recorded = None
+        if isinstance(recorded, dict) and all(isinstance(recorded.get(k), dict) for k in KINDS):
+            return recorded
     nodes = [e for e in _events(run_dir / "events.jsonl") if e.get("kind") == "node"]
     out = {k: {"drafts": 0, "first": 0, "critique_redrafts": 0, "critique_skipped": 0, "user_redrafts": 0,
                "removal_passes": 0} for k in KINDS}

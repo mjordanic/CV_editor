@@ -20,6 +20,8 @@ credit`; run_matrix stops starting new work when it sees that exit code (see eva
 `is_infrastructure_error(error)` tells a provider or network failure (connection error, timeout, HTTP 5xx, an
 ordinary rate limit; the SDK's own retries already ran) from a failure of the system under test. run_case and
 single_prompt mark such a session `interrupted: infrastructure`: it is not graded, and run_matrix re-runs it once.
+A session stopped by hand (Ctrl+C or SIGTERM) is marked `interrupted: stopped` by run_case: not graded either, and
+redone from scratch on the next run.
 """
 from __future__ import annotations
 
@@ -31,6 +33,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 EXIT_OUT_OF_CREDIT = 75  # EX_TEMPFAIL: try again later (after a top-up)
 INTERRUPTED_STATUS = "interrupted: out of credit"
 INFRASTRUCTURE_STATUS = "interrupted: infrastructure"
+STOPPED_STATUS = "interrupted: stopped"  # Ctrl+C or SIGTERM: not graded, redone on the next run
 
 # OpenAI codes, then Anthropic's: billing_error (HTTP 402) and enforced_spend_limit_reached (a workspace or
 # organisation spend cap); an exhausted Anthropic prepaid balance says "Your credit balance is too low".

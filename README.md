@@ -13,9 +13,11 @@ English ("add my research stay at Berkeley", "make the titles blue") until you a
   Each change you ask for costs about 1 to 2 cents more. Company research uses Tavily, a web search service; it is
   optional. With a free local model ([below](#try-it-without-api-keys-local-model)) it costs nothing, but it is slow
   and the results are rough.
-- **Your data:** your CV and the job ad are sent to OpenAI, and to Tavily if you set a Tavily key. With a local model
-  nothing leaves your computer.
-- **How long:** about 2 to 8 minutes for both documents (mean 3.9 minutes, 10 November 2026).
+- **Your data:** your CV and the job ad are sent to OpenAI. If you set a Tavily key, a search query built from the
+  ad's company details (name, website, location, industry) is sent to Tavily; your CV is not. With a local model
+  nothing leaves your computer: the program makes no web search then, even when a Tavily key is set.
+- **How long:** about 2 to 6 minutes for both documents (mean 3.6 minutes over 49 sessions on the shipped
+  configuration, 11 November 2026).
 - **How well it works:** about as well as asking the same model once with everything in one message, at roughly ten
   times the cost. What the app adds is its guard rails: it asks for missing contact details and checks every claim
   against your material. See [How well does it work?](#how-well-does-it-work).
@@ -42,7 +44,8 @@ How well does it work?
 ----------------------
 
 The project tests itself on 13 fictional candidates and 8 job ads (no real people, no real users). The finished
-documents are graded by an independent model (Claude Sonnet 5.5) or, in the conversations, by deterministic checks.
+documents are graded by an independent model (Claude Sonnet 5.5; the 10 November round by `gpt-6.1-sol`) or, in the
+conversations, by deterministic checks.
 All results, with every document and grade, are published in [`evals/results/`](evals/results/).
 
 **One CV and cover letter per job ad** ([report](evals/results/2026-11-11-core/REPORT.md), 11 November 2026, 39
@@ -69,8 +72,10 @@ scripted conversations, 138 sessions, against one model call per user turn):
 
 - **Where the app does better:** it asked for missing contact details in 12 of 12 sessions; the plain one-call
   baseline asked in 7 of 12. A one-line hint in the baseline's prompt brings it to 10 of 12.
-- **Elsewhere it ties the baseline**, at 4 to 9 times the cost and 3 to 5 times the time per turn. In both systems,
-  appearance-only changes left the text unchanged in every session.
+- **Elsewhere no difference was detected**, at about 4 to 9 times the cost and 2 to 5 times the time per turn. The
+  widest gap favours the baseline: with 11 stacked edits it passed every check in 5 of 6 sessions, the app in 1 of 6
+  (mostly cover letters over a 200-word limit). In both systems, appearance-only changes left the text unchanged in
+  every session.
 - **Known weaknesses:** the app's fact check can remove a job title you state about yourself in the chat (2 of 3
   runs of the current app); cover letters went over a word limit you set (5 of 6 runs); when what you say in the
   chat contradicts your own notes, every system kept to the notes (0 of 9).
@@ -139,7 +144,8 @@ uv run python langgraph_agent.py
   sample CV), then `END` on its own line. Then say what you want, e.g. "Please write my CV and cover letter.", and
   `END` again.
 - **Your results** are in `data/generated_CVs/`: `generated_CV.pdf` and `generated_cover_letter.pdf` are the latest,
-  and every draft is kept next to them.
+  and every draft is kept next to them. When you start a new session, the previous session's files move to
+  `data/generated_CVs/earlier/<date_time>/`.
 - Type `exit` (then `END`) when you are done.
 - On Windows the commands differ slightly (`copy` for `cp`, `mkdir data\CV`); these instructions assume macOS or
   Linux.
@@ -148,7 +154,8 @@ Try it without API keys (local model)
 -------------------------------------
 
 You can run every step on a free local model with [Ollama](https://ollama.com), a program that runs AI models on your
-own computer. No OpenAI or Tavily key is needed, and nothing is sent anywhere.
+own computer. No OpenAI or Tavily key is needed, and nothing is sent anywhere: company research makes no web search
+on a local model, even when `TAVILY_API_KEY` is set.
 
 ```bash
 ollama pull gemma4:e4b            # a 9.6 GB download; or a smaller model, see below
@@ -193,10 +200,10 @@ uv run python langgraph_agent.py --trace-dir DIR # also record every step and mo
 ```
 
 - When the program waits for you ("Please paste the job description…", "Please provide your input:"), type or paste
-  your text and finish with `END` on its own line, two empty lines in a row, or `Ctrl+D`. For a long ad, save it to a
-  file (e.g. in `job_description/`) and paste the path instead.
-- The console shows the program's log: its questions appear as lines starting with `__main__ - INFO -` among other
-  log lines.
+  your text and finish with `END` on its own line, two empty lines in a row, or `Ctrl+D`. Empty lines inside pasted
+  text are kept. For a long ad, save it to a file (e.g. in `job_description/`) and paste the path instead.
+- The console shows the program's log: its questions appear as lines with a timestamp and `__main__ - INFO -` among
+  the program's other log lines. Other libraries show only warnings there; everything is in `logs/`.
 - One message can ask for several things, for both documents and for content and appearance at once:
 
   > Please create CV and cover letter. Add my research stay at Berkeley in 2021 to the CV. Also add MATLAB to my
@@ -204,6 +211,9 @@ uv run python langgraph_agent.py --trace-dir DIR # also record every step and mo
   > and make it more compact.
 
   The program then writes the CV and the letter one after the other, with no further questions in between.
+  Once both exist, a change is applied to both without asking only if your message names both documents (CV and
+  cover letter, or "both"; also in German and Croatian); a change asked for one of them is made there, and the
+  program then asks whether to make it in the other one too.
 - Appearance requests ("make it more compact", "use a sans-serif font") change only the PDF's look and keep the
   text.
 - If your documents lack contact details, the program asks you once for them (or which to leave out) before it makes
@@ -233,9 +243,9 @@ variable, logging and customisation are in **[docs/how-it-works.md](docs/how-it-
 Testing and evaluation
 ----------------------
 
-- **Offline tests:** `uv run --group analysis pytest` runs the test suite without API keys. Four tests in
-  `tests/test_analysis_calibration.py` need SciPy from the `analysis` dependency group: after a plain `uv sync`,
-  `uv run pytest` reports 4 failed, 430 passed.
+- **Offline tests:** `uv run pytest` runs the test suite without API keys. Four tests in
+  `tests/test_analysis_calibration.py` need SciPy from the `analysis` dependency group and are skipped without it;
+  `uv run --group analysis pytest` runs them too. Tests that compile LaTeX are skipped when `pdflatex` is missing.
 - **Evaluation:** [`evals/`](evals/README.md) runs the program end to end on the tracked fictional candidates and
   ads, with a scripted user and recorded search results, and grades the documents with an independent model. It has
   the single-call baseline the results above compare with, a staged comparison with Anthropic Batch grading, an
@@ -247,13 +257,14 @@ Testing and evaluation
 Troubleshooting
 ---------------
 
-- **`openai.OpenAIError: The api_key client option must be set ...`** at startup, after a long traceback: there is no
-  `OPENAI_API_KEY`. Put it in `.env` (copied from `.env_sample`, in the `CV_editor` folder), or use a
-  [local model](#try-it-without-api-keys-local-model).
+- **`OPENAI_API_KEY is not set`** at startup: put the key in `.env` (copied from `.env_sample`, in the `CV_editor`
+  folder), or use a [local model](#try-it-without-api-keys-local-model).
 - **The program seems stuck:** it is probably waiting for you. Finish your input with `END` on its own line (or
   `Ctrl+D`).
-- **Feeding input from a file or pipe:** the program is meant to be typed into. If the input ends early (for example
-  `< /dev/null`), the job-ad question repeats endlessly; stop it with `Ctrl+C`.
+- **Stopping:** type `exit` at any question (then `END`), or press `Ctrl+C`. Drafts made so far stay in
+  `data/generated_CVs/`.
+- **Feeding input from a file or pipe:** the program is meant to be typed into. Piped input ends each answer with
+  `END` on its own line (empty lines are kept), and the session ends when the input runs out.
 - **Missing pdflatex:** make sure `pdflatex` is on your `PATH` (`which pdflatex`); install commands are in
   [Quick Start](#quick-start).
 - **LaTeX errors / no PDF:** the program repairs LaTeX errors automatically (two attempts), then tells you if it
@@ -300,15 +311,15 @@ Roadmap
 -------
 
 Done: PDF generation with LaTeX, quality review with automatic redrafts and a fact check, YAML configuration,
-documents in the job ad's language (or another on request; the evaluation covers German and Croatian letters),
-free-form notes and chat facts as candidate material, asking for missing contact details, an offline test suite and
-an end-to-end evaluation.
+documents in the job ad's language (the evaluation covers a German ad; a language you ask for instead is supported
+but not evaluated), free-form notes and chat facts as candidate material, asking for missing contact details, an
+offline test suite and an end-to-end evaluation.
 
 Open:
 
 - **From the evaluation** ([scenarios report](evals/results/2026-11-12-scenarios/REPORT.md)): let facts you state
   about yourself in the chat pass the fact check; hold a word limit you set for the cover letter; decide what wins
-  when the chat contradicts your own notes.
+  when the chat contradicts your own notes; evaluate documents written in a language you ask for.
 - **Candidate information:** accept any document type (certificates, transcripts, etc.) and build a more complete
   picture of the candidate's skills, aspirations and experience; ask proactively for missing information beyond
   contact details.
@@ -318,7 +329,7 @@ Open:
 - **Batch processing:** tailored documents for several job ads in one run.
 - **Web interface:** a web UI next to or instead of the terminal.
 - **Integrations:** professional networks (LinkedIn), job boards, document storage (Google Drive, Dropbox).
-- **CI/CD:** the offline tests exist (434); there is no CI pipeline yet.
+- **CI/CD:** the offline tests exist (483); there is no CI pipeline yet.
 
 Licence
 -------

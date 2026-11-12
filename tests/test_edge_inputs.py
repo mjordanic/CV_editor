@@ -158,3 +158,15 @@ def test_empty_user_message_is_asked_again_without_a_router_call(monkeypatch, tm
 ])
 def test_looks_like_path(text, is_path):
     assert looks_like_path(text) is is_path
+
+
+@pytest.mark.parametrize("reply, added", [("continue", None), ("Continue.", None), ("OK", None),
+                                          ("Senior data engineer, Python and dbt.", "Senior data engineer, Python and dbt.")])
+def test_continue_at_the_thin_ad_question_adds_nothing_to_the_ad(monkeypatch, reply, added):
+    from agents import job_description
+
+    monkeypatch.setattr(job_description, "interrupt", lambda value: reply)
+    update = job_description.clarify_job_ad({})
+    assert update.get("job_ad_extra_details") == added
+    assert job_description.route_after_clarify_job_ad(update) == (
+        "analyze_job_description" if added else "research_company_context")

@@ -9,14 +9,21 @@ user turn, and the paired comparison app vs each baseline (same case and rep), r
 a difference is claimed only with at least 6 pairs, at least 4 discordant pairs in one direction and none the
 other way (with the two-sided sign-test p).
 
-Money: a session's own cap is 3x its estimate; a session starts only while spent + the estimates of the running
-sessions + its own estimate stay within --total-cap. Finished sessions (checks.json present) are not run again,
-so a stopped run resumes where it left off.
+Money: a session's own cap is 3x its estimate; a session starts only while spent (the scored sessions and the earlier
+unfinished attempts of the planned ones) + the estimates of the running sessions + its own estimate stay within
+--total-cap. Finished sessions (checks.json present) are not run again, so a stopped run resumes where it left off.
+A session that did not finish (killed, Ctrl+C or SIGTERM, out of credit, a provider or network failure) is not scored;
+its folder is set aside as <name>.unfinished-<time> and it runs again on the next pass. A session that runs out of
+credit (exit code 75) stops the pool: nothing new starts, and the run exits with code 75 after the report.
+
+app_frozen sessions need --frozen-tree and --frozen-commit SHA: the commit must be in this repository and the tree's
+app files (run_matrix.APP_PATHS) must equal it byte for byte; each session's manifest gets the label app_commit=<sha>.
 
 Usage (from the repo root):
     .venv/bin/python -m evals.run_scenarios --out DIR --dry-run                  # plan and cost estimate, no call
     .venv/bin/python -m evals.run_scenarios --out DIR --smoke --env-file .env     # each scenario's first case once
     .venv/bin/python -m evals.run_scenarios --out DIR --env-file .env [--only S2,S3] [--systems app,b2] [--reps 3]
+        [--frozen-tree DIR --frozen-commit SHA]     # app_frozen: the tree is `git archive SHA | tar -x -C DIR`
     .venv/bin/python -m evals.run_scenarios --out DIR --report-only   # or --rescore: re-score with today's checks
     .venv/bin/python -m evals.run_scenarios --out DIR --report-only --publish evals/results/<date>-scenarios
 
@@ -27,8 +34,8 @@ without final_state.json; no events, model-call logs or workspace) with local pa
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-import math
 import shutil
 import subprocess
 import sys
@@ -78,13 +85,15 @@ def estimate(sessions: list[dict]) -> dict:
     return out
 
 
-def command(session: dict, run_dir: Path, model: str, env_file: str | None) -> list[str]:
+def command(session: dict, run_dir: Path, model: str, env_file: str | None, labels: dict | None = None) -> list[str]:
     cmd = [sys.executable, "-m", RUNNERS[session["system"]], "--run-dir", str(run_dir), "--ad", session["ad"],
            "--persona", session["persona"], "--inputs", session["inputs"],
            "--script", str(SCENARIO_DIR / f"{session['script']}.json"), "--model", model,
            "--cost-cap", str(round(CAP_FACTOR * session["est_usd"], 4))]
     for key in ("scenario", "system", "case", "rep"):
         cmd += ["--label", f"{key}={session[key]}"]
+    for key, value in (labels or {}).items():
+        cmd += ["--label", f"{key}={value}"]
     if session["system"] == "b2_ask":
         cmd.append("--ask-hint")
     if env_file:
@@ -99,19 +108,74 @@ def _cost(run_dir: Path) -> float:
         return 0.0
 
 
+def _status(run_dir: Path) -> str | None:
+    try:
+        return json.loads((run_dir / "manifest.json").read_text(encoding="utf-8")).get("status")
+    except (OSError, ValueError):
+        return None
+
+
+_GIT_RUN = subprocess.run  # bound at import: git is read-only, and tests fake subprocess.run for the sessions
+
+
+def _blob_sha(path: Path) -> str:
+    data = path.read_bytes()
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def check_frozen_tree(tree: Path, commit: str, repo: Path = REPO) -> str:
+    """The full id of `commit`, after checking that it is in `repo` and that every app file (run_matrix.APP_PATHS) it
+    holds is in `tree` byte for byte (exits otherwise). Files the tree has beyond those (e.g. __pycache__) are ignored."""
+    from evals.run_matrix import APP_PATHS
+    git = lambda *a: _GIT_RUN(["git", "-C", str(repo), *a], capture_output=True, text=True)  # noqa: E731
+    found = git("rev-parse", "--verify", "--quiet", f"{commit}^{{commit}}")
+    if found.returncode != 0 or not found.stdout.strip():
+        sys.exit(f"--frozen-commit {commit} is not a commit in {repo}")
+    sha = found.stdout.strip()
+    listing = git("ls-tree", "-r", "-z", sha, "--", *APP_PATHS)
+    differ = []
+    for entry in filter(None, listing.stdout.split("\0")):
+        meta, path = entry.split("\t", 1)
+        mode, kind, blob = meta.split()
+        if kind != "blob" or mode == "120000":  # a symlink's target is not compared
+            continue
+        local = tree / path
+        if not local.is_file() or _blob_sha(local) != blob:
+            differ.append(path)
+    if listing.returncode != 0 or not listing.stdout:
+        sys.exit(f"--frozen-commit {sha[:12]}: no app files ({', '.join(APP_PATHS)}) found at that commit")
+    if differ:
+        sys.exit(f"--frozen-tree {tree} is not an export of {sha[:12]}: {len(differ)} app files differ or are missing, "
+                 f"e.g. {', '.join(differ[:5])}")
+    return sha
+
+
 def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total_cap: float, workers: int,
-        frozen_tree: Path | None = None) -> None:
-    if any(s["system"] == "app_frozen" for s in sessions) and not (frozen_tree and (frozen_tree / "evals" / "run_case.py").is_file()):
-        sys.exit("app_frozen sessions need --frozen-tree: a tree with evals/run_case.py (an export of the frozen commit)")
-    from evals.score_checks import score_run
+        frozen_tree: Path | None = None, frozen_commit: str | None = None) -> bool:
+    """Run the sessions not yet scored. Returns True when a session ran out of credit (the pool then started nothing
+    new)."""
+    frozen_labels = {}
+    if any(s["system"] == "app_frozen" for s in sessions):
+        if not (frozen_tree and (frozen_tree / "evals" / "run_case.py").is_file()) or not frozen_commit:
+            sys.exit("app_frozen sessions need --frozen-tree (a tree with evals/run_case.py: an export of the frozen "
+                     "commit) and --frozen-commit SHA")
+        frozen_labels = {"app_commit": check_frozen_tree(frozen_tree, frozen_commit)}
+    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS
+    from evals.score_checks import NotScorable, score_run
     runs = out / "runs"
     runs.mkdir(parents=True, exist_ok=True)
     done = [s for s in sessions if (runs / s["name"] / "checks.json").is_file()]
-    money = {"spent": sum(_cost(runs / s["name"]) for s in done), "reserved": 0.0}
+    todo = [s for s in sessions if s not in done]
+    attempts = [p for s in todo for p in (runs / s["name"], *runs.glob(f"{s['name']}.unfinished-*"))]
+    money = {"spent": sum(_cost(runs / s["name"]) for s in done) + sum(_cost(p) for p in attempts), "reserved": 0.0}
     lock = threading.Lock()
+    out_of_credit = threading.Event()
 
     def one(s: dict) -> None:
         run_dir = runs / s["name"]
+        if out_of_credit.is_set():
+            print(f"not started {s['name']}: out of credit", flush=True)
+            return
         with lock:
             if money["spent"] + money["reserved"] + s["est_usd"] > total_cap:
                 print(f"skip {s['name']}: ${money['spent']:.3f} spent + ${money['reserved']:.3f} running "
@@ -121,38 +185,49 @@ def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total
         if run_dir.exists():  # an unfinished earlier attempt: kept aside, never deleted
             run_dir.rename(run_dir.with_name(f"{run_dir.name}.unfinished-{int(time.time())}"))
         started = time.time()
+        frozen = s["system"] == "app_frozen"
         with open(runs / f"{s['name']}.log", "w", encoding="utf-8") as log:
-            code = subprocess.run(command(s, run_dir, model, env_file),
-                                  cwd=frozen_tree if s["system"] == "app_frozen" else REPO, stdout=log,
+            code = subprocess.run(command(s, run_dir, model, env_file, frozen_labels if frozen else None),
+                                  cwd=frozen_tree if frozen else REPO, stdout=log,
                                   stderr=subprocess.STDOUT).returncode
         cost = _cost(run_dir)
         with lock:
             money["reserved"] -= s["est_usd"]
             money["spent"] += cost
+        if code == EXIT_OUT_OF_CREDIT or _status(run_dir) == INTERRUPTED_STATUS:
+            out_of_credit.set()  # nothing new starts; the running sessions end at their own first credit error
         try:
             r = score_run(run_dir)
             result = f"{r['passed']}/{r['total']} checks, status {r['status']}"
+        except NotScorable as e:  # unfinished: no checks.json, so the next pass runs it again
+            result = f"not scored, runs again on the next pass ({e})"
         except Exception as e:  # noqa: BLE001 - a session that left no records is reported, not fatal
             result = f"not scored ({type(e).__name__}: {e})"
         print(f"{s['name']}: exit {code}, ${cost:.4f}, {(time.time() - started) / 60:.1f} min, {result} "
               f"(spent ${money['spent']:.3f})", flush=True)
 
-    todo = [s for s in sessions if s not in done]
-    print(f"{len(done)} sessions already scored (${money['spent']:.3f}); running {len(todo)}", flush=True)
+    print(f"{len(done)} sessions already scored (${money['spent']:.3f} spent); running {len(todo)}", flush=True)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         list(pool.map(one, todo))
+    if out_of_credit.is_set():
+        print("OUT OF CREDIT: no new session was started after it; run the same command after a top-up", flush=True)
+    return out_of_credit.is_set()
 
 
 def rescore(out: Path) -> None:
-    """Score every session with a manifest again, with its scenario script as it is now (a corrected check)."""
-    from evals.score_checks import score_run
+    """Score every session with a manifest again, with its scenario script as it is now (a corrected check). An app
+    session without events.jsonl (a published one) is skipped and keeps its checks.json."""
+    from evals.score_checks import NotScorable, score_run
     for manifest in sorted((out / "runs").glob("*/manifest.json")):
         if "." in manifest.parent.name:
             continue
         case = json.loads(manifest.read_text(encoding="utf-8")).get("labels", {}).get("case", "")
         script = SCENARIO_DIR / f"{case.split('/', 1)[-1]}.json"
         if script.is_file():
-            score_run(manifest.parent, script)
+            try:
+                score_run(manifest.parent, script)
+            except NotScorable as e:
+                print(f"skipped {e}", flush=True)
 
 
 # ------------------------------------------------------------------------------------------- report
@@ -166,14 +241,6 @@ def collect(out: Path) -> list[dict]:
         rows.append({**manifest.get("labels", {}), "name": checks.parent.name,
                      **json.loads(checks.read_text(encoding="utf-8"))})
     return rows
-
-
-def sign_test(a: int, b: int) -> float:
-    """Two-sided exact sign test on a and b discordant pairs."""
-    n = a + b
-    if not n:
-        return 1.0
-    return min(1.0, 2 * sum(math.comb(n, k) for k in range(min(a, b) + 1)) / 2 ** n)
 
 
 def paired(rows: list[dict], base: str, other: str, primary: list[str] | None = None) -> dict:
@@ -195,7 +262,9 @@ def paired(rows: list[dict], base: str, other: str, primary: list[str] | None = 
         verdict = f"{other} better"
     else:
         verdict = "no difference detected"
-    return {"pairs": len(pairs), f"{base}_only": a, f"{other}_only": b, "sign_p": round(sign_test(a, b), 3),
+    from evals.analysis.stats import sign_test
+    p = sign_test([1] * a + [-1] * b)["p"]  # two-sided exact sign test on the discordant pairs
+    return {"pairs": len(pairs), f"{base}_only": a, f"{other}_only": b, "sign_p": round(p, 3),
             "verdict": verdict}
 
 
@@ -313,6 +382,8 @@ def main(argv=None) -> int:
     parser.add_argument("--total-cap", type=float, help="USD for all sessions together (default: the table's)")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--frozen-tree", help="the tree app_frozen sessions run from (an export of the frozen commit)")
+    parser.add_argument("--frozen-commit", help="the commit --frozen-tree is an export of (checked; recorded as the "
+                                                "label app_commit)")
     parser.add_argument("--publish", help="after the report, copy the scored sessions' records here (see above)")
     args = parser.parse_args(argv)
     spec = load_spec(args.spec)
@@ -324,18 +395,24 @@ def main(argv=None) -> int:
             print(f"{s['name']}: ~${s['est_usd']}")
         print(json.dumps(estimate(sessions), indent=2))
         return 0
+    stopped = False
     if args.rescore:
         rescore(out)
     elif not args.report_only:
         if shutil.which("pdflatex") is None:
             sys.exit("pdflatex is not installed: every session needs it")
-        run(sessions, out, args.model or spec["model"], args.env_file,
-            args.total_cap if args.total_cap is not None else spec["total_cap"], args.workers,
-            Path(args.frozen_tree).resolve() if args.frozen_tree else None)
+        # absolute: app_frozen sessions run with the frozen tree as their working folder
+        env_file = str(Path(args.env_file).resolve()) if args.env_file else None
+        stopped = run(sessions, out, args.model or spec["model"], env_file,
+                      args.total_cap if args.total_cap is not None else spec["total_cap"], args.workers,
+                      Path(args.frozen_tree).resolve() if args.frozen_tree else None, args.frozen_commit)
     print(report(out, spec))
     if args.publish:
         frozen = Path(args.frozen_tree).resolve() if args.frozen_tree else None
         print(f"published {publish(out, Path(args.publish), frozen)} sessions to {args.publish}")
+    if stopped:
+        from evals.credit import EXIT_OUT_OF_CREDIT
+        return EXIT_OUT_OF_CREDIT
     return 0
 
 

@@ -87,8 +87,7 @@ def _build_agent(monkeypatch, tmp_path, llm):
     import debug_utils
     import langgraph_agent as la
     from agents import (
-        cover_letter_pdf_generator, cover_letter_writer, critique, cv_pdf_generator, cv_writer,
-        document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router, search,
+        cover_letter_pdf_generator, critique, cv_pdf_generator, document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router, search,
     )
 
     monkeypatch.setattr(debug_utils, "_debug_file_path", str(tmp_path / "debug.log"))

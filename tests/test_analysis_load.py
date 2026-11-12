@@ -167,3 +167,13 @@ def test_the_published_round_loads_and_matches_its_results_csv():
     assert len(p["pairs"]) == 19   # as in REPORT.md: terra +0.21 on 19 paired cases, 6 better, 9 equal, 4 worse
     assert sum(x["diff"] for x in p["pairs"]) / 19 == pytest.approx(0.2105, abs=1e-3)
     assert stats.sign_test([x["diff"] for x in p["pairs"]])["wins"] == 6
+
+
+@pytest.mark.parametrize("status", ["running", "interrupted: stopped"])
+def test_a_killed_or_stopped_session_is_not_counted_even_if_graded(tmp_path, status):
+    runs = tmp_path / "round" / "runs"
+    _run(runs, "p01_a1_all4_luna_r1", {"persona": "p01", "ad": "a1", "input_set": "all4",
+                                       "model": "openai:gpt-6-luna", "rep": "1"}, {"eval1": (f"openai:{SOL}", 7)},
+         status=status)
+    assert load.read_rows(tmp_path / "round") == []
+    assert [r["interrupted"] for r in load.read_rows(tmp_path / "round", include_interrupted=True)] == [True]

@@ -30,12 +30,13 @@ redrawn from the code with `--draw-graph`.
    or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked
    once to add details or reply `continue` (the `clarify_job_ad` step).
 3. **Company research.** If the ad names the company, `SearchAgent` builds a Tavily query and summarises the results
-   with a model (results about another company are not used). Without a `TAVILY_API_KEY` this step is skipped with a
-   warning. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site),
-   location or country limits and culture signals, shows them on the console and gives them to the writers; anything
-   neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that
-   the job does not match, the assistant tells you; without a stated preference you are treated as open to the
-   job's arrangement.
+   with a model (results about another company are not used). Only that query goes to Tavily, never the CV. Without a
+   `TAVILY_API_KEY`, or when the search agent runs on a local model, no web search is made and this step is skipped
+   with a log line. From the job ad and the results together it extracts the work arrangement (remote / hybrid /
+   on-site), location or country limits and culture signals, shows them on the console and gives them to the writers;
+   anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement
+   preference that the job does not match, the assistant tells you; without a stated preference you are treated as
+   open to the job's arrangement.
 4. **Portfolio.** `ExperienceRetrievalAgent` gives the writers your portfolio (`data/portfolio/portfolio.txt`, if
    you supplied one) whole. Only a portfolio over 12,000 characters is indexed (one paid embedding call, or a local
    Ollama embedding model on a local run) and searched for the items relevant to the job description: a two-stage
@@ -43,7 +44,10 @@ redrawn from the code with `--draw-graph`.
    (retrieval-augmented generation, RAG). Without a portfolio it logs "No portfolio".
 5. **Routing decision.** `RouterAgent` reads the chat history, the existing outputs and your feedback, and picks the
    next step: write the CV, write the cover letter, change a PDF's appearance, ask you something, or exit. If you ask
-   for both documents in one message, it writes them one after the other without asking again in between.
+   for both documents in one message, it writes them one after the other without asking again in between. Once both
+   exist, a change goes to both without a question only if your message names both documents (CV/resume/Lebenslauf/
+   životopis and cover letter/letter/Anschreiben/motivacijsko pismo, or both/beide/oba); otherwise the router redrafts
+   the document you asked about and then asks whether to apply the change to the other one too.
 6. **Generation.**
    - `CVWriterAgent` creates or updates a CV; `CoverLetterWriterAgent` creates or updates a cover letter
      (consistent with the freshly generated CV).
@@ -63,7 +67,9 @@ redrawn from the code with `--draw-graph`.
    - Its grounding check, a separate call (`grounding` in the config, also on a non-writer model), lists claims
      about you that your material does not support and claims about the employer that the ad and company research
      do not support.
-   - Every draft is saved with its quality score as a draft file, so earlier versions stay on disk.
+   - Every draft is saved as a text file (`data/generated_CVs/generated_CV_draft_N.txt` and the cover letter's
+     equivalent), so earlier versions stay on disk. Its quality score is kept in the session's draft history and
+     the log, not in the file.
    - If the draft has a real defect (a claim your material does not support, a critical issue, or a requirement of
      the ad you meet but the draft does not show), it is redrafted automatically, up to `workflow.max_refinements`
      times (1 in the shipped config). After that it gets another pass only while it still makes unsupported claims
@@ -133,7 +139,7 @@ extracted job and company information, generated documents, critique feedback an
 |---|---|
 | `data/CV/` | your CV, earlier cover letter and notes (`CV.*`, `cover_letter.*`, `notes.*`; `.txt`, `.md` or text `.pdf`) |
 | `data/portfolio/portfolio.txt` | your optional portfolio, one item per paragraph |
-| `data/generated_CVs/` | every draft (`generated_CV_draft_N.*`, the cover letter likewise) and the latest PDFs, `generated_CV.pdf` and `generated_cover_letter.pdf` |
+| `data/generated_CVs/` | every draft of the session (`generated_CV_draft_N.*`, the cover letter likewise) and the latest PDFs, `generated_CV.pdf` and `generated_cover_letter.pdf`. A new session started from the command line first moves the previous session's files to `earlier/<date_time>/` |
 | `job_description/` | job ads you saved as files; two made-up samples are tracked |
 | `logs/`, `debug/` | log files (see [Logging and debugging](#logging-and-debugging)) |
 
@@ -170,13 +176,13 @@ agent is built.
 
 | variable | meaning |
 |---|---|
-| `OPENAI_API_KEY` | needed for the shipped OpenAI models. Without it, and without a local `CV_EDITOR_MODEL`, the program stops at startup with a Python traceback ending in `openai.OpenAIError: The api_key client option must be set ...` |
-| `TAVILY_API_KEY` | optional; company research is skipped without it |
-| `ANTHROPIC_API_KEY` | only for the evaluation tools when a Claude model grades (`evals/README.md`) |
+| `OPENAI_API_KEY` | needed for the shipped OpenAI models. Without it, and without a local `CV_EDITOR_MODEL`, the program stops at startup with `OPENAI_API_KEY is not set` and how to set it |
+| `TAVILY_API_KEY` | optional; company research is skipped without it, and on a local model |
+| `ANTHROPIC_API_KEY` | for the evaluation tools when a Claude model grades (`evals/README.md`), and for the program when one of its models is an `anthropic:` model (checked at startup like `OPENAI_API_KEY`) |
 | `CV_EDITOR_MODEL=<provider:model>` | replaces the writer-side models for one run without editing the config, never the critic's |
 | `CV_EDITOR_CRITIC_MODEL=<provider:model>` | replaces the quality review's model (`critique`) |
 | `CV_EDITOR_GROUNDING_MODEL=<provider:model>` | replaces the fact check's model (`grounding`) |
-| `CV_EDITOR_TEMPERATURE` | a number, or `default` to send none; applies only to the agents whose model one of the three variables above replaced |
+| `CV_EDITOR_TEMPERATURE` | a number (with a decimal point, e.g. `0.2`), or `default` to send none; applies only to the agents whose model one of the three variables above replaced. Anything else stops the program at startup with a message |
 | `CV_EDITOR_OLLAMA_NUM_CTX` | context size for local Ollama models (default 16384) |
 | `CV_EDITOR_EMBEDDING_MODEL` | the Ollama embedding model for a large portfolio on a local run (default `nomic-embed-text`; hosted runs use OpenAI's `text-embedding-3-small`). If it is not pulled, indexing fails with a warning and RAG is skipped |
 | `CV_EDITOR_SEARCH_FIXTURE=file.json` | replays prepared company-search results instead of calling Tavily (testing mode) |
@@ -184,7 +190,8 @@ agent is built.
 
 A local `CV_EDITOR_MODEL` (an `ollama:` model) is the exception to "never the critic's": it also replaces the
 critic's models unless `CV_EDITOR_CRITIC_MODEL` or `CV_EDITOR_GROUNDING_MODEL` is set, so a local run sends nothing
-to OpenAI and needs no OpenAI key; the log then says the checker shares the writer's model.
+to OpenAI and needs no OpenAI key; the log then says the checker shares the writer's model. A local run also makes no
+Tavily search, even when `TAVILY_API_KEY` is set.
 
 ## Customisation
 
@@ -200,10 +207,11 @@ to OpenAI and needs no OpenAI key; the log then says the checker shares the writ
 
 ## Logging and debugging
 
-- **Logs.** `logs/cv_editor_<timestamp>.log`. The console shows the same stream: the program's questions arrive as
-  `__main__ - INFO -` lines among other log lines.
+- **Logs.** `logs/cv_editor_<timestamp>.log` holds every line, including other libraries' debug output. The console
+  shows the program's own lines (its questions arrive as `<timestamp> - __main__ - INFO -` lines) and other
+  libraries' warnings and errors.
 - **Debug transcripts.** `debug/cv_editor_<timestamp>.log` holds prompts, state snapshots and generated text for
-  auditing. Running the tests or `--help` also creates files here.
+  auditing. Running the tests also creates files here.
 - **Recording a session.** `uv run python langgraph_agent.py --trace-dir DIR` writes every step (`events.jsonl`),
   every model call with prompt, response, tokens and cost (`llm_calls.jsonl`), `summary.json` and `final_state.json`
   to `DIR`. API keys are never written. The evaluation's testing mode uses the same recording

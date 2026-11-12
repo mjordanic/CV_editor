@@ -186,7 +186,7 @@ def test_the_estimate_of_the_whole_matrix_stays_under_the_default_cap(capsys):
     from evals import run_matrix
     assert run_matrix.main(["--out", "unused", "--estimate"]) == 0
     est = json.loads(capsys.readouterr().out)
-    parser_default = 24.0  # the captain's budget for the round
+    parser_default = 24.0  # the round's budget
     assert est["cases"] == len(json.loads((REPO / "evals" / "matrix.json").read_text())["cases"])
     assert est["total_usd"] <= parser_default
     assert est["by_script"]["default"]["cases"] >= 72
@@ -626,6 +626,102 @@ def test_an_interrupted_evaluation_reruns_only_the_evaluation(tmp_path, monkeypa
     assert ledger == [["eval-interrupted", "0.003000"], ["eval", "0.100000"]]
 
 
+@pytest.mark.parametrize("stop", ["ctrl-c", "sigterm"])
+def test_a_session_stopped_by_hand_is_marked_interrupted_not_an_app_error(tmp_path, monkeypatch, stop):
+    """The full app graph with stub models; Ctrl+C (KeyboardInterrupt) or SIGTERM (run_case's handler raises Stopped)
+    arrives during the CV writer's call."""
+    import signal
+    import subprocess
+
+    from langchain_core.language_models import BaseChatModel
+
+    from agents import (cover_letter_pdf_generator, critique, cv_pdf_generator, document_writer, job_description,
+                        latex_fixer, latex_pdf_generator, rag_agent, router, search)
+    from evals import run_case
+    from evals.credit import STOPPED_STATUS
+    from tests.test_testing_mode import _FakeModels
+
+    class StoppedChat(BaseChatModel):
+        @property
+        def _llm_type(self):
+            return "stopped"
+
+        def _generate(self, messages, stop=None, run_manager=None, **kw):
+            if stop_kind == "ctrl-c":
+                raise KeyboardInterrupt()
+            signal.getsignal(signal.SIGTERM)(signal.SIGTERM, None)  # what the signal would run
+
+    stop_kind = stop
+
+    class Models(_FakeModels):
+        def with_structured_output(self, schema, **kw):
+            if schema.__name__ == "CVGenerationResponse":
+                return StoppedChat()
+            return super().with_structured_output(schema)
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(subprocess, "run", subprocess.run)
+    monkeypatch.setattr(rag_agent, "_embeddings_for", rag_agent._embeddings_for)
+    previous_handler = signal.getsignal(signal.SIGTERM)
+    for var in ("CV_EDITOR_MODEL", "CV_EDITOR_GROUNDING_MODEL", "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD"):
+        monkeypatch.setenv(var, "x")  # recorded first, so run_case's own setting is undone after the test
+        monkeypatch.delenv(var)
+    monkeypatch.setenv("OPENAI_API_KEY", "dummy-no-calls")
+    monkeypatch.setenv("TAVILY_API_KEY", "dummy-no-calls")
+    fake = Models()
+    for module in (router, document_writer, critique, job_description, search, rag_agent, latex_pdf_generator, latex_fixer):
+        monkeypatch.setattr(module, "init_chat_model", lambda *_, **__: fake)
+    for gen in (cv_pdf_generator.CVPDFGenerator, cover_letter_pdf_generator.CoverLetterPDFGenerator):
+        monkeypatch.setattr(gen, "_build_latex_document", lambda self, template, text, style: text)
+
+    env = tmp_path / "empty.env"
+    env.write_text("")
+    run_dir = tmp_path / "run"
+    try:
+        code = run_case.main(["--run-dir", str(run_dir), "--ad", "a5", "--persona", "p07", "--inputs", "cv",
+                              "--env-file", str(env)])
+    finally:
+        signal.signal(signal.SIGTERM, previous_handler)
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    assert code == run_case.EXIT_STOPPED and manifest["status"] == STOPPED_STATUS
+    from evals.run_matrix import session_done
+    assert not session_done(run_dir)  # never graded; run_matrix redoes it
+
+
+@pytest.mark.parametrize("status,code", [("interrupted: stopped", 130), ("running", -9)])
+def test_a_stopped_or_killed_session_is_not_graded_and_is_redone(tmp_path, monkeypatch, status, code):
+    from argparse import Namespace
+
+    from evals import run_matrix
+    out = tmp_path / "runs"
+    out.mkdir()
+    commands = []
+    state = {"status": status, "code": code}
+
+    def fake_run(cmd, *a, **kw):
+        commands.append(cmd[2])
+        if cmd[2] == "evals.run_case":
+            run = Path(cmd[cmd.index("--run-dir") + 1])
+            run.mkdir(parents=True)
+            (run / "manifest.json").write_text(json.dumps({"status": state["status"], "cost_usd": 0.02}))
+            return type("Done", (), {"stdout": "", "stderr": "", "returncode": state["code"]})()
+        folder = Path(cmd[3]) / "evaluation" / "eval1"
+        folder.mkdir(parents=True)
+        (folder / "evaluation.json").write_text(json.dumps({"cost_usd": 0.1}))
+        return type("Done", (), {"stdout": "", "stderr": "", "returncode": 0})()
+
+    monkeypatch.setattr(run_matrix.subprocess, "run", fake_run)
+    opts = Namespace(out=str(out), env_file=None, total_cap=10.0, cost_cap=1.0, rescore=None, eval_name="eval1",
+                     truth_check=False)
+    run_matrix.OUT_OF_CREDIT.clear()
+    cid, result = run_matrix.run_one(_matrix_case("c1_r1"), opts)
+    assert result.startswith(f"session not finished ({status})") and commands == ["evals.run_case"]
+    assert not (out / "c1_r1" / "evaluation").exists()
+    state.update(status="completed", code=0)  # the next run redoes the session, then grades it
+    assert run_matrix.run_one(_matrix_case("c1_r1"), opts) == ("c1_r1", "ok")
+    assert commands == ["evals.run_case", "evals.run_case", "evals.evaluate"]
+
+
 def test_aggregates_leave_out_and_list_interrupted_sessions(tmp_path):
     from evals import summarize
     from evals.credit import INTERRUPTED_STATUS
@@ -651,6 +747,36 @@ def test_aggregates_leave_out_and_list_interrupted_sessions(tmp_path):
     assert totals["redrafts"]["cover_letter"]["sessions_with_a_draft"] == 1
     assert totals["by_script"]["trap-p03"]["untruthful_followed"] == 1
     assert totals["by_script"]["default"]["sessions"] == 1
+
+
+def test_summarize_reads_a_published_round_and_writes_only_to_out(tmp_path, capsys):
+    """A published round: its sessions under runs/, no events.jsonl, the redraft counts in each summary.json."""
+    from evals import summarize
+    round_dir = tmp_path / "round"
+    published = round_dir / "sessions_summary.json"
+    run = round_dir / "runs" / "a_r1"
+    run.mkdir(parents=True)
+    (run / "manifest.json").write_text(json.dumps({"status": "completed", "labels": {"script": "default"}}))
+    zero = {"drafts": 1, "first": 1, "critique_redrafts": 0, "critique_skipped": 0, "user_redrafts": 0,
+            "removal_passes": 0}
+    (run / "summary.json").write_text(json.dumps({"redrafts": {"cv": {**zero, "drafts": 2, "critique_redrafts": 1},
+                                                               "cover_letter": zero}}))
+    published.write_text("published")
+    out = tmp_path / "elsewhere" / "repeats_summary.json"
+    out.parent.mkdir()
+    assert summarize.main([str(round_dir), "--out", str(out)]) == 0
+    assert "1 sessions; critique-driven redraft: CV in 1" in capsys.readouterr().out
+    assert published.read_text() == "published"  # the input folder is not written to
+    totals = json.loads((out.parent / "sessions_summary.json").read_text())
+    assert totals["sessions"] == 1 and totals["redrafts"]["cv"]["critique_redrafts"] == 1
+    # a folder with no session: reported, and nothing written over a published file
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    (empty / "sessions_summary.json").write_text("published")
+    assert summarize.main([str(empty)]) == 1
+    assert "no session" in capsys.readouterr().err
+    assert (empty / "sessions_summary.json").read_text() == "published"
+    assert not (empty / "repeats_summary.json").exists()
 
 
 def test_a_scripted_session_logs_its_request_and_counts_the_redraft(tmp_path, monkeypatch):

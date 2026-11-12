@@ -196,8 +196,8 @@ from the conversation and the final documents:
 
 The evaluator saw the PDF pages as images.
 
-- **Layout** is the weakest dimension (mean 7.00, terra 7.31 vs luna 6.87). 77 sessions produced a
-  two-page CV and 31 a one-page CV. Page count was judged appropriate in 107 of 110. The complaints:
+- **Layout** is the weakest dimension (mean 7.00, terra 7.31 vs luna 6.87). 78 sessions produced a
+  two-page CV and 32 a one-page CV. Page count was judged appropriate in 107 of 110. The complaints:
   - spacing in 109 sessions: a dense first page with a nearly empty second page, small body type,
     stranded headings;
   - overflow or text running into dates in 8 sessions;
@@ -252,7 +252,7 @@ practice and an unfinished data-engineering course, applying for a *senior* data
 
 | run | what happened |
 |---|---|
-| `p04_a6_cv_only_luna_r1`, `p09_a3_notes_only_luna_r1`, `p11_a1_all4_luna_r1`, `p12_a7_all4_revision_luna_r1`, `p13_a8_cv_only_luna_r1` | **The final cover letter contains the CV.** luna's first letter draft repeated the CV (in whole or in large part) before the letter in 9 of 78 sessions; terra never did. In these 5 the first draft was kept: the later redrafts had flagged claims, or, in p04, the side-by-side comparison preferred it. The letter PDF then runs to 2–3 pages, and these letters score 3–6. The PDF text check warned the user in 2 of the 5 (p11, p12). In the other 3 the PDF matched the text. |
+| `p04_a6_cv_only_luna_r1`, `p09_a3_notes_only_luna_r1`, `p11_a1_all4_luna_r1`, `p12_a7_all4_revision_luna_r1`, `p13_a8_cv_only_luna_r1` | **The final cover letter contains the CV.** luna's first letter draft repeated the CV (in whole or in large part) before the letter in 9 of 78 sessions; terra never did. In these 5 the first draft was kept: the later redrafts had flagged claims, or, in p04, the side-by-side comparison preferred it. The letter PDF then runs to 2 pages (p04) or 3 (p13); the other 3 fit on one page. These letters score 3–6. The PDF text check warned the user in 2 of the 5 (p11, p12). In the other 3 the PDF matched the text. |
 | `p06_a2_all4_letter-de_luna_r1`, `p10_a2_all4_letter-de_terra_r1`, `p12_a7_all4_letter-hr_terra_r1` | The language request was never sent (see above), and the evaluator penalised the app for it. |
 | `p01_a1_all4_revisions_luna_r1` | The section move was applied to the PDF only; the text document kept the old order. |
 | `p10_a2_cv_only_chatty_terra_r1` | The notice period went into the CV instead of the cover letter. |

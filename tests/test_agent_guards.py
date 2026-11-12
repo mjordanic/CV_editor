@@ -5,6 +5,7 @@ All data is the repo's fictional sample material.
 import logging
 from pathlib import Path
 
+import pytest
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph.message import add_messages
 
@@ -190,3 +191,29 @@ def test_failed_company_search_does_not_end_the_session(monkeypatch, caplog):
     assert out["company_info"]["work_context"]["arrangement"] == "not stated"
     assert "remote_work" not in out["company_info"]
     assert "Company research failed" in caplog.text
+
+
+def test_local_model_makes_no_web_search_even_with_a_tavily_key(monkeypatch):
+    monkeypatch.setattr(search, "write_to_debug", lambda *_, **__: None)
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
+    monkeypatch.delenv(search.SEARCH_FIXTURE_ENV, raising=False)
+    monkeypatch.delenv(search.SEARCH_RECORD_ENV, raising=False)
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: object())
+    monkeypatch.setattr(search, "TavilyClient", lambda **_: pytest.fail("a local run must not create a Tavily client"))
+    agent = search.SearchAgent(model="ollama:gemma4:e4b")
+    assert agent.tavily_client is None
+    agent.search_tavily = lambda query: pytest.fail("a local run must not search the web")
+    agent.extract_work_context = lambda *_: search.WorkContext(arrangement="not stated")
+    out = agent.run({"job_description_info": {"company_name": "Northwind Analytics"}, "messages": []})
+    assert out["company_info"]["company_description"] == search.NO_COMPANY_INFO
+    assert out["company_info"]["search_source"] is None
+
+
+def test_hosted_model_with_a_tavily_key_searches(monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
+    monkeypatch.delenv(search.SEARCH_FIXTURE_ENV, raising=False)
+    monkeypatch.delenv(search.SEARCH_RECORD_ENV, raising=False)
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: object())
+    monkeypatch.setattr(search, "TavilyClient", lambda **kw: ("client", kw["api_key"]))
+    agent = search.SearchAgent(model="openai:gpt-6-luna")
+    assert agent.tavily_client == ("client", "tvly-test-key")

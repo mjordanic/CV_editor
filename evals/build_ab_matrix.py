@@ -16,8 +16,8 @@ Stages 1-2 (evals/matrix_ab_stage12.json), 147 sessions:
            second time (eval2), by Opus once (opus1) and by Haiku twice (haiku1, haiku2).
     core   the other 33 cases x A, C, E, graded once by Sonnet; the 4 extra repeat cases get a second writer run
            (graded once) and their first-run sessions a second Sonnet grading; Opus grades the first-run sessions
-           of the 6 check cases. 111 sessions. Haiku was dropped as a re-grader after the pilot (option O1 off), so
-           the core has no Haiku grading.
+           of the 6 check cases. 111 sessions. Haiku was dropped as a re-grader after the pilot, so the core has no
+           Haiku grading.
     The 6 check cases come from the 6 of the 7 non-pilot personas a seeded draw picks, two per input set; the 4
     extra repeat cases are the check cases with cv_only and no_cv (the 6 pilot repeats are all all4). Every session
     gets the ground-truth trap check (truth1). So: 10 repeat cases (30 re-graded first runs), 12 Opus cases (36

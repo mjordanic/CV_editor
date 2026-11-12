@@ -1,6 +1,5 @@
 from typing import Optional, Literal
 import logging
-import json
 from langchain.chat_models import init_chat_model
 from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
@@ -242,7 +241,6 @@ class JobDescriptionAgent:
             # The ad's own text is added here, not echoed by the model (see JobDescriptionInfo).
             "job_description_info": {**extracted_info.model_dump(), "job_description": job_description_text},
             "job_ad_extra_details": None,
-            "current_node": "job_description"
         }
         
         return updated_state
@@ -273,13 +271,18 @@ def route_after_job_description(state) -> str:
     return "research_company_context"
 
 
+# Replies to the thin-ad question that mean "go on with the ad as it is" rather than details to add.
+CONTINUE_REPLIES = ("continue", "go on", "proceed", "ok", "okay")
+
+
 def clarify_job_ad(state):
     """
     Ask the user, once, for more details about a job ad that has no job title and no requirements.
 
-    Whatever they reply is added to the ad and extracted again (analyze_job_description); there is
-    no keyword to type, so this works in any language. A reply with no details (e.g. "continue")
-    just leaves the extraction as thin as before, and the session goes on: this is asked only once.
+    The offered reply 'continue' (or 'go on', 'ok', CONTINUE_REPLIES) goes on with the ad as it is,
+    without adding the word to the ad. Any other reply is added to the ad and extracted again
+    (analyze_job_description), so details work in any language; a reply with no details just leaves
+    the extraction as thin as before. This is asked only once.
     """
     reply = str(interrupt({
         "message": (
@@ -289,7 +292,10 @@ def clarify_job_ad(state):
         ),
         "required": True,
     }) or "").strip()
-    update = {"job_ad_clarification_asked": True, "current_node": "clarify_job_ad"}
+    update = {"job_ad_clarification_asked": True}
+    if reply.strip(" .!'\"").lower() in CONTINUE_REPLIES:
+        # The offered "continue" adds nothing to the ad: go on with the extraction as it is.
+        reply = ""
     if reply:
         # Stored with the ad (job_description_info), not as a chat message: the router would
         # otherwise read a reply such as "continue" as a request about the documents.

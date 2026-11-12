@@ -1,8 +1,8 @@
 """Single-prompt baseline: exactly ONE model call writes the tailored CV and cover letter, text and LaTeX.
 
-The comparison point for the multi-agent app (evals/run_case.py; a default-script session there
-makes a median of 22 model calls on three models). Here a case is one call and nothing else. The
-single prompt holds all the information the multi-agent session gets:
+The comparison point for the multi-agent app (evals/run_case.py; a default-script session there makes a median of
+22 model calls on two chat models, plus the embedding model). Here a case is one call and nothing else. The single
+prompt holds all the information the multi-agent session gets:
 
     - the candidate files the input set gives (omitted ones are absent, as in run_case),
     - the job ad as published,
@@ -62,7 +62,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -273,17 +272,21 @@ class AnswerNotParsed(RuntimeError):
         self.finish_reason = finish_reason
 
 
-def generate(llm, messages: list, callbacks: list,
-             batch_id: str | None = None) -> tuple[SinglePromptResponse, str | None]:
-    """The one model call of the case (no retries: a second call would change the topology): (answer, finish_reason).
-    `batch_id`: the reply comes from that OpenAI batch (the recorder prices it at the Batch rate)."""
+def structured_call(llm, schema: type[BaseModel], messages: list, callbacks: list, node: str,
+                    batch_id: str | None = None):
+    """One structured-output model call, never retried: (answer, finish_reason). Raises AnswerNotParsed for an answer
+    that is not `schema`, or one cut off at the output limit (its billed cost still goes to the recorder among
+    `callbacks`, evals.grader.record_cut_off). `batch_id`: the reply comes from that OpenAI batch (priced at the
+    Batch rate). Shared by this baseline and the chat baseline (evals/single_prompt_chat.py)."""
     import openai
-    chain = llm.with_structured_output(SinglePromptResponse, include_raw=True)
-    metadata = {"langgraph_node": GENERATION_NODE, **({"batch_id": batch_id} if batch_id else {})}
+    chain = llm.with_structured_output(schema, include_raw=True)
+    metadata = {"langgraph_node": node, **({"batch_id": batch_id} if batch_id else {})}
     try:
-        result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": metadata,
-                                                "run_name": GENERATION_NODE})
+        result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": metadata, "run_name": node})
     except openai.LengthFinishReasonError as e:  # the SDK refuses to parse an answer cut off at the output limit
+        from evals.grader import record_cut_off
+        recorder = next((c.recorder for c in callbacks if getattr(c, "recorder", None) is not None), None)
+        record_cut_off(recorder, e, node, getattr(llm, "model_name", None), batch_id)
         raise AnswerNotParsed("the model's answer was cut off", "length") from e
     raw = result.get("raw") if isinstance(result, dict) else None
     finish_reason = (getattr(raw, "response_metadata", None) or {}).get("finish_reason")
@@ -291,6 +294,23 @@ def generate(llm, messages: list, callbacks: list,
     if parsed is None:
         raise AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}", finish_reason)
     return parsed, finish_reason
+
+
+def generate(llm, messages: list, callbacks: list,
+             batch_id: str | None = None) -> tuple[SinglePromptResponse, str | None]:
+    """The one model call of the case (no retries: a second call would change the topology): (answer, finish_reason)."""
+    return structured_call(llm, SinglePromptResponse, messages, callbacks, GENERATION_NODE, batch_id)
+
+
+def failed_session(error: Exception) -> tuple[str, str | None, str | None]:
+    """(status, failure, finish_reason) of a session that raised `error` (not OutOfCredit): a provider or network
+    failure is "interrupted: infrastructure" (not the method's: not graded, run again); an answer that did not parse
+    or was cut off is failure "parse_error"; anything else "error"."""
+    from evals.credit import INFRASTRUCTURE_STATUS, is_infrastructure_error
+    if is_infrastructure_error(error):
+        return INFRASTRUCTURE_STATUS, None, None
+    return (f"error: {type(error).__name__}: {error}"[:500], "parse_error" if isinstance(error, AnswerNotParsed)
+            else "error", getattr(error, "finish_reason", None))
 
 
 # ---------------------------------------------------------------------------------------------- OpenAI Batch
@@ -505,8 +525,7 @@ def main(argv=None) -> int:
     load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
     from provenance import BATCH_PRICE_FACTOR, RunRecorder
-    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, CreditGuard, OutOfCredit,
-                              install_no_retry_patch, is_infrastructure_error)
+    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
     from evals.run_case import _git, _package_versions
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
     install_no_retry_patch()
@@ -547,12 +566,7 @@ def main(argv=None) -> int:
         status = INTERRUPTED_STATUS
         recorder.record_error("session", e)
     except Exception as e:  # noqa: BLE001 - record what happened
-        if is_infrastructure_error(e):  # not the method's failure: not graded, and run_matrix runs it again
-            status = INFRASTRUCTURE_STATUS
-        else:
-            status = f"error: {type(e).__name__}: {e}"[:500]
-            failure = "parse_error" if isinstance(e, AnswerNotParsed) else "error"
-            finish_reason = getattr(e, "finish_reason", None)
+        status, failure, finish_reason = failed_session(e)
         recorder.record_error("session", e)
 
     out = run_dir / "outputs"

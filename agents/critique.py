@@ -407,7 +407,6 @@ class CritiqueAgent:
         to the last one of this cycle is not critiqued or stored again.
         """
         label = "CV" if kind == "cv" else "Cover letter"
-        node = f"critique_{kind}"
         logger.info(f"CritiqueAgent._run({kind}) called")
 
         document = state.get(f"generated_{kind}")
@@ -415,7 +414,6 @@ class CritiqueAgent:
             logger.warning(f"No {label.lower()} to critique - skipping")
             return {
                 "messages": state.get("messages", []),
-                "current_node": node,
                 f"{kind}_needs_refinement": False
             }
 
@@ -427,9 +425,7 @@ class CritiqueAgent:
             # draft PDF) holding the previous draft's text.
             logger.info(f"{label} is unchanged since iteration {history[-1].get('iteration')} - not critiquing it again")
             return {
-                "current_node": node,
                 f"{kind}_needs_refinement": False,
-                f"{kind}_needs_critique": False,
                 f"{kind}_critique_improvement_instructions": None,
                 f"{kind}_claims_to_remove": None,
                 "messages": state.get("messages", []) + [{
@@ -505,7 +501,6 @@ class CritiqueAgent:
         }
         state_updates = {
             "messages": state.get("messages", []),
-            "current_node": node,
             f"{kind}_critique": critique_dict,
         }
 
@@ -544,7 +539,6 @@ class CritiqueAgent:
         should_refine = has_defect and bool(instructions or unsupported)
 
         state_updates[f"{kind}_needs_refinement"] = should_refine
-        state_updates[f"{kind}_needs_critique"] = False
         state_updates[f"{kind}_critique_improvement_instructions"] = instructions if should_refine else None
         state_updates[f"{kind}_claims_to_remove"] = unsupported if should_refine else None
         if should_refine:
@@ -601,7 +595,6 @@ class CritiqueAgent:
         }
         previous = history[-1] if len(history) > cycle_start else None
         return {
-            "current_node": "critique_cover_letter",
             "cover_letter_critique": critique_dict,
             "cover_letter_history": history + [{
                 "iteration": len(history) + 1,
@@ -614,7 +607,6 @@ class CritiqueAgent:
                 "repeats_cv": True,
             }],
             "cover_letter_needs_refinement": True,
-            "cover_letter_needs_critique": False,
             "cover_letter_critique_improvement_instructions": CV_REPEAT_INSTRUCTION,
             "cover_letter_claims_to_remove": None,
             "cover_letter_previous_defect_count": previous.get("defects") if previous else None,

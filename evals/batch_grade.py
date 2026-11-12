@@ -52,7 +52,7 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from evals.batch import (RETRY, Adapter, BatchStore, Job, Outcome, PendingSubmission, Prepared,  # noqa: E402
+from evals.batch import (RETRY, Adapter, BatchStore, Job, NotSubmitted, Outcome, PendingSubmission, Prepared,  # noqa: E402
                          canonical_sha256, format_summary, make_custom_id, parse_adopt, run_round, summary)
 from provenance import BATCH_PRICE_FACTOR  # noqa: E402
 
@@ -82,7 +82,11 @@ class AnthropicBatches(Adapter):
     def submit(self, key: str, store_id: str, prepared: list[Prepared]) -> str:
         from evals.credit import OutOfCredit, is_out_of_credit
         try:
-            batch = self.client.messages.batches.create(requests=[p.request for p in prepared])
+            client = self.client
+        except Exception as e:  # no key, no SDK: nothing was sent
+            raise NotSubmitted(f"{type(e).__name__}: {e}"[:500]) from e
+        try:
+            batch = client.messages.batches.create(requests=[p.request for p in prepared])
         except Exception as e:
             if is_out_of_credit(e):
                 raise OutOfCredit(f"{type(e).__name__}: {e}"[:500]) from e

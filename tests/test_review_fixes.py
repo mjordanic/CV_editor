@@ -10,7 +10,6 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 from langchain_core.runnables import RunnableLambda
@@ -111,7 +110,7 @@ class LetterLLM(WriterLLM):
 
 
 def test_a_wish_on_the_first_letter_readdresses_the_old_letter_to_this_job(monkeypatch, tmp_path):
-    """N3 (captain: option a): 'mention I can start in March' with an old letter for another company."""
+    """N3: 'mention I can start in March' with an old letter for another company."""
     llm = LetterLLM()
     agent = _writer(monkeypatch, tmp_path, CoverLetterWriterAgent, llm)
     wish = "In the letter, mention that I can start in March."
@@ -842,3 +841,56 @@ def test_shipped_config_has_no_score_threshold_left():
     assert "quality_improvement_threshold" not in config["workflow"]
     assert "quality_threshold" not in config["agents"]["critique"]
     assert json.dumps(config).count("grounding") >= 1
+
+
+def test_a_tex_left_by_an_earlier_session_is_not_reused_as_the_template(monkeypatch, tmp_path):
+    from agents import pdf_text_check
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    monkeypatch.setattr(pdf_text_check, "extract_pdf_text", lambda path: ("Ana Horvat", 1, None))
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    stale = os.path.join(gen.temp_folder, "generated_CV_draft_1.tex")
+    open(stale, "w", encoding="utf-8").write("EARLIER SESSION'S GREEN STYLE")
+    os.utime(stale, (1_000_000, 1_000_000))
+    gen.session_started = os.path.getmtime(stale) + 60
+    templates = []
+
+    def build(template, plain, style):
+        templates.append(template)
+        return "latex"
+
+    def compile_latex(latex, name, max_fix_iterations):
+        path = os.path.join(gen.temp_folder, f"{name}.pdf")
+        open(path, "w", encoding="utf-8").write(name)
+        return path, 0, None
+
+    gen._build_latex_document, gen._compile_latex = build, compile_latex
+    state = {"generated_cv": "Ana Horvat", "cv_history": [{"iteration": 1}], "messages": []}
+    gen.run(state)
+    assert "EARLIER SESSION" not in templates[-1]
+    os.utime(stale, None)  # rendered in this session: a style-only update reuses it
+    gen.run(state)
+    assert templates[-1] == "EARLIER SESSION'S GREEN STYLE"
+
+
+
+def test_a_pdf_that_cannot_be_made_leaves_a_notice_for_the_user(tmp_path):
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    gen._build_latex_document = lambda template, plain, style: "latex"
+
+    def broken(*_):
+        raise RuntimeError("Failed to compile LaTeX: ! Undefined control sequence.")
+
+    gen._compile_latex = broken
+    out = gen.run({"generated_cv": "Ana Horvat", "cv_history": [{"iteration": 1}], "messages": []})
+    assert out["cv_pdf_path"] is None
+    (notice,) = pending_notices(out)
+    assert "CV PDF could not be made" in notice and "Undefined control sequence" in notice

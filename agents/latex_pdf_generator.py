@@ -12,6 +12,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from typing import Optional
 
 from langchain.chat_models import init_chat_model
@@ -58,6 +59,8 @@ class LatexPDFGenerator:
         self.template_path = template_path
         self.output_folder = output_folder
         self.temp_folder = temp_folder
+        # A .tex older than this was left by an earlier session and is never reused as a template.
+        self.session_started = time.time()
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.temp_folder, exist_ok=True)
         if not os.path.exists(self.template_path):
@@ -167,7 +170,9 @@ class LatexPDFGenerator:
             shutil.move(pdf_file, final_pdf)
             logger.info(f"PDF generated successfully: {final_pdf}")
             return final_pdf, fix_attempts, None
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            if e.filename != "pdflatex":
+                raise
             logger.error("pdflatex not found. Please install a LaTeX distribution (e.g., TeX Live, MiKTeX)")
             raise RuntimeError("LaTeX compiler (pdflatex) not found. Please install a LaTeX distribution.")
 
@@ -180,15 +185,6 @@ class LatexPDFGenerator:
         pdf_path, _, _ = self._compile_latex(latex_document, os.path.splitext(output_filename)[0],
                                              max_fix_iterations=self.max_latex_fix_iterations)
         return pdf_path
-
-    def generate_pdf_from_file(self, txt_file_path: str, output_filename: Optional[str] = None,
-                               style_description: Optional[str] = None, template_content: Optional[str] = None) -> str:
-        """Generate a PDF from a plain-text file (defaults to the same name with .pdf)."""
-        with open(txt_file_path, "r", encoding="utf-8") as f:
-            text = f.read()
-        if output_filename is None:
-            output_filename = f"{os.path.splitext(os.path.basename(txt_file_path))[0]}.pdf"
-        return self.generate_pdf(text, output_filename, style_description=style_description, template_content=template_content)
 
     # ------------------------------------------------------------------ the PDF node
     def _render_checked(self, text: str, template_content: str, style_description: Optional[str],
@@ -247,17 +243,19 @@ class LatexPDFGenerator:
             style_description = state.get(f"{kind}_pdf_style")
             logger.info(f"{title} PDF style from state: {style_description or '(none)'}")
 
-            # Reuse this draft's .tex if it was rendered before (a style-only update); else the base template.
+            # Reuse this draft's .tex if it was rendered before in this session (a style-only update); else the
+            # base template. A .tex of the same name from an earlier session is not this draft's.
             template_content = None
             last_tex_path = os.path.join(self.temp_folder, f"{output_name}.tex")
-            if history and os.path.exists(last_tex_path):
+            if (history and os.path.exists(last_tex_path)
+                    and os.path.getmtime(last_tex_path) >= getattr(self, "session_started", 0.0)):
                 logger.info(f"Using previous generated {label} .tex as template: {last_tex_path}")
                 with open(last_tex_path, "r", encoding="utf-8") as f:
                     template_content = f.read()
 
-            max_fix_iterations = state.get("max_latex_fix_iterations", self.max_latex_fix_iterations)
             pdf_path, fix_attempts, check = self._render_checked(
-                text, template_content or self._load_template(), style_description, output_name, max_fix_iterations,
+                text, template_content or self._load_template(), style_description, output_name,
+                self.max_latex_fix_iterations,
             )
 
             # Always copy the latest draft to the final name so it's always the latest version
@@ -294,9 +292,13 @@ class LatexPDFGenerator:
         except Exception as e:
             error_message = f"Error generating {label} PDF: {str(e)}"
             logger.error(error_message)
+            # A notice, so the user is told even when later messages push this one out of the router's view.
+            notice = (f"The {label} PDF could not be made ({str(e)[:300]}). The text version is saved in "
+                      f"{self.output_folder}.")
             return {
                 f"{kind}_pdf_path": None,
                 f"{kind}_latex_fix_attempts": state.get(f"{kind}_latex_fix_attempts", 0),
                 f"{kind}_latex_last_error": str(e),
+                NOTICES_KEY: set_notices(state, {}, {f"{kind}_pdf": notice}),
                 "messages": state.get("messages", []) + [{"role": "assistant", "content": error_message}],
             }

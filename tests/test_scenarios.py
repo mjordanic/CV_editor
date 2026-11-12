@@ -67,6 +67,24 @@ def test_sections_headings_sentences_and_bullets():
     assert sc.bullets_per_entry("**Senior Engineer**\nAcme\n- a\n- b") == [2]  # bold is not a bullet
 
 
+def test_a_missing_document_fails_an_absent_check_too():
+    s = session(letter=None)
+    ok, detail = sc.run_check({"type": "absent", "pattern": "anything"}, s)
+    assert not ok and "cover_letter: no document" in detail
+    assert check({"type": "absent", "docs": ["cv"], "section": "NO SUCH SECTION", "pattern": "x"})  # a missing section
+
+
+def test_an_unfinished_session_is_not_scored(tmp_path):
+    run = _published_app_run(tmp_path)
+    (run / "events.jsonl").write_text("", encoding="utf-8")
+    for status in ("running", "interrupted: out of credit", "interrupted: stopped"):
+        (run / "manifest.json").write_text(json.dumps({"method": "multi_agent", "status": status,
+                                                        "labels": {"system": "app"}}), encoding="utf-8")
+        with pytest.raises(sc.Unfinished):
+            sc.score_run(run)
+    assert json.loads((run / "checks.json").read_text()) == {"passed": 9, "total": 9}
+
+
 def test_present_and_absent_with_sections_and_exemptions():
     assert check({"type": "present", "docs": ["cv"], "section": "SUMMARY", "pattern": r"38[^.\n]{0,40}14"})
     assert not check({"type": "present", "pattern": "Wrocław"})  # not in the letter
@@ -171,6 +189,46 @@ def test_app_turns_are_rebuilt_from_the_event_log(tmp_path):
     assert green["docs"]["cv"] == "final 1" and green["pdf"]["cv"]["compiled"] is False
     assert letter["docs"] == {"cv": "final 1", "cover_letter": "letter"} and letter["pdf"] == {}
 
+
+
+def _published_app_run(root: Path) -> Path:
+    run = root / "S5-app-r1"
+    (run / "inputs").mkdir(parents=True)
+    (run / "outputs").mkdir()
+    (run / "manifest.json").write_text(json.dumps({"method": "multi_agent", "status": "completed",
+                                                    "labels": {"system": "app"}}), encoding="utf-8")
+    (run / "inputs" / "script.json").write_text(json.dumps({"checks": [{"id": "c", "type": "compiled_every_turn"}]}),
+                                                encoding="utf-8")
+    (run / "outputs" / "final_cv.txt").write_text(CV, encoding="utf-8")
+    (run / "checks.json").write_text('{"passed": 9, "total": 9}', encoding="utf-8")
+    return run
+
+
+def test_an_app_run_without_its_event_log_is_not_rescored_and_keeps_its_checks(tmp_path, capsys):
+    run = _published_app_run(tmp_path)
+    with pytest.raises(sc.NoTurnRecord):
+        sc.score_run(run)
+    assert sc.main([str(run)]) == 1
+    assert "events.jsonl" in capsys.readouterr().err
+    assert json.loads((run / "checks.json").read_text()) == {"passed": 9, "total": 9}
+    (run / "events.jsonl").write_text("", encoding="utf-8")
+    assert sc.score_run(run)["total"] == 1  # with the log present it is scored again
+
+
+def test_rescore_skips_published_app_runs(tmp_path, capsys):
+    from evals import run_scenarios as rs
+    run = _published_app_run(tmp_path / "runs")
+    manifest = json.loads((run / "manifest.json").read_text())
+    manifest["labels"]["case"] = "S5/s5-style-p03"
+    (run / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    rs.rescore(tmp_path)
+    assert json.loads((run / "checks.json").read_text()) == {"passed": 9, "total": 9}
+    assert "skipped" in capsys.readouterr().out
+
+
+def test_score_checks_help_prints_usage_and_scores_nothing(capsys):
+    assert sc.main(["--help"]) == 0
+    assert "RUN_DIR" in capsys.readouterr().out
 
 # --- the scenario fixtures ------------------------------------------------------------------------------
 def _scripts():
@@ -381,6 +439,31 @@ def test_a_chat_session_makes_one_call_per_turn_and_scores_like_an_app_run(tmp_p
     assert (run / "outputs" / "final_cv.pdf").is_file() and (run / "checks.json").is_file()
 
 
+def test_a_chat_turn_cut_off_at_the_output_limit_is_billed_and_counted_against_the_cap(tmp_path, monkeypatch):
+    from evals import single_prompt as sp
+    from evals import single_prompt_chat as chat
+    from provenance import cost_usd
+    from tests.test_single_prompt import cut_off_error
+
+    def cut_off(self, messages, stop=None, run_manager=None, **kwargs):
+        CALLS.append(len(messages))
+        raise cut_off_error("gpt-6-luna", 5000, 40000)
+
+    CALLS.clear()
+    monkeypatch.setattr(FakeChat, "_generate", cut_off)
+    monkeypatch.setattr(sp, "init_model", lambda model, **kw: FakeChat())
+    env = tmp_path / "empty.env"
+    env.write_text("")
+    run = tmp_path / "run"
+    code = chat.main(["--run-dir", str(run), "--ad", "a3", "--persona", "p03", "--script", str(SCENARIO_DIR / "s3-details-if-asked.json"),
+                      "--env-file", str(env), "--cost-cap", "0.001"])
+    manifest = json.loads((run / "manifest.json").read_text())
+    assert code == 1 and len(CALLS) == 1
+    assert manifest["failure"] == "parse_error" and manifest["finish_reason"] == "length"
+    assert manifest["cost_usd"] == pytest.approx(cost_usd("gpt-6-luna", 5000, 40000), abs=1e-6)
+    assert manifest["cost_usd"] > 0.001  # what the cap compares: the billed cost, not $0
+
+
 # --- the runner ---------------------------------------------------------------------------------------
 def test_the_plan_and_estimate_follow_the_table():
     from evals.run_scenarios import estimate, load_spec, plan
@@ -395,7 +478,8 @@ def test_the_plan_and_estimate_follow_the_table():
 
 
 def test_the_paired_reading_claims_a_difference_only_by_the_pre_registered_rule():
-    from evals.run_scenarios import paired, sign_test
+    from evals.analysis.stats import sign_test
+    from evals.run_scenarios import paired
 
     def rows(app, b2):
         out = []
@@ -409,18 +493,41 @@ def test_the_paired_reading_claims_a_difference_only_by_the_pre_registered_rule(
     assert paired(rows([1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 1, 0]), "app", "b2", ["x"])["verdict"] == "no difference detected"
     assert paired(rows([1, 1, 1, 1, 1], [0, 0, 0, 0, 0]), "app", "b2", ["x"])["verdict"].startswith("too few pairs")
     assert paired(rows([1] * 6, [0] * 6), "app", "b2")["app_only"] == 0  # all checks: "told" fails for both
-    assert sign_test(4, 0) == pytest.approx(0.125) and sign_test(0, 0) == 1.0
+    assert sign_test([1] * 4)["p"] == pytest.approx(0.125) and sign_test([])["p"] == 1.0
+    assert paired(rows([1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0]), "app", "b2", ["x"])["sign_p"] == 0.125
 
 
-def test_frozen_app_sessions_need_a_tree_and_run_from_it(tmp_path, monkeypatch):
+def _export_head(tree: Path) -> str:
+    """The app files (run_matrix.APP_PATHS) of this repository's HEAD exported into `tree`, as `git archive` does;
+    returns HEAD's id. Read-only on the repository."""
+    import io
+    import subprocess
+    import tarfile
+
+    from evals.run_matrix import APP_PATHS
+    head = subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    archive = subprocess.run(["git", "-C", str(REPO), "archive", "HEAD", "--", *APP_PATHS], capture_output=True)
+    with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
+        tar.extractall(tree, filter="data")
+    return head
+
+
+def _frozen_session():
+    return {"name": "S4-x-p03-app_frozen-r1", "scenario": "S4", "system": "app_frozen", "rep": 1, "est_usd": 0.05,
+            "case": "p03/s4-both-docs-p03", "persona": "p03", "ad": "a3", "inputs": "all4", "script": "s4-both-docs-p03"}
+
+
+def test_frozen_app_sessions_need_a_checked_tree_and_commit_and_run_from_it(tmp_path, monkeypatch):
     from evals import run_scenarios as rs
-    session = {"name": "S4-x-p03-app_frozen-r1", "scenario": "S4", "system": "app_frozen", "rep": 1, "est_usd": 0.05,
-               "case": "p03/s4-both-docs-p03", "persona": "p03", "ad": "a3", "inputs": "all4", "script": "s4-both-docs-p03"}
+    session = _frozen_session()
     with pytest.raises(SystemExit):
         rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tmp_path / "no-tree")
     tree = tmp_path / "tree"
-    (tree / "evals").mkdir(parents=True)
-    (tree / "evals" / "run_case.py").write_text("")
+    head = _export_head(tree)
+    with pytest.raises(SystemExit, match="frozen-commit"):  # the tree alone is not enough
+        rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tree)
+    with pytest.raises(SystemExit, match="not a commit"):
+        rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tree, "0" * 40)
     seen = {}
 
     def fake_run(cmd, cwd=None, **kw):
@@ -428,9 +535,83 @@ def test_frozen_app_sessions_need_a_tree_and_run_from_it(tmp_path, monkeypatch):
         return type("Done", (), {"returncode": 1})()
 
     monkeypatch.setattr(rs.subprocess, "run", fake_run)
-    rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tree)
+    rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tree, head[:9])
     assert seen["cwd"] == tree and seen["cmd"][2] == "evals.run_case" and "system=app_frozen" in seen["cmd"]
+    assert f"app_commit={head}" in seen["cmd"]  # the checked commit, in full, goes into the manifest's labels
     assert str(SCENARIO_DIR / "s4-both-docs-p03.json") in seen["cmd"]  # today's scenario script, from this repo
+
+
+def test_a_frozen_tree_that_is_not_an_export_of_the_commit_is_refused(tmp_path):
+    from evals import run_scenarios as rs
+    tree = tmp_path / "tree"
+    head = _export_head(tree)
+    assert rs.check_frozen_tree(tree, head) == head
+    (tree / "evals" / "run_case.py").write_text("# edited\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="evals/run_case.py"):
+        rs.check_frozen_tree(tree, head)
+
+
+def _session_run(tmp_path, monkeypatch, outcomes: dict, workers=1):
+    """run() over S3 b2 sessions with a fake runner: outcomes maps a session name to (status, exit code); each session
+    writes a manifest and, when completed, a chat session the checks can score."""
+    from evals import run_scenarios as rs
+    sessions = [s for s in rs.plan(rs.load_spec(), only=["S3"], systems=["b2"]) if s["name"] in outcomes]
+    started = []
+
+    def fake_run(cmd, cwd=None, **kw):
+        run_dir = Path(cmd[cmd.index("--run-dir") + 1])
+        status, code = outcomes[run_dir.name]
+        started.append(run_dir.name)
+        (run_dir / "inputs").mkdir(parents=True)
+        (run_dir / "outputs").mkdir()
+        (run_dir / "inputs" / "script.json").write_text(json.dumps({"checks": [{"id": "c", "type": "absent",
+                                                                                  "pattern": "nothing"}]}))
+        (run_dir / "outputs" / "final_cv.txt").write_text(CV)
+        (run_dir / "outputs" / "final_cover_letter.txt").write_text("Dear Hiring Team")
+        (run_dir / "manifest.json").write_text(json.dumps({"method": "single_prompt_chat", "status": status,
+                                                           "cost_usd": 0.01, "labels": {"system": "b2"}}))
+        return type("Done", (), {"returncode": code})()
+
+    monkeypatch.setattr(rs.subprocess, "run", fake_run)
+    stopped = rs.run(sessions, tmp_path / "out", "openai:gpt-6-luna", None, 10.0, workers)
+    return sessions, started, stopped
+
+
+def test_an_unfinished_session_is_not_scored_and_runs_again_on_the_next_pass(tmp_path, monkeypatch):
+    from evals import run_scenarios as rs
+    names = [s["name"] for s in rs.plan(rs.load_spec(), only=["S3"], systems=["b2"])][:3]
+    outcomes = {names[0]: ("completed", 0), names[1]: ("running", -9), names[2]: ("interrupted: stopped", 130)}
+    _, started, stopped = _session_run(tmp_path, monkeypatch, outcomes)
+    runs = tmp_path / "out" / "runs"
+    assert not stopped and started == names
+    assert (runs / names[0] / "checks.json").is_file()
+    assert not (runs / names[1] / "checks.json").exists() and not (runs / names[2] / "checks.json").exists()
+    outcomes.update({names[1]: ("completed", 0), names[2]: ("completed", 0)})
+    _, started, _ = _session_run(tmp_path, monkeypatch, outcomes)
+    assert started == names[1:]  # only the unfinished ones; their first attempts are set aside, not deleted
+    assert len(list(runs.glob("*.unfinished-*"))) == 2 and (runs / names[1] / "checks.json").is_file()
+
+
+def test_out_of_credit_stops_the_pool_and_the_session_runs_again_later(tmp_path, monkeypatch, capsys):
+    from evals import run_scenarios as rs
+    from evals.credit import INTERRUPTED_STATUS
+    names = [s["name"] for s in rs.plan(rs.load_spec(), only=["S3"], systems=["b2"])][:3]
+    outcomes = {names[0]: (INTERRUPTED_STATUS, 75), names[1]: ("completed", 0), names[2]: ("completed", 0)}
+    _, started, stopped = _session_run(tmp_path, monkeypatch, outcomes)
+    assert stopped and started == names[:1]
+    assert "not started" in capsys.readouterr().out
+    assert not (tmp_path / "out" / "runs" / names[0] / "checks.json").exists()
+
+
+def test_a_relative_env_file_is_passed_to_the_sessions_as_an_absolute_path(tmp_path, monkeypatch):
+    from evals import run_scenarios as rs
+    seen = {}
+    monkeypatch.setattr(rs.shutil, "which", lambda name: "/usr/bin/pdflatex")
+    monkeypatch.setattr(rs, "run", lambda sessions, out, model, env_file, *a: seen.update(env_file=env_file))
+    monkeypatch.setattr(rs, "report", lambda out, spec: "")
+    monkeypatch.chdir(tmp_path)
+    assert rs.main(["--out", str(tmp_path / "out"), "--env-file", ".env", "--only", "S3"]) == 0
+    assert seen["env_file"] == str((tmp_path / ".env").resolve())
 
 
 def test_publish_copies_shareable_records_with_local_paths_made_relative(tmp_path):

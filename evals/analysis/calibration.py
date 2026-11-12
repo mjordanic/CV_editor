@@ -100,6 +100,9 @@ def _spearman(first_p, first_s, primary, second):
     both = [(a, b) for a, b in both if a is not None and b is not None]
     if not both:
         return _row(check, measure, f"no data: no run graded by both {primary} and {second}", f">= {SPEARMAN_MIN}", None)
+    if stats._sps is None:
+        return _row(check, f"{measure} ({len(both)} runs)",
+                    "no data: not computable (SciPy is not installed; uv sync --group analysis)", f">= {SPEARMAN_MIN}", None)
     ag = stats.agreement([a for a, _ in both], [b for _, b in both])
     rho = ag.get("spearman")
     if rho is None or math.isnan(rho):
