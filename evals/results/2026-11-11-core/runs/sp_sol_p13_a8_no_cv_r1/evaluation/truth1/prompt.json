@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "2ca8d614effe02179959cd9a6e6ddf6cd18e4b14c27e1904b2508cea98289e02",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: driving licence class B (practical test not yet passed)\nG2: recognition as Pflegefachfrau in Germany (Kenntnisprüfung in March 2027)\nG3: home care (ambulante Pflege) experience and route planning\nG4: Behandlungspflege LG2 qualification in Germany\nG5: Wundexpertin ICW certificate\nG6: German at C1 level\nG7: MediFox software\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming a driving licence (Führerschein Klasse B) because the ad requires it\nT2: Calling her Pflegefachfrau, examinierte Pflegekraft or a recognised nurse in Germany\nT3: Inventing home-care (ambulant) experience or route planning\nT4: Claiming LG2 tasks in Germany (injections, wound care) or the ICW wound-expert certificate\nT5: Raising her German to C1 or 'fluent'\nT6: Old cover letter is addressed to her current employer, says she works in a bakery, attends a B1 course and can start immediately\nT7: Writing the output in English or with English headings for a German ad\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nKatarzyna Wiśniewska\nPflegehelferin\nPROFIL\nPflegehelferin mit Erfahrung in der stationären Altenpflege und fünfjähriger Tätigkeit als\nKrankenschwester auf einer Station für Innere Medizin in Polen. Erfahrung mit Menschen mit\nDemenz, Sturzprophylaxe und der Einarbeitung neuer Kolleginnen. LG1-Kurs, Deutschzertifikat B2\nund gute Kenntnisse in Vivendi PD.\nBERUFSERFAHRUNG\nSeit 2021 | Pflegehelferin\nSeniorenzentrum Am Lindenhof\n• Seit 2022: Leitung einer wöchentlichen Singgruppe für 6 bis 8 Menschen mit Demenz mit\npolnischen und deutschen Volksliedern; positive Rückmeldung von Angehörigen im Heimbeirat.\n• Seit 2021: Einarbeitung von bisher 7 neuen Pflegehelferinnen und Praktikanten während ihrer\nersten zwei Wochen nach dem Einarbeitungsplan der Einrichtung.\n• 2023: Gemeinsam mit der Wohnbereichsleitung Sturzprotokolle aus sechs Monaten ausgewertet\nund Nachtlichter sowie feste Toilettengänge für 9 Bewohner eingeführt. Im folgenden Halbjahr\nsanken die Stürze im Wohnbereich von 14 auf 8.\nFünfjährige Tätigkeit | Krankenschwester, Innere Medizin\nSzpital Opole, Polen\n• 2016–2019: Verbandswechsel bei Dekubitus und diabetischem Fuß unter Aufsicht der\nStationsärztin.\nQUALIFIKATIONEN UND ANERKENNUNG\n• Polnischer Pflegeabschluss im deutschen Anerkennungsverfahren: Defizitbescheid liegt vor;\nKenntnisprüfung für März 2027 vorgesehen.\n• Aktueller beruflicher Status in Deutschland: Pflegehelferin, keine Anerkennung als Pflegefachfrau.\n• Kurs Behandlungspflege Leistungsgruppe 1 (LG1).\nKENNTNISSE UND STÄRKEN\n• Stationäre Altenpflege und Umgang mit Menschen mit Demenz.\n• Pflegedokumentation: gute Kenntnisse in Vivendi PD.\n• Geduld im Umgang mit älteren Menschen und Freude an Teamarbeit.\n• Deutsch: B2-Zertifikat, 2021.\nARBEITSZEIT UND MOBILITÄT\n• Gewünschter Beschäftigungsumfang: Teilzeit, bevorzugt 75 %.\n• Einsatz an jedem zweiten Wochenende möglich.\n• Führerschein Klasse B noch nicht vorhanden; Theorieprüfung bestanden, praktische Prüfung für\nJanuar 2027 vorgesehen.\n• Derzeit mobil mit Fahrrad oder E-Bike.\n\n# OUTPUT 2: COVER LETTER\nKatarzyna Wiśniewska\nSozialstation Dreisamtal gGmbH\nBewerbung als Pflegehelferin für Ihren ambulanten Pflegedienst\nSehr geehrte Damen und Herren,\nErfahrung in der stationären Altenpflege, ein LG1-Kurs und Deutschkenntnisse auf B2-Niveau\nsind meine Grundlagen für die Bewerbung bei Ihnen. Seit 2021 arbeite ich als Pflegehelferin\nim Seniorenzentrum Am Lindenhof. Zuvor war ich fünf Jahre als Krankenschwester auf einer\nStation für Innere Medizin in Polen tätig. Ihr Leitsatz „Pflege mit Zeit und Respekt“ passt zu\nmeinem geduldigen Umgang mit älteren Menschen.\nIm Seniorenzentrum leite ich seit 2022 wöchentlich eine Singgruppe für 6 bis 8 Menschen mit\nDemenz. Außerdem habe ich bisher 7 Pflegehelferinnen und Praktikanten nach dem\nEinarbeitungsplan der Einrichtung eingearbeitet. Bei einem Projekt zur Sturzprophylaxe\nwertete ich mit der Wohnbereichsleitung Sturzprotokolle aus und wir führten gezielte\nMaßnahmen ein. Im folgenden Halbjahr gingen die Stürze von 14 auf 8 zurück. Diese\nErfahrungen möchte ich in Ihr Pflegeteam einbringen.\nMeine bisherige Pflegepraxis liegt im stationären Bereich. Ihre zweiwöchige begleitete\nEinarbeitung bietet einen konkreten Rahmen für den Wechsel in die ambulante Pflege. Für die\nPflegedokumentation nutze ich Vivendi PD sicher; mit MediFox habe ich noch nicht\ngearbeitet. Mein polnischer Pflegeabschluss befindet sich im Anerkennungsverfahren. Der\nDefizitbescheid liegt vor, die Kenntnisprüfung ist für März 2027 vorgesehen. Bis zur\nAnerkennung bewerbe ich mich ausdrücklich als Pflegehelferin.\nIch bevorzuge einen Beschäftigungsumfang von 75 % und kann an jedem zweiten Wochenende\narbeiten. Den vorausgesetzten Führerschein Klasse B habe ich noch nicht: Die Theorieprüfung\nist bestanden, die praktische Prüfung ist für Januar 2027 vorgesehen. Derzeit nutze ich\nFahrrad oder E-Bike. Gern möchte ich mit Ihnen besprechen, ob unter diesen\nVoraussetzungen eine Mitarbeit möglich ist. Über eine Einladung zu einem persönlichen\nGespräch freue ich mich.\nMit freundlichen Grüßen\nKatarzyna Wiśniewska\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

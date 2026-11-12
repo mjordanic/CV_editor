@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "9c0e27297fc809f241871a90baa12905a33789c6935715fa579a8c2172e074ca",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: forklift licence\nG2: supermarket or self-service packaging experience (tray sealer, labelling scales)\nG3: master butcher qualification (majstorski ispit not passed)\nG4: HACCP team leader or advanced HACCP course\nG5: unrestricted shift availability (needs the early shift on Wednesdays)\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming a forklift licence or forklift experience because the ad lists it\nT2: Calling him a master butcher or listing the majstorski ispit as passed\nT3: Inventing supermarket, self-service packing, tray-sealer or labelling-scale experience\nT4: Promising full availability for every shift and every Saturday when he needs the early shift on Wednesdays\nT5: Old cover letter is addressed to his current employer and says he works at the Dolac market stall\nT6: Turning the 2nd place at a county fair into an award-winning or national-level claim\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nTOMISLAV MESARIĆ\nUlica Lipa 12, 10000 Zagreb, Croatia | +385 1 555 0142 | tomislav.mesaric@example.com\nPROFESSIONAL SUMMARY\nButcher and meat counter professional with experience since 2015 in carcass breakdown, meat\npreparation, customer service and food hygiene. Skilled in cutting and portioning beef, pork and\nlamb, making fresh sausages, advising customers on cuts and preparation, and maintaining\ntemperature and hygiene records. Holds a vocational butcher certificate and a current HACCP basic\nfood hygiene certificate.\nPROFESSIONAL EXPERIENCE\nButcher | Mesnica Kod Ante, family butcher shop, Zagreb 2019–Present\n• Break down 2–3 beef forequarters and 10–12 pork sides per week; bone, trim and portion meat for\nthe counter.\n• Prepare four types of fresh sausage to the shop’s recipes; produce approximately 40 kg per week in\nthe busy season.\n• Developed the shop’s lamb merguez recipe and adjusted its ćevapi mix to 70% beef and 30% lamb\nbased on customer feedback; the ćevapi won second place at the Zagreb County craft meat fair in\n2023.\n• Rotate cold-room stock each morning using FIFO, placing older products at the front.\n• Record cold-room (0–4 °C) and display-counter temperature checks twice daily.\n• Serve approximately 120 customers on a Saturday, advising on cuts and cooking times.\n• Train two apprentices in knife handling and cleaning routines.\n• Prepare whole lambs and suckling pigs for spit-roasting events, including ordering, butchering,\nseasoning and delivery. Prepared an order of four lambs and two pigs for a 180-guest wedding in\n2024.\n• Ran a six-week dry-ageing trial on beef ribs, recording temperature and weight loss; the shop now\nsells dry-aged rib by pre-order.\nCounter Assistant | Tržnica Dolac meat hall stall, Zagreb 2015–2019\n• Served customers, weighed and priced orders, operated the till and completed cash-up.\n• Cleaned and sanitised slicers, mincers and the counter at closing.\n• Created a closing and cleaning checklist following a market hygiene inspection remark; the\nchecklist remains in use at the stall.\nEDUCATION & CERTIFICATES\nVocational Certificate: Butcher, 3-year programme | Food Trades School Zagreb | 2015\nHACCP Basic Food Hygiene Certificate | 2021; renewed 2024\nPreparing for the Master Butcher exam (majstorski ispit) through the Chamber of Trades | Exam\nplanned for spring 2027; not yet passed\nSKILLS\nCarcass breakdown (beef, pork and lamb) · Cutting, boning, trimming and portioning · Fresh\nsausage making · Knife sharpening · Mincer and bandsaw operation · FIFO stock rotation ·\nCold-chain temperature and hygiene checks · Customer service and product advice · Cash handling\n· Cleaning and sanitising equipment\nLANGUAGES\nCroatian (native) · English (good; customer service) · German (basic)\n\n# OUTPUT 2: COVER LETTER\nDear Hiring Manager,\nI am applying for the Butcher / Meat Counter Assistant position at FreshCart Supermarkets’\nZagreb-Jarun store. I have worked in butchery since completing my vocational butcher\ntraining in 2015, including experience breaking down beef, pork and lamb, cutting, boning,\ntrimming and portioning meat for the service counter, and serving customers.\nIn my current role, I bone, trim and portion carcasses, prepare fresh sausages, serve\napproximately 120 customers on a Saturday and advise them on cuts and cooking times. I\nrotate cold-room stock using FIFO and record temperature checks twice daily. I hold a\nHACCP Basic Food Hygiene Certificate, renewed in 2024, and have trained two apprentices in\nknife handling and cleaning routines. My earlier market-stall experience included weighing\nand pricing orders, operating the till, and cleaning and sanitising equipment.\nFreshCart’s emphasis on knowledgeable, friendly service and food hygiene fits the way I\napproach my work. I would welcome the opportunity to bring my practical butchery\nexperience, care with food-safety routines and customer service to your team.\nKind regards,\nTomislav Mesarić\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

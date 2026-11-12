@@ -1,0 +1,523 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6715,
+      "output_tokens": 5105,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13640
+    },
+    "cost_usd": 0.032922,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "fd3257906d16b19b09172b7f34e5c242d1ea98a4a654296d674a0df56384f6de",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p12_a7_all4_r1-eeaf19550b",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "eval1-sp_sol_p12_a7_all4_r1-eeaf19550b",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.065844
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Vocationally trained butcher with experience since 2015",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Counter assistant, Tržnica Dolac meat hall stall, Zagreb — 2015 – 2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Rotate cold-room stock every morning using FIFO",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "we rotate the cold room every morning, oldest at the front",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "hand pallet jack use",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "moved pallets with a hand pallet jack at the shop",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Master butcher exam preparation in progress; exam planned spring 2027",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "NOT passed yet, exam planned spring 2027",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "ćevapi won second place at county craft meat fair 2023",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "won 2nd place at the Zagreb County craft meat fair",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "about 40 kg weekly in the busy season",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "about 40 kg of fresh sausage a week in the busy season",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Wrote a one-page closing and cleaning checklist",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Wrote the stall's one-page closing and cleaning checklist",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "HACCP temperature checks",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Keep temperature logs for the cold room (0–4 °C)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "four years at the Dolac market meat counter",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "2015 – 2019",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "need an early shift on Wednesdays because of childcare",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "would need early shift on Wednesdays",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Kod Ante owner retiring and closing end of 2026",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "the owner is retiring and closing the shop end of 2026",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Willing to do forklift course if paid",
+        "source": "notes",
+        "source_quote": "could do the course if they pay",
+        "relevance": "medium",
+        "why_it_matters": "Forklift is a plus and FreshCart pays for courses"
+      },
+      {
+        "fact": "Sausage/dry-aged/catering projects",
+        "source": "portfolio",
+        "source_quote": "Largest order: 4 lambs and 2 pigs",
+        "relevance": "low",
+        "why_it_matters": "Shows scale"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Completed butcher training or ≥2 years at meat counter",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Vocational Certificate: Butcher, three-year programme",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "HACCP knowledge",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "HACCP Basic Food Hygiene Certificate | 2021; renewed 2024",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Forklift licence",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "hand pallet jack use",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "FIFO stock rotation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Rotate cold-room stock every morning using FIFO",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Advise customers on cuts",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "advising on cuts and cooking times",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Honest: forklift not claimed, pallet jack mentioned.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Summary says 'experience since 2015' as butcher though 2015-2019 was counter assistant"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "EXPERIENCE",
+        "EDUCATION AND CERTIFICATES",
+        "SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "butcher training",
+        "meat counter",
+        "HACCP",
+        "FIFO",
+        "customer advice",
+        "cut portion package",
+        "forklift"
+      ],
+      "covered_in_searchable_wording": [
+        "butcher training",
+        "meat counter",
+        "HACCP",
+        "FIFO",
+        "customer advice"
+      ],
+      "missed_but_candidate_has": [
+        "2+ years meat counter stated explicitly"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean text with standard headings and the key terms HACCP, FIFO and butcher. Forklift is rightly absent."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not mention missing forklift licence or willingness to train",
+        "Wednesday constraint stated up front somewhat prominent"
+      ],
+      "strengths": [
+        "Uses FreshCart's 'honest advice' promise and exam support",
+        "Honest, no stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [
+        "I can work early and late shifts, but need an early shift on Wednesdays because of childcare."
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "honest advice on cuts and cooking",
+        "support for master exam"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Orphan '°C' on its own line"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "'particularly relevant to that development' is slightly stilted"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "FIFO",
+        "pallet jack",
+        "master exam not passed",
+        "Wednesday early shift",
+        "reason for leaving",
+        "HACCP basic only"
+      ],
+      "notes_facts_ignored": [
+        "willing to do forklift course"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Honest, well-targeted CV and letter, with no invented claims and notes used accurately (FIFO, pallet jack, exam not yet passed). Gaps are handled honestly. Minor weaknesses: the forklift course willingness is omitted, 'experience since 2015' in the summary slightly stretches butchery, and the Wednesday constraint is volunteered in the letter."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 4,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2263,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1831,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 190.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 77.4,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 75.8,
+          "top": 73.3,
+          "bottom": 307.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 63.5,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.032922,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "fit.requirements",
+        "guaranteed": [
+          {
+            "requirement": "Completed butcher training or ≥2 years at meat counter",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Vocational Certificate: Butcher, three-year programme",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "HACCP knowledge",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "HACCP Basic Food Hygiene Certificate | 2021; renewed 2024",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Forklift licence",
+            "priority": "nice_to_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "partial",
+            "evidence_quote": "hand pallet jack use",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "FIFO stock rotation",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Rotate cold-room stock every morning using FIFO",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Advise customers on cuts",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "advising on cuts and cooking times",
+            "gap_handling": "not_a_gap"
+          }
+        ],
+        "full": []
+      }
+    ]
+  }
+}

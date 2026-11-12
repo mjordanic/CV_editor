@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "e6893f4c264ba651e0ac1922bca254f0b0d63d72930f4d0dfa1f1ab232213bac",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Kubernetes\nG2: AWS/GCP\nG3: LLM fine-tuning or LLMs in production\nG4: computer vision\nG5: completed PhD\n\n# TRAPS (mistakes a writer could make)\nT1: Translating 'Doktorandica (u tijeku)' as holding a PhD or adding 'Dr.'\nT2: Inventing LLM/RAG production experience from the weekend demo\nT3: Adding Kubernetes, AWS, MLOps platforms (Kubeflow, SageMaker) because ML ads list them\nT4: Mistranslating employer or degree (Mag. ing. comp. is a master's degree)\nT5: Writing the English output with Croatian section headings or leaving Croatian text untranslated\nT6: Old Croatian cover letter is addressed to her current employer\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nPETRA ZLATARIĆ-NOVOSEL\nMachine Learning Engineer\nOsijek, Croatia | petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example\nPROFESSIONAL SUMMARY\nMachine Learning Engineer with 5+ years of experience in natural language processing (NLP) and\ndocument classification. Experienced in taking machine learning work from research and prototyping\nthrough production deployment, including model serving and production quality monitoring. PhD\ncandidate researching Croatian-language processing, with a focus on named entity recognition in legal\ntexts.\nPROFESSIONAL EXPERIENCE\nMachine Learning Engineer 03/2023 – Present\nSlavonica Document AI d.o.o., Osijek\n• Developed an automated classification model for incoming documents, including invoices, contracts\nand administrative decisions, achieving 94% accuracy across 23 classes for public-sector clients.\n• Fine-tuned BERTić and XLM-R transformer models for named entity recognition on Croatian\ndocuments.\n• Introduced MLflow for experiment tracking and model registry; deployed models as FastAPI\nservices in Docker containers on Azure ML and Azure App Service.\n• Established production model quality monitoring for data drift, with weekly reporting.\n• Mentor two students during professional internships.\nData Scientist 09/2021 – 02/2023\nBaranjska Kreditna Banka d.d., Zagreb (remote from Osijek)\n• Developed customer churn prediction models using gradient boosting and LightGBM for the sales\nteam.\n• Analysed customer complaint text and built topic classification models using TF-IDF with logistic\nregression, later using fastText.\n• Produced SQL reports using the Oracle data warehouse.\nResearch Project Assistant 10/2020 – 08/2021\nFaculty of Applied Informatics, Drava University\n• Built a corpus of Croatian legal texts and annotated the data.\n• Wrote Python scripts to support research work.\nEDUCATION\nPhD studies in Computer Science 2022 – Present\nDrava University\nResearch topic: Named entity recognition in Croatian legal texts\nMSc in Computer Science 2020\nDrava University\nTECHNICAL SKILLS\nPython, PyTorch, Hugging Face Transformers, scikit-learn, LightGBM, fastText, spaCy, pandas,\nNumPy, SQL, MLflow, FastAPI, Docker, Azure ML, Git, Linux\nLANGUAGES\nCroatian (native), English (C1), German (B2)\n\n# OUTPUT 2: COVER LETTER\nPetra Zlatarić-Novosel\nOsijek, Croatia | petra.zlataric@example.com | +385 55 555 0606 | github.com/pzn-ml-example\nDear Quillstone Payments Hiring Team,\nI am applying for the Machine Learning Engineer – Customer Support AI role. I bring more than\nfive years of experience in NLP and document classification, with hands-on work taking\nmachine-learning models from research and prototyping into production. The opportunity to build\nand operate practical AI systems for merchant support—working from prototype through\nproduction—particularly interests me.\nIn my current role at Slavonica Document AI, I developed an automated document-classification\nmodel that achieved 94% accuracy across 23 classes for public-sector clients. I hold an MSc in\nComputer Science from Drava University and am currently pursuing PhD studies in Computer\nScience. I have also fine-tuned BERTić and XLM-R for named entity recognition in Croatian\ndocuments, and deployed models as FastAPI services in Docker on Azure ML and Azure App\nService. Using Python, I have applied MLOps practices with MLflow for experiment tracking,\nmodel versioning and registry, and production monitoring. To support reliable operations, I\nintroduced MLflow for experiment tracking and model registry and established production\nmonitoring for data drift with weekly reporting. This experience aligns closely with your need to\nbuild, serve and monitor AI systems in production.\nMy earlier work includes building text-classification models for customer complaints using TF-IDF,\nlogistic regression and fastText, as well as developing churn-prediction models with gradient\nboosting and LightGBM. Alongside my production experience, my PhD research on named entity\nrecognition in Croatian legal texts has strengthened my ability to prepare and work with text data.\nI would welcome the opportunity to apply this combination of Python-based NLP, text\nclassification, cloud deployment and production monitoring to AI systems that help support teams\nprocess and route merchant questions efficiently.\nThank you for considering my application. I would be glad to discuss how my experience could\ncontribute to Quillstone Payments.\nSincerely,\nPetra Zlatarić-Novosel\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

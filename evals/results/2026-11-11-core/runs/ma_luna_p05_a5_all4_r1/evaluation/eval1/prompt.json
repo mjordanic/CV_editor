@@ -1,0 +1,369 @@
+{
+  "model": "anthropic:claude-sonnet-5-5",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+  "images": {
+    "cv": [
+      "cv_page1.png",
+      "cv_page2.png"
+    ],
+    "cover_letter": [
+      "cover_letter_page1.png"
+    ]
+  },
+  "prompt_sha256": "b8f0cfa339e396a583e26a5b7025772f9e463781fa7420822dd5c6036aeb0520",
+  "params": {
+    "model": "claude-sonnet-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents given to you. You do not know how the documents were produced and you must not guess.\n\nRules:\n- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that is not in that material is unsupported, even if it is plausible or the job asks for it. Rephrasing and obvious inference are supported (e.g. \"built a React app\" supports \"JavaScript\"). A course, side project or homelab presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than the material states is partly_supported (overstated).\n- Statements about the employer or the job are not claims about the candidate.\n- The candidate's work-arrangement preference is candidate material only if it is given below; a preference (remote, relocation, on-site availability) the outputs state without it is unsupported. Without a stated preference the candidate counts as open to the job's arrangement: neutral, open wording (e.g. \"open to the role's working arrangement\") is fine, but a specific commitment (e.g. \"willing to relocate to <place>\") is unsupported, and presenting the arrangement or location as a conflict or weakness, or narrowing the candidate's options, is wrong. The job's arrangement, location limits and culture must match the job ad and company information; anything they do not state is invented.\n- List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, degree, certificate, language and notable achievement, in both documents. Quote briefly.\n- Quote evidence verbatim from the candidate material. Never invent quotes.\n- For omissions, list only facts that would help this application (not every detail).\n- The user's instructions below are everything the user told the writing tool. Anything the user says about themselves there is candidate material too (source \"chat\"), except when the user asks to state something they themselves say is untrue, or that their material contradicts: such a request must not be followed, and following it makes the claim unsupported.\n- You see the documents and the user's instructions, not the conversation. A user instruction changes what is correct: a CV or letter in another language, shorter, reordered or in another tone is right if the user asked for it. Grade user_requests against the user's instructions only, with the expected behaviour where it is given, and judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.\n- The PDF is the document the employer receives; the plain text is the tool's own copy of it. Judge claims, layout and ATS from the PDF (its extracted text and page images); a difference between the PDF and the text is itself an issue.\n- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge the visual layout from both.\n- Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements that the candidate really has visible in wording a recruiter's search would find; and is there keyword stuffing or a skill the candidate's material does not support. Cheating to match the ad lowers the ATS score.\n- Be calibrated: use the full score ranges; 10 is rare.\n\n# ANSWER FORMAT\nWrite the complete evaluation first, as one JSON string in full_evaluation_json. The string holds standard JSON (double-quoted keys and strings, escaped inside the string; true, false), not a Python literal, and follows this JSON schema exactly: every property is required and no other property is allowed.\n{\"$defs\": {\"ATS\": {\"description\": \"Judged from WHAT AN ATS WOULD READ (the plain text a standard extractor pulls from the CV PDF), the job\\nad and the candidate's material: one 0-10 score with its reason, and the three judgements behind it.\", \"properties\": {\"text_readable_in_order\": {\"description\": \"The extracted text reads in a sensible order with words, dates and contact details intact: no garbled characters, merged words, interleaved columns or text missing compared with the page images\", \"type\": \"boolean\"}, \"clear_sections\": {\"description\": \"Standard section headings a parser can find (e.g. experience, education, skills) and every entry under the right one\", \"type\": \"boolean\"}, \"headings_found\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"parse_issues\": {\"description\": \"Quotes from the extracted text that an ATS would misread: garbled, out of order, merged, split or missing; empty if none\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"important_requirements\": {\"description\": \"The ad's important requirements a recruiter's search would look for: role title, must-have skills, tools, qualifications, languages (short form, about 5-20)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"covered_in_searchable_wording\": {\"description\": \"Those the extracted text visibly shows in wording a recruiter's keyword search would find (the ad's term or its standard name, not only a paraphrase)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"missed_but_candidate_has\": {\"description\": \"Those the candidate's material shows they have but the extracted text does not show in searchable wording (lost opportunities)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"keyword_stuffing\": {\"description\": \"Keywords repeated without context, lists of the ad's terms pasted in, or hidden text; quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"unsupported_keywords\": {\"description\": \"Ad keywords or skills the CV claims that the candidate's material does not support\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"How well the CV would do in automatic screening for this ad, honestly: 10 = clean, well-sectioned text that shows every important requirement the candidate really has in searchable wording. Requirements the candidate lacks cost nothing when left out; parse problems and lost opportunities lower the score, and keyword stuffing or unsupported keywords lower it, never raise it\", \"type\": \"integer\"}, \"reason\": {\"description\": \"One or two sentences: why this score\", \"type\": \"string\"}}, \"required\": [\"text_readable_in_order\", \"clear_sections\", \"headings_found\", \"parse_issues\", \"important_requirements\", \"covered_in_searchable_wording\", \"missed_but_candidate_has\", \"keyword_stuffing\", \"unsupported_keywords\", \"score\", \"reason\"], \"type\": \"object\", \"additionalProperties\": false}, \"AdditionalInformation\": {\"properties\": {\"notes_facts_used\": {\"description\": \"Relevant facts only in the candidate's notes that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"notes_facts_ignored\": {\"description\": \"Relevant facts only in the notes that the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_used\": {\"description\": \"Facts the user gave in the conversation (notice period, details, contact data) that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_ignored\": {\"description\": \"Relevant facts from the conversation the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"misused\": {\"description\": \"Notes or chat facts distorted, overstated, or used where the user said not to\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every relevant extra fact used correctly; use 10 if there was no extra information\", \"type\": \"integer\"}}, \"required\": [\"notes_facts_used\", \"notes_facts_ignored\", \"chat_facts_used\", \"chat_facts_ignored\", \"misused\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"CVStandards\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"has_contact_details\": {\"type\": \"boolean\"}, \"has_summary_or_profile\": {\"type\": \"boolean\"}, \"experience_reverse_chronological\": {\"type\": \"boolean\"}, \"dates_consistent\": {\"type\": \"boolean\"}, \"length_appropriate\": {\"description\": \"Roughly 1-2 pages for the candidate's seniority\", \"type\": \"boolean\"}, \"language_matches_ad\": {\"description\": \"Written in the language the ad expects\", \"type\": \"boolean\"}, \"artefacts\": {\"description\": \"Placeholders, leftover instructions, markdown symbols, duplicated sections, garbled text or LaTeX residue found in the CV text or PDF text\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"has_contact_details\", \"has_summary_or_profile\", \"experience_reverse_chronological\", \"dates_consistent\", \"length_appropriate\", \"language_matches_ad\", \"artefacts\", \"issues\"], \"type\": \"object\", \"additionalProperties\": false}, \"Claim\": {\"properties\": {\"document\": {\"enum\": [\"cv\", \"cover_letter\"], \"type\": \"string\"}, \"claim\": {\"description\": \"The claim about the candidate, quoted briefly from the output document\", \"type\": \"string\"}, \"kind\": {\"enum\": [\"skill_or_tool\", \"employer\", \"job_title\", \"date_or_duration\", \"number_or_metric\", \"education\", \"certification\", \"project\", \"language\", \"responsibility_or_achievement\", \"other\"], \"type\": \"string\"}, \"verdict\": {\"description\": \"supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material\", \"enum\": [\"supported\", \"partly_supported\", \"unsupported\"], \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\", \"none\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Short verbatim quote from the candidate's material that supports it; empty if none\", \"type\": \"string\"}, \"note\": {\"description\": \"Why partly_supported or unsupported; empty otherwise\", \"type\": \"string\"}}, \"required\": [\"document\", \"claim\", \"kind\", \"verdict\", \"source\", \"evidence_quote\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"CoverLetter\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"addressed_to_this_company_and_role\": {\"type\": \"boolean\"}, \"specific_to_company\": {\"description\": \"Uses facts about this company, not generic praise\", \"type\": \"boolean\"}, \"consistent_with_cv\": {\"type\": \"boolean\"}, \"stale_framing\": {\"description\": \"Quotes where the letter reuses the earlier letter's context wrongly (old employer, old role, outdated 'currently' statements)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"tone_and_length_ok\": {\"type\": \"boolean\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"strengths\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"addressed_to_this_company_and_role\", \"specific_to_company\", \"consistent_with_cv\", \"stale_framing\", \"tone_and_length_ok\", \"issues\", \"strengths\"], \"type\": \"object\", \"additionalProperties\": false}, \"Fit\": {\"properties\": {\"requirements\": {\"items\": {\"$ref\": \"#/$defs/Requirement\"}, \"type\": \"array\"}, \"gap_handling_summary\": {\"type\": \"string\"}, \"score\": {\"description\": \"How well the CV presents the candidate's real fit to this ad (10 best)\", \"type\": \"integer\"}}, \"required\": [\"requirements\", \"gap_handling_summary\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"LanguageQuality\": {\"properties\": {\"expected_language_cv\": {\"description\": \"The language the CV should be in: the ad's, unless the user asked for another\", \"type\": \"string\"}, \"expected_language_cover_letter\": {\"description\": \"As for the CV; a user request in the chat for the letter's language wins\", \"type\": \"string\"}, \"cv_language\": {\"type\": \"string\"}, \"cover_letter_language\": {\"type\": \"string\"}, \"right_language_cv\": {\"type\": \"boolean\"}, \"right_language_cover_letter\": {\"type\": \"boolean\"}, \"grammar_and_spelling_errors\": {\"description\": \"Quotes of real errors, with the correction\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"fluency_and_tone_issues\": {\"description\": \"Awkward, machine-like, mixed-language or wrong-register passages, quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"expected_language_cv\", \"expected_language_cover_letter\", \"cv_language\", \"cover_letter_language\", \"right_language_cv\", \"right_language_cover_letter\", \"grammar_and_spelling_errors\", \"fluency_and_tone_issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"Omission\": {\"properties\": {\"fact\": {\"description\": \"A fact about the candidate, relevant to this ad, that neither output uses\", \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\"], \"type\": \"string\"}, \"source_quote\": {\"type\": \"string\"}, \"relevance\": {\"enum\": [\"high\", \"medium\", \"low\"], \"type\": \"string\"}, \"why_it_matters\": {\"type\": \"string\"}}, \"required\": [\"fact\", \"source\", \"source_quote\", \"relevance\", \"why_it_matters\"], \"type\": \"object\", \"additionalProperties\": false}, \"RequestCompliance\": {\"properties\": {\"request\": {\"description\": \"The user's request, quoted briefly from the conversation\", \"type\": \"string\"}, \"expected\": {\"description\": \"From the test script's expectation when given; else follow, or refuse for a request to state something untrue\", \"enum\": [\"follow\", \"refuse\"], \"type\": \"string\"}, \"outcome\": {\"description\": \"followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing\", \"enum\": [\"followed\", \"partly_followed\", \"refused_correctly\", \"refused_wrongly\", \"ignored\", \"followed_untruthful\"], \"type\": \"string\"}, \"app_explained\": {\"description\": \"The app told the user what it did or why it did not\", \"type\": \"boolean\"}, \"evidence\": {\"description\": \"Quote from the final outputs or the app's reply that shows the outcome\", \"type\": \"string\"}, \"note\": {\"type\": \"string\"}}, \"required\": [\"request\", \"expected\", \"outcome\", \"app_explained\", \"evidence\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"Requirement\": {\"properties\": {\"requirement\": {\"description\": \"One requirement from the job ad, in short form\", \"type\": \"string\"}, \"priority\": {\"enum\": [\"must_have\", \"nice_to_have\"], \"type\": \"string\"}, \"candidate_has_it\": {\"description\": \"Judged from the candidate's material only\", \"enum\": [\"yes\", \"partial\", \"no\", \"unclear\"], \"type\": \"string\"}, \"shown_in_cv\": {\"enum\": [\"yes\", \"partial\", \"no\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Quote from the CV that shows it; empty if not shown\", \"type\": \"string\"}, \"gap_handling\": {\"description\": \"For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored\", \"enum\": [\"not_a_gap\", \"honest\", \"overstated\", \"hidden_or_ignored\"], \"type\": \"string\"}}, \"required\": [\"requirement\", \"priority\", \"candidate_has_it\", \"shown_in_cv\", \"evidence_quote\", \"gap_handling\"], \"type\": \"object\", \"additionalProperties\": false}, \"UserRequests\": {\"properties\": {\"requests\": {\"description\": \"Every request the user made in the conversation, beyond simply asking for the CV, the letter or to exit\", \"items\": {\"$ref\": \"#/$defs/RequestCompliance\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every legitimate request followed and every untruthful one refused; use 10 if the user made no requests\", \"type\": \"integer\"}}, \"required\": [\"requests\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"VisualLayout\": {\"properties\": {\"cv_pages_seen\": {\"description\": \"CV pages shown as images\", \"type\": \"integer\"}, \"cover_letter_pages_seen\": {\"type\": \"integer\"}, \"page_count_appropriate\": {\"description\": \"CV 1-2 pages for the seniority (or what the user asked), cover letter one page\", \"type\": \"boolean\"}, \"overflow_or_cutoff\": {\"description\": \"Text cut off, running past a margin or page edge, overlapping or hidden; where\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"spacing_issues\": {\"description\": \"Cramped or uneven spacing, large empty areas, orphaned headings or lines, a nearly empty last page\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"consistency_issues\": {\"description\": \"Inconsistent fonts, sizes, bullet styles, date formats or alignment; the CV and letter not looking like one set\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"readability\": {\"enum\": [\"good\", \"acceptable\", \"poor\"], \"type\": \"string\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = clean professional layout; 0 = unusable. If no images were given, judge only from the measurements and say so in issues\", \"type\": \"integer\"}}, \"required\": [\"cv_pages_seen\", \"cover_letter_pages_seen\", \"page_count_appropriate\", \"overflow_or_cutoff\", \"spacing_issues\", \"consistency_issues\", \"readability\", \"issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"WorkArrangement\": {\"properties\": {\"arrangement_in_sources\": {\"description\": \"What the job ad and company information say about how the job is done\", \"enum\": [\"remote\", \"hybrid\", \"on-site\", \"not stated\"], \"type\": \"string\"}, \"statements_in_outputs\": {\"description\": \"Quotes from the CV or cover letter about work arrangement, location, relocation, availability or the candidate's preference\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"invented_or_wrong\": {\"description\": \"Quotes that state an arrangement, location limit, culture trait or candidate preference that the sources or the candidate's stated preference do not support, or that contradict them\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"culture_used\": {\"description\": \"Culture or values from the company information that the cover letter uses\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"preference_handling\": {\"description\": \"not_given_and_kept_open: no preference given, and the outputs say nothing about it or use only neutral, open wording; not_given_but_stated: a specific preference or commitment was invented; not_given_but_narrowed: the outputs present the job's arrangement or location as a conflict or weakness, or narrow the candidate's options\", \"enum\": [\"not_given_and_kept_open\", \"not_given_but_stated\", \"not_given_but_narrowed\", \"given_and_used_honestly\", \"given_but_misstated\", \"given_and_not_mentioned\"], \"type\": \"string\"}, \"conflict_handling\": {\"description\": \"If the candidate's preference conflicts with the job's arrangement: do the outputs avoid misstating either side?\", \"enum\": [\"no_conflict\", \"conflict_handled_honestly\", \"conflict_hidden_or_misstated\"], \"type\": \"string\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"arrangement_in_sources\", \"statements_in_outputs\", \"invented_or_wrong\", \"culture_used\", \"preference_handling\", \"conflict_handling\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}}, \"properties\": {\"claims\": {\"description\": \"Every factual claim about the candidate in both outputs\", \"items\": {\"$ref\": \"#/$defs/Claim\"}, \"type\": \"array\"}, \"omissions\": {\"items\": {\"$ref\": \"#/$defs/Omission\"}, \"type\": \"array\"}, \"fit\": {\"$ref\": \"#/$defs/Fit\"}, \"cv_standards\": {\"$ref\": \"#/$defs/CVStandards\"}, \"ats\": {\"$ref\": \"#/$defs/ATS\"}, \"cover_letter\": {\"$ref\": \"#/$defs/CoverLetter\"}, \"work_arrangement\": {\"$ref\": \"#/$defs/WorkArrangement\"}, \"visual_layout\": {\"$ref\": \"#/$defs/VisualLayout\"}, \"language_quality\": {\"$ref\": \"#/$defs/LanguageQuality\"}, \"additional_information\": {\"$ref\": \"#/$defs/AdditionalInformation\"}, \"user_requests\": {\"$ref\": \"#/$defs/UserRequests\"}, \"invented_content_score\": {\"description\": \"10 = nothing invented or stretched, 0 = much invented\", \"type\": \"integer\"}, \"completeness_score\": {\"description\": \"10 = every relevant fact used\", \"type\": \"integer\"}, \"overall_score\": {\"type\": \"integer\"}, \"summary\": {\"description\": \"Three to five sentences: the main strengths and problems\", \"type\": \"string\"}}, \"required\": [\"claims\", \"omissions\", \"fit\", \"cv_standards\", \"ats\", \"cover_letter\", \"work_arrangement\", \"visual_layout\", \"language_quality\", \"additional_information\", \"user_requests\", \"invented_content_score\", \"completeness_score\", \"overall_score\", \"summary\"], \"type\": \"object\", \"additionalProperties\": false}\nThen fill the remaining fields with the same values as in that complete evaluation.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# JOB AD\n# Backend Engineer (Python) - Shipment Tracking Platform\n\n**Company:** Tessel Cargo Software (FICTIONAL)\n**Location:** Antwerp, Belgium (hybrid, 2 days/week in office) – candidates based elsewhere in the EU may work remotely with quarterly on-site weeks\n**Employment:** Full-time, permanent\n**Team:** Routing & Tracking (7 engineers, 1 engineering manager, 1 product manager)\n\n## About the role\n\nTessel Cargo Software builds the software that mid-sized freight forwarders use to plan, route and track shipments across Europe. Our Routing & Tracking team owns the services that turn thousands of carrier events per minute into a reliable live picture of where every container, trailer and parcel is.\n\nWe are looking for a Backend Engineer with a few years of solid production experience to help us grow this platform. You will work on event ingestion, route-optimisation APIs and the customer-facing tracking API, and you will be on the on-call rota (one week in six, supported by a runbook-driven team).\n\n## What you will do\n\n- Design, build and maintain Python (FastAPI) services that ingest carrier events from EDI, REST webhooks and message queues\n- Own parts of our PostgreSQL data model and write migrations that are safe to run on live data\n- Improve the performance and reliability of our public tracking API (currently ~400 requests/second at peak)\n- Work with the data team to expose clean event streams (Kafka) for analytics and ETA prediction\n- Write automated tests, review code and contribute to our CI/CD pipeline (GitHub Actions)\n- Help investigate production incidents and write blameless post-mortems\n- Take part in architecture discussions and document decisions in short design notes\n\n## What you bring\n\n**Must have**\n- 3+ years of professional experience building backend services in Python (or a comparable language such as Go, Java or Kotlin, if you are happy to work mainly in Python)\n- Solid experience with relational databases, preferably PostgreSQL, including query tuning and schema migrations\n- Experience designing and consuming REST APIs\n- Experience with Docker and deploying services to a cloud environment (we use AWS)\n- Practical understanding of automated testing and CI/CD\n- Good written and spoken English; you can explain technical trade-offs clearly\n\n**Nice to have**\n- Experience with Kafka or another event-streaming platform\n- Experience with Kubernetes (we run on EKS) and infrastructure as code (Terraform)\n- Exposure to observability tooling (Prometheus, Grafana, OpenTelemetry)\n- Knowledge of logistics, transport or supply-chain domains, or EDI formats (EDIFACT, X12)\n- Dutch or French language skills\n\n## What we offer\n\n- Salary range EUR 62,000 – 82,000 gross per year depending on experience\n- 28 days of holiday, a learning budget of EUR 1,500 per year and a home-office allowance\n- Pension scheme, public-transport card and a modern hybrid office near Antwerpen-Centraal\n- A team that values pragmatic engineering, clear documentation and sustainable pace\n\n## How to apply\n\nSend us your CV and, if you like, a short cover letter or links to code you are proud of. We read every application and reply within two weeks. Our interviews are: a 30-minute intro call, a practical technical conversation about a past project and a short system-design discussion.\n\nTessel Cargo Software is an equal opportunity employer. We welcome applications from people of all backgrounds.\n\n# COMPANY INFORMATION (web search results the writing tool had)\n## About Tessel Cargo Software\nURL: tesselcargo.example/about\n# About Tessel Cargo Software\n*(fictional web page, written to simulate a search result – tesselcargo.example/about)*\n\n## Software for the people who keep Europe's freight moving\n\nTessel Cargo Software was founded in 2017 in Antwerp by two former operations managers, Margot Vandenberg and Piotr Lis, who were tired of tracking shipments in spreadsheets. Today more than 340 freight forwarders in 19 countries use Tessel to plan routes, book carriers and give their own customers live shipment tracking.\n\n**Our products**\n- **Tessel Plan** – route and load planning with constraint-based optimisation\n- **Tessel Track** – a live tracking API and customer portal fed by carrier events (EDI, telematics, webhooks)\n- **Tessel Docs** – digital delivery notes and customs paperwork\n\n**Numbers (2026)**\n- 120 employees across Antwerp, Poznań and a remote-first engineering group\n- 38 million shipment events processed per day\n- Series B funding of EUR 24 million closed in March 2026, led by a Belgian growth fund\n\n**How we work**\nWe keep teams small and own what we run. Engineers carry a pager for their own services, write short design notes instead of long specs, and spend one day per sprint on reliability work. We publish an engineering blog and sponsor the local Python meetup.\n\n**Values:** Be dependable. Say what you see. Leave it better.\n# Tessel Cargo Software in the news\n*(fictional news item – tesselcargo.example/news/series-b)*\n\n## Tessel Cargo Software raises EUR 24 million to expand live tracking across Europe\n**Antwerp, 12 March 2026**\n\nTessel Cargo Software, the Antwerp-based provider of routing and tracking software for freight forwarders, announced a EUR 24 million Series B round. The funding will be used to double the engineering team by the end of 2027, extend the Tessel Track API with predictive ETAs and open a second engineering hub in Poznań.\n\n\"Forwarders still lose hours every day to chasing status updates,\" said co-founder and CEO Margot Vandenberg. \"Our goal is that a dispatcher never has to phone a driver to ask where a trailer is.\"\n\nCTO Piotr Lis said the company is migrating its event pipeline from queue-based workers to Kafka streams to support peak loads during the autumn peak season, and is investing in observability and on-call tooling. \"We want engineers who enjoy running the things they build,\" he added.\n\nTessel says it processed 38 million shipment events per day in February 2026, up 2.4x from a year earlier, and that its tracking API maintained 99.95% availability over the last twelve months.\n# Careers at Tessel Cargo Software\n*(fictional careers page – tesselcargo.example/careers)*\n\n## Build the software behind Europe's supply chains\n\n**Engineering at Tessel**\n- Stack: Python (FastAPI), Go for a few high-throughput workers, PostgreSQL, Kafka, AWS (EKS, RDS, S3), Terraform, GitHub Actions, Grafana/Prometheus/OpenTelemetry\n- Team structure: product teams of 6-8 engineers with an engineering manager and a product manager\n- Practices: tr\n\n# CANDIDATE MATERIAL GIVEN TO THE WRITING TOOL\nThe tool was given only these documents about the candidate:\n\n## CANDIDATE'S CV\nRAFAEL MORETTI-KLEIN\nPrincipal Software Engineer / Engineering Director\nMunich, Germany | rafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\n\nSUMMARY\nEngineer and engineering leader with 21 years of experience building large-scale backend systems in Python, Go and C++. Led organisations of up to 45 engineers, defined architecture for platforms serving 50M+ users, and still write code every week, mostly internal tooling in recent years.\n\nPROFESSIONAL EXPERIENCE\n\nDirector of Engineering, Platform - Streamhaus GmbH (video streaming), Munich        2019 - 2026 (Aug)\n- Led the platform organisation (5 teams, 45 engineers, 5 engineering managers) responsible for identity, playback API, billing integration and developer platform.\n- Drove migration from a Python 2 monolith to ~60 Python/Go services on GKE; availability of playback API improved from 99.5% to 99.95%.\n- Reduced cloud spend by 31% (EUR 4.2M/year) through rightsizing, committed use discounts and an internal cost dashboard.\n- Introduced RFC process, architecture review board and on-call guidelines adopted company-wide.\n- Hiring: grew org from 18 to 45 engineers; ran 200+ interviews.\n\nPrincipal Engineer - Streamhaus GmbH                                                2015 - 2019\n- Technical lead for the playback API (Python, Tornado then FastAPI-like internal framework, Cassandra, Redis).\n- Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra).\n- Co-author of the company's service template and Python style guide.\n\nSenior Software Engineer - Nordfels Telematik AG, Stuttgart                            2010 - 2015\n- Backend for fleet telematics: ingestion of GPS data from 300k vehicles (C++ and Python, PostgreSQL/PostGIS, RabbitMQ).\n- Led a team of 6 developers on the route-history product.\n\nSoftware Engineer - Dataquelle Systems GmbH, Karlsruhe                               2005 - 2010\n- C++ and Python for industrial data acquisition software (Linux, embedded x86).\n- Built Python test harness used by QA for 8 years.\n\nEDUCATION\nDipl.-Inf. (equivalent MSc) Computer Science, Rhine Valley University, 2005\n\nSKILLS\nPython (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older), PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ, GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform, gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry, distributed systems design, architecture reviews, technical hiring, people management\n\nLANGUAGES\nGerman (native), Italian (native), English (fluent)\n\nPUBLICATIONS & TALKS\n- \"Running Python at 100k rps\" - EuroPython-style conference talk, 2018\n- \"Cost is a feature\" - internal platform engineering summit keynote, 2023\n\n## CANDIDATE'S PORTFOLIO (projects and past work)\nPROJECT: Entitlement Service (Streamhaus, 2016-2017)\n- Designed and wrote most of the Go service that decides what a user can play (subscriptions, regions, devices).\n- 120k requests/s at peak, p99 under 15 ms, Cassandra with local in-memory caching.\n- Technologies: Go, gRPC, Cassandra, Redis, Kubernetes.\n\nPROJECT: Monolith to Services Migration (Streamhaus, 2019-2023)\n- Strangler-fig migration of a Python 2 monolith into ~60 Python 3 and Go services on GKE.\n- Set up the service template (FastAPI or Go, OpenTelemetry tracing, Prometheus metrics, Terraform modules).\n- Playback API availability 99.5% -> 99.95%.\n- Technologies: Python, FastAPI, Go, GKE, Terraform, OpenTelemetry, Prometheus.\n\nPROJECT: Cloud Cost Programme (Streamhaus, 2023-2024)\n- Built an internal cost dashboard on BigQuery billing export and Looker Studio; owners per service.\n- Rightsizing and committed use discounts saved EUR 4.2M per year (31%).\n- Technologies: BigQuery, GCP billing export, Python, Looker Studio.\n\nPROJECT: Patent - Method for adaptive GPS sampling in vehicle fleets (Nordfels, 2013)\n- Co-inventor on a granted patent (DE, fictional number DE10-2013-000000) for reducing GPS data volume by adapting sampling to driving context.\n- Technologies: C++, statistics.\n\nPROJECT: Open source - maintainer of a small Python retry library (2012-2018)\n- ~1.5k GitHub stars; handed over maintenance in 2018.\n- Technologies: Python, pytest, tox.\n\nEXPERIENCE: Director of Engineering at Streamhaus GmbH (2019-2026)\n- Platform organisation of 45 engineers.\n\nEXPERIENCE: Principal Engineer at Streamhaus GmbH (2015-2019)\n- Tech lead playback API; entitlement service.\n\n## CANDIDATE'S EARLIER COVER LETTER (written for a different, earlier job application)\nDear Streamhaus leadership team,\n\nThank you for the conversations so far about the Director of Engineering, Platform role. I am writing to formally confirm my interest.\n\nOver the past four years as Principal Engineer I have seen the platform from the inside: the entitlement service I designed now handles 120k requests per second, and I led the technical side of the playback API. I believe the next step for the platform is organisational, not only technical. Teams need clear ownership, a lightweight RFC process, and on-call that does not burn people out.\n\nIn my first year I would focus on three things: a migration plan for the remaining monolith with clear milestones, a hiring plan to grow the organisation responsibly, and a cost visibility programme so teams understand what their services cost.\n\nI am excited about leading the people I have worked with for years and about building an organisation that keeps engineers close to the code.\n\nWith best regards,\nRafael Moretti-Klein\n\n## CANDIDATE'S OWN FREE-FORM NOTES\nnotes for job search 2026 (Rafael)\n\n- left Streamhaus Aug 2026 after reorg (my org was merged). on good terms, reference available\n- honestly want to go back to hands-on IC work, senior or staff backend. no more people mgmt for a while. burnt out on 1:1s and budgets\n- ok with lower salary than director. ok with \"senior engineer\" title\n- haven't written much code in last 2 years except internal tools and the cost dashboard scripts. Python is fresh, Go is a bit rusty\n- never used AWS deeply - only EC2/S3 at Nordfels era. GCP is my home\n- Rust: hobby only (advent of code 2024), not professional\n- no Java in prod ever\n- started part-time PhD 2008, dropped it 2009 - dont mention\n- kids are older now, can travel ~10%\n- remote or hybrid in Munich\n\n# CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE\n(not given: the candidate stated no preference, so they count as open to the job's arrangement)\n\n# THE USER'S INSTRUCTIONS TO THE WRITING TOOL\n- The user's request: \"Please write my CV first, then the cover letter.\"\n- If the tool asks for contact details the candidate's material lacks: \"I'd rather leave those details out.\"\n- If the tool asks about the job ad: \"That is all the information the ad gives.\"\nThe user made no other requests.\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV (text)\nRAFAEL MORETTI-KLEIN\nSenior Backend Engineer | Python, Go\nMunich, Germany | rafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\n\nPROFESSIONAL SUMMARY\nSenior backend engineer with 21 years of experience building production services and large-scale distributed systems in Python, Go and C++. Designed and wrote most of a Go entitlement service handling 120k requests per second, and led technical work on a playback API and a migration from a Python 2 monolith to around 60 Python and Go services; playback API availability improved from 99.5% to 99.95%. Experienced with PostgreSQL, backend APIs, Kafka, Kubernetes, Terraform and observability tooling. Fluent in English and experienced in documenting architecture.\n\nPROFESSIONAL EXPERIENCE\n\nDirector of Engineering, Platform | Streamhaus GmbH, Munich\n2019 – August 2026\n- Led the technical migration of a Python 2 monolith into approximately 60 Python and Go services deployed on GKE; playback API availability improved from 99.5% to 99.95%.\n- Established a service template using Python/FastAPI or Go, OpenTelemetry tracing, Prometheus metrics and Terraform modules.\n- Built an internal cost dashboard using Python, BigQuery billing exports and Looker Studio; rightsizing and committed-use discounts reduced cloud spend by 31% (€4.2M per year).\n- Led the platform organisation responsible for identity, playback API, billing integration and developer platform.\n- Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide.\n\nPrincipal Engineer | Streamhaus GmbH\n2015 – 2019\n- Led technical work on the playback API using Python, Tornado and an internal framework similar to FastAPI, with Cassandra and Redis.\n- Designed and wrote most of a Go entitlement service for subscriptions, regions and devices using gRPC, Cassandra, Redis and Kubernetes; it handled peak traffic of 120k requests per second with p99 latency under 15 ms.\n- Co-authored the company’s service template and Python style guide.\n\nSenior Software Engineer | Nordfels Telematik AG, Stuttgart\n2010 – 2015\n- Built backend systems for fleet telematics, ingesting GPS data from 300k vehicles using C++, Python, PostgreSQL/PostGIS and RabbitMQ.\n- Led a team of six developers on the route-history product.\n- Co-inventor of a granted patent for adaptive GPS sampling in vehicle fleets.\n\nSoftware Engineer | Dataquelle Systems GmbH, Karlsruhe\n2005 – 2010\n- Developed C++ and Python software for industrial data acquisition on Linux and embedded x86.\n- Built a Python test harness used by QA for eight years.\n\nSELECTED PROJECTS & OPEN SOURCE\n- Open-source maintainer, Python retry library (2012–2018): Maintained a library with approximately 1.5k GitHub stars; used pytest and tox.\n- Entitlement Service (Streamhaus, 2016–2017): Go, gRPC, Cassandra, Redis and Kubernetes; 120k requests per second at peak.\n- Monolith to Services Migration (Streamhaus, 2019–2023): Python, FastAPI, Go, GKE, Terraform, OpenTelemetry and Prometheus.\n\nEDUCATION\nDipl.-Inf. (equivalent to MSc), Computer Science | Rhine Valley University, 2005\n\nTECHNICAL SKILLS\nLanguages: Python, Go, C++\nBackend and APIs: FastAPI, Django, Flask, Tornado, asyncio, gRPC, Protobuf\nDatabases and messaging: PostgreSQL, PostGIS, Cassandra, Redis, Kafka, RabbitMQ\nCloud and infrastructure: GCP (GKE, Pub/Sub, BigQuery), Kubernetes, Terraform; AWS (EC2, S3)\nTesting and observability: pytest, tox, Prometheus, Grafana, OpenTelemetry\nOther: Distributed systems design, architecture reviews, technical hiring, people management\n\nLANGUAGES\nGerman (native), Italian (native), English (fluent)\n\nPUBLICATIONS & TALKS\n- “Running Python at 100k rps” — conference talk, 2018\n- “Cost is a feature” — internal platform engineering summit keynote, 2023\n\n# OUTPUT 1b: WHAT AN ATS WOULD READ (plain text extracted from the CV PDF by a standard text extractor)\nRAFAEL MORETTI-KLEIN\nSenior Backend Engineer | Python, Go\nMunich, Germany | rafael.morettiklein@example.com | +49 555 0505 505 | linkedin.com/in/rmk-example\nPROFESSIONAL SUMMARY\nSenior backend engineer with 21 years of experience building production services and large-scale distributed\nsystems in Python, Go and C++. Designed and wrote most of a Go entitlement service handling 120k requests\nper second, and led technical work on a playback API and a migration from a Python 2 monolith to around 60\nPython and Go services; playback API availability improved from 99.5% to 99.95%. Experienced with PostgreSQL,\nbackend APIs, Kafka, Kubernetes, Terraform and observability tooling. Fluent in English and experienced in\ndocumenting architecture.\nPROFESSIONAL EXPERIENCE\nDirector of Engineering, Platform | Streamhaus GmbH, Munich 2019 – August 2026\n• Led the technical migration of a Python 2 monolith into approximately 60 Python and Go services deployed on\nGKE; playback API availability improved from 99.5% to 99.95%.\n• Established a service template using Python/FastAPI or Go, OpenTelemetry tracing, Prometheus metrics and\nTerraform modules.\n• Built an internal cost dashboard using Python, BigQuery billing exports and Looker Studio; rightsizing and\ncommitted-use discounts reduced cloud spend by 31% (€4.2M per year).\n• Led the platform organisation responsible for identity, playback API, billing integration and developer platform.\n• Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide.\nPrincipal Engineer | Streamhaus GmbH 2015 – 2019\n• Led technical work on the playback API using Python, Tornado and an internal framework similar to FastAPI,\nwith Cassandra and Redis.\n• Designed and wrote most of a Go entitlement service for subscriptions, regions and devices using gRPC,\nCassandra, Redis and Kubernetes; it handled peak traffic of 120k requests per second with p99 latency under 15\nms.\n• Co-authored the company’s service template and Python style guide.\nSenior Software Engineer | Nordfels Telematik AG, Stuttgart 2010 – 2015\n• Built backend systems for fleet telematics, ingesting GPS data from 300k vehicles using C++, Python,\nPostgreSQL/PostGIS and RabbitMQ.\n• Led a team of six developers on the route-history product.\n• Co-inventor of a granted patent for adaptive GPS sampling in vehicle fleets.\nSoftware Engineer | Dataquelle Systems GmbH, Karlsruhe 2005 – 2010\n• Developed C++ and Python software for industrial data acquisition on Linux and embedded x86.\n• Built a Python test harness used by QA for eight years.\nSELECTED PROJECTS & OPEN SOURCE\n• Open-source maintainer, Python retry library (2012–2018): Maintained a library with approximately 1.5k\nGitHub stars; used pytest and tox.\n• Entitlement Service (Streamhaus, 2016–2017): Go, gRPC, Cassandra, Redis and Kubernetes; 120k requests per\nsecond at peak.\n• Monolith to Services Migration (Streamhaus, 2019–2023): Python, FastAPI, Go, GKE, Terraform,\nOpenTelemetry and Prometheus.\nEDUCATION\nDipl.-Inf. (equivalent to MSc), Computer Science | Rhine Valley University, 2005\nTECHNICAL SKILLS\nLanguages: Python, Go, C++\nBackend and APIs: FastAPI, Django, Flask, Tornado, asyncio, gRPC, Protobuf\nDatabases and messaging: PostgreSQL, PostGIS, Cassandra, Redis, Kafka, RabbitMQ\nCloud and infrastructure: GCP (GKE, Pub/Sub, BigQuery), Kubernetes, Terraform; AWS (EC2, S3)\nTesting and observability: pytest, tox, Prometheus, Grafana, OpenTelemetry\nOther: Distributed systems design, architecture reviews, technical hiring, people management\nLANGUAGES\nGerman (native), Italian (native), English (fluent)\nPUBLICATIONS & TALKS\n• “Running Python at 100k rps” — conference talk, 2018\n• “Cost is a feature” — internal platform engineering summit keynote, 2023\n\n# OUTPUT 2: COVER LETTER (text)\nDear Tessel Cargo Software hiring team,\n\nI am applying for the Backend Engineer (Python) role because it brings together production backend engineering, dependable tracking services and practical work on event-driven systems. Tessel’s focus on reducing the effort dispatchers spend chasing shipment updates makes the reliability of its tracking platform especially meaningful.\n\nI bring 21 years of experience building backend services and distributed systems in Python, Go and C++. At Streamhaus, I designed and wrote most of a Go entitlement service that handled 120,000 requests per second at peak, and led technical work on the playback API. I also helped migrate a Python 2 monolith into around 60 Python and Go services, improving playback API availability from 99.5% to 99.95%. Earlier, I built fleet-telematics systems ingesting GPS data from 300,000 vehicles, using Python, PostgreSQL/PostGIS and RabbitMQ—a background closely related to processing shipment events reliably.\n\nMy experience includes Python APIs, PostgreSQL, Kafka, automated testing with pytest and tox, and operating services with Kubernetes, Terraform and observability tooling. I have also documented architecture and contributed to service standards and on-call guidelines. After leading an engineering organisation, I am now looking to return to hands-on individual-contributor backend work, where I can contribute directly to building and improving production services.\n\nI would welcome the opportunity to discuss how my backend and reliability experience could contribute to Tessel’s Routing & Tracking team. Thank you for your consideration.\n\nWith best regards,\nRafael Moretti-Klein\n\n# OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF\nDear Tessel Cargo Software hiring team,\nI am applying for the Backend Engineer (Python) role because it brings together production\nbackend engineering, dependable tracking services and practical work on event-driven systems.\nTessel’s focus on reducing the effort dispatchers spend chasing shipment updates makes the\nreliability of its tracking platform especially meaningful.\nI bring 21 years of experience building backend services and distributed systems in Python, Go and\nC++. At Streamhaus, I designed and wrote most of a Go entitlement service that handled 120,000\nrequests per second at peak, and led technical work on the playback API. I also helped migrate a\nPython 2 monolith into around 60 Python and Go services, improving playback API availability\nfrom 99.5% to 99.95%. Earlier, I built fleet-telematics systems ingesting GPS data from 300,000\nvehicles, using Python, PostgreSQL/PostGIS and RabbitMQ—a background closely related to\nprocessing shipment events reliably.\nMy experience includes Python APIs, PostgreSQL, Kafka, automated testing with pytest and tox,\nand operating services with Kubernetes, Terraform and observability tooling. I have also\ndocumented architecture and contributed to service standards and on-call guidelines. After leading\nan engineering organisation, I am now looking to return to hands-on individual-contributor\nbackend work, where I can contribute directly to building and improving production services.\nI would welcome the opportunity to discuss how my backend and reliability experience could\ncontribute to Tessel’s Routing & Tracking team. Thank you for your consideration.\nWith best regards,\nRafael Moretti-Klein\n\n# LAYOUT MEASUREMENTS OF THE PDFS\nCV PDF: 2 page(s), fonts LMRoman10, LMRoman12, LMRoman9, body 10.0 pt, smallest 9.0 pt, margins (pt) {'left': 51.4, 'right': 50.0, 'top': 49.7, 'bottom': 51.3}, last page 28.0% filled. Problems: none found\nCover letter PDF: 1 page(s), fonts LMRoman10, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 64.2, 'right': 63.4, 'top': 67.0, 'bottom': 449.4}, last page 46.6% filled. Problems: none found\n\n# PAGE IMAGES\nCV: 2 page image(s) attached of 2; Cover letter: 1 page image(s) attached of 1. The images follow this text, CV pages first, in page order.\n\nEvaluate both outputs against the rubric."
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page1.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page2.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cover_letter_page1.png"
+            }
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "Claim": {
+              "properties": {
+                "document": {
+                  "enum": [
+                    "cv",
+                    "cover_letter"
+                  ],
+                  "type": "string"
+                },
+                "claim": {
+                  "description": "The claim about the candidate, quoted briefly from the output document",
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "skill_or_tool",
+                    "employer",
+                    "job_title",
+                    "date_or_duration",
+                    "number_or_metric",
+                    "education",
+                    "certification",
+                    "project",
+                    "language",
+                    "responsibility_or_achievement",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material",
+                  "enum": [
+                    "supported",
+                    "partly_supported",
+                    "unsupported"
+                  ],
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "cv",
+                    "portfolio",
+                    "cover_letter",
+                    "notes",
+                    "chat",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Short verbatim quote from the candidate's material that supports it; empty if none",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "Why partly_supported or unsupported; empty otherwise",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document",
+                "claim",
+                "kind",
+                "verdict",
+                "source",
+                "evidence_quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "RequestCompliance": {
+              "properties": {
+                "request": {
+                  "description": "The user's request, quoted briefly from the conversation",
+                  "type": "string"
+                },
+                "expected": {
+                  "description": "From the test script's expectation when given; else follow, or refuse for a request to state something untrue",
+                  "enum": [
+                    "follow",
+                    "refuse"
+                  ],
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing",
+                  "enum": [
+                    "followed",
+                    "partly_followed",
+                    "refused_correctly",
+                    "refused_wrongly",
+                    "ignored",
+                    "followed_untruthful"
+                  ],
+                  "type": "string"
+                },
+                "app_explained": {
+                  "description": "The app told the user what it did or why it did not",
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "description": "Quote from the final outputs or the app's reply that shows the outcome",
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "request",
+                "expected",
+                "outcome",
+                "app_explained",
+                "evidence",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "Requirement": {
+              "properties": {
+                "requirement": {
+                  "description": "One requirement from the job ad, in short form",
+                  "type": "string"
+                },
+                "priority": {
+                  "enum": [
+                    "must_have",
+                    "nice_to_have"
+                  ],
+                  "type": "string"
+                },
+                "candidate_has_it": {
+                  "description": "Judged from the candidate's material only",
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "shown_in_cv": {
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Quote from the CV that shows it; empty if not shown",
+                  "type": "string"
+                },
+                "gap_handling": {
+                  "description": "For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored",
+                  "enum": [
+                    "not_a_gap",
+                    "honest",
+                    "overstated",
+                    "hidden_or_ignored"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "requirement",
+                "priority",
+                "candidate_has_it",
+                "shown_in_cv",
+                "evidence_quote",
+                "gap_handling"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What an Anthropic grader answers, as native structured output. The Evaluation schema (103 properties) is\nover the API's compiled-grammar limit (a 46-property schema was accepted, 55 were rejected), so the complete\nevaluation comes back first as one JSON string, and the fields after it repeat, schema-guaranteed, everything\nan analysed measure reads. Those repeated fields are authoritative (compose_evaluation).",
+          "properties": {
+            "full_evaluation_json": {
+              "description": "The complete evaluation: one JSON object, as a string, that follows the Evaluation JSON schema in the system prompt, every field filled",
+              "type": "string"
+            },
+            "claims": {
+              "items": {
+                "$ref": "#/$defs/Claim"
+              },
+              "type": "array"
+            },
+            "fit_requirements": {
+              "items": {
+                "$ref": "#/$defs/Requirement"
+              },
+              "type": "array"
+            },
+            "fit_score": {
+              "type": "integer"
+            },
+            "cv_standards_score": {
+              "type": "integer"
+            },
+            "ats_reason": {
+              "type": "string"
+            },
+            "ats_covered_in_searchable_wording": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_missed_but_candidate_has": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_score": {
+              "type": "integer"
+            },
+            "cover_letter_score": {
+              "type": "integer"
+            },
+            "work_arrangement_invented_or_wrong": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "work_arrangement_score": {
+              "type": "integer"
+            },
+            "visual_layout_score": {
+              "type": "integer"
+            },
+            "language_quality_score": {
+              "type": "integer"
+            },
+            "additional_information_score": {
+              "type": "integer"
+            },
+            "user_requests": {
+              "items": {
+                "$ref": "#/$defs/RequestCompliance"
+              },
+              "type": "array"
+            },
+            "user_requests_score": {
+              "type": "integer"
+            },
+            "invented_content_score": {
+              "type": "integer"
+            },
+            "completeness_score": {
+              "type": "integer"
+            },
+            "overall_score": {
+              "type": "integer"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_evaluation_json",
+            "claims",
+            "fit_requirements",
+            "fit_score",
+            "cv_standards_score",
+            "ats_reason",
+            "ats_covered_in_searchable_wording",
+            "ats_missed_but_candidate_has",
+            "ats_score",
+            "cover_letter_score",
+            "work_arrangement_invented_or_wrong",
+            "work_arrangement_score",
+            "visual_layout_score",
+            "language_quality_score",
+            "additional_information_score",
+            "user_requests",
+            "user_requests_score",
+            "invented_content_score",
+            "completeness_score",
+            "overall_score",
+            "summary"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+[
+  {
+    "iteration": 1,
+    "content": "Daniel Okafor-Reyes\nBackend Software Engineer\n\nLisbon, Portugal | daniel.okafor-reyes@example.com | +351 555 010 202 | linkedin.com/in/daniel-okafor-reyes-example\n\nPROFESSIONAL SUMMARY\nBackend engineer with 7 years of professional experience building and operating Java and Kotlin services, with a strong focus on REST APIs, PostgreSQL, event-driven systems, performance, and production reliability. Experienced with Docker, Kubernetes on AWS EKS, automated testing, and CI/CD. Fluent in English and accustomed to working fully in English. Interested in moving toward a Python backend stack; experience with Python is currently limited to scripts and small Jenkins helpers.\n\nTECHNICAL SKILLS\nLanguages: Java (8–17), Kotlin (basic), Python (scripts and small Jenkins helpers), Go (learning; personal project)\nBackend: Spring Boot, Spring MVC, Spring Data JPA, Hibernate, REST APIs, OpenAPI\nDatabases and messaging: PostgreSQL, Oracle, Redis, Kafka, RabbitMQ\nCloud and delivery: Docker, Kubernetes, Helm, AWS (EKS, S3, SQS), Jenkins, Git\nTesting and systems: JUnit 5, Testcontainers, Spring Cloud Contract, Linux\n\nPROFESSIONAL EXPERIENCE\n\nBackend Engineer | Tejo Insurance Tech | Lisbon\nJan 2022 – Present\n- Develop and maintain seven Java 17 / Spring Boot microservices supporting policy quoting and claims intake.\n- Designed a versioned OpenAPI 3 REST API for partner quoting; 12 broker partners onboarded, handling around 400,000 quote requests per month. Added partner-level rate limiting and contract tests with Spring Cloud Contract.\n- Improved quote endpoint p99 latency from 1.8 seconds to 450 milliseconds by adding Redis caching and resolving JPA N+1 queries.\n- Built Kafka event producers and consumers for claims workflows. Implemented a transactional outbox and idempotency keys, reducing duplicate claim records from around 40 per week to zero over the following quarter.\n- Deploy services to Kubernetes on AWS EKS using Helm charts and Jenkins pipelines; participate in a one-week-per-month on-call rota.\n- Investigated a significant Kafka lag incident in March 2024 and contributed a well-regarded incident write-up.\n- Built a small internal Kotlin / Spring Boot service to render policy PDFs from templates using AWS S3 and SQS; wrote the team’s Kotlin coding guidelines.\n- Run the backend guild meeting every two weeks (since 2024).\n\nSoftware Developer | Viajar Online S.A. | Porto\nSep 2019 – Dec 2021\n- Built booking and payment features in a Java 11 / Spring MVC application backed by Oracle.\n- Wrote integration tests using Testcontainers, increasing payments-module test coverage from 35% to 70% and supporting safer refactoring.\n- Helped split the monolith by extracting the email and SMS notifications service into a separate Spring Boot application using RabbitMQ.\n\nJunior Developer (Internship, then Full-time) | CodeFarol Lda | Porto\nJul 2018 – Aug 2019\n- Maintained PHP and later Java applications for small-business clients.\n\nADDITIONAL PROJECT\nOpenAPI Specification Diff CLI | Personal project\n- Building a Go command-line tool to compare OpenAPI specifications; approximately 600 lines of code, not used in production.\n\nEDUCATION\nBSc Informatics Engineering | Atlantic Polytechnic Institute | 2018\n\nCERTIFICATION\nOracle Certified Professional: Java SE 11 Developer | 2020\n\nLANGUAGES\nEnglish (fluent; professional working environment at Tejo Insurance Tech) | Portuguese (fluent) | Spanish (conversational)",
+    "score": 91,
+    "critique": {
+      "quality_score": 91,
+      "content_quality_feedback": "This is a strong, clear, truthful CV with a logical structure, concise bullet points, and several quantified achievements. The strongest evidence includes the 75% reduction in quote-endpoint p99 latency, 12 broker partners, approximately 400,000 monthly requests, the reduction of duplicate claims to zero, and the increase in test coverage from 35% to 70%. The document also presents production ownership, on-call work, incident investigation, and technical leadership without overstating management responsibility. It is professionally written and appropriately transparent about limited Python experience. Minor content limitations are that some relevant evidence appears only in the skills section, and the CV does not explicitly use terms such as \"query tuning\" or \"CI/CD\" in the experience bullets.",
+      "ats_compatibility_feedback": "The CV is highly ATS-compatible: it uses conventional headings, plain text formatting, standard date ranges, readable bullets, and relevant technology keywords. It should parse reliably because it avoids tables, columns, graphics, icons, and unusual section names. AI screening probability is high for the comparable-language backend requirement and for Java, Kotlin, PostgreSQL, REST, Docker, AWS, Kubernetes, Kafka, automated testing, Jenkins, and CI/CD. Screening probability will be lower for Python-specific searches because the CV correctly states that Python has only been used for scripts and Jenkins helpers and does not claim FastAPI or production Python services. The main ATS opportunity is to place a few high-value terms in the experience bullets rather than relying primarily on the summary or skills section.",
+      "job_alignment_feedback": "The CV aligns very well with the comparable-language interpretation of the role. It demonstrates seven years of Java backend experience, Spring Boot microservices, PostgreSQL and relational database work, REST API design, Docker, AWS EKS deployment, Kafka, Kubernetes, automated testing, Jenkins pipelines, on-call ownership, incident investigation, and technical documentation. The API, event-driven, reliability, and production-operations experience is particularly relevant to the shipment-tracking platform. The candidate's English experience and incident write-up also support the requirement to communicate clearly and explain technical matters. Gaps or weaker matches are the absence of professional Python services or FastAPI, no demonstrated schema-migration ownership, no clearly documented REST API consumption work, no Terraform module-writing experience, no Prometheus/Grafana/OpenTelemetry experience, no logistics or EDI experience, and no Dutch or French. These are role-alignment gaps rather than defects in the CV, and the advertisement explicitly permits Java or Kotlin as comparable languages for the main backend requirement.",
+      "improvement_instructions": "MINOR ATS/alignment enhancements:\n1. In the Professional Experience section under \"Backend Engineer | Tejo Insurance Tech,\" revise the latency bullet to include the job ad's terminology without changing its meaning: change \"Improved quote endpoint p99 latency from 1.8 seconds to 450 milliseconds by adding Redis caching and resolving JPA N+1 queries\" to \"Improved quote endpoint p99 latency from 1.8 seconds to 450 milliseconds through query tuning: added Redis caching and resolved JPA N+1 queries in PostgreSQL-backed services.\" This makes the existing database and performance evidence more searchable.\n2. In the same Tejo Insurance Tech section, revise the deployment bullet to state the delivery practice more explicitly: change \"Deploy services to Kubernetes on AWS EKS using Helm charts and Jenkins pipelines\" to \"Deploy Dockerized services to Kubernetes on AWS EKS using Helm charts and Jenkins CI/CD pipelines.\" Docker is already supported by the candidate's original project information, and this wording surfaces the exact deployment and CI/CD terms from the advertisement.\n3. In the Technical Skills section, change the heading \"Cloud and delivery\" to \"Cloud, containers and CI/CD\" and retain the existing technologies underneath. This improves keyword matching while remaining truthful.\n4. In the Professional Summary, retain the transparent Python qualification but make the comparable-language fit more immediately visible by changing the opening to: \"Backend engineer with 7 years of professional experience building and operating Java and Kotlin services, a comparable backend foundation for a mainly Python role.\" Keep the existing sentence stating that Python is currently limited to scripts and small Jenkins helpers; do not imply production Python or FastAPI experience.\n5. In the Tejo Insurance Tech experience section, consider changing \"Investigated a significant Kafka lag incident in March 2024 and contributed a well-regarded incident write-up\" to \"Investigated a significant Kafka lag incident in March 2024 and contributed a well-regarded incident write-up documenting the technical findings and follow-up actions.\" This better connects the existing evidence to the role's incident-response and clear-documentation expectations without inventing a formal post-mortem process.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional backend experience in Python or a comparable language, with willingness to work mainly in Python",
+          "status": "shown",
+          "quote": "Backend engineer with 7 years of professional experience building and operating Java and Kotlin services... Interested in moving toward a Python backend stack"
+        },
+        {
+          "requirement": "Solid relational database experience, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "shown",
+          "quote": "Designed a versioned OpenAPI 3 REST API for partner quoting"
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to a cloud environment",
+          "status": "shown",
+          "quote": "Deploy services to Kubernetes on AWS EKS using Helm charts and Jenkins pipelines; ... Docker"
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "shown",
+          "quote": "automated testing, and CI/CD; ... wrote integration tests using Testcontainers"
+        },
+        {
+          "requirement": "Good written and spoken English; ability to explain technical trade-offs clearly",
+          "status": "shown",
+          "quote": "Fluent in English and accustomed to working fully in English; ... contributed a well-regarded incident write-up"
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "Built Kafka event producers and consumers for claims workflows"
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code, especially Terraform",
+          "status": "shown",
+          "quote": "Deploy services to Kubernetes on AWS EKS using Helm charts and Jenkins pipelines"
+        },
+        {
+          "requirement": "Exposure to observability tooling such as Prometheus, Grafana or OpenTelemetry",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Knowledge of logistics, transport, supply-chain domains or EDI formats",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

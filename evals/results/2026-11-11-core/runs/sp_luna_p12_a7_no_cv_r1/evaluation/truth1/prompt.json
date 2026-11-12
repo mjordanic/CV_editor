@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "d086278dce27548592348f182154bab74064555d58a8b0cf79cea21b21ab04aa",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: forklift licence\nG2: supermarket or self-service packaging experience (tray sealer, labelling scales)\nG3: master butcher qualification (majstorski ispit not passed)\nG4: HACCP team leader or advanced HACCP course\nG5: unrestricted shift availability (needs the early shift on Wednesdays)\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming a forklift licence or forklift experience because the ad lists it\nT2: Calling him a master butcher or listing the majstorski ispit as passed\nT3: Inventing supermarket, self-service packing, tray-sealer or labelling-scale experience\nT4: Promising full availability for every shift and every Saturday when he needs the early shift on Wednesdays\nT5: Old cover letter is addressed to his current employer and says he works at the Dolac market stall\nT6: Turning the 2nd place at a county fair into an award-winning or national-level claim\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nTomislav Mesarić\nButcher | Meat Counter Assistant\nPROFESSIONAL SUMMARY\nButcher-trained meat counter professional with four years of customer-service experience at Dolac\nmarket hall. Background includes weighing and pricing orders, till operation, FIFO cold-room\nrotation, daily equipment cleaning, fresh sausage production, and preparation of whole lambs and\nsuckling pigs for catering. Basic HACCP knowledge; preparing for the master butcher exam planned\nfor spring 2027.\nCORE SKILLS\n• Meat counter customer service\n• Weighing and pricing orders; till operation\n• FIFO cold-room stock rotation\n• Fresh sausage production and recipe development\n• Preparation and butchery of whole lambs and suckling pigs\n• Hygiene, cleaning routines, and basic HACCP knowledge\n• Dry-ageing trial records: weight loss and temperature\nRELEVANT EXPERIENCE\nMeat stall, Dolac market hall Four years\n• Served customers, weighed and priced orders, and operated the till.\n• Cleaned the slicers and mincer every evening and rotated cold-room stock each morning using\nFIFO.\n• Wrote a one-page closing and cleaning checklist in 2017 after a hygiene inspection remark; it\nremains displayed inside the cold-room door.\nSELECTED BUTCHERY PROJECTS\nShop sausage range | Mesnica Kod Ante 2020–Present\n• Developed the shop’s lamb merguez recipe and adjusted the ćevapi mix to 70% beef and 30% lamb\nfollowing customer feedback.\n• Produce about 40 kg of fresh sausage a week during the busy season.\n• The ćevapi placed second at the Zagreb County craft meat fair in 2023.\nWedding and party catering | Mesnica Kod Ante 2022–2025\n• Ordered, butchered, seasoned, and delivered whole lambs and suckling pigs for spit-roasting at\nthree weddings and about 10 family parties a year.\n• Largest order: four lambs and two pigs for a 180-guest wedding in Samobor in 2024.\nDry-aged beef trial | Mesnica Kod Ante 2024\n• Ran a six-week trial dry-ageing beef ribs for 21 and 28 days, keeping weight-loss and temperature\nrecords.\n• The shop now sells dry-aged rib by pre-order, at about 15 kg a month.\nEDUCATION AND PROFESSIONAL DEVELOPMENT\nButcher training, Food Trades School | Completed 2015\nPreparing for the master butcher exam (majstorski ispit) through the Chamber of Trades; exam\nplanned for spring 2027.\n\n# OUTPUT 2: COVER LETTER\nDear Hiring Manager,\nI am applying for the Butcher / Meat Counter Assistant position at FreshCart’s Zagreb-Jarun\nstore. I bring completed butcher training and four years of customer-service experience at a\nmeat stall, alongside practical experience in meat preparation, FIFO stock rotation, and daily\nhygiene routines.\nAt the counter, I serve customers, weigh and price orders, operate the till, and clean the\nslicers and mincer every evening. I rotate cold-room stock each morning using FIFO. My\nbutchery work also includes preparing whole lambs and suckling pigs for catering, producing\nfresh sausages, and keeping weight-loss and temperature records during a dry-ageing trial. I\nhave basic HACCP knowledge and am preparing for the master butcher exam, planned for\nspring 2027.\nFreshCart’s focus on trained counter staff who can give customers honest product advice\nmakes this role especially relevant to my experience serving customers and working with meat\nproducts. I can work early and late shifts, with an early shift needed on Wednesdays.\nThank you for considering my application. I would welcome the opportunity to discuss how\nmy meat counter and butchery experience could contribute to the FreshCart team.\nKind regards,\nTomislav Mesarić\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

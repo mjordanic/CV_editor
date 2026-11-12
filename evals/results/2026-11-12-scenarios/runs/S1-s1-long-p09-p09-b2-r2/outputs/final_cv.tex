@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor,linkcolor=secondarycolor}
+\pagestyle{empty}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+
+\begin{document}
+
+{\begin{center}
+{\LARGE\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\\[0.25em]
+{\large\color{accentcolor} Senior Platform / Site Reliability Engineer}
+\end{center}}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior platform and site reliability engineer with 10 years of infrastructure experience, including six years running Kubernetes platforms on AWS and leading a Karpenter and spot migration that reduced EC2 spend by 38\%. Experienced in designing, building and operating cloud infrastructure, maintaining Terraform-based infrastructure as code, and leading technical topics from proposal through production, while building self-service platforms, observability and incident practices that help product teams deliver reliable services.
+
+\section*{LANGUAGES}
+English (native); Urdu (conversational)
+
+\section*{Technical Toolkit}
+Cloud and infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud infrastructure design and operation, Terraform, Atlantis\\
+Platform engineering: Kubernetes, Helm, Kustomize, Argo CD, Crossplane, Karpenter, GitHub Actions\\
+Reliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management, k6\\
+Programming and systems: Go, Python, Bash, Linux, Puppet
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Senior Platform Engineer - Tallybrook Ltd, Manchester, United Kingdom / remote} \hfill \textit{Apr 2022 - Present}
+\begin{itemize}
+\item Tech lead of a five-person platform team operating an AWS EKS platform across eight clusters and three regions, supporting approximately 350 services.
+\item Built an internal developer platform with golden-path service templates, Argo CD GitOps and Crossplane self-service for RDS, SQS and S3; adopted by all 14 product teams and reduced time from new service to production from approximately two weeks to under one day.
+\item Led technical implementation of Karpenter and spot instances for stateless workloads, reducing EC2 spend by 38\% (approximately GBP 410,000 per year).
+\item Established SLOs, burn-rate alerts and error budget policies for the 20 most critical services in agreement with product leadership; reduced on-call pages per week by approximately 60\%. Participate in the incident commander rotation and established the incident and post-mortem process.
+\end{itemize}
+
+\textbf{Site Reliability Engineer - Brightwater Games, Leeds} \hfill \textit{Jan 2019 - Mar 2022}
+\begin{itemize}
+\item Operated AWS game backend infrastructure using EC2, ECS and EKS for titles with up to 1.2 million daily active players.
+\item Managed AWS infrastructure as code using approximately 40 Terraform modules and Atlantis plan/apply workflows on pull requests.
+\item Replaced a noisy Nagios setup with Prometheus, Grafana, Alertmanager and Loki observability.
+\item Ran k6 load tests and capacity planning ahead of launches; a test simulating 300,000 concurrent players exposed a connection pool limit that was fixed before launch.
+\end{itemize}
+
+\section*{SELECTED PROJECTS AND CONTRIBUTIONS}
+\begin{itemize}
+\item Open-source Kubernetes cleanup controller: built a Go controller-runtime project to delete expired preview namespaces; approximately 120 GitHub stars.
+\item Shared SLO practices at a UK DevOps meetup in 2024 with the talk “SLOs that product managers care about”.
+\item Mentored three engineers moving from backend development into SRE.
+\end{itemize}
+
+\section*{EDUCATION \& TRAINING}
+BSc Computer Science - University of the North Moors, 2016
+
+\section*{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA), renewed 2024\\
+AWS Certified Solutions Architect - Professional, 2023
+
+\end{document}

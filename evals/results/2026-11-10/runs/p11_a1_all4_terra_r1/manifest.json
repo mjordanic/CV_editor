@@ -1,0 +1,113 @@
+{
+  "run_dir": "runs/p11_a1_all4_terra_r1",
+  "labels": {
+    "persona": "p11",
+    "ad": "a1",
+    "model": "openai:gpt-6.1-terra",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p11_a1_all4_terra",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2269
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1707
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 830
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 945
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6.1-terra",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:21:02+00:00",
+  "status": "completed",
+  "minutes": 3.41,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Lisbon, Portugal; three days per week in the office.",
+    "culture_signals": [
+      "Together: share context openly and help across teams",
+      "Ownership: own mistakes, fix them and learn from them",
+      "Pace: cut unnecessary complexity to move quickly",
+      "Collaboration, teamwork and personal development",
+      "Clear career paths, learning budget and mentoring",
+      "Team events and regular get-togethers",
+      "Support for open-source contributions"
+    ],
+    "notes": "The location and office requirement come from the job ad and match the Lisbon company search result. Culture signals come from the company pages and the job ad."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:24:27+00:00",
+  "cost_usd": 0.090148
+}

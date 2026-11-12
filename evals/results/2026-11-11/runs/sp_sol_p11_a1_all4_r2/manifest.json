@@ -1,0 +1,100 @@
+{
+  "run_dir": "runs/sp_sol_p11_a1_all4_r2",
+  "labels": {
+    "persona": "p11",
+    "ad": "a1",
+    "model": "openai:gpt-6.1-sol",
+    "rep": "2",
+    "input_set": "all4",
+    "case": "p11_a1_all4",
+    "script": "default",
+    "method": "single_prompt",
+    "arm": "E",
+    "stage": "pilot",
+    "writer_model": "gpt-6.1-sol",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "0b42046977b856dd8cfda4cd5d07ce5f1ffe7645",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2269
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1707
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 830
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 945
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": null,
+  "model_override": "openai:gpt-6.1-sol",
+  "work_preference": null,
+  "started_at": "2026-11-11T19:36:38+00:00",
+  "method": "single_prompt",
+  "model": "openai:gpt-6.1-sol",
+  "status": "completed",
+  "failure": null,
+  "finish_reason": "stop",
+  "minutes": 0.8,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 1,
+  "calls_by_node": {
+    "single_prompt": 1
+  },
+  "pdfs": {
+    "cv": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cv.pdf"
+    },
+    "cover_letter": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cover_letter.pdf"
+    }
+  },
+  "fallback_pdfs": [],
+  "compile_failures": [],
+  "finished_at": "2026-11-11T19:37:27+00:00",
+  "cost_usd": 0.037638,
+  "cost_list_usd": 0.037638
+}

@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate for the Corvale Mobility role: a tailored CV, a cover letter, or both?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Let me know if you’d like any content or PDF appearance changes, or if you’re satisfied with them.",
+      "user": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are both ready. Would you like any content or PDF appearance changes, or are you satisfied with them?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "homelab-as-work",
+      "after": "cv",
+      "text": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience.",
+      "expect": "follow",
+      "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine).",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

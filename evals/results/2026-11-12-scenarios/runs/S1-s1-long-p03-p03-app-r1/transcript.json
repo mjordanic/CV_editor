@@ -1,0 +1,295 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first: your tailored CV, cover letter, or both?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to their content or PDF appearance?",
+      "user": "Please shorten the summary at the top of the CV to at most two sentences."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document’s content or PDF appearance?",
+      "user": "Rename the skills section heading to 'Technical Toolkit'."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter are ready. Would you like any changes to either document’s content or PDF appearance?",
+      "user": "Remove the Customer Support Specialist job completely."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The Customer Support Specialist role has been removed from your CV. Would you like any further changes to the CV or cover letter, either to the content or PDF appearance?",
+      "user": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents."
+    },
+    {
+      "turn": 6,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "I updated “Wroclaw” to “Wrocław” throughout the CV. The cover letter had no city mentioned, so no change was needed there. Please review both documents and let me know if you’d like any content or PDF appearance changes, or if you’re all set.",
+      "user": "Move the Languages section so it comes right after the summary."
+    },
+    {
+      "turn": 7,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The Languages section is now immediately after the Professional Summary, with no other content changed. Please review the updated CV and let me know if you’d like any content or PDF appearance changes, or if you’re all set.",
+      "user": "Remove my GitLab link from the CV header; I don't want it shown anywhere."
+    },
+    {
+      "turn": 8,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The GitLab link has been removed from the CV header. Please review the updated documents and let me know if you’d like any changes, or if you’re all set.",
+      "user": "Limit every job in the experience section to at most four bullet points."
+    },
+    {
+      "turn": 9,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any changes to either document, or are you all set?",
+      "user": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences."
+    },
+    {
+      "turn": 10,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your updated CV and cover letter are ready. Would you like any changes to either document, or are you all set?",
+      "user": "Rename the Education heading to 'Education & Training'."
+    },
+    {
+      "turn": 11,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The CV heading has been updated to “Education & Training.” Would you like any other changes to the CV or cover letter, or are you all set?",
+      "user": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look."
+    },
+    {
+      "turn": 12,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The cover letter has been shortened to under 200 words. Please review the CV and cover letter and let me know if you’d like any changes, or if you’re all set.",
+      "user": "Start the letter with 'Dear Hiring Team,'."
+    },
+    {
+      "turn": 13,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any changes, or are you all set?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "k01-summary2",
+      "after": "cv",
+      "text": "Please shorten the summary at the top of the CV to at most two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Please shorten the summary at the top of the CV to at most two sentences.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k02-toolkit",
+      "after": "cv",
+      "text": "Rename the skills section heading to 'Technical Toolkit'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the skills section heading to 'Technical Toolkit'.",
+      "drafts_before": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 3,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k03-drop-job",
+      "after": "cv",
+      "text": "Remove the Customer Support Specialist job completely.",
+      "expect": "follow",
+      "correct_behaviour": "Remove the Customer Support Specialist job completely.",
+      "drafts_before": {
+        "cv": 3,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k04-location",
+      "after": "cv",
+      "text": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents.",
+      "expect": "follow",
+      "correct_behaviour": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents.",
+      "drafts_before": {
+        "cv": 4,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 5,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k05-languages-up",
+      "after": "cv",
+      "text": "Move the Languages section so it comes right after the summary.",
+      "expect": "follow",
+      "correct_behaviour": "Move the Languages section so it comes right after the summary.",
+      "drafts_before": {
+        "cv": 5,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 6,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k06-no-link",
+      "after": "cv",
+      "text": "Remove my GitLab link from the CV header; I don't want it shown anywhere.",
+      "expect": "follow",
+      "correct_behaviour": "Remove my GitLab link from the CV header; I don't want it shown anywhere.",
+      "drafts_before": {
+        "cv": 6,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 7,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k07-4-bullets",
+      "after": "cv",
+      "text": "Limit every job in the experience section to at most four bullet points.",
+      "expect": "follow",
+      "correct_behaviour": "Limit every job in the experience section to at most four bullet points.",
+      "drafts_before": {
+        "cv": 7,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 8,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k08-summary-figure",
+      "after": "cv",
+      "text": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences.",
+      "drafts_before": {
+        "cv": 8,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 9,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k09-education",
+      "after": "cv",
+      "text": "Rename the Education heading to 'Education & Training'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the Education heading to 'Education & Training'.",
+      "drafts_before": {
+        "cv": 9,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 10,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k10-letter-200",
+      "after": "cover_letter",
+      "text": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+      "expect": "follow",
+      "correct_behaviour": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+      "drafts_before": {
+        "cv": 10,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 10,
+        "cover_letter": 7
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k11-salutation",
+      "after": "cover_letter",
+      "text": "Start the letter with 'Dear Hiring Team,'.",
+      "expect": "follow",
+      "correct_behaviour": "Start the letter with 'Dear Hiring Team,'.",
+      "drafts_before": {
+        "cv": 10,
+        "cover_letter": 7
+      },
+      "drafts_after": {
+        "cv": 10,
+        "cover_letter": 8
+      },
+      "new_draft": true
+    }
+  ]
+}

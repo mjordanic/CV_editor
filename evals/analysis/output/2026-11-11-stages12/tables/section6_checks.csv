@@ -1,0 +1,7 @@
+check,measure,result,threshold,passed
+primary self-agreement (composite),"grader SD of the composite, sqrt(mean(d^2)/2), over runs graded twice by claude-sonnet-5-5 (30 runs)",0.193,<= 0.3,True
+primary self-agreement (overall),share of runs graded twice by claude-sonnet-5-5 whose two overall scores are within 1 point,100% (30/30),>= 90%,True
+primary vs second (rank agreement),"Spearman of the composite, claude-sonnet-5-5 vs claude-opus-5-5, first grading each, on runs graded by both (36 runs)",0.744,>= 0.7,True
+no bias by arm: single_prompt/gpt-6-luna - multi_agent/gpt-6-luna,"mean per-cell difference of the composite under each grader, first gradings, runs graded by both (12 cells): claude-sonnet-5-5 +0.202, claude-opus-5-5 +0.083",gap 0.119; same sign 89% (8/9 non-tied cells),gap <= 0.3 and same-sign share >= 80%,True
+no bias by arm: single_prompt/gpt-6.1-sol - multi_agent/gpt-6-luna,"mean per-cell difference of the composite under each grader, first gradings, runs graded by both (12 cells): claude-sonnet-5-5 +0.333, claude-opus-5-5 +0.488",gap 0.155; same sign 100% (9/9 non-tied cells),gap <= 0.3 and same-sign share >= 80%,True
+claim audit,unsupported + partly-supported claims claude-opus-5-5 flagged on the runs graded by both,12 claims in 10 of 36 runs (claude-sonnet-5-5 flagged 24),>= 80% also found by primary (a person reads them),

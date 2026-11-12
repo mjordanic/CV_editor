@@ -1,0 +1,437 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8938,
+      "output_tokens": 5904,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13490
+    },
+    "cost_usd": 0.039133,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "2acc046eb659933c134e5e71c90bc0db650cf791158928e48b9e6a12dc8e8fe9",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-ma_luna_p13_a8_no_cv_r1-bda340938c",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-ma_luna_p13_a8_no_cv_r1-bda340938c",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.078266
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Pflegehelferin | Seniorenzentrum Am Lindenhof",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Seniorenzentrum Am Lindenhof, 2021-heute",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "fünf Jahre Krankenschwester Innere Medizin, Szpital Opole",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "In Polen war ich fünf Jahre Krankenschwester auf einer Station für Innere Medizin.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Aushilfe Bäckerei Schwarzwaldkorn",
+        "kind": "employer",
+        "verdict": "partly_supported",
+        "source": "cover_letter",
+        "evidence_quote": "Zurzeit arbeite ich als Aushilfe in der Bäckerei Schwarzwaldkorn",
+        "note": "Stale: from earlier letter, and conflicts with current Lindenhof job"
+      },
+      {
+        "document": "cv",
+        "claim": "Wöchentliche Singgruppe 6-8 Bewohner mit Demenz (2022–heute)",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Leite einmal pro Woche eine Singgruppe",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Einarbeitung von 7 neuen Pflegehelferinnen und Praktikantinnen",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "bisher 7 Personen",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Stürze von 14 auf 8, 9 Bewohner",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "von 14 auf 8 zurück",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Verbandswechsel unter Aufsicht, 2016–2019",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "unter Aufsicht der Stationsärztin",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Defizitbescheid, Kenntnisprüfung März 2027",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Kenntnisprüfung erst März 2027",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "LG1-Kurs absolviert",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "nur LG1 Kurs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Deutsch B2, Zertifikat 2021",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Deutsch B2 Zertifikat 2021",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Vivendi PD – gute Kenntnisse",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Vivendi PD kann ich gut",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fahrschule seit September, Theorie bestanden, Prüfung Januar 2027",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "praktische Prüfung im Januar 2027",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Teilzeitwunsch 75 %; jedes zweite Wochenende",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Teilzeit 75% wäre ideal",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "in der ambulanten Pflege habe ich noch nicht gearbeitet",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "ambulante Pflege: nie gemacht, nur Heim",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Maßnahmen zur Sturzprophylaxe mit umgesetzt",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Nachtlichter und feste Toilettengänge für 9 Bewohner eingeführt",
+        "note": ""
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Pflegehelfer training or 2 years basic care",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Pflegehelferin | Seniorenzentrum Am Lindenhof",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Führerschein Klasse B",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Führerschein Klasse B derzeit nicht vorhanden",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Deutsch B2",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Deutsch B2, Zertifikat 2021",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "LG1 qualification",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "LG1-Kurs absolviert",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Ambulante Pflege experience",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "stationären Pflege",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dementia experience",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Singgruppe für 6 bis 8 Bewohnerinnen und Bewohner mit Demenz",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "MediFox documentation",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Vivendi PD – gute Kenntnisse",
+          "gap_handling": "honest"
+        }
+      ],
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 5
+    },
+    "ats": {
+      "reason": "Text is readable with clear headings and shows Pflegehelferin, Demenz, LG1, B2 and the driving licence status. Weaknesses are the placeholder-style contact line, missing dates, and the unsupported-looking odd job entry. Little keyword wording like Grundpflege or Körperpflege.",
+      "covered_in_searchable_wording": [
+        "Pflegehelferin",
+        "Demenz",
+        "LG1",
+        "Deutsch B2",
+        "Vivendi PD",
+        "Krankenschwester",
+        "Wundversorgung"
+      ],
+      "missed_but_candidate_has": [
+        "Grundpflege",
+        "Behandlungspflege"
+      ],
+      "score": 6
+    },
+    "cover_letter": {
+      "score": 6
+    },
+    "work_arrangement": {
+      "invented_or_wrong": [],
+      "score": 9
+    },
+    "visual_layout": {
+      "score": 5
+    },
+    "language_quality": {
+      "score": 8
+    },
+    "additional_information": {
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out (contact details).",
+          "expected": "follow",
+          "outcome": "partly_followed",
+          "app_explained": false,
+          "evidence": "Adresse, PLZ/Ort, Telefon und E-Mail: nicht angegeben",
+          "note": "Details left out but a visible placeholder-style line remains in the CV header"
+        }
+      ],
+      "score": 6
+    },
+    "invented_content_score": 8,
+    "completeness_score": 7,
+    "overall_score": 6,
+    "summary": "The documents are honest: the licence, the ambulatory gap, the LG1 level, B2 and the pending exam are all stated truthfully, and the numbers match the material. Weaknesses: the stale bakery job from an earlier letter is listed as current work and the Lindenhof job has no dates. 'Nicht angegeben' placeholders appear several times and the contact line is left visible. The CV spills three lines onto a second page, and the letter is generic and lacks company-specific content and Grundpflege wording."
+  },
+  "counts": {
+    "claims": 15,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": null,
+    "must_haves": 4,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 1,
+    "requests_partly": 1,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": null,
+    "wrong_language": null,
+    "language_errors": null,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2339,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1395,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 53.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 13.9,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 13.9% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 70.5,
+          "right": 70.8,
+          "top": 73.0,
+          "bottom": 444.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 47.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.039133,
+  "full_evaluation": {
+    "parsed": false,
+    "disagreements": [],
+    "error": "invalid JSON: Expecting ',' delimiter: line 1 column 4927 (char 4926)",
+    "raw": "{\"claims\":[{\"document\":\"cv\",\"claim\":\"Pflegehelferin | Seniorenzentrum Am Lindenhof\",\"kind\":\"job_title\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"Seniorenzentrum Am Lindenhof, 2021-heute\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"fünf Jahre Krankenschwester Innere Medizin, Szpital Opole\",\"kind\":\"job_title\",\"verdict\":\"supported\",\"source\":\"cover_letter\",\"evidence_quote\":\"In Polen war ich fünf Jahre Krankenschwester auf einer Station für Innere Medizin.\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Aushilfe Bäckerei Schwarzwaldkorn\",\"kind\":\"employer\",\"verdict\":\"partly_supported\",\"source\":\"cover_letter\",\"evidence_quote\":\"Zurzeit arbeite ich als Aushilfe in der Bäckerei Schwarzwaldkorn\",\"note\":\"Stale: from earlier letter, and conflicts with current Lindenhof job\"},{\"document\":\"cv\",\"claim\":\"Wöchentliche Singgruppe 6-8 Bewohner mit Demenz (2022–heute)\",\"kind\":\"project\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"Leite einmal pro Woche eine Singgruppe\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Einarbeitung von 7 neuen Pflegehelferinnen und Praktikantinnen\",\"kind\":\"number_or_metric\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"bisher 7 Personen\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Stürze von 14 auf 8, 9 Bewohner\",\"kind\":\"number_or_metric\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"von 14 auf 8 zurück\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Verbandswechsel unter Aufsicht, 2016–2019\",\"kind\":\"responsibility_or_achievement\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"unter Aufsicht der Stationsärztin\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Defizitbescheid, Kenntnisprüfung März 2027\",\"kind\":\"certification\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"Kenntnisprüfung erst März 2027\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"LG1-Kurs absolviert\",\"kind\":\"certification\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"nur LG1 Kurs\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Deutsch B2, Zertifikat 2021\",\"kind\":\"language\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"Deutsch B2 Zertifikat 2021\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Vivendi PD – gute Kenntnisse\",\"kind\":\"skill_or_tool\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"Vivendi PD kann ich gut\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Fahrschule seit September, Theorie bestanden, Prüfung Januar 2027\",\"kind\":\"other\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"praktische Prüfung im Januar 2027\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Teilzeitwunsch 75 %; jedes zweite Wochenende\",\"kind\":\"other\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"Teilzeit 75% wäre ideal\",\"note\":\"\"},{\"document\":\"cover_letter\",\"claim\":\"in der ambulanten Pflege habe ich noch nicht gearbeitet\",\"kind\":\"other\",\"verdict\":\"supported\",\"source\":\"notes\",\"evidence_quote\":\"ambulante Pflege: nie gemacht, nur Heim\",\"note\":\"\"},{\"document\":\"cover_letter\",\"claim\":\"Maßnahmen zur Sturzprophylaxe mit umgesetzt\",\"kind\":\"responsibility_or_achievement\",\"verdict\":\"supported\",\"source\":\"portfolio\",\"evidence_quote\":\"Nachtlichter und feste Toilettengänge für 9 Bewohner eingeführt\",\"note\":\"\"}],\"omissions\":[{\"fact\":\"Wundexpertin ICW wanted\",\"source\":\"notes\",\"source_quote\":\"würde ich gern machen\",\"relevance\":\"medium\",\"why_it_matters\":\"Ad offers it as training\"},{\"fact\":\"Kind in school until 13 h, suits early tours\",\"source\":\"notes\",\"source_quote\":\"Kind in der Schule bis 13 Uhr\",\"relevance\":\"low\",\"why_it_matters\":\"fits Frühtouren\"}],\"fit\":{\"requirements\":[{\"requirement\":\"Pflegehelfer training or 2 years basic care\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Pflegehelferin | Seniorenzentrum Am Lindenhof\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"Führerschein Klasse B\",\"priority\":\"must_have\",\"candidate_has_it\":\"no\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Führerschein Klasse B derzeit nicht vorhanden\",\"gap_handling\":\"honest\"},{\"requirement\":\"Deutsch B2\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Deutsch B2, Zertifikat 2021\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"LG1 qualification\",\"priority\":\"nice_to_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"LG1-Kurs absolviert\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"Ambulante Pflege experience\",\"priority\":\"nice_to_have\",\"candidate_has_it\":\"no\",\"shown_in_cv\":\"partial\",\"evidence_quote\":\"stationären Pflege\",\"gap_handling\":\"honest\"},{\"requirement\":\"Dementia experience\",\"priority\":\"nice_to_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Singgruppe für 6 bis 8 Bewohnerinnen und Bewohner mit Demenz\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"MediFox documentation\",\"priority\":\"must_have\",\"candidate_has_it\":\"no\",\"shown_in_cv\":\"partial\",\"evidence_quote\":\"Vivendi PD – gute Kenntnisse\",\"gap_handling\":\"honest\"}],\"gap_handling_summary\":\"Gaps stated honestly; nothing faked.\",\"score\":7}"
+  }
+}

@@ -5,6 +5,7 @@ All data is the repo's fictional sample material.
 import logging
 from pathlib import Path
 
+import pytest
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph.message import add_messages
 
@@ -80,14 +81,14 @@ def test_finished_actions_are_not_offered_again_without_a_new_user_message():
         {"role": "assistant", "content": "CV PDF generated successfully."},
     ])
     offered = _offered_actions(agent._build_available_actions(
-        False, False, cv_generated=True, cover_letter_generated=True, messages=after_render,
+        cv_generated=True, cover_letter_generated=True, messages=after_render,
         cv_pdf_available=True, cover_letter_pdf_available=True,
     ))
     assert offered == {"collect_user_input", "exit"}
 
     user_asked = add_messages(after_render, [{"role": "user", "content": "Make the CV titles bold."}])
     offered = _offered_actions(agent._build_available_actions(
-        False, False, cv_generated=True, cover_letter_generated=True, messages=user_asked,
+        cv_generated=True, cover_letter_generated=True, messages=user_asked,
         cv_pdf_available=True, cover_letter_pdf_available=True,
     ))
     assert {"draft_cv", "draft_cover_letter", "update_cv_pdf_style", "update_cover_letter_pdf_style"} <= offered
@@ -104,7 +105,7 @@ def test_critique_sees_the_whole_original_cv():
 
 def test_finalize_ignores_drafts_from_an_earlier_request():
     agent = cv_writer.CVWriterAgent.__new__(cv_writer.CVWriterAgent)
-    agent.save_cv = lambda text, filename: filename
+    agent.save_document = lambda text, filename: filename
     history = [{"iteration": i, "score": s, "content": f"CV draft {i}"} for i, s in ((1, 72), (2, 82), (3, 86), (4, 82))]
 
     out = agent.finalize_best_version({"cv_history": history, "cv_cycle_start": 3, "messages": []})
@@ -115,23 +116,24 @@ def test_finalize_ignores_drafts_from_an_earlier_request():
     assert out["cv_final_iteration"] == 3
 
 
-def test_critique_previous_score_resets_at_new_cycle(monkeypatch):
+def test_critique_previous_defect_count_resets_at_new_cycle(monkeypatch):
     monkeypatch.setattr(critique, "write_to_debug", lambda *_, **__: None)
     agent = critique.CritiqueAgent.__new__(critique.CritiqueAgent)
-    agent.quality_threshold = 85
+    agent.grounding_llm = None  # the check fails and is skipped
     agent.critique_cv = lambda **_: critique.CritiqueResponse(
         quality_score=80, content_quality_feedback="ok", ats_compatibility_feedback="ok",
         job_alignment_feedback="ok", improvement_instructions="", critical_issues="",
     )
-    history = [{"iteration": 3, "score": 86, "content": "CV draft 3"}]
+    history = [{"iteration": 3, "score": 86, "content": "CV draft 3", "defects": 2}]
     out = agent.run_cv({"generated_cv": "CV draft 4", "cv_history": history, "cv_cycle_start": 1, "messages": []})
-    assert out["cv_previous_quality_score"] is None
+    assert out["cv_previous_defect_count"] is None
+    out = agent.run_cv({"generated_cv": "CV draft 4", "cv_history": history, "cv_cycle_start": 0, "messages": []})
+    assert out["cv_previous_defect_count"] == 2
 
 
-def _writer_with_filter_returning_nothing(module, cls):
+def _writer_with_filter_returning(cls, answer=""):
     agent = cls.__new__(cls)
-    agent.previous_modification_instructions = ["Do not add an education section."]
-    agent.filter_llm = type("F", (), {"invoke": lambda self, _: type("M", (), {"content": ""})()})()
+    agent.filter_llm = type("F", (), {"invoke": lambda self, _: type("M", (), {"content": answer})()})()
     return agent
 
 
@@ -141,30 +143,30 @@ def test_fully_filtered_critique_still_uses_up_a_redraft(monkeypatch):
         (cv_writer, cv_writer.CVWriterAgent, "cv"),
         (cover_letter_writer, cover_letter_writer.CoverLetterWriterAgent, "cover_letter"),
     ):
-        agent = _writer_with_filter_returning_nothing(module, cls)
+        agent = _writer_with_filter_returning(cls, '""')  # the two quote characters also mean "nothing"
         out = agent.run({
             f"generated_{kind}": "draft 2",
             f"{kind}_needs_refinement": True,
             f"{kind}_critique_improvement_instructions": "Add an education section.",
+            f"{kind}_user_requests": ["Do not add an education section."],
             f"{kind}_refinement_count": 0,
             "messages": [],
         })
         assert out[f"{kind}_refinement_count"] == 1, kind
+        assert out[f"generated_{kind}"] == "draft 2"
 
 
 def test_cover_letter_writer_ignores_cv_feedback(monkeypatch, tmp_path):
-    monkeypatch.setattr(cover_letter_writer, "write_to_debug", lambda *_, **__: None)
     agent = cover_letter_writer.CoverLetterWriterAgent.__new__(cover_letter_writer.CoverLetterWriterAgent)
-    agent.previous_modification_instructions = []
     agent.output_folder = str(tmp_path)
     seen = {}
 
-    def fake_generate(**kwargs):
-        seen.update(kwargs)
+    def fake_generate(document, modification_instructions, state, **_):
+        seen["modification_instructions"] = modification_instructions
         return "Dear hiring team, ...", "notes"
 
-    agent.generate_cover_letter = fake_generate
-    agent.run({
+    agent.generate_document = fake_generate
+    out = agent.run({
         "candidate_text": {"cv": SAMPLE_CV, "cover_letter": None},
         "cv_content_feedback": "Add MATLAB to the skills section.",
         "cover_letter_content_feedback": None,
@@ -172,7 +174,7 @@ def test_cover_letter_writer_ignores_cv_feedback(monkeypatch, tmp_path):
         "messages": [],
     })
     assert "MATLAB" not in (seen["modification_instructions"] or "")
-    assert agent.previous_modification_instructions == []
+    assert "cover_letter_user_requests" not in out
 
 
 def test_failed_company_search_does_not_end_the_session(monkeypatch, caplog):
@@ -186,5 +188,32 @@ def test_failed_company_search_does_not_end_the_session(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING, logger=search.__name__):
         out = agent.run({"job_description_info": {"company_name": "Northwind Analytics"}, "messages": []})
 
-    assert out["company_info"]["remote_work"] == "NA"
+    assert out["company_info"]["work_context"]["arrangement"] == "not stated"
+    assert "remote_work" not in out["company_info"]
     assert "Company research failed" in caplog.text
+
+
+def test_local_model_makes_no_web_search_even_with_a_tavily_key(monkeypatch):
+    monkeypatch.setattr(search, "write_to_debug", lambda *_, **__: None)
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
+    monkeypatch.delenv(search.SEARCH_FIXTURE_ENV, raising=False)
+    monkeypatch.delenv(search.SEARCH_RECORD_ENV, raising=False)
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: object())
+    monkeypatch.setattr(search, "TavilyClient", lambda **_: pytest.fail("a local run must not create a Tavily client"))
+    agent = search.SearchAgent(model="ollama:gemma4:e4b")
+    assert agent.tavily_client is None
+    agent.search_tavily = lambda query: pytest.fail("a local run must not search the web")
+    agent.extract_work_context = lambda *_: search.WorkContext(arrangement="not stated")
+    out = agent.run({"job_description_info": {"company_name": "Northwind Analytics"}, "messages": []})
+    assert out["company_info"]["company_description"] == search.NO_COMPANY_INFO
+    assert out["company_info"]["search_source"] is None
+
+
+def test_hosted_model_with_a_tavily_key_searches(monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
+    monkeypatch.delenv(search.SEARCH_FIXTURE_ENV, raising=False)
+    monkeypatch.delenv(search.SEARCH_RECORD_ENV, raising=False)
+    monkeypatch.setattr(search, "init_chat_model", lambda *_, **__: object())
+    monkeypatch.setattr(search, "TavilyClient", lambda **kw: ("client", kw["api_key"]))
+    agent = search.SearchAgent(model="openai:gpt-6-luna")
+    assert agent.tavily_client == ("client", "tvly-test-key")

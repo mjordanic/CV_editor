@@ -1,0 +1,115 @@
+{
+  "system": "b2",
+  "status": "completed",
+  "passed": 12,
+  "total": 12,
+  "all_passed": true,
+  "cost_usd": 0.025191,
+  "minutes": 4.78,
+  "calls": 12,
+  "user_turns": 12,
+  "usd_per_turn": 0.0021,
+  "seconds_per_turn": 23.9,
+  "calls_per_turn": 1.0,
+  "latex_fixes": 0,
+  "turns": [
+    "first",
+    "k01-summary2",
+    "k02-toolkit",
+    "k03-drop-job",
+    "k04-location",
+    "k05-languages-up",
+    "k06-no-link",
+    "k07-4-bullets",
+    "k08-summary-figure",
+    "k09-education",
+    "k10-letter-200",
+    "k11-salutation"
+  ],
+  "checks": [
+    {
+      "id": "k01-summary-2-sentences",
+      "type": "max_sentences",
+      "what": "summary has at most two sentences (k01, k08)",
+      "pass": true,
+      "detail": "2 sentences"
+    },
+    {
+      "id": "k02-toolkit-heading",
+      "type": "heading",
+      "what": "skills heading renamed",
+      "pass": true,
+      "detail": "headings: ['NADIA BRENNAN-AZIZ', 'PROFESSIONAL SUMMARY', 'LANGUAGES', 'Technical Toolkit', 'PROFESSIONAL EXPERIENCE', 'SELECTED PROJECTS AND CONTRIBUTIONS', 'EDUCATION & TRAINING', 'CERTIFICATIONS']"
+    },
+    {
+      "id": "k03-job-removed",
+      "type": "absent",
+      "what": "Pennine Hosting job gone",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "k04-no-uk",
+      "type": "absent",
+      "what": "no 'Manchester, UK' in either document",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "k04-location-kept",
+      "type": "present",
+      "what": "the location is still in the CV, as asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "k05-languages-after-summary",
+      "type": "heading_order",
+      "what": "Languages section right after the summary",
+      "pass": true,
+      "detail": "headings: ['NADIA BRENNAN-AZIZ', 'PROFESSIONAL SUMMARY', 'LANGUAGES', 'PROFESSIONAL EXPERIENCE', 'SELECTED PROJECTS AND CONTRIBUTIONS', 'EDUCATION & TRAINING', 'CERTIFICATIONS']"
+    },
+    {
+      "id": "k06-no-github",
+      "type": "absent",
+      "what": "GitHub link gone from both documents",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "k07-max-4-bullets",
+      "type": "max_bullets_per_entry",
+      "what": "no job has more than four bullets",
+      "pass": true,
+      "detail": "bullets per entry: [4, 4]"
+    },
+    {
+      "id": "k08-figure-in-summary",
+      "type": "present",
+      "what": "38% EC2 saving in the summary",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "k09-education-heading",
+      "type": "heading",
+      "what": "Education heading renamed",
+      "pass": true,
+      "detail": "headings: ['NADIA BRENNAN-AZIZ', 'PROFESSIONAL SUMMARY', 'LANGUAGES', 'PROFESSIONAL EXPERIENCE', 'SELECTED PROJECTS AND CONTRIBUTIONS', 'EDUCATION & TRAINING', 'CERTIFICATIONS']"
+    },
+    {
+      "id": "k10-letter-under-200",
+      "type": "max_words",
+      "what": "cover letter under 200 words",
+      "pass": true,
+      "detail": "184 words"
+    },
+    {
+      "id": "k11-salutation",
+      "type": "present",
+      "what": "letter opens with 'Dear Hiring Team,'",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

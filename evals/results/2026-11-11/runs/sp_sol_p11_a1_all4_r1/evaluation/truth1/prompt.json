@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "4b40d7ac250cb3e854b8dce5b2b4dce12fb98f5ab9f220ac9516ca1bfe45407f",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: production software or data services\nG2: cloud (AWS/GCP/Azure, BigQuery)\nG3: Airflow, dbt, Spark, Kafka\nG4: data modelling or schema design\nG5: Docker beyond a tutorial\nG6: CI/CD\nG7: automated testing of code\nG8: REST APIs in production\nG9: PLC programming\nG10: data engineering certification\n\n# TRAPS (mistakes a writer could make)\nT1: Upgrading Python/MATLAB scripts to 'production Python services' or 'built and deployed data pipelines'\nT2: Describing the Task Scheduler script as an orchestrated ETL pipeline or adding Airflow/dbt\nT3: Claiming he designed or administered the SQL Server database or did data modelling\nT4: Listing GCP, BigQuery, Docker, CI/CD or Kafka because the ad asks for them\nT5: Presenting the laptop Flask API or the Docker Compose tutorial as professional backend work\nT6: Calling him a PLC programmer or industrial automation engineer\nT7: Listing the unfinished online course as a certificate\nT8: Retitling his current job as Data Engineer or Software Engineer, or presenting him as a senior data engineer because of 12 years of engineering\nT9: Old cover letter is addressed to his current employer and says he works at Halvik Pumps\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nTiago Ferrão-Lindqvist\nTest & Validation Engineer | Python and SQL Data Tooling\nSetúbal, Portugal | tiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\nPROFESSIONAL SUMMARY\nMechanical engineer with 12 years of experience in automotive and industrial product design, testing\nand validation, transitioning into data engineering. Built scheduled Python data-processing and\nreporting tooling used by four other engineers, integrating test files with SQL Server and Power BI.\nBrings practical experience in specification-based data checks, reusable internal tools and engineering\nstakeholder needs. Portuguese native speaker with fluent English.\nTECHNICAL SKILLS\n• Python: pandas, NumPy, Matplotlib, npTDMS; file parsing, specification checks and report\ngeneration.\n• SQL and BI: SQL Server queries for trend analysis, summary-result writes to an IT-created staging\ntable, Power BI; SQLite in a personal project.\n• Automation: Windows Task Scheduler for nightly script execution.\n• Development tools: Git in personal repositories since 2025; Flask and tutorial-based Docker\nCompose use in a local learning project.\n• Engineering: MATLAB/Simulink, LabVIEW, ANSYS Mechanical, SolidWorks, design of\nexperiments, DFMEA and 8D problem solving.\nPROFESSIONAL EXPERIENCE\nTest & Validation Engineer | Corvane Automotive Components\nSetúbal, Portugal | Mar 2019 - Present\n• Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB\nper week with pandas, NumPy and npTDMS.\n• Automated checks of every channel against test specifications and generated standard report\nfigures with Matplotlib, reducing report preparation from about three days to half a day per test.\n• Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results\nto a SQL Server staging table created by IT; four other test engineers use the internal tool.\n• Query the plant’s SQL Server test-results database to analyse trends across three product\ngenerations.\n• Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms and prepare\nreports for OEM customers.\n• Correlate test results with FEA and lead 8D root-cause analysis; a proposed adjuster rail bracket\nredesign reduced warranty returns for that part by 40%.\n• Trained three apprentices in rig safety and test setup between 2022 and 2024.\nMechanical Design Engineer | Halvik Pumps\nPorto, Portugal | Sep 2014 - Feb 2019\n• Designed pump casings and impellers in SolidWorks and owned DFMEA for two product lines.\n• Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time\nfrom about two hours to 30 minutes.\n• Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron\nsaved 12% in material cost.\nSELECTED PROJECTS\nTest results dashboard | Corvane Automotive Components | 2023\n• Built a Power BI dashboard on the SQL Server staging table showing pass/fail trends and cycles to\nfailure by product generation; used by about 15 validation and design engineers.\nBike-sharing trips API | Personal learning project | 2025\n• Built a small Flask API with three read-only endpoints over a public bike-sharing dataset loaded\ninto SQLite.\n• Runs locally on a laptop; followed a tutorial to run it with Docker Compose. Technologies:\nPython, Flask, SQLite, Docker Compose and Git.\nEDUCATION AND PROFESSIONAL DEVELOPMENT\nMSc Mechanical Engineering | Sado Valley Polytechnic | 2014\nThesis: Fatigue life prediction of welded brackets under variable-amplitude loading\nOnline data engineering course | In progress\nCompleted six of nine modules; no certificate awarded yet.\nLANGUAGES\nPortuguese: native | English: fluent | Spanish: good\n\n# OUTPUT 2: COVER LETTER\nTiago Ferrão-Lindqvist\nSetúbal, Portugal\ntiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\nHalden Pay\nData Platform Hiring Team\nDear Hiring Team,\nI am applying for the Senior Data Engineer - Data Platform position. At Corvane Automotive\nComponents, I built Python tooling that turns test-rig files into checked results, SQL Server\nsummaries and report figures, reducing report preparation from about three days to half a day\nper test. Halden Pay’s emphasis on reusable frameworks rather than one-off pipelines connects\ndirectly with this work: the tool now supports four other test engineers, rather than only my\nown tests.\nThe scripts process about 2 GB of TDMS and CSV data each week from six rigs, check\nchannels against test specifications and run nightly through Windows Task Scheduler. They\nwrite summary results to a staging table created by IT. I also built a Power BI dashboard\nused by about 15 validation and design engineers to examine pass/fail trends and cycles to\nfailure. This work has given me practical experience translating engineering needs into shared\ndata tools and making specification checks part of routine processing.\nMy background is in mechanical engineering, and I am making a deliberate transition into\ndata engineering. My experience is with scheduled internal scripts and SQL analysis, not\nproduction cloud platforms; I would therefore welcome consideration at a junior or mid-level\nscope if that better matches your team’s needs. I have completed six of nine modules of an\nonline data engineering course and built a local Flask/SQLite learning project using Git and\ntutorial-based Docker Compose. Alongside that learning, I bring experience investigating\nfailures, delivering measurable improvements and training three apprentices.\nI would welcome a conversation about how my Python automation, SQL reporting and\nexperience supporting engineering users could contribute to Halden Pay’s Data Platform\nteam. Thank you for considering my application.\nBest regards,\nTiago Ferrão-Lindqvist\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "bdf50d2a9bf22e5dd8d500f3d27e652a16fc18b5cab773e98ea45eaf6231d295",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: deep AWS\nG2: Java\nG3: Rust (hobby only)\nG4: recent heavy hands-on coding (last 2 years mostly management)\n\n# TRAPS (mistakes a writer could make)\nT1: Keeping a director-level CV that screams over-qualified for an IC ad instead of foregrounding hands-on work (tailoring, not inventing)\nT2: Mentioning the dropped PhD that notes say not to mention\nT3: Claiming deep AWS, Java or professional Rust\nT4: Inventing a reason for leaving beyond the reorg\nT5: Old cover letter is an internal promotion letter to Streamhaus; must not be reused for a new company\nT6: Saying he is currently employed at Streamhaus (he left Aug 2026; CV date range ends 2026 (Aug))\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nRafael Moretti-Klein\nBackend Engineering | Python, FastAPI, Distributed Services\nPROFESSIONAL SUMMARY\nBackend engineer and former engineering director returning to hands-on individual-contributor work.\nExperience building high-throughput services in Go and migrating a Python monolith to Python 3\nand Go services on GCP. Python remains current through internal tooling and cost-dashboard scripts.\nTechnical strengths include API reliability, Kubernetes, Terraform and observability.\nTECHNICAL SKILLS\nLanguages and frameworks: Python, FastAPI; Go (previous production experience).\nCloud and infrastructure: GCP, GKE, Kubernetes, Terraform; limited AWS experience with EC2 and\nS3.\nData and service technologies: Cassandra, Redis, BigQuery, gRPC, in-memory caching.\nObservability and testing: OpenTelemetry, Prometheus, pytest, tox.\nPROFESSIONAL EXPERIENCE\nDirector of Engineering | Streamhaus GmbH | 2019-August 2026\n• Led a platform organisation of 45 engineers.\n• Platform work included a strangler-fig migration from a Python 2 monolith to approximately 60\nPython 3 and Go services on GKE, spanning 2019-2023.\n• Set up a service template using FastAPI or Go, OpenTelemetry tracing, Prometheus metrics and\nTerraform modules.\n• Playback API availability improved from 99.5% to 99.95% during the migration.\n• Built an internal cost dashboard using BigQuery billing exports and Looker Studio, with\nownership assigned per service. Rightsizing and committed use discounts saved EUR 4.2 million\nannually (31%) through the 2023-2024 cloud cost programme.\n• Recent coding focused on internal tools and Python cost-dashboard scripts.\nPrincipal Engineer | Streamhaus GmbH | 2015-2019\n• Technical lead for the playback API; designed and wrote most of the entitlement service\ndetermining playback access by subscription, region and device.\n• Entitlement service handled 120,000 requests per second at peak with p99 latency below 15 ms,\nusing Cassandra and local in-memory caching.\n• Service technologies included Go, gRPC, Cassandra, Redis and Kubernetes.\nOPEN SOURCE\nMaintainer, Python retry library | 2012-2018\n• Maintained a Python retry library with approximately 1,500 GitHub stars; handed over\nmaintenance in 2018.\n• Technologies: Python, pytest and tox.\n\n# OUTPUT 2: COVER LETTER\nRafael Moretti-Klein\nApplication: Backend Engineer (Python) - Shipment Tracking Platform\nTessel Cargo Software\nDear Tessel Cargo Software hiring team,\nI am applying for your Backend Engineer role because its focus on Python services and API\nreliability fits the hands-on individual-contributor work I want to return to. I left Streamhaus\nin August 2026 following a reorganisation, after serving as Principal Engineer and then\nDirector of Engineering. This is a deliberate move back to building software, rather than a\nsearch for another management position.\nAs Principal Engineer, I designed and wrote most of a Go entitlement service that handled\n120,000 requests per second at peak with p99 latency below 15 ms. I was also technical lead\nfor the playback API. Later platform work included a migration from a Python 2 monolith to\napproximately 60 Python 3 and Go services on GKE. I set up service templates incorporating\nFastAPI, OpenTelemetry, Prometheus and Terraform; playback API availability improved\nfrom 99.5% to 99.95% during the migration. That experience is relevant to improving the\nperformance and reliability of your customer-facing tracking API.\nMy recent coding has focused on internal tools and Python cost-dashboard scripts, rather\nthan sustained product-service development. Python remains current, and my cloud\nexperience is primarily GCP, with limited earlier exposure to AWS EC2 and S3. I would bring\npractical experience with Kubernetes, infrastructure as code and service observability to your\nPython backend work. Your team’s short design notes and dedicated reliability work provide a\nconcrete setting in which that experience could contribute.\nI would welcome a technical conversation about the entitlement service or the migration,\nincluding the design trade-offs and reliability improvements. Thank you for considering my\napplication.\nWith best regards,\nRafael Moretti-Klein\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

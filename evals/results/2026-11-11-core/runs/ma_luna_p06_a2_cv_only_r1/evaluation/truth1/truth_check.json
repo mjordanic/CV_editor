@@ -1,0 +1,205 @@
+{
+  "checker_model": "anthropic:claude-haiku-5-5",
+  "name": "truth1",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 1631,
+      "output_tokens": 1565,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1325
+    },
+    "cost_usd": 0.000479,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+    "prompt_sha256": "e6893f4c264ba651e0ac1922bca254f0b0d63d72930f4d0dfa1f1ab232213bac",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "truth1-ma_luna_p06_a2_cv_only_r1-f74f5d76dc",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "truth1-ma_luna_p06_a2_cv_only_r1-f74f5d76dc",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.000958
+  },
+  "persona": "p06",
+  "persona_file": "evals/fixtures/personas/p06-petra-ml-croatian/persona.json",
+  "outputs": {
+    "cv": true,
+    "cover_letter": true
+  },
+  "not_applicable": [],
+  "items": [
+    {
+      "id": "G1",
+      "kind": "gap",
+      "item": "Kubernetes",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Kubernetes is not mentioned in either document.",
+      "flag": null
+    },
+    {
+      "id": "G2",
+      "kind": "gap",
+      "item": "AWS/GCP",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Only Azure cloud services are mentioned; AWS and GCP do not appear.",
+      "flag": null
+    },
+    {
+      "id": "G3",
+      "kind": "gap",
+      "item": "LLM fine-tuning or LLMs in production",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The documents claim fine-tuning of BERTić and XLM-R transformer models, not LLMs or LLMs in production.",
+      "flag": null
+    },
+    {
+      "id": "G4",
+      "kind": "gap",
+      "item": "computer vision",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Computer vision is not mentioned in either document.",
+      "flag": null
+    },
+    {
+      "id": "G5",
+      "kind": "gap",
+      "item": "completed PhD",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The documents describe the PhD as ongoing (PhD candidate, PhD studies 2022 – Present).",
+      "flag": null
+    },
+    {
+      "id": "T1",
+      "kind": "trap",
+      "item": "Translating 'Doktorandica (u tijeku)' as holding a PhD or adding 'Dr.'",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The documents call her a PhD candidate or student and never use Dr. or a completed PhD.",
+      "flag": null
+    },
+    {
+      "id": "T2",
+      "kind": "trap",
+      "item": "Inventing LLM/RAG production experience from the weekend demo",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No LLM or RAG production experience is claimed; the production work is classification and NER models.",
+      "flag": null
+    },
+    {
+      "id": "T3",
+      "kind": "trap",
+      "item": "Adding Kubernetes, AWS, MLOps platforms (Kubeflow, SageMaker) because ML ads list them",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "No Kubeflow, SageMaker, or Kubernetes is listed; the only tools named are MLflow, Docker, FastAPI and Azure ML, which she actually used.",
+      "flag": null
+    },
+    {
+      "id": "T4",
+      "kind": "trap",
+      "item": "Mistranslating employer or degree (Mag. ing. comp. is a master's degree)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The degree is correctly given as an MSc in Computer Science and the employer names are accurate.",
+      "flag": null
+    },
+    {
+      "id": "T5",
+      "kind": "trap",
+      "item": "Writing the English output with Croatian section headings or leaving Croatian text untranslated",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Both documents are fully in English with English section headings.",
+      "flag": null
+    },
+    {
+      "id": "T6",
+      "kind": "trap",
+      "item": "Old Croatian cover letter is addressed to her current employer",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The cover letter is addressed to Quillstone Payments, not to the current employer.",
+      "flag": null
+    }
+  ],
+  "counts": {
+    "gaps": 5,
+    "traps": 6,
+    "gaps_claimed": 0,
+    "traps_hit": 0,
+    "unclear": 0,
+    "unverified_quotes": 0,
+    "missing_from_answer": 0,
+    "cost_usd": 0.000479
+  },
+  "cost_usd": 0.000479
+}

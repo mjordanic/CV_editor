@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.35em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvitem}[1]{\par\noindent\textbf{#1}\par}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\setlist[itemize]{leftmargin=*,itemsep=0.12em,topsep=0.2em,parsep=0pt}
+\begin{document}
+{\Huge\bfseries\color{primarycolor} Aiyana Brooks-Tan}\par
+
+\cvsection{Professional Summary}
+Early-career web developer with professional React accessibility experience and project experience across TypeScript, Node.js, Express and PostgreSQL. Built screen-reader-tested interfaces, an API integrating public data sources and a freelance booking-request website. Strong focus on accessible user experiences, supported by automated testing and experience helping first-year web development students.
+
+\cvsection{Technical Skills}
+Frontend: React, TypeScript, JavaScript, Next.js, Tailwind CSS, Chart.js\par
+Backend and data: Node.js, Express, PostgreSQL, public API integration, Firebase Authentication\par
+Testing and accessibility: Jest, React Testing Library, Storybook, NVDA, VoiceOver, Lighthouse, keyboard accessibility\par
+Deployment: Vercel, static generation
+
+\cvsection{Experience}
+\cvitem{Software Development Intern | Harbourline Media | May 2024 - August 2024}
+\begin{itemize}
+\item Delivered accessibility fixes and components for a React news site.
+\item Built a keyboard- and screen-reader-friendly image gallery for article pages, documented in Storybook.
+\item Used Jest and React Testing Library for the gallery component.
+\end{itemize}
+\cvitem{Freelance Web Development | Yoga Studio Booking Site | 2025}
+\begin{itemize}
+\item Built marketing pages and a class timetable with booking requests sent by email.
+\item Used Next.js static generation and Tailwind CSS; deployed on Vercel with content maintained in Markdown files.
+\end{itemize}
+\cvitem{Teaching Assistant | First-Year Web Development Lab | Spring 2025}
+\begin{itemize}
+\item Helped approximately 30 students during one semester of web development labs.
+\end{itemize}
+
+\cvsection{Selected Projects}
+\cvitem{Tidewatch | Final Year Project | 2024 - 2025}
+\begin{itemize}
+\item Built an accessible web app showing tides, water temperature and weather for sea swimmers around the Irish coast.
+\item Developed a React and TypeScript frontend, a Node.js/Express API caching data from public weather and tide APIs, and PostgreSQL storage for user favourites.
+\item Tested with NVDA and VoiceOver; achieved a Lighthouse accessibility score of 100.
+\item Used Chart.js and Jest. Received 82\% (First Class) for the project and demonstrated it at the college project showcase.
+\end{itemize}
+\cvitem{Study Buddy | Group Project | 2023}
+\begin{itemize}
+\item Built the React frontend and login screens for a study-matching app in a team of four; other team members built the API and database.
+\item Used JavaScript and Firebase Authentication.
+\end{itemize}
+\cvitem{Transit Delay Notifier | Student Hackathon | 2024}
+\begin{itemize}
+\item Developed the frontend in a team of three, building the application in 24 hours and placing second.
+\end{itemize}
+
+\cvsection{Education}
+\cvitem{Computing | Liffey Institute of Technology}
+Final year project: Tidewatch, 2024 - 2025; project grade: 82\% (First Class).
+
+\cvsection{Volunteering}
+Manage social media for a sea swimming club.
+\end{document}

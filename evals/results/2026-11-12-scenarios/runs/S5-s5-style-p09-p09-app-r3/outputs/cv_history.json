@@ -1,0 +1,316 @@
+[
+  {
+    "iteration": 1,
+    "content": "NADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nManchester, UK | nadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\n\nPROFESSIONAL SUMMARY\nSenior platform and reliability engineer with 10 years of experience designing, building and operating infrastructure, including six years running Kubernetes platforms on AWS. Hands-on expertise in Terraform and AWS cloud environments, with a track record of leading technical initiatives from proposal to production. Builds reliable, observable platforms and self-service infrastructure that help product teams deploy and operate services effectively.\n\nCORE SKILLS\nCloud infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment design and operation\nInfrastructure as code: Terraform, Atlantis, Crossplane\nPlatform and systems: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, Linux\nReliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\nAutomation and testing: Go, Python, Bash, GitHub Actions, k6, Puppet\n\nPROFESSIONAL EXPERIENCE\n\nSenior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS)\nManchester / remote | Apr 2022 – Present\n- Technical lead for a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.\n- Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning for RDS, SQS and S3 through pull requests.\n- Enabled adoption of the developer platform across all 14 product teams, reducing the time to take a new service to production from approximately two weeks to under one day.\n- Led the SLO programme for the 20 most critical services, introducing burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.\n- Replaced cluster-autoscaler managed node groups with Karpenter and spot capacity for stateless workloads, including interruption handling; reduced EC2 spend by 38% (approximately GBP 410,000 annually).\n- Participate in the incident commander rotation and established the incident and post-mortem process.\n- Mentored three engineers transitioning into SRE from backend engineering.\n\nSite Reliability Engineer | Brightwater Games\nLeeds | Jan 2019 – Mar 2022\n- Operated AWS game backend infrastructure using EC2, ECS and later EKS, supporting titles with up to 1.2 million daily active players.\n- Managed AWS infrastructure as code with approximately 40 Terraform modules and used Atlantis for pull-request-based plan and apply workflows.\n- Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.\n- Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.\n\nLinux Systems Engineer | Pennine Hosting\nSheffield | Jul 2016 – Dec 2018\n- Managed approximately 600 Linux servers for hosting customers using Puppet configuration management.\n- Automated operational tasks with Bash and Python and provided on-call support for customer incidents.\n\nSELECTED PROJECT\nKubernetes cleanup controller | Open source side project | 2024\n- Built a small Go controller using controller-runtime to delete expired preview namespaces; the project has approximately 120 GitHub stars.\n\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\n\nCERTIFICATIONS\nAWS Certified Solutions Architect – Professional | 2023\nCertified Kubernetes Administrator (CKA) | 2021, renewed 2024\n\nCOMMUNITY\nSpeaker, UK DevOps meetup | 2024\n“SLOs that product managers care about”\n\nLANGUAGES\nEnglish (native) | Urdu (conversational)",
+    "score": 89,
+    "critique": {
+      "quality_score": 89,
+      "content_quality_feedback": "This is a strong, professional, evidence-based CV with clear section headings, substantial technical depth, and excellent quantified outcomes. The experience section shows progression from Linux systems engineering into senior platform and reliability leadership. Metrics such as 350 services, 14 product teams, 60% fewer on-call pages, 38% lower EC2 spend, and production lead-time reduction make the impact credible. The document also accurately reflects the Original Candidate Information; no unsupported skills, tools, certifications, or experiences were detected. The main content weakness is that one particularly relevant analytical achievement—using k6 to simulate 300,000 concurrent players and resolving a connection-pool limit before launch—is only partially represented. The CV could also make platform architecture, system design, and stakeholder leadership more explicit using evidence already present.",
+      "ats_compatibility_feedback": "The CV is highly ATS-compatible: it uses conventional headings, a simple text structure, standard job titles, readable date formats, and strong keyword coverage for AWS, Terraform, Kubernetes, infrastructure as code, observability, Linux, reliability, and incident management. Its likely AI/ATS screening probability is high for the infrastructure, AWS, Terraform, Kubernetes, reliability, and technical leadership portions of the role. Screening will be weaker for exact terms that are absent from both the CV and the candidate information, especially Terragrunt, mutual TLS/mTLS, SSL/TLS, IoT or automotive integration, and JVM. These are candidate-profile gaps rather than document defects and should not be added without evidence. The existing AWS line is keyword-rich, although networking could be made more visible by explicitly grouping VPC and related services under a networking label.",
+      "job_alignment_feedback": "The document aligns very well with hands-on infrastructure engineering, AWS cloud environment design and operation, Terraform, Linux, observability, platform reliability, technical leadership, stakeholder alignment, analytical problem-solving, and clear communication. It also fits Corvale's engineering-led culture through evidence of end-to-end ownership, self-service enablement, technical initiative leadership, and collaboration with product leadership. The strongest relevant examples are the internal developer platform, the SLO/error-budget programme, the Karpenter cost initiative, and the technical lead role. The candidate does not show Terragrunt, mTLS/SSL/TLS, IoT or automotive/remote-device integration, or a JVM-specific background. The CV does show adjacent backend/platform development through Go and Python service templates and a Go controller, but not JVM experience. These are genuine gaps against the advertisement, not rewriting issues.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE CONTENT IMPROVEMENT\n1. In the Brightwater Games experience section, expand the existing k6 bullet to include the strongest analytical result from the Original Candidate Information. Replace:\n“Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.”\nIf retaining the current wording, ensure the final version explicitly includes both “300,000 concurrent players” and “identified and resolved a connection-pool limit before launch.” This gives direct evidence of analytical thinking, systems diagnosis, performance testing, and production readiness.\n\nMINOR, TARGETED ALIGNMENT ENHANCEMENTS\n2. In the Professional Summary, make the job's “cloud environment design and operation” and “system design” terminology more explicit without adding unsupported experience. For example, change:\n“Hands-on expertise in Terraform and AWS cloud environments, with a track record of leading technical initiatives from proposal to production.”\nto:\n“Hands-on expertise in Terraform and AWS cloud environment design and operation, with experience shaping platform architecture and leading technical initiatives from proposal to production.”\nThis accurately reflects the existing internal developer platform and EKS work while improving keyword alignment.\n\n3. In the Core Skills section, add a distinct networking label using technologies already present in the CV. For example, change the first line to:\n“Cloud infrastructure and networking: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment design and operation.”\nDo not add mTLS, SSL/TLS, certificate management, Terragrunt, IoT, or JVM because they are not supported by the Original Candidate Information.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Senior platform and reliability engineer with 10 years of experience designing, building and operating infrastructure; AWS cloud environments"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "shown",
+          "quote": "Designed and built an internal developer platform; operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions"
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "shown",
+          "quote": "AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront)"
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Technical lead for a five-person platform team; error-budget policy agreed with product leadership; adoption across all 14 product teams"
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "Led the SLO programme... reduced on-call pages by approximately 60%; Speaker, UK DevOps meetup"
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "AWS EKS platform spanning eight clusters... EC2, ECS and later EKS"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "shown",
+          "quote": "Go and Python service templates; built a small Go controller using controller-runtime"
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "shown",
+          "quote": "Managed approximately 600 Linux servers; AWS EC2 infrastructure"
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 2,
+    "content": "NADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nManchester, UK | nadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\n\nPROFESSIONAL SUMMARY\nSenior platform and reliability engineer with 10 years of experience designing, building and operating infrastructure, including six years running Kubernetes platforms on AWS. Hands-on expertise in Terraform and AWS cloud environments, with a track record of leading technical initiatives from proposal to production. Builds reliable, observable platforms and self-service infrastructure that help product teams deploy and operate services effectively.\n\nCORE SKILLS\nCloud infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment design and operation\nInfrastructure as code: Terraform, Atlantis, Crossplane\nPlatform and systems: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, Linux\nReliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\nAutomation and testing: Go, Python, Bash, GitHub Actions, k6, Puppet\n\nPROFESSIONAL EXPERIENCE\n\nSenior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS)\nManchester / remote | Apr 2022 – Present\n- Technical lead for a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.\n- Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning for RDS, SQS and S3 through pull requests.\n- Enabled adoption of the developer platform across all 14 product teams, reducing the time to take a new service to production from approximately two weeks to under one day.\n- Led the SLO programme for the 20 most critical services, introducing burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.\n- Replaced cluster-autoscaler managed node groups with Karpenter and spot capacity for stateless workloads, including interruption handling; reduced EC2 spend by 38% (approximately GBP 410,000 annually).\n- Participate in the incident commander rotation and established the incident and post-mortem process.\n- Mentored three engineers transitioning into SRE from backend engineering.\n\nSite Reliability Engineer | Brightwater Games\nLeeds | Jan 2019 – Mar 2022\n- Operated AWS game backend infrastructure using EC2, ECS and later EKS, supporting titles with up to 1.2 million daily active players.\n- Managed AWS infrastructure as code with approximately 40 Terraform modules and used Atlantis for pull-request-based plan and apply workflows.\n- Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.\n- Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.\n\nSELECTED PROJECT\nKubernetes cleanup controller | Open source side project | 2024\n- Built a small Go controller using controller-runtime to delete expired preview namespaces; the project has approximately 120 GitHub stars.\n\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\n\nCERTIFICATIONS\nAWS Certified Solutions Architect – Professional | 2023\nCertified Kubernetes Administrator (CKA) | 2021, renewed 2024\n\nCOMMUNITY\nSpeaker, UK DevOps meetup | 2024\n“SLOs that product managers care about”\n\nLANGUAGES\nEnglish (native) | Urdu (conversational)",
+    "score": 89,
+    "critique": {
+      "quality_score": 89,
+      "content_quality_feedback": "This is a strong, well-structured CV with clear section headings, concise bullets, credible senior-level scope, and excellent quantified outcomes. The strongest evidence includes operating eight EKS clusters across three regions, supporting approximately 350 services, adoption across 14 product teams, a 60% reduction in on-call pages, and a 38% reduction in EC2 spend. The document is professional and demonstrates ownership, technical leadership, reliability engineering, platform engineering, and stakeholder influence. A minor weakness is that the CV claims 10 years of experience while the visible employment history begins in 2019 because the Pennine Hosting role was removed; this may prompt a recruiter to question the apparent chronology, although the claim is supported by the original candidate information.",
+      "ats_compatibility_feedback": "The CV uses ATS-friendly standard headings, conventional reverse-chronological structure, searchable plain-text keywords, and no problematic tables, columns, graphics, or unusual formatting. ATS and AI screening probability is high for AWS, EKS, Terraform, Kubernetes, Linux, cloud infrastructure, observability, SLOs, incident management, and technical leadership. Screening alignment will be weaker for the exact terms Terragrunt, mutual TLS (mTLS), SSL/TLS, certificate management, network design, and system design because those requirements are not supported by the candidate material and should not be added. The skills section is well organized, but the document could use the exact phrase “systems architecture” in a supported context to improve matching for that requirement.",
+      "job_alignment_feedback": "The CV is a strong match for hands-on infrastructure engineering, AWS cloud environment design and operation, Terraform, Kubernetes platform ownership, reliability, observability, technical leadership, and stakeholder collaboration. It also aligns well with Corvale’s engineering-led and end-to-end ownership culture through evidence of leading initiatives from design through production, self-service infrastructure, product-team enablement, and incident ownership. The candidate demonstrates Linux and virtual-machine/cloud compute experience through Linux, EC2, and hosting infrastructure. The principal gaps are Terragrunt, mTLS/SSL/TLS and certificate management, and IoT, automotive, or remote-device integration; the candidate material does not establish experience in those areas. A JVM-based backend or full-stack background is also not shown, although Go and Python platform development are documented.",
+      "improvement_instructions": "MINOR IMPROVEMENTS:\n1. In the Professional Experience section under “Senior Platform Engineer | Tallybrook Ltd,” change “Participate in the incident commander rotation and established the incident and post-mortem process” to “Participated in the incident commander rotation and established the incident and post-mortem process” to correct the tense inconsistency.\n2. In the Professional Summary, add the supported systems-architecture wording by changing the opening sentence to: “Senior platform and reliability engineer with 10 years of experience in infrastructure engineering, systems architecture, and designing, building and operating cloud infrastructure, including six years running Kubernetes platforms on AWS.” This uses the candidate’s documented infrastructure design and platform-building experience without adding unsupported technologies.\n3. In the Core Skills section, change “cloud environment design and operation” to “cloud environment design, systems architecture and operation” so the CV more directly matches the job description’s systems-architecture requirement. Keep this limited to the documented AWS/platform-design experience.",
+      "critical_issues": "Claims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n- “leading technical initiatives from proposal to production”\n- About the employer: “Tallybrook Ltd (B2B accounting SaaS)”",
+      "unsupported_claims": [
+        "“leading technical initiatives from proposal to production”",
+        "About the employer: “Tallybrook Ltd (B2B accounting SaaS)”"
+      ],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Senior platform and reliability engineer with 10 years of experience designing, building and operating infrastructure"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "shown",
+          "quote": "Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning"
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "shown",
+          "quote": "AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront)"
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Technical lead for a five-person platform team; ... error-budget policy agreed with product leadership"
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "Reduced EC2 spend by 38% (approximately GBP 410,000 annually)"
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "shown",
+          "quote": "Platform and systems: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, Linux; AWS EC2 experience"
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [
+      "“leading technical initiatives from proposal to production”",
+      "About the employer: “Tallybrook Ltd (B2B accounting SaaS)”"
+    ],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 3,
+    "content": "NADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nManchester, UK | nadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\n\nPROFESSIONAL SUMMARY\nSenior platform and reliability engineer with 10 years of experience in infrastructure engineering, systems architecture, and designing, building and operating cloud infrastructure, including six years running Kubernetes platforms on AWS. Hands-on expertise in Terraform and AWS cloud environments. Builds reliable, observable platforms and self-service infrastructure that help product teams deploy and operate services effectively.\n\nCORE SKILLS\nCloud infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment design, systems architecture and operation\nInfrastructure as code: Terraform, Atlantis, Crossplane\nPlatform and systems: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, Linux\nReliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\nAutomation and testing: Go, Python, Bash, GitHub Actions, k6, Puppet\n\nPROFESSIONAL EXPERIENCE\n\nSenior Platform Engineer | Tallybrook Ltd\nManchester / remote | Apr 2022 – Present\n- Technical lead for a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.\n- Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning for RDS, SQS and S3 through pull requests.\n- Enabled adoption of the developer platform across all 14 product teams, reducing the time to take a new service to production from approximately two weeks to under one day.\n- Led the SLO programme for the 20 most critical services, introducing burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.\n- Replaced cluster-autoscaler managed node groups with Karpenter and spot capacity for stateless workloads, including interruption handling; reduced EC2 spend by 38% (approximately GBP 410,000 annually).\n- Participated in the incident commander rotation and established the incident and post-mortem process.\n- Mentored three engineers transitioning into SRE from backend engineering.\n\nSite Reliability Engineer | Brightwater Games\nLeeds | Jan 2019 – Mar 2022\n- Operated AWS game backend infrastructure using EC2, ECS and later EKS, supporting titles with up to 1.2 million daily active players.\n- Managed AWS infrastructure as code with approximately 40 Terraform modules and used Atlantis for pull-request-based plan and apply workflows.\n- Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.\n- Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.\n\nSELECTED PROJECT\nKubernetes cleanup controller | Open source side project | 2024\n- Built a small Go controller using controller-runtime to delete expired preview namespaces; the project has approximately 120 GitHub stars.\n\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\n\nCERTIFICATIONS\nAWS Certified Solutions Architect – Professional | 2023\nCertified Kubernetes Administrator (CKA) | 2021, renewed 2024\n\nCOMMUNITY\nSpeaker, UK DevOps meetup | 2024\n“SLOs that product managers care about”\n\nLANGUAGES\nEnglish (native) | Urdu (conversational)",
+    "score": 84,
+    "critique": {
+      "quality_score": 84,
+      "content_quality_feedback": "This is a strong, well-structured technical CV with clear progression, measurable outcomes, relevant certifications, and credible platform engineering achievements. The Tallybrook section is particularly effective: it demonstrates technical leadership, scale, self-service infrastructure, reliability improvements, and cost reduction. The document is concise and professional. The main content issue is that the stated “10 years of experience” is not supported by the employment history shown, which begins in 2019 after the Pennine Hosting role was removed. The CV also uses “systems architecture” as a capability without providing a concrete example in the experience section.",
+      "ats_compatibility_feedback": "The CV is ATS-friendly overall: it uses conventional headings, plain text job titles, consistent dates, standard bullet points, and strong keywords including AWS, EKS, Terraform, Kubernetes, GitOps, Crossplane, observability, SLOs, incident management, Go, Python, and Linux. Its AI-screening probability is high for AWS/platform/SRE roles, but moderate rather than high for this specific vacancy because “Terragrunt,” “mTLS,” “SSL/TLS,” security, and explicit networking terminology are absent. Do not add those terms unless supported by the candidate's material. “Cloud infrastructure,” “cloud environment design,” and “systems architecture” should be tied to specific evidence to make them more credible to both ATS and human reviewers.",
+      "job_alignment_feedback": "The CV strongly matches hands-on infrastructure engineering, AWS cloud operation, Terraform, Kubernetes, platform reliability, technical leadership, observability, and support for product teams. It also provides evidence of stakeholder alignment through the error-budget policy agreed with product leadership and adoption of the internal developer platform by all 14 product teams. The quantified operational scale and cost/reliability results fit Corvale's engineering-led, end-to-end ownership culture. Gaps in the candidate material are strong Terragrunt experience, mTLS/SSL/TLS and certificate management, train/vehicle, IoT or remote-device integration, practical security examples, JVM/backend development, and virtual-machine experience. These are capability gaps rather than document defects. Linux is supported and shown in the CV.",
+      "improvement_instructions": "CRITICAL:\n1. In the Professional Summary section, remove the unsupported/inconsistent phrase “with 10 years of experience in infrastructure engineering” because the visible employment history now starts in 2019. Replace it with “Senior platform and reliability engineer with six years of experience running Kubernetes platforms on AWS” or “Senior platform and reliability engineer with extensive experience in infrastructure engineering, including six years running Kubernetes platforms on AWS.” This preserves the supported AWS/Kubernetes experience without creating a chronology question.\n2. In the Professional Summary and Core Skills sections, remove or substantiate the phrase “systems architecture.” The Original Candidate Information does not provide a specific systems-architecture example. If no further evidence exists, change “systems architecture” to the supported “infrastructure engineering and cloud infrastructure operation.” Do not present systems architecture as an established skill without an experience bullet supporting it.\n\nMEANINGFUL ENHANCEMENTS:\n3. In the Senior Platform Engineer | Tallybrook Ltd section, revise the platform-adoption bullet to make stakeholder alignment more explicit while staying truthful: “Enabled adoption of the developer platform across all 14 product teams, reducing the time to take a new service to production from approximately two weeks to under one day.” This wording is already supported and should be retained; ensure it remains prominent because it directly demonstrates bringing product stakeholders along.\n4. In the Senior Platform Engineer | Tallybrook Ltd section, revise “Technical lead for a five-person platform team” to “Technical lead for a five-person platform team, coordinating platform priorities and technical delivery across 14 product teams.” Use this only if “coordinating platform priorities and technical delivery” accurately describes the existing tech-lead responsibilities; do not imply line management.\n5. In the Core Skills section, retain “Linux” as a standalone searchable keyword rather than relying only on the “Platform and systems” line. For example, use “Linux systems, Kubernetes, Helm, Kustomize, Argo CD, Karpenter.” This preserves the supported Linux requirement after the Pennine Hosting role was removed.\n6. In the Senior Platform Engineer | Tallybrook Ltd section, consider adding the supported implementation detail to the SLO bullet: “using Prometheus recording rules and Sloth” and “burn-rate alerts.” A truthful version would be: “Led the SLO programme for the 20 most critical services, using Prometheus recording rules and Sloth to introduce burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.” This improves technical specificity and demonstrates analytical reliability work.",
+      "critical_issues": "1. Potential unsupported claim: “systems architecture” appears in the Professional Summary and Core Skills, but the Original Candidate Information does not provide a concrete systems-architecture example. Remove the term or support it with a truthful experience example.\n2. Chronology inconsistency: the Professional Summary claims “10 years of experience,” while the visible employment history covers Apr 2019 to present after the Pennine Hosting role was removed. This may cause a recruiter to question the accuracy of the CV. Revise the summary to avoid an unsupported visible timeline claim.\nClaims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n- \"systems architecture\"",
+      "unsupported_claims": [
+        "\"systems architecture\""
+      ],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Senior platform and reliability engineer with 10 years of experience in infrastructure engineering... designing, building and operating cloud infrastructure"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "shown",
+          "quote": "systems architecture"
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Technical lead for a five-person platform team; ... error-budget policy agreed with product leadership"
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "reducing the time to take a new service to production from approximately two weeks to under one day; ... Speaker, UK DevOps meetup"
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront)"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "shown",
+          "quote": "Platform and systems: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, Linux"
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [
+      "\"systems architecture\""
+    ],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 4,
+    "content": "NADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nManchester, UK | nadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\n\nPROFESSIONAL SUMMARY\nSenior platform and reliability engineer with six years of experience running Kubernetes platforms on AWS. Hands-on expertise in Terraform and AWS cloud environments. Builds reliable, observable platforms and self-service infrastructure that help product teams deploy and operate services effectively.\n\nCORE SKILLS\nCloud infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment design, infrastructure engineering and cloud infrastructure operation\nInfrastructure as code: Terraform, Atlantis, Crossplane\nPlatform and systems: Linux systems, Kubernetes, Helm, Kustomize, Argo CD, Karpenter\nReliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\nAutomation and testing: Go, Python, Bash, GitHub Actions, k6, Puppet\n\nPROFESSIONAL EXPERIENCE\n\nSenior Platform Engineer | Tallybrook Ltd\nManchester / remote | Apr 2022 – Present\n- Technical lead for a five-person platform team, operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.\n- Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning for RDS, SQS and S3 through pull requests.\n- Enabled adoption of the developer platform across all 14 product teams, reducing the time to take a new service to production from approximately two weeks to under one day.\n- Led the SLO programme for the 20 most critical services, using Prometheus recording rules and Sloth to introduce burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.\n- Replaced cluster-autoscaler managed node groups with Karpenter and spot capacity for stateless workloads, including interruption handling; reduced EC2 spend by 38% (approximately GBP 410,000 annually).\n- Participated in the incident commander rotation and established the incident and post-mortem process.\n- Mentored three engineers transitioning into SRE from backend engineering.\n\nSite Reliability Engineer | Brightwater Games\nLeeds | Jan 2019 – Mar 2022\n- Operated AWS game backend infrastructure using EC2, ECS and later EKS, supporting titles with up to 1.2 million daily active players.\n- Managed AWS infrastructure as code with approximately 40 Terraform modules and used Atlantis for pull-request-based plan and apply workflows.\n- Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.\n- Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.\n\nSELECTED PROJECT\nKubernetes cleanup controller | Open source side project | 2024\n- Built a small Go controller using controller-runtime to delete expired preview namespaces; the project has approximately 120 GitHub stars.\n\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\n\nCERTIFICATIONS\nAWS Certified Solutions Architect – Professional | 2023\nCertified Kubernetes Administrator (CKA) | 2021, renewed 2024\n\nCOMMUNITY\nSpeaker, UK DevOps meetup | 2024\n“SLOs that product managers care about”\n\nLANGUAGES\nEnglish (native) | Urdu (conversational)",
+    "score": 84,
+    "critique": {
+      "quality_score": 84,
+      "content_quality_feedback": "This is a strong, concise, professionally structured CV with credible senior-level scope and excellent quantified outcomes. The strongest evidence includes operating eight EKS clusters across three regions, supporting approximately 350 services, adoption by all 14 product teams, a reduction in deployment lead time from two weeks to under one day, a 60% reduction in on-call pages, and £410,000 of annual EC2 savings. The document also clearly establishes technical leadership without incorrectly claiming people management. The main content weakness is that the summary says only “six years of experience,” which undersells the candidate’s 10 years in infrastructure. Some relevant evidence from the candidate material is also not surfaced, particularly the detailed architecture dimension of the internal developer platform, the 300,000-concurrent-player load test, and the technical talk. The CV is highly relevant to AWS platform engineering, but several role-specific requirements—Terragrunt, mTLS/SSL/TLS, and transport or remote-device integration—are not supported by the candidate material and cannot be added truthfully.",
+      "ats_compatibility_feedback": "The CV uses ATS-friendly standard headings, chronological experience, conventional bullet points, and searchable technology names. AWS services, Kubernetes, Terraform, EKS, Linux, systems, observability, incident management, and technical leadership are represented clearly. The document should parse reliably because it contains no tables, columns, graphics, icons, or unusual section names. AI screening probability is good for AWS platform/SRE roles and moderate-to-good for this specific role: the profile will likely match infrastructure engineering, AWS, Terraform, Kubernetes, reliability, and leadership terms, but ranking may be reduced because “Terragrunt,” “mTLS,” “SSL/TLS,” “certificate management,” “systems architecture,” and explicit “security” terminology are absent. These terms must not be inserted unless supported. Add supported terms such as “Sloth,” “burn-rate alerts,” and “AWS Spot” to the skills section for better retrieval, and make the architecture and stakeholder-leadership evidence more explicit in the experience bullets.",
+      "job_alignment_feedback": "The CV strongly demonstrates hands-on infrastructure engineering and AWS cloud environment operation through EKS, EC2, VPC, IAM, RDS, SQS, S3, Terraform, Crossplane, and Karpenter. It also shows platform design, systems-oriented delivery, technical leadership, stakeholder alignment with product leadership, analytical problem-solving, and clear communication through quantified outcomes and the community speaking entry. AWS is a strong match. Linux is shown, and EC2 provides relevant virtual-machine exposure. The candidate does not have documented Terragrunt experience, mTLS or SSL/TLS experience, certificate management, IoT/automotive/remote-device integration, or JVM/full-stack background; these are capability gaps in the supplied material rather than CV-writing defects. The document also does not explicitly connect the work to secure communication or train-to-cloud systems, and no such experience is available to add. Culture alignment is reasonably conveyed through ownership of platforms, self-service enablement, mentoring, technical leadership, and collaboration with product leadership, although the CV appropriately avoids unsupported claims about Corvale’s specific culture.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS\n1. In the Professional Summary, change “Senior platform and reliability engineer with six years of experience running Kubernetes platforms on AWS” to “Senior platform and reliability engineer with 10 years of infrastructure experience, including the last six years running Kubernetes platforms on AWS.” This accurately reflects the Original Candidate Information and avoids underselling total experience.\n2. In the Core Skills section, add the supported terms “Sloth,” “burn-rate alerts,” and “AWS Spot” to the relevant lines. For example, change the reliability line to “Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, Sloth, SLOs, burn-rate alerts and error budgets, incident management,” and the AWS or automation line to include “AWS Spot.” Do not add Terragrunt, mTLS, SSL/TLS, certificate management, or security tools because they are not supported by the candidate information.\n3. In the Senior Platform Engineer role at Tallybrook, revise “Designed and built an internal developer platform with Go and Python service templates...” to “Designed the internal developer platform architecture and built Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning for RDS, SQS and S3 through pull requests.” This makes the supported systems-design and architecture evidence more visible to both recruiters and ATS screening.\n4. In the Senior Platform Engineer role at Tallybrook, strengthen the stakeholder-leadership evidence by revising the SLO bullet to: “Led the SLO programme for the 20 most critical services, using Prometheus recording rules and Sloth to introduce burn-rate alerts and an error-budget policy agreed with product leadership; reduced on-call pages by approximately 60%.” This preserves the existing truthful content while matching the ad’s language around leading technical topics and bringing stakeholders along.\n5. In the Site Reliability Engineer role at Brightwater Games, revise the load-testing bullet to include the supported scale and analytical outcome: “Ran k6 load tests and led launch capacity planning, including tests simulating 300,000 concurrent players; identified and resolved a connection-pool limit before launch.” This is stronger evidence of analytical thinking and systems performance work than the current more general wording.\n\nMINOR ATS ENHANCEMENT\n6. In the Community section, retain the existing speaker entry and format it as “Speaker, UK DevOps meetup — ‘SLOs that product managers care about’ (2024).” This gives ATS and recruiters a clearer, searchable signal for communication and stakeholder-facing technical leadership.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "“operating an AWS EKS platform spanning eight clusters, approximately 350 services and three regions”"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "shown",
+          "quote": "“Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and Crossplane-based self-service provisioning”"
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "missing",
+          "quote": "The candidate’s material includes AWS IAM and VPC: “AWS (EKS, EC2, VPC, IAM...)”"
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "“Technical lead for a five-person platform team” and “an error-budget policy agreed with product leadership”"
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "“reduced EC2 spend by 38%” and “Speaker, UK DevOps meetup”"
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "“AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront)”"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "shown",
+          "quote": "“Linux systems” and AWS EC2 experience, including “EC2 spend” and operating AWS infrastructure"
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 1
+  }
+]

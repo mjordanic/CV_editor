@@ -1,0 +1,98 @@
+{
+  "run_dir": "runs/p11_a1_cv_only_luna_r1",
+  "labels": {
+    "persona": "p11",
+    "ad": "a1",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "cv_only",
+    "case": "p11_a1_cv_only_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cv"
+  ],
+  "inputs_omitted": [
+    "portfolio",
+    "cover_letter",
+    "notes"
+  ],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p11-tiago-mech-to-data/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2269
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T18:40:57+00:00",
+  "status": "completed",
+  "minutes": 3.55,
+  "cv_drafts": 1,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 1,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Lisbon, Portugal; 3 days per week in the central office. No other country, time-zone, relocation, or right-to-work limits stated.",
+    "culture_signals": [
+      "Values: Together, Ownership, Pace.",
+      "Shares context openly and helps across teams.",
+      "Takes ownership, fixes problems, and learns from them.",
+      "Cuts unnecessary complexity to move quickly for clients.",
+      "Describes the Lisbon office as collaborative, with teamwork and personal development as priorities.",
+      "Company pages describe a commercially driven culture with friendly colleagues; some reviewers say onboarding and training vary by team."
+    ],
+    "notes": "The job ad specifies hybrid work in Lisbon, with 3 office days per week; the company pages give the same general arrangement. The job ad also lists support for open-source contributions and a training and certification budget. Company-page culture ratings are 3.4/5 and 3.3 from 15 reviews."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T18:44:31+00:00",
+  "cost_usd": 0.022399
+}

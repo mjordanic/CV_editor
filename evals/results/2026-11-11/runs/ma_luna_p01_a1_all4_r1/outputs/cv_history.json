@@ -1,0 +1,191 @@
+[
+  {
+    "iteration": 1,
+    "content": "LENA VARGA-HOLM\nSenior Data Engineer\nRijeka, Croatia (open to remote, EU time zones) | lena.vargaholm@example.com | +385 55 555 0101 | github.com/lvh-data-example\n\nPROFILE\nData engineer with 9 years of experience building batch and streaming data platforms for e-commerce and payments. I like boring, well-tested pipelines, clear data contracts and warehouses that analysts actually trust.\n\nEXPERIENCE\n\nSenior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka            03/2022 - present\n- Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake.\n- Moved transformation logic from stored procedures to dbt (420+ models, tests on every model); nightly run time down from 5h10 to 1h35.\n- Introduced data contracts between product teams and the data team (JSON Schema + CI checks), cutting broken-pipeline incidents from ~9/month to ~2/month.\n- Built a Kafka-based event pipeline (Kafka Connect + Snowpipe Streaming) for shipment tracking events, ~30M events/day.\n- Mentor two mid-level data engineers; run the weekly data platform office hours.\n- Participate in the data-platform on-call rotation, one week in six.\n- Reduced the Snowflake bill from about $38k/month to $24k/month through warehouse sizing and auto-suspend.\n\nData Engineer - Kovalent Pay (payments startup), Zagreb                            09/2019 - 02/2022\n- Built PySpark jobs on AWS EMR for transaction reconciliation (daily ~1.2 TB of raw files from S3).\n- Designed the Redshift warehouse schema (star schema, 30+ fact/dimension tables) used by finance and risk.\n- Set up data quality checks with Great Expectations on critical finance tables.\n- Wrote internal Python library for S3/Glue catalog access used by 4 teams.\n\nJunior Data Engineer / BI Developer - Adria Retail Group, Split                     06/2017 - 08/2019\n- Maintained SSIS packages and T-SQL ETL into an on-prem SQL Server warehouse.\n- Built Power BI reports for store operations (40+ stores).\n- Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.\n\nEDUCATION\nMSc Computer Science (Data Science track) - Northgate Technical University, 2017\nThesis: Incremental materialized views for analytical queries\n\nCERTIFICATION\nAWS Certified Data Engineer – Associate (May 2024)\n\nSKILLS\nLanguages: Python, SQL, Bash\nData: Airflow, dbt, Spark (PySpark), Kafka, Kafka Connect, Snowflake, Redshift, PostgreSQL, Great Expectations\nCloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker, Terraform (basic), GitHub Actions\nBI: Power BI, Looker (basic)\n\nLANGUAGES\nCroatian (native), English (C1), German (B1)",
+    "score": 89,
+    "critique": {
+      "quality_score": 89,
+      "content_quality_feedback": "This is a strong, credible senior-level CV with clear progression, highly relevant payments and data-platform experience, and unusually effective quantified results. The strongest evidence includes 140 Airflow DAGs, 420+ dbt models, 30M events per day, a reduction in pipeline runtime from 5h10 to 1h35, and a reduction in incidents and Snowflake spend. The structure is concise, readable, and professional. The main content weakness is selective omission of relevant evidence available in the candidate material, especially the Debezium CDC project, open-source contribution, CI/CD implementation, streaming latency, and the operational impact of the reconciliation engine. The profile is personable, but “I like boring...” is less precise and less aligned with senior platform terminology than the rest of the CV.",
+      "ats_compatibility_feedback": "The CV uses conventional section headings, reverse-chronological experience, standard text formatting, searchable technology names, and measurable outcomes, so it should parse well in most ATS systems. Its AI/ATS screening probability is high for the core role because it contains Airflow, dbt, Python, SQL, Kafka, Snowflake, AWS, Docker, GitHub Actions, data quality, and warehouse experience. Matching would improve by explicitly using supported job-ad terms such as “production data platform,” “data modelling,” “dimensional modelling,” “CI/CD,” “data quality standards,” “cloud data warehouse,” and “open-source contribution.” The document currently does not explicitly state query optimisation, and it does not show the candidate’s open-source work even though that evidence exists in the original material. Do not add unsupported Google Cloud products or claim graph modelling, Portuguese, or Kubernetes expertise.",
+      "job_alignment_feedback": "The CV aligns very well with the central role: the candidate has designed and operated a production data platform, worked at scale with Airflow and Snowflake, built streaming and batch systems, used dbt, created data contracts, implemented data quality checks, and mentored engineers. AWS, Snowflake, EMR, Docker, and Terraform provide credible comparable-cloud and infrastructure experience even though the advertised stack is Google Cloud. The Redshift star schema demonstrates strong dimensional modelling. The candidate’s on-call work, platform office hours, mentoring, data contracts, CI checks, and incident reduction support the company’s Ownership and Together values, while runtime and cost reductions support Pace. The candidate material also demonstrates curiosity about open-source practices through two merged Airflow-provider pull requests and a data-contracts talk, but this is not currently visible in the CV. Graph modelling and Portuguese are gaps in the candidate material, not document defects. Direct query optimisation on large datasets is also not explicitly evidenced in the supplied material; the CV does show warehouse performance and cost optimisation, which is the closest truthful alignment.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE ALIGNMENT IMPROVEMENTS:\n1. In the Profile section, replace the current second sentence, “I like boring, well-tested pipelines, clear data contracts and warehouses that analysts actually trust,” with more ATS- and recruiter-focused wording supported by the CV, for example: “Designs and operates reliable production data platforms and cloud data warehouses, with strengths in Python, SQL, Airflow, dbt, data quality, data contracts and dimensional modelling.” This preserves the candidate’s strengths while explicitly matching the role’s terminology.\n2. In the Experience section under Kovalent Pay, revise “Designed the Redshift warehouse schema (star schema, 30+ fact/dimension tables) used by finance and risk” to “Designed the Redshift cloud data warehouse using dimensional modelling and a star schema, with 30+ fact and dimension tables supporting finance and risk.” This makes the supported “dimensional modelling” requirement explicit without adding new experience.\n3. In the Experience section under Lukovac Freight Hub, add a bullet based on the candidate’s original portfolio immediately after the Kafka bullet: “Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka and Snowflake, reducing replica CPU during loads from ~70% to ~25%.” This strengthens the production-platform, architecture, and scale evidence.\n4. In the Experience section under Lukovac Freight Hub, expand the dbt bullet to include the supported delivery practice: “Migrated transformation logic from stored procedures to dbt (420+ models), adding model tests, documentation, incremental models and slim CI with state:modified in GitHub Actions; reduced nightly runtime from 5h10 to 1h35.” This adds CI/CD-related keywords and demonstrates reusable platform engineering.\n5. Add a short “SELECTED PROJECTS & OPEN-SOURCE” section after Experience or before Education. Include the supported entry: “Open-source contribution — Airflow provider package (2023): fixed a pagination bug and added tests; 2 merged pull requests. Technologies: Python, Airflow, pytest.” This directly demonstrates the advertised curiosity about open-source practices.\n6. In the Experience section under the Lukovac Kafka bullet, add the supported performance detail: “Kafka-based event pipeline using Kafka Connect and Snowpipe Streaming for ~30M shipment-tracking events/day, with end-to-end latency under 2 minutes at p95; added dead-letter and replay tooling.” This provides stronger evidence of production operation and reliability at scale.\n7. In the Experience section under Kovalent Pay, strengthen the reconciliation bullet with the supported business outcome: “Built PySpark batch jobs on AWS EMR to reconcile ~1.2 TB/day of S3 files against internal ledgers, reducing finance-team manual reconciliation from ~3 days to ~4 hours per month-end.” This makes the payments relevance and impact more explicit.\n8. In the Skills section, add supported grouping and terminology without adding tools: “Data platform: production data platforms, cloud data warehouses, data contracts, data quality, dimensional modelling, batch and streaming pipelines, CDC.” Keep the existing tool list unchanged. Do not label Python or SQL as “advanced” unless the candidate is comfortable substantiating that level in interviews.\n\nMINOR PROFESSIONAL POLISH:\n9. In the current Lukovac experience entry, retain the on-call bullet already present, but phrase it as “Participate in the production data-platform on-call rotation, one week in six.” This makes operational ownership and the production context easier to scan.\n10. In the Skills section, change “Terraform (basic)” to “Terraform” only if the candidate wants to avoid foregrounding a qualification level that is not required by the ad; otherwise retain the current honest wording. Do not add Google Cloud, GKE, Cloud Run, BigQuery, graph modelling, Portuguese, Databricks, Scala, Flink, or Kubernetes as skills.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Experience designing, building and operating production data platforms or cloud data warehouses at scale",
+          "status": "shown",
+          "quote": "Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading ... into Snowflake; built a Kafka-based event pipeline ... ~30M events/day."
+        },
+        {
+          "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Strong data modelling skills (dimensional modelling)",
+          "status": "shown",
+          "quote": "Designed the Redshift warehouse schema (star schema, 30+ fact/dimension tables) used by finance and risk."
+        },
+        {
+          "requirement": "Hands-on experience with Google Cloud or a comparable cloud (managed warehouse, serverless compute, containers)",
+          "status": "shown",
+          "quote": "AWS (S3, EMR, Glue, Lambda, IAM), Snowflake, Redshift, Docker."
+        },
+        {
+          "requirement": "Curiosity about new data architecture ideas and open-source practices",
+          "status": "missing",
+          "quote": "Open-source contribution - small fixes to an Airflow provider package (2023): ... 2 merged PRs; gave a talk “Data contracts without the hype” at a regional data meetup 2024."
+        },
+        {
+          "requirement": "Good professional English",
+          "status": "shown",
+          "quote": "English (C1)."
+        },
+        {
+          "requirement": "Graph modelling",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Portuguese",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 1
+  },
+  {
+    "iteration": 2,
+    "content": "LENA VARGA-HOLM\nSenior Data Engineer\nRijeka, Croatia (open to remote, EU time zones) | lena.vargaholm@example.com | +385 55 555 0101 | github.com/lvh-data-example\n\nPROFILE\nData engineer with 9 years of experience building batch and streaming data platforms for e-commerce and payments. Designs and operates reliable production data platforms and cloud data warehouses, with strengths in Python, SQL, Airflow, dbt, data quality, data contracts and dimensional modelling.\n\nEXPERIENCE\n\nSenior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka            03/2022 - present\n- Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake.\n- Migrated transformation logic from stored procedures to dbt (420+ models), adding model tests, documentation, incremental models and slim CI with state:modified in GitHub Actions; reduced nightly runtime from 5h10 to 1h35.\n- Introduced data contracts between product teams and the data team (JSON Schema + CI checks), cutting broken-pipeline incidents from ~9/month to ~2/month.\n- Built a Kafka-based event pipeline using Kafka Connect and Snowpipe Streaming for ~30M shipment-tracking events/day, with end-to-end latency under 2 minutes at p95; added dead-letter and replay tooling.\n- Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka and Snowflake, reducing replica CPU during loads from ~70% to ~25%.\n- Mentor two mid-level data engineers; run the weekly data platform office hours.\n- Participate in the production data-platform on-call rotation, one week in six.\n- Reduced the Snowflake bill from about $38k/month to $24k/month through warehouse sizing and auto-suspend.\n\nData Engineer - Kovalent Pay (payments startup), Zagreb                            09/2019 - 02/2022\n- Built PySpark batch jobs on AWS EMR to reconcile ~1.2 TB/day of S3 files against internal ledgers, reducing finance-team manual reconciliation from ~3 days to ~4 hours per month-end.\n- Designed the Redshift cloud data warehouse using dimensional modelling and a star schema, with 30+ fact and dimension tables supporting finance and risk.\n- Set up data quality checks with Great Expectations on critical finance tables.\n- Wrote internal Python library for S3/Glue catalog access used by 4 teams.\n\nJunior Data Engineer / BI Developer - Adria Retail Group, Split                     06/2017 - 08/2019\n- Maintained SSIS packages and T-SQL ETL into an on-prem SQL Server warehouse.\n- Built Power BI reports for store operations (40+ stores).\n- Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.\n\nSELECTED PROJECTS & OPEN-SOURCE\nOpen-source contribution — Airflow provider package (2023): fixed a pagination bug and added tests; 2 merged pull requests. Technologies: Python, Airflow, pytest.\n\nEDUCATION\nMSc Computer Science (Data Science track) - Northgate Technical University, 2017\nThesis: Incremental materialized views for analytical queries\n\nCERTIFICATION\nAWS Certified Data Engineer – Associate (May 2024)\n\nSKILLS\nData platform: production data platforms, cloud data warehouses, data contracts, data quality, dimensional modelling, batch and streaming pipelines, CDC.\nLanguages: Python, SQL, Bash\nData: Airflow, dbt, Spark (PySpark), Kafka, Kafka Connect, Snowflake, Redshift, PostgreSQL, Great Expectations\nCloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker, Terraform (basic), GitHub Actions\nBI: Power BI, Looker (basic)\n\nLANGUAGES\nCroatian (native), English (C1), German (B1)",
+    "score": 88,
+    "critique": {
+      "quality_score": 88,
+      "content_quality_feedback": "This is a strong, well-structured senior data engineering CV with clear progression, relevant fintech and platform experience, quantified outcomes, and effective use of technical detail. The strongest evidence includes operating approximately 140 Airflow DAGs, processing 30 million streaming events per day, reducing pipeline runtime from 5h10 to 1h35, lowering Snowflake spend from approximately $38k to $24k per month, and reducing reconciliation work from three days to four hours. The document is professional and appropriately focused on data platform engineering rather than pure BI. The main content weakness is that some responsibilities relevant to the target role are implied rather than explicitly framed, particularly query optimisation, governance or access policies, collaboration with analytics and BI stakeholders, and reusable platform frameworks. The CV also contains one numerical detail that should be verified against the source information.",
+      "ats_compatibility_feedback": "The CV uses conventional section headings, reverse-chronological experience, readable bullets, standard date formats, and ATS-friendly plain text structure. It contains strong matches for Airflow, dbt, Python, SQL, Docker, CI/CD, Kafka, Snowflake, Redshift, AWS, data quality, data contracts, dimensional modelling, and open-source contribution. AI and ATS screening probability is high for the core Senior Data Engineer requirements. It would parse more strongly if the summary and skills explicitly used supported phrases such as production data platform, query optimisation, cloud data warehouse, governance, reusable frameworks, and open-source practices. The current skills section is good but slightly compressed; grouping Snowflake and Redshift as cloud data warehouses and identifying AWS as comparable cloud infrastructure would improve keyword matching without adding unsupported technologies. Do not add Google Cloud, BigQuery, Cloud Run, GKE, graph modelling, or Portuguese because they are not supported by the candidate information.",
+      "job_alignment_feedback": "The CV aligns very well with the central role: the candidate has designed, built, and operated production data platforms and cloud data warehouses at meaningful scale; has strong Python and SQL experience; has dimensional modelling experience; uses Airflow, dbt, Docker, CI/CD, and GitHub Actions; has hands-on AWS experience comparable to the advertised cloud requirement; and demonstrates open-source practice through an Airflow provider contribution. The strongest role alignment is the combination of platform ownership, streaming and batch processing, data contracts, data quality, CDC, operational on-call work, and mentoring. Professional English is shown through the C1 language level and technically detailed English-language experience. The candidate's material does not show graph modelling or Portuguese; these are genuine nice-to-have gaps, not CV defects. Query optimisation is not explicitly demonstrated as a named capability, although the CV shows adjacent performance and cost optimisation through warehouse sizing, auto-suspend, CDC redesign, and runtime reduction. Governance and access policies are also not directly evidenced in the candidate material. The collaborative culture signals are supported by mentoring, office hours, data contracts with product teams, and teaching, but the CV could make shared ownership and cross-team enablement more visible.",
+      "improvement_instructions": "CRITICAL: In the Senior Data Engineer role at Lukovac Freight Hub, verify the phrase \"420+ models\" against the candidate's source records. The original candidate information supports migrating approximately 300 stored procedures into dbt models, but does not independently support 420+ models. If 420+ is not accurate, replace it with \"approximately 300 dbt models migrated from stored procedures\" or the precise verified number. Also verify the phrase \"JSON Schema + CI checks\"; retain it only if the candidate can substantiate that implementation detail.\n\nHIGH-VALUE MINOR ENHANCEMENT: In the PROFILE section, add the supported target-role language \"production data platforms at scale\" and \"cloud data warehouses\" while retaining the existing evidence. For example: \"Senior data engineer with 9 years of experience designing, building and operating production data platforms at scale, including batch and streaming pipelines and cloud data warehouses for e-commerce and payments.\"\n\nHIGH-VALUE MINOR ENHANCEMENT: In the Skills section, change the first category from \"Data platform\" to \"Data Platform & Engineering\" and include the supported terms \"production data platforms,\" \"cloud data warehouses,\" \"data quality,\" \"data contracts,\" \"CDC,\" \"batch and streaming pipelines,\" and \"dimensional modelling.\" This improves matching to the job description without adding unsupported skills.\n\nHIGH-VALUE MINOR ENHANCEMENT: In the Senior Data Engineer experience section, make the existing performance work more searchable by revising the Snowflake bullet to: \"Reduced the Snowflake cloud data warehouse bill from about $38k/month to $24k/month through warehouse sizing, auto-suspend and removal of unused tables.\" Retain only the removal-of-unused-tables detail if it is confirmed from the candidate notes; it is supported there.\n\nHIGH-VALUE MINOR ENHANCEMENT: In the Senior Data Engineer experience section, revise the dbt bullet to explicitly identify the result as query and pipeline performance optimisation, but do not claim a specific SQL-query optimisation activity that is not documented. For example: \"Migrated transformation logic from stored procedures to dbt, adding tests, documentation, incremental models and slim CI with state:modified in GitHub Actions; reduced the nightly warehouse build from 5h10 to 1h35.\"\n\nMINOR ENHANCEMENT: In the Senior Data Engineer experience section, add a separate supported bullet for operational ownership: \"Participate in the production data-platform on-call rotation one week in six.\" This directly supports the role's requirement to own the day-to-day running of a central data platform.\n\nMINOR ENHANCEMENT: In the SELECTED PROJECTS & OPEN-SOURCE section, retain the Airflow provider contribution and change the heading to \"Open-Source & Selected Projects\" so the open-source practice is easier for ATS and recruiters to identify. No additional open-source tools or contributions should be added.",
+      "critical_issues": "Potential factual inconsistency: the CV states \"420+ models,\" while the original candidate information supports approximately 300 stored procedures migrated into dbt models and does not independently substantiate 420+ models. This must be verified or corrected. Potentially unsupported specificity: \"JSON Schema + CI checks\" is present in the CV, but the source information confirms data contracts and CI checks without clearly documenting JSON Schema; verify before retaining it.",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Experience designing, building and operating production data platforms or cloud data warehouses at scale",
+          "status": "shown",
+          "quote": "Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake."
+        },
+        {
+          "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+          "status": "shown",
+          "quote": "Migrated transformation logic from stored procedures to dbt... reduced nightly runtime from 5h10 to 1h35; Wrote internal Python library... used by 4 teams."
+        },
+        {
+          "requirement": "Strong data modelling skills, including dimensional modelling",
+          "status": "shown",
+          "quote": "Designed the Redshift cloud data warehouse using dimensional modelling and a star schema, with 30+ fact and dimension tables."
+        },
+        {
+          "requirement": "Hands-on experience with Google Cloud or a comparable cloud",
+          "status": "shown",
+          "quote": "Built PySpark batch jobs on AWS EMR...; loading... into Snowflake; Cloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker."
+        },
+        {
+          "requirement": "Curiosity about new data architecture ideas and open-source practices",
+          "status": "shown",
+          "quote": "Open-source contribution — Airflow provider package (2023): fixed a pagination bug and added tests; 2 merged pull requests."
+        },
+        {
+          "requirement": "Good professional English",
+          "status": "shown",
+          "quote": "English (C1)"
+        },
+        {
+          "requirement": "Graph modelling",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Portuguese",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 3,
+    "content": "LENA VARGA-HOLM\nSenior Data Engineer\nRijeka, Croatia (open to remote, EU time zones) | lena.vargaholm@example.com | +385 55 555 0101 | github.com/lvh-data-example\n\nPROFILE\nSenior data engineer with 9 years of experience designing, building and operating production data platforms at scale, including batch and streaming pipelines and cloud data warehouses for e-commerce and payments.\n\nEXPERIENCE\n\nSenior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka            03/2022 - present\n- Own the ingestion layer of the company data platform: ~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake.\n- Migrated transformation logic from stored procedures to approximately 300 dbt models, adding tests, documentation, incremental models and slim CI with state:modified in GitHub Actions; reduced the nightly warehouse build from 5h10 to 1h35.\n- Introduced data contracts between product teams and the data team, cutting broken-pipeline incidents from ~9/month to ~2/month.\n- Built a Kafka-based event pipeline using Kafka Connect and Snowpipe Streaming for ~30M shipment-tracking events/day, with end-to-end latency under 2 minutes at p95; added dead-letter and replay tooling.\n- Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka and Snowflake, reducing replica CPU during loads from ~70% to ~25%.\n- Mentor two mid-level data engineers; run the weekly data platform office hours.\n- Participate in the production data-platform on-call rotation one week in six.\n- Reduced the Snowflake cloud data warehouse bill from about $38k/month to $24k/month through warehouse sizing, auto-suspend and removal of unused tables.\n\nData Engineer - Kovalent Pay (payments startup), Zagreb                            09/2019 - 02/2022\n- Built PySpark batch jobs on AWS EMR to reconcile ~1.2 TB/day of S3 files against internal ledgers, reducing finance-team manual reconciliation from ~3 days to ~4 hours per month-end.\n- Designed the Redshift cloud data warehouse using dimensional modelling and a star schema, with 30+ fact and dimension tables supporting finance and risk.\n- Set up data quality checks with Great Expectations on critical finance tables.\n- Wrote internal Python library for S3/Glue catalog access used by 4 teams.\n\nJunior Data Engineer / BI Developer - Adria Retail Group, Split                     06/2017 - 08/2019\n- Maintained SSIS packages and T-SQL ETL into an on-prem SQL Server warehouse.\n- Built Power BI reports for store operations (40+ stores).\n- Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.\n\nOpen-Source & Selected Projects\nOpen-source contribution — Airflow provider package (2023): fixed a pagination bug and added tests; 2 merged pull requests. Technologies: Python, Airflow, pytest.\n\nEDUCATION\nMSc Computer Science (Data Science track) - Northgate Technical University, 2017\nThesis: Incremental materialized views for analytical queries\n\nCERTIFICATION\nAWS Certified Data Engineer – Associate (May 2024)\n\nSKILLS\nData Platform & Engineering: production data platforms, cloud data warehouses, data contracts, data quality, dimensional modelling, batch and streaming pipelines, CDC.\nLanguages: Python, SQL, Bash\nData: Airflow, dbt, Spark (PySpark), Kafka, Kafka Connect, Snowflake, Redshift, PostgreSQL, Great Expectations\nCloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker, Terraform (basic), GitHub Actions\nBI: Power BI, Looker (basic)\n\nLANGUAGES\nCroatian (native), English (C1), German (B1)",
+    "score": 91,
+    "critique": {
+      "quality_score": 91,
+      "content_quality_feedback": "This is a strong, well-structured senior data engineering CV with clear progression, relevant fintech and platform experience, and unusually strong quantified outcomes. The document demonstrates ownership of production systems, streaming and batch engineering, data quality, mentoring, on-call responsibility, cost control, and open-source contribution. Bullets are concise and generally follow an effective action-plus-result structure. The main content limitation is that some relevant evidence from the candidate information—such as the data-platform talk, SQL mentoring, and AWS MSK/Debezium details—is not included, so the CV could make the candidate's architecture curiosity, community contribution, and collaborative impact more visible.",
+      "ats_compatibility_feedback": "The CV is ATS-friendly: it uses standard headings, conventional chronology, plain text formatting, searchable technology names, and no apparent tables, graphics, headers/footers, or parsing barriers. Important terms such as data platforms, cloud data warehouses, Airflow, dbt, Python, SQL, dimensional modelling, AWS, Docker, CI/CD, data quality, CDC, Kafka, and Snowflake are present. AI screening probability is high because the profile and experience closely match the role. The only notable keyword opportunity is to make performance optimisation and reusable platform frameworks more explicit using wording already supported by the experience. Do not add Google Cloud-specific tools, graph modelling, or Portuguese because the candidate information does not support them.",
+      "job_alignment_feedback": "The CV aligns very strongly with Halden Pay's core requirements. It shows production data-platform ownership, large-scale cloud warehouse work, Airflow/dbt/Python/SQL, AWS as a comparable cloud, dimensional modelling, data quality, CI/CD, mentoring, and open-source practice. The payments experience at Kovalent Pay is especially relevant, including reconciliation, finance, risk, EMR, S3, Redshift, and Great Expectations. Ownership is demonstrated through platform ownership, on-call, incident reduction, and cost reduction; Together is supported by mentoring, office hours, data contracts, and work with product teams; Pace is supported by migration and runtime improvements. Graph modelling and Portuguese are gaps in the candidate material, not CV defects. Explicit query optimisation on large datasets is not directly evidenced in the supplied material, although warehouse performance and large-scale processing are well demonstrated.",
+      "improvement_instructions": "MINOR ENHANCEMENTS ONLY:\n1. In the Profile section, change the final phrase from \"cloud data warehouses for e-commerce and payments\" to \"production data platforms and cloud data warehouses at scale for e-commerce and payments.\" This uses the job description's terminology while remaining supported by the CV.\n2. In the Senior Data Engineer role at Lukovac Freight Hub, change the dbt bullet to include the reusable-platform outcome already supported by the work: \"Migrated transformation logic from stored procedures to approximately 300 dbt models, adding tests, documentation, incremental models and slim CI with state:modified in GitHub Actions; reduced the nightly warehouse build from 5h10 to 1h35 and made lineage visible to analysts.\" This restores the supported portfolio detail and strengthens the match to reusable data-platform frameworks.\n3. In the Senior Data Engineer role at Lukovac Freight Hub, add a separate bullet after the data-contracts bullet: \"Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka and Snowflake, reducing replica CPU during loads from ~70% to ~25%.\" This is supported by the candidate portfolio and makes architecture innovation, operational ownership, and performance optimisation more visible.\n4. In Open-Source & Selected Projects, expand the existing open-source entry to: \"Fixed a pagination bug and added tests to a community Airflow provider package for a SaaS CRM API; contributed 2 merged pull requests. Technologies: Python, Airflow, pytest.\" This more directly demonstrates the job's open-source-practices requirement.\n5. In Open-Source & Selected Projects, add the supported community activity as a second entry: \"Technical talk — ‘Data contracts without the hype’ (regional data meetup, 2024).\" This strengthens evidence of curiosity about data architecture ideas without claiming unsupported tools or experience.\n6. In the Skills section, change \"Data Platform & Engineering\" to \"Data Platform & Engineering: production data platforms, reusable data-platform frameworks, cloud data warehouses, data contracts, data quality, dimensional modelling, batch and streaming pipelines, CDC.\" Only retain \"reusable data-platform frameworks\" if the candidate is comfortable that the existing Airflow/dbt platform work was delivered as reusable shared capability; the rest is already supported by the CV.",
+      "critical_issues": "Claims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n- About the employer: \"(logistics marketplace)\"\n- About the employer: \"(payments startup)\"",
+      "unsupported_claims": [
+        "About the employer: \"(logistics marketplace)\"",
+        "About the employer: \"(payments startup)\""
+      ],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Experience designing, building and operating production data platforms or cloud data warehouses at scale",
+          "status": "shown",
+          "quote": "Own the ingestion layer of the company data platform: ~140 Airflow DAGs ... into Snowflake."
+        },
+        {
+          "requirement": "Advanced Python and SQL, including query optimisation on large datasets",
+          "status": "shown",
+          "quote": "Built PySpark batch jobs on AWS EMR to reconcile ~1.2 TB/day of S3 files; ... migrated transformation logic to approximately 300 dbt models."
+        },
+        {
+          "requirement": "Strong data modelling skills (dimensional modelling)",
+          "status": "shown",
+          "quote": "Designed the Redshift cloud data warehouse using dimensional modelling and a star schema, with 30+ fact and dimension tables."
+        },
+        {
+          "requirement": "Hands-on experience with Google Cloud or a comparable cloud",
+          "status": "shown",
+          "quote": "AWS (S3, EMR, Glue, Lambda, IAM) ... Snowflake and Redshift cloud data warehouses."
+        },
+        {
+          "requirement": "Curiosity about new data architecture ideas and open-source practices",
+          "status": "shown",
+          "quote": "Open-source contribution — Airflow provider package (2023): fixed a pagination bug and added tests; 2 merged pull requests."
+        },
+        {
+          "requirement": "Good professional English",
+          "status": "shown",
+          "quote": "English (C1)"
+        },
+        {
+          "requirement": "Graph modelling",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Portuguese",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [
+      "About the employer: \"(logistics marketplace)\"",
+      "About the employer: \"(payments startup)\""
+    ],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

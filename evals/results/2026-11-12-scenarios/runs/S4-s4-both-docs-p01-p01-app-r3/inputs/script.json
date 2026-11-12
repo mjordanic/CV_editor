@@ -1,0 +1,50 @@
+{
+  "first": "Please write my CV first, then the cover letter.",
+  "cover_letter": "Thank you. Now please write the cover letter.",
+  "exit": "Thanks, that is all. Please exit.",
+  "clarify_job_ad": "That is all the information the ad gives.",
+  "missing_details": "I'd rather leave those details out.",
+  "max_turns": 14,
+  "purpose": "S4 (both documents): one message whose change applies to both existing documents, then a fact correction 'everywhere'.",
+  "persona": "p01",
+  "correct_behaviour": "Both documents get the new contact detail; the corrected figure replaces the old one in both.",
+  "requests": [
+    {
+      "id": "add-to-both",
+      "after": "cover_letter",
+      "expect": "follow",
+      "text": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter.",
+      "correct_behaviour": "lenavh.dev in both documents"
+    },
+    {
+      "id": "correct-everywhere",
+      "after": "cover_letter",
+      "expect": "follow",
+      "text": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents.",
+      "correct_behaviour": "no '1h35' in either document"
+    }
+  ],
+  "checks": [
+    {
+      "id": "added-in-both",
+      "type": "present",
+      "pattern": "lenavh\\.dev",
+      "what": "lenavh.dev in both documents"
+    },
+    {
+      "id": "old-figure-gone",
+      "type": "absent",
+      "pattern": "1\\s*h\\s*35|1:35|95\\s*min",
+      "what": "the old figure is in neither document"
+    },
+    {
+      "id": "new-figure-in-cv",
+      "type": "present",
+      "docs": [
+        "cv"
+      ],
+      "pattern": "1\\s*h(?:ours?)?\\s*50|1:50|110\\s*min",
+      "what": "the corrected figure is in the CV"
+    }
+  ]
+}

@@ -1,0 +1,1095 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku2",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9265,
+      "output_tokens": 18873,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14456
+    },
+    "cost_usd": 0.005254,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "5f53e3a63bd761a5f4864ceed9947ecf600f75b13a5184c90d9d817a6d01afc0",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku2-sp_luna_p01_a1_all4_r1-33d0ff3a9a",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku2-sp_luna_p01_a1_all4_r1-33d0ff3a9a",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.010508
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "9 years of experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "9 years of experience building batch and streaming data platforms",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Senior Data Engineer, Lukovac Freight Hub, 03/2022 - Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Senior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka 03/2022 - present",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "approximately 140 Airflow DAGs",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "420+ dbt models from approximately 300 stored procedures",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Moved transformation logic from stored procedures to dbt (420+ models",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "nightly build 5h10 to 1h35",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "nightly run time down from 5h10 to 1h35",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "broken-pipeline incidents from about 9 to 2 per month",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "cutting broken-pipeline incidents from ~9/month to ~2/month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "30 million events per day, p95 latency under 2 minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Around 30 million events per day, end-to-end latency under 2 minutes at p95",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "replica CPU from about 70% to 25% after Debezium CDC",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Snowflake bill reduced from about 38k to 24k per month",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Mentor two mid-level data engineers",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mentor two mid-level data engineers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "on-call rotation one week in six",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "lukovac: on-call rotation for data platform, 1 week in 6",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Engineer, Kovalent Pay, 09/2019 - 02/2022",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Data Engineer | Kovalent Pay (payments startup) | 09/2019 - 02/2022",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "about 1.2 TB of raw files from S3 daily",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "processing approximately 1.2 TB of raw files from S3 daily",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "manual reconciliation reduced from 3 days to 4 hours per month-end",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Reduced manual reconciliation work of the finance team from ~3 days to ~4 hours per month-end",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Redshift warehouse with 30+ fact and dimension tables",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Designed a Redshift dimensional warehouse with 30+ fact and dimension tables",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Junior Data Engineer / BI Developer, Adria Retail Group, 06/2017 - 08/2019",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Junior Data Engineer / BI Developer | Adria Retail Group | 06/2017 - 08/2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Computer Science, Northgate Technical University, 2017",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Computer Science, Data Science track | Northgate Technical University | 2017",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "AWS Certified Data Engineer - Associate, May 2024",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "presented at a regional data meetup in 2024",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "gave a talk Data contracts without the hype at a regional data meetup 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "two merged pull requests to an open-source Airflow provider",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Fixed pagination bug and added tests in a community Airflow provider (2 merged PRs)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "English (C1), German (B1)",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Croatian (native), English (C1), German (B1)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I led the migration of warehouse transformations to dbt",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "portfolio",
+        "evidence_quote": "Migrated ~300 stored procedures into dbt models",
+        "note": "Material says migrated, not led; overstated role"
+      },
+      {
+        "document": "cover_letter",
+        "claim": "production-scale cloud data work on AWS",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Built PySpark batch jobs on AWS EMR",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Snowflake and Redshift warehousing, Docker and GitHub Actions",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM, MSK), Docker, Terraform (basic), GitHub Actions",
+        "note": ""
+      }
+    ],
+    "omissions": [],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Design and operate production data platforms or cloud warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Own the ingestion and orchestration layer of the company data platform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Advanced Python and SQL, query optimisation on large datasets",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Languages: Python, SQL, Bash",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dimensional data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Designed a Redshift dimensional warehouse with 30+ fact and dimension tables",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM, MSK)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Graph modelling",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good professional English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (C1)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Portuguese",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Data quality standards and governance",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Introduced JSON Schema data contracts and CI checks",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Open-source practices and curiosity",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Contributed two merged pull requests to an open-source Airflow provider",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Cloud gap (AWS, not Google Cloud) and missing graph and Portuguese are stated honestly; no overstatement in the CV.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Summary is generic and repeats skills"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "EXPERIENCE",
+        "EDUCATION",
+        "CERTIFICATION",
+        "COMMUNITY AND OPEN SOURCE",
+        "TECHNICAL SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "03/2022 - / Present date split across lines"
+      ],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Data Platform",
+        "Airflow",
+        "dbt",
+        "Python",
+        "SQL",
+        "Docker",
+        "Git",
+        "CI/CD",
+        "dimensional modelling",
+        "data quality",
+        "English",
+        "Google Cloud",
+        "Portuguese"
+      ],
+      "covered_in_searchable_wording": [
+        "Senior Data Engineer",
+        "Data Platform",
+        "Airflow",
+        "dbt",
+        "Python",
+        "SQL",
+        "Docker",
+        "Git",
+        "dimensional modelling",
+        "data quality",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "CI/CD"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean extractable text with clear headings; minor date split and weak CI/CD wording keep it from a higher score."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "I led the migration overstates the CV's migrated",
+        "Little company-specific detail; uses only the job ad"
+      ],
+      "strengths": [
+        "Honest about AWS rather than Google Cloud",
+        "Clear, short, one page"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV page 2 is sparse with only three short sections"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Some sentences are generic (Values well-tested pipelines)"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Snowflake cost reduction 38k to 24k",
+        "on-call rotation",
+        "AWS certification",
+        "conference talk",
+        "CDC project"
+      ],
+      "notes_facts_ignored": [
+        "Teaching SQL at meetup is used in CV only"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "CV and cover letter both present",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "CV contact details come from the material",
+          "note": "Condition not triggered"
+        },
+        {
+          "request": "That is all the information the ad gives.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Letter uses only ad content",
+          "note": ""
+        }
+      ],
+      "score": 9
+    },
+    "invented_content_score": 8,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "The CV is well grounded: metrics, employers, dates and the AWS certification all trace to the material, and it honestly shows AWS rather than Google Cloud. The ATS text is clean with clear headings, with a minor date line split and weak CI/CD wording. The cover letter overstates the dbt migration as led and is generic on company fit. Visual layout is clean, the arrangement is kept open, and all user requests were followed."
+  },
+  "counts": {
+    "claims": 24,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 5,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 3,
+    "requests_followed": 3,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3872,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1656,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 51.8,
+          "right": 51.8,
+          "top": 49.7,
+          "bottom": 51.8
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 36.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 73.6,
+          "top": 74.2,
+          "bottom": 442.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 47.5,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.005254,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "9 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "9 years of experience building batch and streaming data platforms",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Senior Data Engineer, Lukovac Freight Hub, 03/2022 - Present",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Senior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka 03/2022 - present",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "approximately 140 Airflow DAGs",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "420+ dbt models from approximately 300 stored procedures",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Moved transformation logic from stored procedures to dbt (420+ models",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "nightly build 5h10 to 1h35",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "nightly run time down from 5h10 to 1h35",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "broken-pipeline incidents from about 9 to 2 per month",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "cutting broken-pipeline incidents from ~9/month to ~2/month",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "30 million events per day, p95 latency under 2 minutes",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Around 30 million events per day, end-to-end latency under 2 minutes at p95",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "replica CPU from about 70% to 25% after Debezium CDC",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Snowflake bill reduced from about 38k to 24k per month",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mentor two mid-level data engineers",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mentor two mid-level data engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "on-call rotation one week in six",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "lukovac: on-call rotation for data platform, 1 week in 6",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Data Engineer, Kovalent Pay, 09/2019 - 02/2022",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Data Engineer | Kovalent Pay (payments startup) | 09/2019 - 02/2022",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "about 1.2 TB of raw files from S3 daily",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "processing approximately 1.2 TB of raw files from S3 daily",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "manual reconciliation reduced from 3 days to 4 hours per month-end",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Reduced manual reconciliation work of the finance team from ~3 days to ~4 hours per month-end",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Redshift warehouse with 30+ fact and dimension tables",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed a Redshift dimensional warehouse with 30+ fact and dimension tables",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Junior Data Engineer / BI Developer, Adria Retail Group, 06/2017 - 08/2019",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Junior Data Engineer / BI Developer | Adria Retail Group | 06/2017 - 08/2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Computer Science, Northgate Technical University, 2017",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Computer Science, Data Science track | Northgate Technical University | 2017",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "AWS Certified Data Engineer - Associate, May 2024",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "presented at a regional data meetup in 2024",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "gave a talk Data contracts without the hype at a regional data meetup 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "two merged pull requests to an open-source Airflow provider",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Fixed pagination bug and added tests in a community Airflow provider (2 merged PRs)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "English (C1), German (B1)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Croatian (native), English (C1), German (B1)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "I led the migration of warehouse transformations to dbt",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Migrated ~300 stored procedures into dbt models",
+            "note": "Material says migrated, not led; overstated role"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production-scale cloud data work on AWS",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built PySpark batch jobs on AWS EMR",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Snowflake and Redshift warehousing, Docker and GitHub Actions",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM, MSK), Docker, Terraform (basic), GitHub Actions",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "9 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "9 years of experience building batch and streaming data platforms",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Senior Data Engineer, Lukovac Freight Hub, 03/2022 - Present",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Senior Data Engineer - Lukovac Freight Hub d.o.o. (logistics marketplace), Rijeka 03/2022 - present",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "approximately 140 Airflow DAGs",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "420+ dbt models from approximately 300 stored procedures",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Moved transformation logic from stored procedures to dbt (420+ models; portfolio: Migrated ~300 stored procedures",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "nightly build 5h10 to 1h35",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "nightly run time down from 5h10 to 1h35",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "broken-pipeline incidents from about 9 to 2 per month",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "cutting broken-pipeline incidents from ~9/month to ~2/month",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "30 million events per day, p95 latency under 2 minutes",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Around 30 million events per day, end-to-end latency under 2 minutes at p95",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "replica CPU from about 70% to 25% after Debezium CDC",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Snowflake bill reduced from about 38k to 24k per month",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mentor two mid-level data engineers",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mentor two mid-level data engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "on-call rotation one week in six",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "lukovac: on-call rotation for data platform, 1 week in 6",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Data Engineer, Kovalent Pay, 09/2019 - 02/2022",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Data Engineer | Kovalent Pay (payments startup) | 09/2019 - 02/2022",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "about 1.2 TB of raw files from S3 daily",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "processing approximately 1.2 TB of raw files from S3 daily",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "manual reconciliation reduced from 3 days to 4 hours per month-end",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Reduced manual reconciliation work of the finance team from ~3 days to ~4 hours per month-end",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Redshift warehouse with 30+ fact and dimension tables",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed a Redshift dimensional warehouse with 30+ fact and dimension tables",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Junior Data Engineer / BI Developer, Adria Retail Group, 06/2017 - 08/2019",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Junior Data Engineer / BI Developer | Adria Retail Group | 06/2017 - 08/2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Computer Science, Northgate Technical University, 2017",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Computer Science, Data Science track | Northgate Technical University | 2017",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "AWS Certified Data Engineer - Associate, May 2024",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "presented at a regional data meetup in 2024",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "gave a talk Data contracts without the hype at a regional data meetup 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "two merged pull requests to an open-source Airflow provider",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Fixed pagination bug and added tests in a community Airflow provider (2 merged PRs)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "English (C1), German (B1)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Croatian (native), English (C1), German (B1)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "I led the migration of warehouse transformations to dbt",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "portfolio",
+            "evidence_quote": "Migrated ~300 stored procedures into dbt models",
+            "note": "Material says migrated, not led; overstated role"
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production-scale cloud data work on AWS",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built PySpark batch jobs on AWS EMR",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Snowflake and Redshift warehousing, Docker and GitHub Actions",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM, MSK), Docker, Terraform (basic), GitHub Actions",
+            "note": ""
+          }
+        ]
+      },
+      {
+        "field": "ats.reason",
+        "guaranteed": "Clean extractable text with clear headings; minor date split and weak CI/CD wording keep it from a higher score.",
+        "full": "Clean extractable text with clear sections; the date line split is minor and CI/CD wording is weak."
+      },
+      {
+        "field": "ats.missed_but_candidate_has",
+        "guaranteed": [
+          "CI/CD"
+        ],
+        "full": [
+          "CI/CD (GitHub Actions in skills but no CI/CD term)"
+        ]
+      },
+      {
+        "field": "summary",
+        "guaranteed": "The CV is well grounded: metrics, employers, dates and the AWS certification all trace to the material, and it honestly shows AWS rather than Google Cloud. The ATS text is clean with clear headings, with a minor date line split and weak CI/CD wording. The cover letter overstates the dbt migration as led and is generic on company fit. Visual layout is clean, the arrangement is kept open, and all user requests were followed.",
+        "full": "The CV is well grounded: metrics, employers, dates and the AWS certification all trace to the material, and it honestly shows AWS rather than Google Cloud. The ATS text is clean with clear headings, with minor date line split and weak CI/CD wording. The cover letter overstates the dbt migration as led and is generic on company fit. Visual layout is clean, the arrangement is kept open, and all user requests were followed."
+      }
+    ]
+  }
+}

@@ -1,0 +1,515 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9315,
+      "output_tokens": 6874,
+      "cache_creation_input_tokens": 4046,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.049254,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "0369f161c11f58a3dea7e85a87ed62347a881e1b423639c654299986f35f57a3",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p09_a3_all4_r1-8cc8ed0103",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p09_a3_all4_r1-8cc8ed0103",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.098508
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "10 years of experience, including six running Kubernetes platforms on AWS",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "10 years in infrastructure, the last 6 running Kubernetes platforms on AWS",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Technical lead of a five-person platform team",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Tech lead of the 5-person platform team",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Enabled all 14 product teams; adopted by 14 product teams",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "adopted by all 14 product teams",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "EC2 spend down 38%, approximately GBP 410,000 annually",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "EC2 spend down 38% (about GBP 410k per year)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Sloth, PagerDuty",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Technologies: Prometheus, Sloth, Grafana, Alertmanager, PagerDuty",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led capacity planning for two major launches",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "cover_letter",
+        "evidence_quote": "led capacity planning for two major launches",
+        "note": "Only in the earlier letter; the CV says launch-day capacity planning."
+      },
+      {
+        "document": "cv",
+        "claim": "Mentored three backend engineers into SRE roles",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "mentored 3 engineers into SRE from backend",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Presented talk at UK DevOps meetup 2024",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "talk at a UK DevOps meetup 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "CKA 2021 renewed 2024; AWS SA Pro 2023",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Certified Kubernetes Administrator (CKA) - 2021, renewed 2024",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I would bring proven AWS operations, Terraform, Linux and technical leadership",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Terraform for all AWS infrastructure (~40 modules)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Brightwater: managed AWS infrastructure through ~40 Terraform modules and Atlantis",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Terraform for all AWS infrastructure (~40 modules); Atlantis",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Terraform strongly shown but no Terragrunt; no mTLS/TLS experience in material (real gap)",
+        "source": "cv",
+        "source_quote": "Terraform, Atlantis",
+        "relevance": "low",
+        "why_it_matters": "Cannot be added; gap not addressed."
+      },
+      {
+        "fact": "VPC and Route 53 networking experience could be linked to networking requirement in letter",
+        "source": "cv",
+        "source_quote": "VPC, IAM, RDS, S3, SQS, Route 53, CloudFront",
+        "relevance": "medium",
+        "why_it_matters": "Networking is a must-have."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on cloud infrastructure design and operation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "hands-on experience in cloud infrastructure design and operation",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "AWS",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "six running Kubernetes platforms on AWS",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "approximately 40 modules and Atlantis plan/apply workflows",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Systems architecture and design",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "system design",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Networking incl. mTLS, SSL/TLS",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "partial",
+          "evidence_quote": "VPC, IAM",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Practical security awareness",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "IAM",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Leading technical topics, stakeholders",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "agreed an error budget policy with product leadership",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Linux and VMs",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Managed approximately 600 Linux servers",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "IoT/automotive",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; gaps (Terragrunt, mTLS, IoT) simply not mentioned and not claimed.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 9,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Location omitted"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "CERTIFICATIONS",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "AWS",
+        "Terraform",
+        "Terragrunt",
+        "mTLS",
+        "TLS",
+        "system design",
+        "Linux",
+        "infrastructure as code",
+        "observability",
+        "security"
+      ],
+      "covered_in_searchable_wording": [
+        "AWS",
+        "Terraform",
+        "system design",
+        "Linux",
+        "observability"
+      ],
+      "missed_but_candidate_has": [
+        "infrastructure as code (phrase)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean parse and the candidate's real matching keywords are present. Terragrunt and mTLS are absent because the candidate lacks them, and the phrase 'infrastructure as code' appears only as a skills subheading."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not acknowledge gaps (Terragrunt, mTLS)",
+        "Contractor engagement not addressed",
+        "Mostly CV recap"
+      ],
+      "strengths": [
+        "Maps to ad scope",
+        "Accurate figures",
+        "No stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "remote",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Bullet orphan split across pages at Pennine entry",
+        "Page 2 mostly empty"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Somewhat dense, formulaic"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Mentoring",
+        "Meetup talk",
+        "Tech lead"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [
+        "Honoured 'don't list' for CKAD and omitted Istio/GCP"
+      ],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "Leave out missing contact details",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No location or placeholder",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 8,
+    "summary": "Accurate, clean, well-sectioned CV and relevant letter with no fabrications and no gap overstatement. Minor stretch on 'led capacity planning', which came from the earlier letter. Weaknesses: the letter does not address the networking, security, Terragrunt or contractor aspects and mostly recaps the CV. Layout is fine."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3537,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2256,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 55.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 37.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 289.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 65.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.049254,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

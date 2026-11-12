@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first: a tailored CV, a cover letter, or both?",
+      "user": "Please write my CV first, then the cover letter. In the CV, put my most relevant experience for this job first."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Warning: the cover letter PDF does not match the checked text exactly (48.6% of its words found; missing from the PDF: curriculum, vitae, tomislav, mesarić, ulica, lipa, 12, 10000, zagreb, croatia; numbers that differ (- missing, + added): -12, -10000, -385, -1, -555, -0142, -9, -2019, -2, -3). Compare the PDF with data/generated_CVs/generated_cover_letter.txt before you send it.\n\nYour CV and cover letter have both been generated. Please review them and tell me if you’d like any text or PDF appearance changes.",
+      "user": "Please shorten the professional summary to two sentences."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Please let me know if you’d like any content or PDF appearance changes.",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "revision",
+      "after": "cv",
+      "text": "Please shorten the professional summary to two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "The CV is changed as asked, and nothing else is changed.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 3
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 3
+      },
+      "new_draft": true
+    }
+  ]
+}

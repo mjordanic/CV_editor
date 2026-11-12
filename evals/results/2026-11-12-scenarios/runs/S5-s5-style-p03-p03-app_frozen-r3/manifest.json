@@ -1,0 +1,222 @@
+{
+  "run_dir": "runs/S5-s5-style-p03-p03-app_frozen-r3",
+  "labels": {
+    "scenario": "S5",
+    "system": "app_frozen",
+    "case": "p03/s5-style-p03",
+    "rep": "3"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<frozen-tree>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<frozen-tree>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 16,
+    "purpose": "S5 (appearance and content interleaved): appearance-only requests must not change the text, every PDF must compile, and every requested style must still be in the final PDFs.",
+    "persona": "p03",
+    "correct_behaviour": "Text unchanged on every appearance turn; every PDF compiles; the final CV has dark green headings and a sans-serif font, the letter a dark green name; the job is removed.",
+    "requests": [
+      {
+        "id": "s1-green",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Make the section headings in the CV PDF dark green.",
+        "correct_behaviour": "Headings dark green; text unchanged."
+      },
+      {
+        "id": "s2-sans",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Now use a sans-serif font for the CV PDF.",
+        "correct_behaviour": "Sans-serif font; headings still dark green; text unchanged."
+      },
+      {
+        "id": "c1-drop-job",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Please remove the Customer Support Specialist job from the CV.",
+        "correct_behaviour": "Job removed; styles kept."
+      },
+      {
+        "id": "s3-spacing",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Tighten the spacing and margins in the CV PDF a little. Don't change the wording.",
+        "correct_behaviour": "Tighter layout; text unchanged; styles kept."
+      },
+      {
+        "id": "s4-letter-green",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Make my name at the top of the cover letter PDF dark green too, to match the CV.",
+        "correct_behaviour": "Letter name dark green; text of both documents unchanged."
+      }
+    ],
+    "checks": [
+      {
+        "id": "green-text-unchanged",
+        "type": "unchanged_by",
+        "request": "s1-green",
+        "what": "the dark-green request left both texts unchanged"
+      },
+      {
+        "id": "sans-text-unchanged",
+        "type": "unchanged_by",
+        "request": "s2-sans",
+        "what": "the font request left both texts unchanged"
+      },
+      {
+        "id": "spacing-text-unchanged",
+        "type": "unchanged_by",
+        "request": "s3-spacing",
+        "what": "the spacing request left both texts unchanged"
+      },
+      {
+        "id": "letter-style-text-unchanged",
+        "type": "unchanged_by",
+        "request": "s4-letter-green",
+        "what": "the letter style request left both texts unchanged"
+      },
+      {
+        "id": "job-removed",
+        "type": "absent",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "customer support",
+        "what": "the content edit was applied"
+      },
+      {
+        "id": "compiled-every-turn",
+        "type": "compiled_every_turn",
+        "what": "every PDF made compiled from the system's own LaTeX (no plain fallback)"
+      },
+      {
+        "id": "cv-green-kept",
+        "type": "style_in_tex",
+        "doc": "cv",
+        "pattern": "green|[\\[{]RGB[\\]}]\\{\\s*\\d{1,2}\\s*,\\s*(?:[6-9]\\d|1\\d\\d|2[0-5]\\d)\\s*,\\s*\\d{1,2}\\s*\\}|[\\[{]HTML[\\]}]\\{[0-4][0-9A-F][5-9A-F][0-9A-F][0-4][0-9A-F]\\}",
+        "what": "final CV LaTeX still has the green headings"
+      },
+      {
+        "id": "cv-sans-kept",
+        "type": "style_in_tex",
+        "doc": "cv",
+        "pattern": "\\\\sfdefault|helvet|\\\\sffamily|sourcesanspro|\\blato\\b|opensans|\\barev\\b|cmbright|roboto|noto ?sans|fira ?sans|tgheros|dejavu ?sans",
+        "what": "final CV LaTeX still has the sans-serif font"
+      },
+      {
+        "id": "letter-green",
+        "type": "style_in_tex",
+        "doc": "cover_letter",
+        "pattern": "green|[\\[{]RGB[\\]}]\\{\\s*\\d{1,2}\\s*,\\s*(?:[6-9]\\d|1\\d\\d|2[0-5]\\d)\\s*,\\s*\\d{1,2}\\s*\\}|[\\[{]HTML[\\]}]\\{[0-4][0-9A-F][5-9A-F][0-9A-F][0-4][0-9A-F]\\}",
+        "what": "final letter LaTeX has the green name"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T09:19:55+00:00",
+  "status": "completed",
+  "minutes": 9.6,
+  "cv_drafts": 5,
+  "cover_letter_drafts": 4,
+  "cv_final_iteration": 5,
+  "cover_letter_final_iteration": 4,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. No other country, time-zone, or relocation limits are stated.",
+    "culture_signals": [
+      "Collaborative, fast-moving and open to new ideas",
+      "International teams with shared goals",
+      "Teams solve problems together",
+      "Engineering-led, with teams owning their systems end to end",
+      "Values: Lead, Shape, Own, Enjoy the journey"
+    ],
+    "notes": "The job ad describes this contractor role as remote-friendly with occasional office days. The company pages say employees can work hybrid; that employee arrangement does not override the ad's terms for this job."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 4,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 1
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 1
+    }
+  },
+  "requests_sent": [
+    "s1-green",
+    "s2-sans",
+    "c1-drop-job",
+    "s3-spacing",
+    "s4-letter-green"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [
+    "s1-green",
+    "s2-sans",
+    "s3-spacing",
+    "s4-letter-green"
+  ],
+  "finished_at": "2026-11-12T09:29:32+00:00",
+  "cost_usd": 0.065007
+}

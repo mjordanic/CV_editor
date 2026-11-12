@@ -1,0 +1,557 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8602,
+      "output_tokens": 7872,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13900
+    },
+    "cost_usd": 0.048657,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "aee8b175538e6a0d6e0d57d5be879fe55217fc4d194e77e553f2df2361d5cc2f",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p05_a5_cv_only_r1-9ed639ad1e",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p05_a5_cv_only_r1-9ed639ad1e",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.097314
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "21 years of experience building large-scale backend systems in Python, Go and C++",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "21 years of experience building large-scale backend systems in Python, Go and C++",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led the platform organisation of 5 teams, 45 engineers and 5 engineering managers",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "5 teams, 45 engineers, 5 engineering managers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "playback API availability improved from 99.5% to 99.95%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "99.5% to 99.95%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced cloud spend by 31% (EUR 4.2M/year)",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Reduced cloud spend by 31% (EUR 4.2M/year)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led migration from a Python 2 monolith to approximately 60 Python and Go services on GKE",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Drove migration from a Python 2 monolith to ~60 Python/Go services on GKE",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Designed the entitlement service, 120k requests/second at peak",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kafka, Terraform, Kubernetes, Prometheus, Grafana, OpenTelemetry",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Kafka, RabbitMQ, GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "API development",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "playback API",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Dipl.-Inf. Computer Science, Rhine Valley University, 2005",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Dipl.-Inf. (equivalent MSc) Computer Science, Rhine Valley University, 2005",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "hands-on work with Python services and APIs, high-volume event ingestion",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "ingestion of GPS data from 300k vehicles",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "introduced company-wide on-call guidelines and architecture reviews",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "RFC process, architecture review board and on-call guidelines adopted company-wide",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "helping improve playback API availability",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "led a route-history product team",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Led a team of 6 developers on the route-history product.",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Python 2 to FastAPI-like service experience and Kafka/AWS are present but no production Kafka detail; no mention of hands-on weekly coding level versus seniority fit",
+        "source": "cv",
+        "source_quote": "still write code every week, mostly internal tooling in recent years",
+        "relevance": "low",
+        "why_it_matters": "Letter does not address the seniority/IC mismatch."
+      },
+      {
+        "fact": "PostgreSQL work at Nordfels and EuroPython-style talk on Python at scale",
+        "source": "cv",
+        "source_quote": "Running Python at 100k rps",
+        "relevance": "low",
+        "why_it_matters": "Supports Python performance."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "3+ years Python backend",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "building large-scale backend systems in Python, Go and C++",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "PostgreSQL, query tuning, migrations",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "PostgreSQL/PostGIS and RabbitMQ",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "REST APIs",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "technical lead for the playback API",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker and AWS deployment",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "AWS (EC2, S3)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Automated testing and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Built a Python test harness used by QA for 8 years.",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kafka",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Kafka, RabbitMQ",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kubernetes and Terraform",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Kubernetes, Terraform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Observability",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "observability (Prometheus, Grafana, OpenTelemetry)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Logistics/transport domain",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "fleet telematics, ingesting GPS data from 300k vehicles",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dutch or French",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; Docker and CI/CD are not claimed. The seniority mismatch (Director applying for a mid-level IC role) is not addressed.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Page 2 holds only publications and languages",
+        "Leadership emphasis over IC work"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "CORE SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "PUBLICATIONS AND TALKS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "REST API",
+        "Docker",
+        "AWS",
+        "CI/CD",
+        "testing",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "Grafana",
+        "OpenTelemetry",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "AWS",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "Grafana",
+        "OpenTelemetry",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "REST API",
+        "testing"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, well-sectioned text with most relevant keywords present. REST and testing are not explicit, and Docker and CI/CD are not in the material."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not address the seniority gap or the motivation for a hands-on mid-level role",
+        "Little company-specific detail beyond carrier events",
+        "Generic closing"
+      ],
+      "strengths": [
+        "Relevant telematics ingestion link",
+        "Accurate metrics",
+        "Concise"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 is mostly empty (about 17% filled)",
+        "Tight spacing between job entries"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Letter is somewhat generic"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No placeholders",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "Accurate, clean and honest, with no invented content. Metrics and the telematics link are well chosen, and the ATS keyword coverage is good. The CV and letter do not address the mismatch between a Director-level profile and a mid-level IC role, and neither shows Docker, CI/CD or testing practice. The letter is generic, and the second CV page is nearly empty."
+  },
+  "counts": {
+    "claims": 13,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2982,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1691,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 86.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 16.8,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 16.8% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 56.7,
+          "right": 56.7,
+          "top": 58.9,
+          "bottom": 448.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 46.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.048657,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

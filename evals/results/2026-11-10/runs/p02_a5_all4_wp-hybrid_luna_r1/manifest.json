@@ -1,0 +1,113 @@
+{
+  "run_dir": "runs/p02_a5_all4_wp-hybrid_luna_r1",
+  "labels": {
+    "persona": "p02",
+    "ad": "a5",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p02_a5_all4_wp-hybrid_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2105
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1614
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1051
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 753
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a5-backend-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a5-backend-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": "hybrid",
+  "started_at": "2026-11-10T20:28:12+00:00",
+  "status": "completed",
+  "minutes": 4.58,
+  "cv_drafts": 4,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 4,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Antwerp, Belgium: 2 days per week in the office. Candidates based elsewhere in the EU may work remotely, with quarterly on-site weeks.",
+    "culture_signals": [
+      "pragmatic engineering",
+      "clear documentation",
+      "sustainable pace",
+      "small teams that own what they run",
+      "write short design notes instead of long specs",
+      "spend one day per sprint on reliability work",
+      "Be dependable. Say what you see. Leave it better."
+    ],
+    "notes": "The job ad specifies hybrid work in Antwerp, with an EU-based remote option and quarterly on-site weeks. The company page describes a remote-first engineering group; the ad’s arrangement applies to this role."
+  },
+  "work_preference_final": "hybrid",
+  "redrafts": {
+    "cv": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 1
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T20:32:48+00:00",
+  "cost_usd": 0.036583
+}

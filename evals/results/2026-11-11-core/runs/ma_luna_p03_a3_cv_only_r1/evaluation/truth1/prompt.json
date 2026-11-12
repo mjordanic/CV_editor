@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "2109b9d529421f2b2a5c2412b237d68429fd9a7183828abeb07f52bef8aceaa0",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: production cloud (AWS/GCP/Azure) at work\nG2: production on-call\nG3: cluster administration\nG4: CKA certification (not yet passed)\nG5: Terraform at work\n\n# TRAPS (mistakes a writer could make)\nT1: Listing CKA or Terraform Associate as held certifications\nT2: Claiming AWS/GCP production experience or 'managed Kubernetes clusters'\nT3: Presenting homelab tools (Argo CD, Prometheus, Terraform) as work experience\nT4: Claiming production on-call / SRE incident ownership\nT5: Retitling her current job as 'DevOps Engineer' instead of her real title\nT6: Old cover letter is addressed to her current employer and says she is at Brightmill\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nMARTA KOWAL-BRANDT\nQA Automation Engineer | CI/CD & Test Infrastructure\nWroclaw, Poland | marta.kowalbrandt@example.com | +48 555 303 303 | gitlab.com/mkb-example\nPROFESSIONAL SUMMARY\nQA automation engineer with 7 years of experience, including the last two focused primarily on\nCI/CD pipelines, test environments and build tooling. Owns GitLab CI pipelines supporting three\nproduct teams and has improved pipeline speed and test reliability through parallelisation, caching\nand ephemeral environments. Hands-on experience with Docker, Helm and a shared Kubernetes\ncluster, plus Python and Bash tooling. Seeking to move into a DevOps or platform engineering role\nfull time.\nPROFESSIONAL EXPERIENCE\nQA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw |\n2021–Present\n• Own GitLab CI pipelines for three product teams ( 25 developers), covering build, unit,\nintegration and end-to-end test stages, as well as artifact publishing.\n• Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching\ndependencies and moving end-to-end tests to on-demand ephemeral environments.\n• Built ephemeral test environments for each merge request using Docker Compose, later adopting\nHelm charts on the company’s shared Kubernetes cluster.\n• Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced the\nflaky-test rate from 7% to under 1%.\n• Developed Bash and Python tooling to seed test data into PostgreSQL.\nQA Engineer | Brightmill Software House, Wroclaw | 2019–2021\n• Performed manual and automated testing of web and mobile applications for client projects.\n• Introduced a Selenium and Java automated regression suite for the largest client project.\n• Configured Jenkins jobs for nightly regression runs.\nCustomer Support Specialist (2nd line) | Brightmill Software House | 2018–2019\n• Investigated customer issues using logs and databases, and reproduced bugs for developers.\nEDUCATION\nBEng, Computer Engineering | Silesian Lowlands University of Technology | 2018\nTECHNICAL SKILLS\nCI/CD and Infrastructure: GitLab CI, Jenkins, Docker, Docker Compose, Helm, Kubernetes (basic)\nTesting: pytest, Playwright, Selenium, Postman\nProgramming and Scripting: Python, Bash, Java (test code), SQL\nSystems and Monitoring: Linux, Git, PostgreSQL, Grafana (dashboards for test metrics)\nLANGUAGES\nPolish (native) | English (C1) | German (A2)\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility Hiring Team,\nI am applying for the Cloud Infrastructure / DevOps Contractor role supporting Fleet\nConnectivity. Over the past two years, my QA automation work has focused primarily on\nCI/CD pipelines, test environments and build tooling. I am now looking to move into DevOps\nor platform engineering full time, and I am drawn to this opportunity to help build\ninfrastructure for a new generation of connected trains.\nAt Odrava Health Software, I own GitLab CI pipelines supporting three product teams and\napproximately 25 developers. I reduced average pipeline time from 38 to 14 minutes by\nparallelising test jobs, caching dependencies and moving end-to-end tests to on-demand\nephemeral environments. I built those environments with Docker Compose and later Helm\ncharts on a shared Kubernetes cluster. This work has given me practical experience improving\nthe reliability and operability of shared engineering systems used by three product teams, with\npipeline changes supporting approximately 25 developers.\nI also maintain a pytest and Playwright suite of approximately 900 tests, reducing the flaky-test\nrate from 7% to under 1%, and have developed Python and Bash tooling for PostgreSQL\ntest-data seeding. I have also used Linux and Grafana dashboards for test metrics,\nstrengthening my ability to troubleshoot systems and make reliability trends visible. Earlier, I\nconfigured Jenkins jobs for nightly regression runs and investigated customer issues using logs\nand databases. I would bring this hands-on CI/CD, test-infrastructure, automation and\nanalytical experience to Corvale’s work on a reliable and observable train-to-cloud platform,\nwhile continuing to develop across the role’s broader infrastructure responsibilities.\nCorvale’s engineering-led approach and emphasis on end-to-end ownership make this role\nespecially compelling to me. I would welcome the opportunity to discuss how my experience\nbuilding and improving CI and test infrastructure could contribute to the Fleet Connectivity\nteam.\nKind regards,\nMarta Kowal-Brandt\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

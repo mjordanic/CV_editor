@@ -1,0 +1,1531 @@
+{
+  "evaluator_model": "anthropic:claude-opus-5-5",
+  "name": "opus1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-opus-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-opus-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8830,
+      "output_tokens": 17044,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13900
+    },
+    "cost_usd": 0.18949,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "a9ba00c9dfaec45d5bc6321d61d1ec6b7cf37e9301b85b89fa3c4760b862accd",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "opus1-ma_luna_p05_a5_cv_only_r1-acd667ab31",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "opus1-ma_luna_p05_a5_cv_only_r1-acd667ab31",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.37898
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Backend Engineer (Python) | Principal Software Engineer",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Principal Software Engineer / Engineering Director",
+        "note": "Target-role headline replaces the candidate's 'Engineering Director' headline; never held a 'Backend Engineer (Python)' title."
+      },
+      {
+        "document": "cv",
+        "claim": "21 years of experience building large-scale services in Python, Go and C++",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "21 years of experience building large-scale backend systems in Python, Go and C++",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Experienced in platform architecture, API and distributed-systems development, event ingestion, and service reliability",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "ingestion of GPS data from 300k vehicles",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led organisations of up to 45 engineers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Led organisations of up to 45 engineers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "platforms serving more than 50 million users",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "platforms serving 50M+ users",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "continuing to write code regularly, most recently for internal tooling",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "still write code every week, mostly internal tooling in recent years",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Director of Engineering, Platform | Streamhaus GmbH, 2019 – August 2026",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Director of Engineering, Platform - Streamhaus GmbH (video streaming), Munich 2019 - 2026 (Aug)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "five teams, 45 engineers and five engineering managers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "5 teams, 45 engineers, 5 engineering managers",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "migration from a Python 2 monolith to approximately 60 Python and Go services on GKE",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Drove migration from a Python 2 monolith to ~60 Python/Go services on GKE",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "improved playback API availability from 99.5% to 99.95%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced cloud spend by 31% (EUR 4.2M per year)",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Reduced cloud spend by 31% (EUR 4.2M/year)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Introduced RFC process, architecture review board and on-call guidelines adopted company-wide.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Grew the organisation from 18 to 45 engineers and conducted more than 200 interviews",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "grew org from 18 to 45 engineers; ran 200+ interviews",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Principal Engineer | Streamhaus GmbH 2015 – 2019",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Principal Engineer - Streamhaus GmbH 2015 - 2019",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "technical lead for the playback API, using Python, Tornado, an internal framework similar to FastAPI, Cassandra and Redis",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Technical lead for the playback API (Python, Tornado then FastAPI-like internal framework, Cassandra, Redis)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "entitlement service handling 120,000 requests per second at peak, using Go and Cassandra",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Co-authored the company's service template and Python style guide",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Co-author of the company's service template and Python style guide.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Senior Software Engineer | Nordfels Telematik AG, Stuttgart 2010 – 2015",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Senior Software Engineer - Nordfels Telematik AG, Stuttgart 2010 - 2015",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS and RabbitMQ",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "ingestion of GPS data from 300k vehicles (C++ and Python, PostgreSQL/PostGIS, RabbitMQ)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led a team of six developers on the route-history product",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Led a team of 6 developers on the route-history product.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Software Engineer | Dataquelle Systems GmbH, Karlsruhe 2005 – 2010",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Software Engineer - Dataquelle Systems GmbH, Karlsruhe 2005 - 2010",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "C++ and Python software for industrial data acquisition on Linux and embedded x86",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "C++ and Python for industrial data acquisition software (Linux, embedded x86).",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a Python test harness used by QA for eight years",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Built Python test harness used by QA for 8 years.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Prometheus, Grafana, OpenTelemetry, gRPC, Protobuf",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Distributed systems design, architecture reviews, technical hiring, people management",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "distributed systems design, architecture reviews, technical hiring, people management",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Dipl.-Inf. (equivalent MSc), Computer Science | Rhine Valley University, 2005",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Dipl.-Inf. (equivalent MSc) Computer Science, Rhine Valley University, 2005",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "German (native), Italian (native), English (fluent)",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "German (native), Italian (native), English (fluent)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Running Python at 100k rps – conference talk, 2018; Cost is a feature – keynote, 2023",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "\"Running Python at 100k rps\" - EuroPython-style conference talk, 2018",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "high-volume backend systems in Python and Go, including services that process data from 300,000 vehicles",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "ingestion of GPS data from 300k vehicles",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "At Nordfels Telematik, I built fleet-telematics backend systems using Python, C++, PostgreSQL/PostGIS and RabbitMQ",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Backend for fleet telematics",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "technical lead for the playback API ... Go entitlement service that handled 120,000 requests per second",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "around 60 Python and Go services on GKE, improving playback API availability from 99.5% to 99.95%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "strong foundation in event-driven systems, API reliability",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "RabbitMQ",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "hands-on Python expertise, experience with PostgreSQL, Kafka, Kubernetes, Terraform, Prometheus, Grafana and OpenTelemetry",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Kafka, RabbitMQ, GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform, gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "introduced architecture reviews and on-call guidelines adopted company-wide",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "architecture review board and on-call guidelines adopted company-wide",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "built a Python test harness used by QA for eight years",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Built Python test harness used by QA for 8 years.",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "experience introducing RFCs, architecture reviews, Python service standards and on-call guidelines",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Co-author of the company's service template and Python style guide.",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Conference talk on running Python at 100k rps (relevant to the 400 rps tracking API performance work)",
+        "source": "cv",
+        "source_quote": "\"Running Python at 100k rps\" - EuroPython-style conference talk, 2018",
+        "relevance": "low",
+        "why_it_matters": "Only in CV, not used in the letter to support Python performance and clear communication."
+      },
+      {
+        "fact": "Route-history product leadership in a transport/telematics domain",
+        "source": "cv",
+        "source_quote": "Led a team of 6 developers on the route-history product.",
+        "relevance": "medium",
+        "why_it_matters": "Closest real link to routing/logistics domain; the letter mentions telematics but not the route-history product."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "3+ years professional backend Python",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "21 years of experience building large-scale services in Python, Go and C++",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Relational DBs/PostgreSQL incl. query tuning and migrations",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "PostgreSQL/PostGIS and RabbitMQ",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Designing and consuming REST APIs",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "technical lead for the playback API",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Docker and deploying to cloud (AWS)",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "AWS (EC2, S3), Kubernetes",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Automated testing and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Built a Python test harness used by QA for eight years.",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good written and spoken English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kafka or event streaming",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Kafka, RabbitMQ",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kubernetes and Terraform",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Kubernetes, Terraform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Observability (Prometheus, Grafana, OpenTelemetry)",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Prometheus, Grafana, OpenTelemetry",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Logistics/transport domain or EDI",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Built backend systems for fleet telematics, ingesting GPS data from 300,000 vehicles",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dutch or French",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps (Docker, REST wording, CI/CD, query tuning, Dutch/French) are not faked; closest real experience is shown. The large seniority mismatch (director applying for a mid-level IC role) is softened by the headline but not explained anywhere.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Headline 'Backend Engineer (Python)' is the target role rather than a held title and drops 'Engineering Director'.",
+        "Second page only ~23% filled; could fit on one page or be better balanced."
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "PROFESSIONAL EXPERIENCE",
+        "TECHNICAL SKILLS",
+        "EDUCATION",
+        "LANGUAGES",
+        "PUBLICATIONS & TALKS"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Backend Engineer",
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "REST API",
+        "Docker",
+        "AWS",
+        "automated testing",
+        "CI/CD",
+        "English",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus/Grafana/OpenTelemetry",
+        "logistics/transport"
+      ],
+      "covered_in_searchable_wording": [
+        "Backend Engineer",
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "AWS",
+        "English",
+        "Kafka",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus/Grafana/OpenTelemetry"
+      ],
+      "missed_but_candidate_has": [
+        "automated testing (only 'test harness')"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, ordered text with standard headings and most real must-haves in searchable wording; 'REST', 'testing' and transport/logistics terms are weakly represented, and the target-title headline is a mild stretch."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not address why a Director of Engineering wants a mid-level backend IC role, the obvious recruiter question.",
+        "Repetitive: 300,000 vehicles mentioned twice; architecture reviews and on-call guidelines mentioned twice in one paragraph.",
+        "Little company specificity beyond values; ignores Kafka migration, on-call rota, tracking API scale.",
+        "Skills paragraph reads like a list of tools."
+      ],
+      "strengths": [
+        "Names the Routing & Tracking team and role correctly.",
+        "Leads with the telematics ingestion experience, the closest domain match.",
+        "All claims are grounded in the CV."
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [
+        "Munich, Germany"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Be dependable",
+        "clear documentation",
+        "own what we run"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV page 2 is about three-quarters empty.",
+        "Cover letter header wraps the phone number across lines ('+49 555 0505 / 505')."
+      ],
+      "consistency_issues": [
+        "Cover letter contact line uses tight '|' separators unlike the CV header."
+      ],
+      "readability": "good",
+      "issues": [
+        "Phone number split in cover letter header."
+      ],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [
+        "'technical lead for the playback API, using Python and designed a Go entitlement service' -> 'technical lead for the playback API, using Python, and designed a Go entitlement service'"
+      ],
+      "fluency_and_tone_issues": [
+        "Repetition of '300,000 vehicles' in consecutive paragraphs",
+        "'introduced architecture reviews and on-call guidelines ... matches my experience introducing RFCs, architecture reviews ... and on-call guidelines' repeats itself"
+      ],
+      "score": 7
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter PDFs exist.",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 7,
+    "summary": "The CV is a faithful, cleanly parsed reworking of the original with every metric and skill grounded in the candidate's material and a good ATS-friendly structure. The main stretch is the 'Backend Engineer (Python)' headline replacing the director title, and the CV's second page is mostly empty. The cover letter is accurate and names the team, but it is repetitive, mostly lists tools, and never addresses the obvious seniority step-down from Director of Engineering to a mid-level backend role. No work-arrangement claims were invented."
+  },
+  "counts": {
+    "claims": 40,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 2,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 3,
+    "wrong_language": 0,
+    "language_errors": 1,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2994,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1899,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 51.2,
+          "right": 49.7,
+          "top": 49.7,
+          "bottom": 63.5
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 23.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 64.8,
+          "right": 64.8,
+          "top": 62.7,
+          "bottom": 340.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 59.5,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.18949,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Backend Engineer (Python) | Principal Software Engineer",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Principal Software Engineer / Engineering Director",
+            "note": "Target-role headline replaces the candidate's 'Engineering Director' headline; never held a 'Backend Engineer (Python)' title."
+          },
+          {
+            "document": "cv",
+            "claim": "21 years of experience building large-scale services in Python, Go and C++",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "21 years of experience building large-scale backend systems in Python, Go and C++",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Experienced in platform architecture, API and distributed-systems development, event ingestion, and service reliability",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led organisations of up to 45 engineers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Led organisations of up to 45 engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "platforms serving more than 50 million users",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "platforms serving 50M+ users",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "continuing to write code regularly, most recently for internal tooling",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "still write code every week, mostly internal tooling in recent years",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Director of Engineering, Platform | Streamhaus GmbH, 2019 – August 2026",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Director of Engineering, Platform - Streamhaus GmbH (video streaming), Munich 2019 - 2026 (Aug)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "five teams, 45 engineers and five engineering managers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "5 teams, 45 engineers, 5 engineering managers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "migration from a Python 2 monolith to approximately 60 Python and Go services on GKE",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Drove migration from a Python 2 monolith to ~60 Python/Go services on GKE",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "improved playback API availability from 99.5% to 99.95%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Reduced cloud spend by 31% (EUR 4.2M per year)",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Reduced cloud spend by 31% (EUR 4.2M/year)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Introduced RFC process, architecture review board and on-call guidelines adopted company-wide.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Grew the organisation from 18 to 45 engineers and conducted more than 200 interviews",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "grew org from 18 to 45 engineers; ran 200+ interviews",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Principal Engineer | Streamhaus GmbH 2015 – 2019",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Principal Engineer - Streamhaus GmbH 2015 - 2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "technical lead for the playback API, using Python, Tornado, an internal framework similar to FastAPI, Cassandra and Redis",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Technical lead for the playback API (Python, Tornado then FastAPI-like internal framework, Cassandra, Redis)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "entitlement service handling 120,000 requests per second at peak, using Go and Cassandra",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Co-authored the company's service template and Python style guide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Co-author of the company's service template and Python style guide.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Senior Software Engineer | Nordfels Telematik AG, Stuttgart 2010 – 2015",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Senior Software Engineer - Nordfels Telematik AG, Stuttgart 2010 - 2015",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS and RabbitMQ",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles (C++ and Python, PostgreSQL/PostGIS, RabbitMQ)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led a team of six developers on the route-history product",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Led a team of 6 developers on the route-history product.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Software Engineer | Dataquelle Systems GmbH, Karlsruhe 2005 – 2010",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Software Engineer - Dataquelle Systems GmbH, Karlsruhe 2005 - 2010",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "C++ and Python software for industrial data acquisition on Linux and embedded x86",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "C++ and Python for industrial data acquisition software (Linux, embedded x86).",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a Python test harness used by QA for eight years",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built Python test harness used by QA for 8 years.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Prometheus, Grafana, OpenTelemetry, gRPC, Protobuf",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Distributed systems design, architecture reviews, technical hiring, people management",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "distributed systems design, architecture reviews, technical hiring, people management",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Dipl.-Inf. (equivalent MSc), Computer Science | Rhine Valley University, 2005",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Dipl.-Inf. (equivalent MSc) Computer Science, Rhine Valley University, 2005",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "German (native), Italian (native), English (fluent)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "German (native), Italian (native), English (fluent)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Running Python at 100k rps – conference talk, 2018; Cost is a feature – keynote, 2023",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "\"Running Python at 100k rps\" - EuroPython-style conference talk, 2018",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "high-volume backend systems in Python and Go, including services that process data from 300,000 vehicles",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "At Nordfels Telematik, I built fleet-telematics backend systems using Python, C++, PostgreSQL/PostGIS and RabbitMQ",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Backend for fleet telematics",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "technical lead for the playback API ... Go entitlement service that handled 120,000 requests per second",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "around 60 Python and Go services on GKE, improving playback API availability from 99.5% to 99.95%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "strong foundation in event-driven systems, API reliability",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "RabbitMQ",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "hands-on Python expertise, experience with PostgreSQL, Kafka, Kubernetes, Terraform, Prometheus, Grafana and OpenTelemetry",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Kafka, RabbitMQ, GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform, gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "introduced architecture reviews and on-call guidelines adopted company-wide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "architecture review board and on-call guidelines adopted company-wide",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built a Python test harness used by QA for eight years",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built Python test harness used by QA for 8 years.",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "experience introducing RFCs, architecture reviews, Python service standards and on-call guidelines",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Co-author of the company's service template and Python style guide.",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Backend Engineer (Python) | Principal Software Engineer",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Principal Software Engineer / Engineering Director",
+            "note": "Target-role headline replaces the candidate's own 'Engineering Director' headline; he never held a 'Backend Engineer (Python)' title, though the backend Python experience is real."
+          },
+          {
+            "document": "cv",
+            "claim": "21 years of experience building large-scale services in Python, Go and C++",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "21 years of experience building large-scale backend systems in Python, Go and C++",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Experienced in platform architecture, API and distributed-systems development, event ingestion, and service reliability",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led organisations of up to 45 engineers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Led organisations of up to 45 engineers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "platforms serving more than 50 million users",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "platforms serving 50M+ users",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "continuing to write code regularly, most recently for internal tooling",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "still write code every week, mostly internal tooling in recent years",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Director of Engineering, Platform | Streamhaus GmbH, 2019 – August 2026",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Director of Engineering, Platform - Streamhaus GmbH (video streaming), Munich 2019 - 2026 (Aug)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "five teams, 45 engineers and five engineering managers",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "5 teams, 45 engineers, 5 engineering managers",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "migration from a Python 2 monolith to approximately 60 Python and Go services on GKE",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Drove migration from a Python 2 monolith to ~60 Python/Go services on GKE",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "improved playback API availability from 99.5% to 99.95%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Reduced cloud spend by 31% (EUR 4.2M per year)",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Reduced cloud spend by 31% (EUR 4.2M/year)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Introduced an RFC process, architecture review board and on-call guidelines adopted company-wide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Introduced RFC process, architecture review board and on-call guidelines adopted company-wide.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Grew the organisation from 18 to 45 engineers and conducted more than 200 interviews",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "grew org from 18 to 45 engineers; ran 200+ interviews",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Principal Engineer | Streamhaus GmbH 2015 – 2019",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Principal Engineer - Streamhaus GmbH 2015 - 2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "technical lead for the playback API, using Python, Tornado, an internal framework similar to FastAPI, Cassandra and Redis",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Technical lead for the playback API (Python, Tornado then FastAPI-like internal framework, Cassandra, Redis)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "entitlement service handling 120,000 requests per second at peak, using Go and Cassandra",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Co-authored the company's service template and Python style guide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Co-author of the company's service template and Python style guide.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Senior Software Engineer | Nordfels Telematik AG, Stuttgart 2010 – 2015",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Senior Software Engineer - Nordfels Telematik AG, Stuttgart 2010 - 2015",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "ingesting GPS data from 300,000 vehicles using C++, Python, PostgreSQL/PostGIS and RabbitMQ",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles (C++ and Python, PostgreSQL/PostGIS, RabbitMQ)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Led a team of six developers on the route-history product",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Led a team of 6 developers on the route-history product.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Software Engineer | Dataquelle Systems GmbH, Karlsruhe 2005 – 2010",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Software Engineer - Dataquelle Systems GmbH, Karlsruhe 2005 - 2010",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "C++ and Python software for industrial data acquisition on Linux and embedded x86",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "C++ and Python for industrial data acquisition software (Linux, embedded x86).",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a Python test harness used by QA for eight years",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built Python test harness used by QA for 8 years.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python (Django, Flask, FastAPI, Tornado, asyncio), Go, C++ (older)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "PostgreSQL/PostGIS, Cassandra, Redis, Kafka, RabbitMQ",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Prometheus, Grafana, OpenTelemetry, gRPC, Protobuf",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Distributed systems design, architecture reviews, technical hiring, people management",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "distributed systems design, architecture reviews, technical hiring, people management",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Dipl.-Inf. (equivalent MSc), Computer Science | Rhine Valley University, 2005",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Dipl.-Inf. (equivalent MSc) Computer Science, Rhine Valley University, 2005",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "German (native), Italian (native), English (fluent)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "German (native), Italian (native), English (fluent)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Running Python at 100k rps – conference talk, 2018; Cost is a feature – keynote, 2023",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "\"Running Python at 100k rps\" - EuroPython-style conference talk, 2018",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "experience building high-volume backend systems in Python and Go, including services that process data from 300,000 vehicles",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "ingestion of GPS data from 300k vehicles",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "At Nordfels Telematik, I built fleet-telematics backend systems using Python, C++, PostgreSQL/PostGIS and RabbitMQ",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Backend for fleet telematics",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "technical lead for the playback API ... Go entitlement service that handled 120,000 requests per second",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Designed the entitlement service handling 120k requests/s at peak (Go, Cassandra)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "migration ... to around 60 Python and Go services on GKE, improving playback API availability from 99.5% to 99.95%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "availability of playback API improved from 99.5% to 99.95%",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "strong foundation in event-driven systems, API reliability",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "RabbitMQ",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "hands-on Python expertise, experience with PostgreSQL, Kafka, Kubernetes, Terraform, Prometheus, Grafana and OpenTelemetry",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Kafka, RabbitMQ, GCP (GKE, Pub/Sub, BigQuery), AWS (EC2, S3), Kubernetes, Terraform, gRPC, Protobuf, Prometheus, Grafana, OpenTelemetry",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "introduced architecture reviews and on-call guidelines adopted company-wide",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "architecture review board and on-call guidelines adopted company-wide",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built a Python test harness used by QA for eight years",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built Python test harness used by QA for 8 years.",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "experience introducing RFCs, architecture reviews, Python service standards and on-call guidelines",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Co-author of the company's service template and Python style guide.",
+            "note": ""
+          }
+        ]
+      }
+    ]
+  }
+}

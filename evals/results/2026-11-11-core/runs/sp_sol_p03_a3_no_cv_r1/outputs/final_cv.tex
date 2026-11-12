@@ -1,0 +1,65 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.9em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Marta Kowal-Brandt}\par
+{\large\color{accentcolor} QA Automation Engineer | CI/CD and Test Infrastructure}
+
+\cvsection{PROFESSIONAL SUMMARY}
+QA Automation Engineer with responsibility for GitLab CI pipelines and ephemeral environments for three teams at Odrava Health Software. Delivered faster pipelines, lower CI runner costs and automated Kubernetes test environments. Transitioning towards DevOps and platform engineering, with personal projects in Terraform, GitOps, observability and TLS certificate management.
+
+\cvsection{TECHNICAL SKILLS}
+\textbf{CI/CD and automation:} GitLab CI, Docker, Helm, Bash, Jenkins, Python, pytest-xdist.\par
+\textbf{Kubernetes:} Helm deployments for test environments with namespace-level access to a shared cluster; personal k3s cluster and Argo CD.\par
+\textbf{Infrastructure as code and cloud:} Terraform for a personal Hetzner VPS; basic Ansible; AWS EC2 and S3 basics through personal learning only.\par
+\textbf{Observability and data:} Grafana, PostgreSQL; Prometheus and Loki in a personal homelab.\par
+\textbf{Networking and TLS:} Traefik ingress and cert-manager for TLS in a personal homelab.\par
+\textbf{Testing:} Selenium, Java, web and mobile application testing.
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure)}\par
+Odrava Health Software | 2021-Present
+\begin{itemize}
+\item Own GitLab CI pipelines and ephemeral environments for three teams.
+\item Built merge-request environments comprising the application, PostgreSQL and seeded data, deployed through GitLab CI and Helm to a shared Kubernetes cluster. Automated cleanup after merge or 48 hours of inactivity; enabled QA and product review and end-to-end testing before merge.
+\item Work with namespace-level Kubernetes access; the platform team operates the cluster.
+\item Profiled pipelines across three teams, parallelised test jobs, added dependency caching and separated end-to-end tests into their own stage. Reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by approximately 30\%.
+\item Collected CI test results in PostgreSQL and built Grafana dashboards showing flaky tests by team. The flaky-test rate fell from 7\% to below 1\% after teams addressed the top offenders.
+\item Wrote the internal CI documentation used in onboarding and mentored two QA interns in 2023.
+\end{itemize}
+
+\textbf{QA Engineer}\par
+Brightmill Software House | 2019-2021
+\begin{itemize}
+\item Tested web and mobile applications for different clients.
+\item Introduced the largest project's first automated regression suite using Java and Selenium and configured Jenkins nightly runs. Previously, full regression testing required two people for three days.
+\end{itemize}
+
+\cvsection{PERSONAL PROJECTS}
+\textbf{Homelab k3s Cluster with GitOps | 2024-2025}
+\begin{itemize}
+\item Built a three-node Raspberry Pi 5 k3s cluster with all applications deployed from Git through Argo CD.
+\item Used Prometheus, Grafana and Loki for monitoring, Traefik for ingress and cert-manager for TLS.
+\item Provisioned infrastructure for a personal Hetzner VPS with Terraform; used basic Ansible.
+\end{itemize}
+
+\cvsection{CERTIFICATIONS AND DEVELOPMENT}
+ISTQB Foundation Level | 2019\par
+Certified Kubernetes Administrator (CKA): studying; exam booked for January 2027, not yet certified.
+\end{document}

@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.72in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{90,98,104}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.3em}
+\setlist[itemize]{leftmargin=*,itemsep=0.12em,topsep=0.15em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{primarycolor} LENA VARGA-HOLM}\\
+{\large\color{accentcolor} Senior Data Engineer | Data Platform}\\
+\url{lenavh.dev}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior data engineer with 9 years of experience building and operating production batch and streaming data platforms for e-commerce, logistics and payments. Experienced with Airflow, dbt, Python, SQL, Kafka and cloud data warehouses on AWS, with measurable work in data quality, data contracts, dimensional modelling, pipeline reliability and warehouse performance. Focused on reusable, well-tested pipelines and clear data contracts that analysts can trust.
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Senior Data Engineer | Lukovac Freight Hub d.o.o. (logistics marketplace) | March 2022--Present}
+\begin{itemize}
+\item Own ingestion and orchestration for the data platform, with approximately 140 Airflow DAGs loading data from PostgreSQL, MySQL, Salesforce and third-party APIs into Snowflake.
+\item Migrated approximately 300 stored procedures into 420+ dbt models, adding tests and documentation; reduced nightly warehouse build time from 5 hours 10 minutes to 1 hour 50 minutes.
+\item Introduced data contracts using JSON Schema and CI checks, reducing broken-pipeline incidents from approximately 9 per month to approximately 2 per month.
+\item Designed and built a Kafka-based shipment tracking pipeline processing approximately 30 million events per day, with end-to-end latency under 2 minutes at p95.
+\item Replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70\% to approximately 25\%.
+\item Reduced the monthly Snowflake bill from approximately 38,000 to 24,000 in 2024 through warehouse sizing, auto-suspend and removal of unused tables.
+\item Participate in the data platform on-call rotation; mentor two mid-level data engineers and run weekly data platform office hours.
+\item Contributed two merged pull requests fixing a pagination bug and adding tests to an open-source Airflow provider.
+\end{itemize}
+
+\textbf{Data Engineer | Kovalent Pay (payments startup) | September 2019--February 2022}
+\begin{itemize}
+\item Built PySpark jobs on AWS EMR for transaction reconciliation, processing approximately 1.2 TB of raw files daily from S3.
+\item Developed reconciliation jobs matching bank settlement files against internal ledgers, reducing finance team's manual month-end reconciliation from approximately 3 days to approximately 4 hours.
+\item Designed a Redshift dimensional warehouse schema with 30+ fact and dimension tables for finance and risk.
+\item Implemented Great Expectations data quality checks on critical finance tables.
+\item Built an internal Python library for S3 and Glue Data Catalog access used by four teams.
+\end{itemize}
+
+\textbf{Junior Data Engineer / BI Developer | Adria Retail Group | June 2017--August 2019}
+\begin{itemize}
+\item Maintained SSIS packages and T-SQL ETL processes for an on-premises SQL Server warehouse.
+\item Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.
+\item Built Power BI reports for store operations across 40+ stores.
+\end{itemize}
+
+\section*{EDUCATION}
+MSc Computer Science, Data Science track | Northgate Technical University | 2017\\
+Thesis: Incremental materialized views for analytical queries
+
+\section*{CERTIFICATION}
+AWS Certified Data Engineer -- Associate | May 2024
+
+\section*{TECHNICAL SKILLS}
+Programming: Python, SQL, Bash\\
+Data engineering: Airflow, dbt, PySpark, Kafka, Kafka Connect, Debezium, Great Expectations\\
+Data warehouses and databases: Snowflake, Redshift, PostgreSQL, MySQL\\
+Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM, MSK), Docker, Terraform (basic), GitHub Actions\\
+Data practices: Dimensional modelling, data quality, data contracts, CI/CD, batch and streaming pipelines\\
+BI: Power BI, Looker (basic)
+
+\section*{COMMUNITY}
+Speaker, “Data contracts without the hype,” regional data meetup, 2024\\
+Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year since 2021
+
+\section*{LANGUAGES}
+Croatian (native), English (C1), German (B1)
+
+\end{document}

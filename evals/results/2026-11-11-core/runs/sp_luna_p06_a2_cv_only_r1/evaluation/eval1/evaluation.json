@@ -1,0 +1,401 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6299,
+      "output_tokens": 6168,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 12936
+    },
+    "cost_usd": 0.037786,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "0ce971a0d0bf40c789937c9fe157b10c763e0ca6ceb1d6a2b0555fa8661d3511",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p06_a2_cv_only_r1-bacf8b2d75",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p06_a2_cv_only_r1-bacf8b2d75",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.075572
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "5+ years of experience in NLP and document classification",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "s više od 5 godina iskustva u obradi prirodnog jezika (NLP)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "94% accuracy across 23 classes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "točnost 94 % na 23 klase",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fine-tuned BERTić and XLM-R",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Fino podešavanje (fine-tuning) transformer modela (BERTić, XLM-R)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Introduced MLflow; FastAPI in Docker on Azure ML and App Service",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Uvela MLflow za praćenje eksperimenata",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Production monitoring for data drift with weekly reporting",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "drift podataka, tjedni izvještaj",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Mentor two students during internships",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mentoriram dvije studentice na stručnoj praksi",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Scientist, Baranjska kreditna banka, 09/2021–02/2023, remote",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "rad na daljinu iz Osijeka",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "PhD studies since 2022; Master 2020",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Doktorski studij računarstva (u tijeku, od 2022.)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "PhD candidate researching natural language processing for Croatian",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "na temi obrade hrvatskog jezika",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Languages Croatian native, English C1, German B2",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "engleski (C1), njemački (B2)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "more than five years of experience, research to production",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "više od 5 godina iskustva",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "model serving and production monitoring",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "isporučuju kao FastAPI servisi",
+        "note": ""
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML/CS",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Master of Computer Engineering",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping to production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "ML Engineer | Slavonica Document AI d.o.o., Osijek | 03/2023–Present",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG experience",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Model serving, monitoring",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Established production model quality monitoring for data drift",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Major cloud provider",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Docker containers on Azure (Azure ML and App Service)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Python, MLflow",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Introduced MLflow for experiment tracking",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Feature engineering and data ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        }
+      ],
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8
+    },
+    "ats": {
+      "reason": "Clean, parseable text with the key tools visible and no stuffing; the explicit term model serving and data pipelines are weakly shown.",
+      "covered_in_searchable_wording": [
+        "Machine Learning Engineer",
+        "Python",
+        "MLflow",
+        "Azure",
+        "Docker",
+        "monitoring",
+        "fine-tuned",
+        "Master of Computer Engineering"
+      ],
+      "missed_but_candidate_has": [
+        "model serving"
+      ],
+      "score": 7
+    },
+    "cover_letter": {
+      "score": 7
+    },
+    "work_arrangement": {
+      "invented_or_wrong": [],
+      "score": 9
+    },
+    "visual_layout": {
+      "score": 8
+    },
+    "language_quality": {
+      "score": 9
+    },
+    "additional_information": {
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 7,
+    "overall_score": 8,
+    "summary": "Both documents are faithful to the candidate's material with no invented claims, and the layout is clean on one page. The CV is parseable and highlights MLflow, Azure, Docker and monitoring. The key gaps against the ad (RAG, four years as a dedicated ML engineer, pipelines) are neither faked nor addressed. The letter is concise and ties her experience to the team's work but is somewhat generic."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": null,
+    "must_haves": 7,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": null,
+    "wrong_language": null,
+    "language_errors": null,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2112,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1701,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 59.6,
+          "top": 56.4,
+          "bottom": 93.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 89.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.3,
+          "top": 73.4,
+          "bottom": 394.1
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 53.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.037786,
+  "full_evaluation": {
+    "parsed": false,
+    "disagreements": [],
+    "error": "invalid JSON: Extra data: line 1 column 4337 (char 4336)",
+    "raw": "{\"claims\":[{\"document\":\"cv\",\"claim\":\"5+ years of experience in NLP and document classification\",\"kind\":\"date_or_duration\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"s više od 5 godina iskustva u obradi prirodnog jezika (NLP)\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"94% accuracy across 23 classes\",\"kind\":\"number_or_metric\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"točnost 94 % na 23 klase\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Fine-tuned BERTić and XLM-R\",\"kind\":\"skill_or_tool\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"Fino podešavanje (fine-tuning) transformer modela (BERTić, XLM-R)\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Introduced MLflow; FastAPI in Docker on Azure ML and App Service\",\"kind\":\"skill_or_tool\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"Uvela MLflow za praćenje eksperimenata\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Production monitoring for data drift with weekly reporting\",\"kind\":\"responsibility_or_achievement\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"drift podataka, tjedni izvještaj\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Mentor two students during internships\",\"kind\":\"responsibility_or_achievement\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"Mentoriram dvije studentice na stručnoj praksi\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Data Scientist, Baranjska kreditna banka, 09/2021–02/2023, remote\",\"kind\":\"employer\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"rad na daljinu iz Osijeka\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"PhD studies since 2022; Master 2020\",\"kind\":\"education\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"Doktorski studij računarstva (u tijeku, od 2022.)\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"PhD candidate researching natural language processing for Croatian\",\"kind\":\"education\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"na temi obrade hrvatskog jezika\",\"note\":\"\"},{\"document\":\"cv\",\"claim\":\"Languages Croatian native, English C1, German B2\",\"kind\":\"language\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"engleski (C1), njemački (B2)\",\"note\":\"\"},{\"document\":\"cover_letter\",\"claim\":\"more than five years of experience, research to production\",\"kind\":\"date_or_duration\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"više od 5 godina iskustva\",\"note\":\"\"},{\"document\":\"cover_letter\",\"claim\":\"model serving and production monitoring\",\"kind\":\"skill_or_tool\",\"verdict\":\"supported\",\"source\":\"cv\",\"evidence_quote\":\"isporučuju kao FastAPI servisi\",\"note\":\"\"}],\"omissions\":[{\"fact\":\"Publication on NER for Croatian administrative documents\",\"source\":\"cv\",\"source_quote\":\"Named entity recognition for Croatian administrative documents\",\"relevance\":\"low\",\"why_it_matters\":\"Shows research credibility\"}],\"fit\":{\"requirements\":[{\"requirement\":\"Degree in ML/CS\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Master of Computer Engineering\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"4+ years as ML engineer shipping to production\",\"priority\":\"must_have\",\"candidate_has_it\":\"partial\",\"shown_in_cv\":\"partial\",\"evidence_quote\":\"ML Engineer | Slavonica Document AI d.o.o., Osijek | 03/2023–Present\",\"gap_handling\":\"honest\"},{\"requirement\":\"Chat assistants / RAG experience\",\"priority\":\"must_have\",\"candidate_has_it\":\"no\",\"shown_in_cv\":\"no\",\"evidence_quote\":\"\",\"gap_handling\":\"honest\"},{\"requirement\":\"Model serving, monitoring\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Established production model quality monitoring for data drift\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"Major cloud provider\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Docker containers on Azure (Azure ML and App Service)\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"Python, MLflow\",\"priority\":\"must_have\",\"candidate_has_it\":\"yes\",\"shown_in_cv\":\"yes\",\"evidence_quote\":\"Introduced MLflow for experiment tracking\",\"gap_handling\":\"not_a_gap\"},{\"requirement\":\"Feature engineering and data ingestion pipelines\",\"priority\":\"must_have\",\"candidate_has_it\":\"partial\",\"shown_in_cv\":\"no\",\"evidence_quote\":\"\",\"gap_handling\":\"hidden_or_ignored\"}],\"gap_handling_summary\":\"Nothing faked; the RAG gap is left unmentioned and the experience shortfall is not addressed, but there is no overstatement.\",\"score\":6}},\"cv_standards\":{\"score\":8,\"has_contact_details\":true,\"has_summary_or_profile\":true,\"experience_reverse_chronological\":true,\"dates_consistent\":true,\"length_appropriate\":true,\"language_matches_ad\":true,\"artefacts\":[],\"issues\":[\"Education section placed after experience; fine. Publication omitted.\"]},\"ats\":{\"text_readable_in_order\":true,\"clear_sections\":true,\"headings_found\":[\"PROFESSIONAL SUMMARY\",\"PROFESSIONAL EXPERIENCE\",\"EDUCATION\",\"TECHNICAL SKILLS\",\"LANGUAGES\"],\"parse_issues\":[],\"important_requirements\":[\"Machine Learning Engineer\",\"Python\",\"MLflow\",\"Azure\",\"Docker\",\"model serving\",\"monitoring\",\"fine-tuning\",\"computer science degree\",\"RAG\",\"CI/CD\"],\"covered_in_searchable_wording\":[\"Machine Learning Engineer\",\"Python\",\"MLflow\",\"Azure\",\"Docker\",\"monitoring\",\"fine-tuned\",\"Master of Computer Engineering\"],\"missed_but_candidate_has\":[\"model serving\"],\"keyword_stuffing\":[],\"unsupported_keywords\":[],\"score\":7,\"reason\":\"Clean, parseable text with the key tools visible and no stuffing; the explicit term model serving and data pipelines are weakly shown.\"},\"cover_letter\":{\"score\":7,\"addressed_to_this_company_and_role\":true,\"specific_to_company\":true,\"consistent_with_cv\":true,\"stale_framing\":[],\"tone_and_length_ok\":true,\"issues\":[\"Does not address the RAG/chat-assistant or experience gaps\",\"Generic salutation\"],\"strengths\":[\"Links her experience to merchant questions, ticket routing and agent support\",\"Accurate and concise\"]},\"work_arrangement\":{\"arrangement_in_sources\":\"on-site\",\"statements_in_outputs\":[],\"invented_or_wrong\":[],\"culture_used\":[],\"preference_handling\":\"not_given_and_kept_open\",\"conflict_handling\":\"no_conflict\",\"score\":9},\"visual_layout\":{\"cv_pages_seen\":1,\"cover_letter_pages_seen\":1,\"page_count_appropriate\":true,\"overflow_or_cutoff\":[],\"spacing_issues\":[\"Little space between job entries\"],\"consistency_issues\":[],\"readability\":\"good\",\"issues\":[],\"score\":8},\"language_quality\":{\"expected_language_cv\":\"English\",\"expected_language_cover_letter\":\"English\",\"cv_language\":\"English\",\"cover_letter_language\":\"English\",\"right_language_cv\":true,\"right_language_cover_letter\":true,\"grammar_and_spelling_errors\":[],\"fluency_and_tone_issues\":[\"Mixed present tense in Mentor bullet is fine\"],\"score\":9},\"additional_information\":{\"notes_facts_used\":[],\"notes_facts_ignored\":[],\"chat_facts_used\":[\"Contact details kept as in the CV\"],\"chat_facts_ignored\":[],\"misused\":[],\"score\":10},\"user_requests\":{\"requests\":[{\"request\":\"Please write my CV first, then the cover letter.\",\"expected\":\"follow\",\"outcome\":\"followed\",\"app_explained\":false,\"evidence\":\"Both documents exist\",\"note\":\"\"}],\"score\":10},\"invented_content_score\":10,\"completeness_score\":7,\"overall_score\":8,\"summary\":\"Both documents are faithful to the candidate's material with no invented claims, and the layout is clean on one page. The CV is parseable and highlights MLflow, Azure, Docker and monitoring. The key gaps against the ad (RAG, four years as a dedicated ML engineer, pipelines) are neither faked nor addressed. The letter is concise and ties her experience to the team's work but is somewhat generic.\"}"
+  }
+}

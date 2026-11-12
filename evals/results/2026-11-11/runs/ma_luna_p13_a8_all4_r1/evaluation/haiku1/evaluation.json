@@ -1,0 +1,717 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 10287,
+      "output_tokens": 18135,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14340
+    },
+    "cost_usd": 0.00512,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01Az1H3GSvNa9KADAyJqtpoi",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "e10b555b53919e15b7a4791de8bbe6ec7fdc707e10edf6a794e8da52679ff9be",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku1-ma_luna_p13_a8_all4_r1-93eaffac69",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01Az1H3GSvNa9KADAyJqtpoi",
+          "custom_id": "haiku1-ma_luna_p13_a8_all4_r1-93eaffac69",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:44:22+00:00",
+          "ended_at": "2026-11-11T19:54:47.279392+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.01024
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cover_letter",
+        "claim": "Zuvor war ich fünf Jahre als Krankenschwester auf einer internistischen Station in Polen tätig",
+        "kind": "date_or_duration",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "10/2014 - 06/2019",
+        "note": "About 4 years 8 months per the dates."
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Interest in Wundexperte ICW training, not yet registered",
+        "source": "notes",
+        "source_quote": "Wundexpertin ICW: würde ich gern machen, noch nicht angemeldet",
+        "relevance": "medium",
+        "why_it_matters": "The ad lists paid ICW training as a benefit; stating the interest would show motivation without claiming a qualification."
+      },
+      {
+        "fact": "Injections were done only in Poland, not in Germany",
+        "source": "notes",
+        "source_quote": "Injektionen nur in Polen gemacht",
+        "relevance": "low",
+        "why_it_matters": "Clarifies scope of the nursing experience and avoids implying German injection practice."
+      },
+      {
+        "fact": "No experience yet with ambulante Pflege or MediFox",
+        "source": "notes",
+        "source_quote": "ambulante Pflege: nie gemacht, nur Heim.",
+        "relevance": "low",
+        "why_it_matters": "Neither output claims it, so this is an honest gap; no action needed beyond not claiming it."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Führerschein Klasse B",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Führerschein Klasse B: derzeit nicht vorhanden; Theorieprüfung bestanden",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps (driving licence, LG2, ambulante Pflege, MediFox) are not claimed; the licence status and recognition procedure are stated plainly.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Profile says rund fünf Jahren as nurse, but dates give about 4 years 8 months",
+        "Ausbildung section mixes degree with the recognition status, which is cramped in the text"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFIL",
+        "BERUFSERFAHRUNG",
+        "PROJEKTE UND ENGAGEMENT",
+        "AUSBILDUNG",
+        "WEITERBILDUNG",
+        "KENNTNISSE",
+        "SPRACHEN",
+        "WEITERE ANGABEN"
+      ],
+      "parse_issues": [
+        "2022 -\nheute split over two lines in the project heading"
+      ],
+      "important_requirements": [
+        "Pflegehelfer/in",
+        "Grundpflege",
+        "Behandlungspflege LG1",
+        "Führerschein Klasse B",
+        "Deutsch B2",
+        "MediFox",
+        "Demenz",
+        "ambulante Pflege",
+        "Hauswirtschaft",
+        "Angehörige",
+        "Früh- und Spättouren",
+        "Zuverlässigkeit",
+        "Einfühlungsvermögen",
+        "LG2"
+      ],
+      "covered_in_searchable_wording": [
+        "Pflegehelferin",
+        "Grundpflege",
+        "Behandlungspflege nach LG1",
+        "Deutsch B2",
+        "Demenz",
+        "Führerschein Klasse B",
+        "Zuverlässigkeit"
+      ],
+      "missed_but_candidate_has": [
+        "Einfühlungsvermögen (only implied by geduldig)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean sectioned text with the core requirements in searchable wording; MediFox and ambulante Pflege are absent, which is honest."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Fünf Jahre as nurse overstated against the dates",
+        "Letter spends its middle on tasks rather than on the ambulante fit gap"
+      ],
+      "strengths": [
+        "Uses the company's Leitsatz Pflege mit Zeit und Respekt",
+        "Gives concrete figures: 10 to 12 residents, 14 to 8 falls",
+        "States licence status and 75 % hours honestly"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [
+        "Ein Beschäftigungsumfang von 75 % wäre für mich passend",
+        "Dienste an jedem zweiten Wochenende sind möglich"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Pflege mit Zeit und Respekt"
+      ],
+      "preference_handling": "given_and_used_honestly",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Ausbildung heading sits at the foot of page 1 with one line before the break"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "German",
+      "expected_language_cover_letter": "German",
+      "cv_language": "German",
+      "cover_letter_language": "German",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Führerschein not held, theory passed, practical exam January 2027",
+        "Defizitbescheid and Kenntnisprüfung March 2027",
+        "Deutsch B2 certificate 2021, not C1",
+        "75 % part-time preference",
+        "Every second weekend"
+      ],
+      "notes_facts_ignored": [
+        "Interest in Wundexperte ICW",
+        "Injections only in Poland",
+        "Child at school until 13:00"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "CV and cover letter both present",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "The CV and letter are clean, German, and honest about the missing driving licence, the pending recognition, and the lack of LG2 and ambulante Pflege. The CV is well sectioned and shows the core requirements in searchable wording. The main problem is the repeated 'fünf Jahre' as nurse in Poland, which the dates (2014 to 2019) do not support; the letter should say about five years or give the dates. The letter also could mention the ICW interest and spend less space on task lists."
+  },
+  "counts": {
+    "claims": 1,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 1,
+    "must_haves_shown": 0,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2942,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1963,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 54.0,
+          "bottom": 54.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 51.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 57.1,
+          "right": 57.3,
+          "top": 56.0,
+          "bottom": 377.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 55.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.00512,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cover_letter",
+            "claim": "Zuvor war ich fünf Jahre als Krankenschwester auf einer internistischen Station in Polen tätig",
+            "kind": "date_or_duration",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "10/2014 - 06/2019",
+            "note": "About 4 years 8 months per the dates."
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Grundpflege fuer 10 bis 12 Bewohnerinnen und Bewohner pro Schicht",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Grundpflege für 10 bis 12 Bewohnerinnen und Bewohner pro Schicht",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Behandlungspflege nach LG1: Blutdruck- und Blutzuckermessung, Kompressionsstrümpfe",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Behandlungspflege nach LG1: Blutdruck- und Blutzuckermessung, Kompressionsstrümpfe",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Pflegedokumentation mit Vivendi PD",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Dokumentation in Vivendi PD.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg, 04/2020 - heute",
+            "kind": "job_title",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Einarbeitung neuer Pflegehelferinnen und Praktikanten; bisher 7 Personen",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "bisher 7 Personen",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Krankenschwester, Wojewódzki Szpital Specjalistyczny, Opole, 10/2014 - 06/2019",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Krankenschwester (Pielęgniarka), Wojewódzki Szpital Specjalistyczny, Opole, Polen 10/2014 - 06/2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "rund fünf Jahren Berufserfahrung als Krankenschwester in Polen",
+            "kind": "date_or_duration",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "10/2014 - 06/2019",
+            "note": "The dates give about 4 years 8 months; rounding up to five years is a stretch."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Zuvor war ich fünf Jahre als Krankenschwester auf einer internistischen Station in Polen tätig",
+            "kind": "date_or_duration",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "10/2014 - 06/2019",
+            "note": "About 4 years 8 months per the dates; should say about five years or give the dates."
+          },
+          {
+            "document": "cv",
+            "claim": "Verbandswechsel bei Dekubitus und diabetischem Fuß unter Aufsicht der Stationsärztin",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Verbandswechsel bei Dekubitus und diabetischem Fuß unter Aufsicht der Stationsärztin",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Sturzfälle von 14 auf 8 zurückgegangen; Nachtlichter für 9 Bewohner",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Stürze im Wohnbereich gingen im folgenden Halbjahr von 14 auf 8 zurück.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Wöchentliche Singgruppe für 6 bis 8 Bewohner",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Leite einmal pro Woche eine Singgruppe ... für 6 bis 8 Bewohner.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Die Gruppe wurde von Angehörigen im Heimbeirat gelobt",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Angehörige haben die Gruppe im Heimbeirat gelobt.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Behandlungspflege LG1 (Basiskurs), 2021",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Behandlungspflege LG1 (Basiskurs), 2021",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Expertenstandard Sturzprophylaxe (interne Schulung), 2023; Erste-Hilfe-Kurs, 2024",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Expertenstandard Sturzprophylaxe (interne Schulung), 2023",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Deutsch B2, telc Deutsch B1-B2 Pflege (B2-Zertifikat, 2021)",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Deutsch: B2, telc Deutsch B1-B2 Pflege (B2-Zertifikat, 2021)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Anerkennungsverfahren als Pflegefachfrau: Defizitbescheid erhalten, Kenntnisprüfung für März 2027 vorgesehen",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Defizitbescheid bekommen, Kenntnisprüfung erst März 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Theorieprüfung Führerschein bestanden, praktische Prüfung für Januar 2027 vorgesehen",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Theorie bestanden, praktische Prüfung im Januar 2027",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Bachelor Pielęgniarstwo, Medizinische Universität Opole, 2014",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Bachelor Pielęgniarstwo (Krankenpflege), Medizinische Universität Opole, 2014",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Erfahrung in der Betreuung von Menschen mit Demenz",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Nachmittagsgruppe für Menschen mit Demenz",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Polnisch Muttersprache; Englisch Grundkenntnisse",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Englisch (Grundkenntnisse)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Ein Beschäftigungsumfang von 75 % wäre für mich passend",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Teilzeit 75% wäre ideal",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Dienste an jedem zweiten Wochenende sind möglich",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Wochenenden jedes zweite ok",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Derzeit habe ich keinen Führerschein der Klasse B",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "KEIN Führerschein!!",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Seit 2022 leite ich wöchentlich eine Singgruppe für Menschen mit Demenz",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Nachmittagsgruppe für Menschen mit Demenz (Seniorenzentrum Am Lindenhof, 2022-heute)",
+            "note": ""
+          }
+        ]
+      },
+      {
+        "field": "fit.requirements",
+        "guaranteed": [
+          {
+            "requirement": "Führerschein Klasse B",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Führerschein Klasse B: derzeit nicht vorhanden; Theorieprüfung bestanden",
+            "gap_handling": "honest"
+          }
+        ],
+        "full": [
+          {
+            "requirement": "Abgeschlossene Ausbildung Pflegehelfer/in oder 2 Jahre Grundpflege",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Führerschein Klasse B",
+            "priority": "must_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Führerschein Klasse B: derzeit nicht vorhanden; Theorieprüfung bestanden",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Deutsch mindestens B2",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Deutsch: B2, telc Deutsch B1-B2 Pflege (B2-Zertifikat, 2021)",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Behandlungspflege nach Leistungsgruppe 1",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Behandlungspflege nach LG1: Blutdruck- und Blutzuckermessung, Kompressionsstrümpfe",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Grundpflege zu Hause",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Grundpflege für 10 bis 12 Bewohnerinnen und Bewohner pro Schicht",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Pflegedokumentation auf dem Smartphone (MediFox)",
+            "priority": "must_have",
+            "candidate_has_it": "partial",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Pflegedokumentation mit Vivendi PD.",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Hauswirtschaftliche Unterstützung und Gespräche mit Angehörigen",
+            "priority": "must_have",
+            "candidate_has_it": "partial",
+            "shown_in_cv": "partial",
+            "evidence_quote": "Verkauf, Kasse und Reinigung.",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Früh- und Spättouren, jedes zweite Wochenende",
+            "priority": "must_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "Mitarbeit im Früh-, Spät- und Wochenenddienst.",
+            "gap_handling": "not_a_gap"
+          },
+          {
+            "requirement": "Qualifikation Behandlungspflege LG2",
+            "priority": "nice_to_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Erfahrung in der ambulanten Pflege",
+            "priority": "nice_to_have",
+            "candidate_has_it": "no",
+            "shown_in_cv": "no",
+            "evidence_quote": "",
+            "gap_handling": "honest"
+          },
+          {
+            "requirement": "Erfahrung mit Menschen mit Demenz",
+            "priority": "nice_to_have",
+            "candidate_has_it": "yes",
+            "shown_in_cv": "yes",
+            "evidence_quote": "nachmittagsgruppe für Menschen mit Demenz",
+            "gap_handling": "not_a_gap"
+          }
+        ]
+      },
+      {
+        "field": "ats.reason",
+        "guaranteed": "Clean sectioned text with the core requirements in searchable wording; MediFox and ambulante Pflege are absent, which is honest.",
+        "full": "Clean sectioned text with the core requirements in searchable wording; MediFox and ambulante Pflege are absent, which is honest, and the licence is shown as not held."
+      }
+    ]
+  }
+}

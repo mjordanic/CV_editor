@@ -1,0 +1,63 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.65in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\definecolor{headingcolor}{RGB}{0,90,55}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{headingcolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.25em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.15em}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\\[0.35em]
+{\large\color{accentcolor} Senior Platform and Cloud Infrastructure Engineer}\\[0.25em]
+{\small nadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example}
+\end{center}
+\section*{PROFESSIONAL SUMMARY}
+Senior platform and cloud infrastructure engineer with 10 years of infrastructure experience, including six years running Kubernetes platforms on AWS. Experienced in designing, building and operating reliable cloud platforms, maintaining infrastructure as code, and leading technical work across platform and product teams. Focused on self-service infrastructure, clear operational practices and observability that helps teams run services confidently.
+\section*{EXPERIENCE}
+\textbf{Senior Platform Engineer | Tallybrook Ltd | April 2022–Present}
+\begin{itemize}
+\item Tech lead for a five-person platform team; operate an AWS EKS platform spanning eight clusters, approximately 350 services and three regions.
+\item Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps and Crossplane self-service for RDS, SQS and S3; adopted by all 14 product teams and reduced time from new service to production from approximately two weeks to under one day.
+\item Introduced SLOs, burn-rate alerts and error budget policies for the 20 most critical services; weekly on-call pages decreased by approximately 60\%.
+\item Led migration from managed node groups to Karpenter and Spot instances for stateless workloads; reduced EC2 spend by 38\% (approximately £410,000 per year).
+\item Participate in the incident commander rotation and established incident and post-mortem processes.
+\end{itemize}
+\textbf{Site Reliability Engineer | Brightwater Games | January 2019–March 2022}
+\begin{itemize}
+\item Operated AWS game backend infrastructure for titles with up to 1.2 million daily active players, using EC2, ECS and EKS.
+\item Managed AWS infrastructure in Terraform across approximately 40 modules and introduced Atlantis plan and apply workflows for pull requests.
+\item Replaced a noisy Nagios setup with Prometheus, Grafana, Alertmanager and Loki observability.
+\item Led launch capacity planning and used k6 load tests, including tests simulating 300,000 concurrent players; identified and resolved a connection pool limit before launch.
+\end{itemize}
+\section*{EDUCATION}
+BSc Computer Science | University of the North Moors | 2016
+\section*{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA) | 2021, renewed 2024\\
+AWS Certified Solutions Architect – Professional | 2023
+\section*{TECHNICAL SKILLS}
+AWS: EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront\\
+Infrastructure as code and platform: Terraform, Atlantis, Crossplane, Kubernetes, Helm, Kustomize, Argo CD, Karpenter\\
+Observability and reliability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error budgets, incident management\\
+Programming and automation: Go, Python, Bash, GitHub Actions, Puppet\\
+Other: Linux, k6
+\section*{ADDITIONAL CONTRIBUTIONS}
+\begin{itemize}
+\item Speaker at a UK DevOps meetup in 2024: “SLOs that product managers care about”.
+\item Mentored three engineers moving from backend engineering into SRE.
+\item Built an open-source Kubernetes controller in Go to delete expired preview namespaces; approximately 120 GitHub stars.
+\end{itemize}
+\section*{LANGUAGES}
+English (native) | Urdu (conversational)
+\end{document}

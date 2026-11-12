@@ -1,0 +1,526 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6474,
+      "output_tokens": 6697,
+      "cache_creation_input_tokens": 3953,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.045411,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "8cd3013b791aa17ffc9ad4742f3b302a79fbf4f7f4bf758a775795759d55daea",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p05_a5_no_cv_r1-1df15955cd",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p05_a5_no_cv_r1-1df15955cd",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.090822
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Director of Engineering | Streamhaus GmbH | 2019-August 2026",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Director of Engineering at Streamhaus GmbH (2019-2026)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Led a platform organisation of 45 engineers",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Platform organisation of 45 engineers.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "strangler-fig migration to approximately 60 Python 3 and Go services on GKE",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~60 Python 3 and Go services on GKE",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Playback API availability 99.5% to 99.95%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Playback API availability 99.5% -> 99.95%.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "saved EUR 4.2 million annually (31%)",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "saved EUR 4.2M per year (31%)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Principal Engineer 2015-2019; entitlement service 120,000 rps p99 <15 ms",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "120k requests/s at peak, p99 under 15 ms",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Maintainer Python retry library ~1,500 stars 2012-2018",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~1.5k GitHub stars; handed over maintenance in 2018",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "limited AWS experience with EC2 and S3",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "only EC2/S3 at Nordfels era",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Technical strengths include Kubernetes, Terraform, observability",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Terraform modules",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "left Streamhaus in August 2026 following a reorganisation",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "left Streamhaus Aug 2026 after reorg",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Python remains current",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Python is fresh",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Open source Python library and pytest show testing practice; CI/CD not shown",
+        "source": "portfolio",
+        "source_quote": "Technologies: Python, pytest, tox.",
+        "relevance": "low",
+        "why_it_matters": "Already included."
+      },
+      {
+        "fact": "GPS fleet patent is logistics-adjacent",
+        "source": "portfolio",
+        "source_quote": "reducing GPS data volume by adapting sampling to driving context",
+        "relevance": "medium",
+        "why_it_matters": "Shows transport domain knowledge for a logistics employer."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "3+ years backend in Python",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "migration from a Python 2 monolith to approximately 60 Python 3 and Go services",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Relational databases/PostgreSQL",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "REST APIs",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Playback API availability improved",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker and AWS deployment",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "limited AWS experience with EC2 and S3",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Automated testing and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "pytest, tox",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kubernetes and Terraform",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "GCP, GKE, Kubernetes, Terraform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Observability",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "OpenTelemetry, Prometheus",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Kafka",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        }
+      ],
+      "gap_handling_summary": "AWS and recent coding gaps are stated honestly; PostgreSQL and Kafka are absent and not claimed.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": false,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No contact details (user asked to leave out)",
+        "No education section",
+        "Open source dates overlap with job"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "OPEN SOURCE"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "REST",
+        "Docker",
+        "AWS",
+        "CI/CD",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "OpenTelemetry",
+        "Kafka"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "FastAPI",
+        "AWS",
+        "Kubernetes",
+        "Terraform",
+        "Prometheus",
+        "OpenTelemetry"
+      ],
+      "missed_but_candidate_has": [
+        "REST API"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, readable text with standard headings and the real matching keywords; missing PostgreSQL, Kafka and Docker which the candidate lacks."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company-specific detail limited to design notes and reliability work",
+        "Could mention PostgreSQL gap or Kafka"
+      ],
+      "strengths": [
+        "Honest about recent coding and AWS",
+        "Explains the IC move clearly",
+        "No stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "short design notes",
+        "dedicated reliability work"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Large empty area at bottom of both pages"
+      ],
+      "consistency_issues": [
+        "Different margins between CV and letter"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Summary slightly repetitive on cost-dashboard scripts"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Left Streamhaus Aug 2026 after reorg",
+        "Wants hands-on IC work",
+        "Limited AWS",
+        "Recent coding only internal tools",
+        "Go rusty framed as previous production experience"
+      ],
+      "notes_facts_ignored": [
+        "Reference available"
+      ],
+      "chat_facts_used": [
+        "Contact details left out"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No contact details in CV",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 7,
+    "overall_score": 8,
+    "summary": "Honest, well-grounded CV and letter with no invented content and a clear IC-return narrative. Gaps (AWS, recent coding) are stated openly; PostgreSQL and Kafka are absent but not faked. Layout and ATS text are clean. The CV still reads as lead-heavy, and it omits the logistics-adjacent GPS patent."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2248,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1903,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 191.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 77.3,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 339.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 59.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.045411,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

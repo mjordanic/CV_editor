@@ -1,0 +1,107 @@
+{
+  "run_dir": "runs/p13_a8_no_cv_luna_r1",
+  "labels": {
+    "persona": "p13",
+    "ad": "a8",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "no_cv",
+    "case": "p13_a8_no_cv_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1053
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 642
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p13-katarzyna-care-german/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 729
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a8-ambulante-pflege-helfer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:38:53+00:00",
+  "status": "completed",
+  "minutes": 8.54,
+  "cv_drafts": 7,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 7,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "on-site",
+    "location_limits": "Sitz in Kirchzarten bei Freiburg; Einsätze auf Touren im Dreisamtal. Führerschein Klasse B erforderlich, da die Pflegekraft Dienstwagen fährt. Weitere Länder-, Zeit- oder Relocation-Beschränkungen sind nicht stated.",
+    "culture_signals": [
+      "„Pflege mit Zeit und Respekt“",
+      "Feste Tourengruppen, damit Klientinnen und Klienten möglichst dieselben Pflegekräfte sehen",
+      "Respekt, Verlässlichkeit, Humor im Team und ehrliche Kommunikation mit Angehörigen",
+      "Neue Mitarbeitende fahren zwei Wochen mit einer erfahrenen Pflegekraft mit",
+      "Teilzeit ist üblich; viele Mitarbeitende arbeiten nur Frühtouren, damit es mit Kindern passt."
+    ],
+    "notes": "Die Karriereseite beschreibt allgemeine Arbeitsweisen; für diese Stelle gelten die Angaben der Anzeige, insbesondere Früh- und Spättouren sowie jedes zweite Wochenende. Die Unternehmensseite nennt Kirchzarten, Stegen, Buchenbach und Oberried als Versorgungsgebiet; die Anzeige konkretisiert den Einsatz für diese Stelle als Touren im Dreisamtal."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 6,
+      "first": 1,
+      "critique_redrafts": 4,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 1
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:47:26+00:00",
+  "cost_usd": 0.060208
+}

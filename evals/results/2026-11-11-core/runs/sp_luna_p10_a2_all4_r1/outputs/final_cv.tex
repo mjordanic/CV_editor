@@ -1,0 +1,63 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\\[0.3em]
+{\large\color{accentcolor} Data Scientist | Applied Machine Learning}\\[0.3em]
+Edinburgh, UK | \href{mailto:tobias.mwangihartley@example.com}{tobias.mwangihartley@example.com} | +44 7700 900110 | \href{https://linkedin.com/in/tmh-example}{linkedin.com/in/tmh-example}
+\end{center}
+
+\section*{Professional Summary}
+Data scientist with 6 years in analytics and data science, including 4+ years as a data scientist, focused on experimentation, forecasting and customer analytics in a subscription business. Built operational forecasting and churn-scoring workflows using Python, BigQuery and dbt, with measurable business outcomes. Strong statistical foundation and experience translating business questions into analyses people act on; now moving toward machine learning engineering.
+
+\section*{Experience}
+\textbf{Data Scientist | Thistlebox, meal-kit subscriptions | Edinburgh} \hfill \textit{Feb 2022–Present}
+\begin{itemize}
+\item Design and analyse approximately 40 A/B tests per year for growth and product teams; built a sequential testing calculator used by approximately 25 colleagues.
+\item Built a six-week-ahead weekly recipe and region demand forecasting workflow using LightGBM and calendar, price and menu-position features. A scheduled notebook writes forecasts to BigQuery for operations to use in Looker; WAPE decreased from 23\% to 14\%, with estimated food waste reduction of 9\%.
+\item Built an XGBoost churn propensity model scored weekly in BigQuery to target retention offers to top-decile customers. A 10\% holdout validated a 2.1 percentage-point churn reduction in the treated group.
+\item Write production SQL in BigQuery and maintain dbt models for the analytics layer.
+\item Since 2025, have written pytest unit tests for forecasting feature code, reaching approximately 60\% coverage.
+\item Built a Streamlit app for planning and analysing sequential A/B tests using statsmodels; wrote its Dockerfile. The data platform team handles deployment to Cloud Run.
+\item Present results to leadership monthly and have delivered internal “Stats for PMs” training three times.
+\end{itemize}
+
+\textbf{Junior Data Analyst | Firth Energy Retail | Glasgow} \hfill \textit{Sep 2020–Jan 2022}
+\begin{itemize}
+\item Conducted customer segmentation and tariff analysis using R and SQL.
+\item Automated monthly regulator reports with R Markdown, saving the team approximately two days each month.
+\end{itemize}
+
+\section*{Additional Project}
+\textbf{Image Classification Course Project} \hfill \textit{2025}
+\begin{itemize}
+\item Fine-tuned a small CNN in PyTorch on a public food-images dataset, achieving approximately 80\% accuracy; a personal learning project completed as part of an online deep learning course.
+\end{itemize}
+
+\section*{Education}
+\textbf{MSc Statistics | University of the Lothians | 2020 | Distinction}\\
+Dissertation: Bayesian hierarchical models for small-area energy demand\\[0.35em]
+\textbf{BSc Mathematics | University of the Lothians | 2019}
+
+\section*{Technical Skills}
+Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels, Streamlit); R (tidyverse, brms); SQL (BigQuery); dbt; Git; pytest; Docker; Vertex AI Workbench scheduled notebooks; Looker; A/B testing; causal inference; feature engineering; time-series forecasting; Bayesian statistics; PyTorch (course project).
+
+\section*{Languages}
+English (native); Swahili (conversational)
+\end{document}

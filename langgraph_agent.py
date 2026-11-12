@@ -3,60 +3,28 @@ from dotenv import load_dotenv
 # Load environment variables BEFORE importing agents
 load_dotenv()
 
-# Set up logging
 import logging
-from datetime import datetime
 import os
-
-
-
-# Create logs directory if it doesn't exist
-logs_dir = "logs"
-os.makedirs(logs_dir, exist_ok=True)
-
-# Create log filename with timestamp
-log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Configure logging with both file and console handlers
-logging.basicConfig(
-    level=logging.DEBUG,  # Change to logging.DEBUG for more verbose output
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_filename, encoding='utf-8'),
-        logging.StreamHandler()  # Console output
-    ]
-)
-
-# Silence noisy libraries
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("openai").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
-logger.info(f"Logging to file: {log_filename}")
-
-# Import debug_utils before using it
-from debug_utils import initialize_debug_file
-
-# Initialize debug file with same timestamp
-debug_file_path = initialize_debug_file()
-logger.info(f"Debug file initialized: {debug_file_path}")
+import shutil
+import sys
+from datetime import datetime
 
 from typing import Annotated, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import TypedDict
-from langgraph.types import interrupt, Command
-
-import sys
+from langgraph.types import Command
 
 from agents.search import SearchAgent
 from agents.refinement import should_refine
 from agents.document_reader import DocumentReaderAgent
-from agents.job_description import JobDescriptionAgent
+from agents.job_description import (
+    JobDescriptionAgent,
+    clarify_job_ad,
+    route_after_clarify_job_ad,
+    route_after_job_description,
+)
 from agents.router import RouterAgent
 from agents.cv_writer import CVWriterAgent
 from agents.cover_letter_writer import CoverLetterWriterAgent
@@ -65,8 +33,90 @@ from agents.critique import CritiqueAgent
 from agents.rag_agent import ExperienceRetrievalAgent
 from agents.cv_pdf_generator import CVPDFGenerator
 from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
+from agents.missing_details import make_ask_missing_details, route_after_ask, route_after_finalize
+from agents.notices import pending_notices
+
+logger = logging.getLogger(__name__)
+
+# The project folder: the program reads templates/ and data/ and writes logs/, debug/ and the drafts relative to
+# the working folder, which the command-line entry point sets to this folder when started from elsewhere.
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Loggers of the program itself; other libraries reach the console only at WARNING and above (all go to the file).
+APP_LOGGERS = ("__main__", "langgraph_agent", "agents", "config", "provenance", "debug_utils")
+EXIT_WORDS = ("exit", "quit")
 
 
+class SessionEnded(Exception):
+    """The user ended the session at a prompt: 'exit' before the chat, Ctrl+C, or the end of the input."""
+
+
+def move_earlier_outputs(folder: str = os.path.join("data", "generated_CVs")) -> str | None:
+    """
+    Move the files an earlier session left in `folder` (drafts, notes, PDFs, temp_latex) to
+    `folder/earlier/<timestamp>/`, so a new session's drafts are not mixed with them (a new session numbers its drafts
+    from 1 again). Nothing is deleted. Returns the folder they were moved to, or None if there was nothing to move.
+    """
+    if not os.path.isdir(folder):
+        return None
+    entries = [e for e in os.listdir(folder) if e != "earlier" and not e.startswith(".")
+               and not (os.path.isdir(os.path.join(folder, e)) and not os.listdir(os.path.join(folder, e)))]
+    if not entries:
+        return None
+    target = os.path.join(folder, "earlier", datetime.now().strftime("%Y%m%d_%H%M%S"))
+    os.makedirs(target, exist_ok=True)
+    for entry in entries:
+        shutil.move(os.path.join(folder, entry), os.path.join(target, entry))
+    return target
+
+
+def enter_project_dir() -> bool:
+    """
+    Relative paths (templates/, data/, logs/, debug/) are the project folder's: started from any other folder, work
+    in the project folder, and still find a file path the user types relative to the folder they started in.
+    Returns whether the working folder was switched.
+    """
+    if os.path.samefile(os.getcwd(), PROJECT_DIR):
+        return False
+    from agents.document_reader import add_user_dir
+    add_user_dir(os.getcwd())
+    os.chdir(PROJECT_DIR)
+    return True
+
+
+def _console_filter(record: logging.LogRecord) -> bool:
+    return record.levelno >= logging.WARNING or record.name.split(".", 1)[0] in APP_LOGGERS
+
+
+def setup_logging(logs_dir: str = "logs") -> str:
+    """
+    Log to the console and to a timestamped file in logs_dir, and open the debug file.
+
+    Called by the command-line entry point (and testing mode), not on import: importing this
+    module must not configure logging or create folders.
+
+    Returns:
+        str: Path to the log file
+    """
+    os.makedirs(logs_dir, exist_ok=True)
+    log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+    console = logging.StreamHandler()
+    console.addFilter(_console_filter)  # the program's own lines; other libraries only from WARNING up
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_filename, encoding='utf-8'),
+            console,
+        ],
+    )
+    # Silence noisy libraries
+    for name in ("httpx", "httpcore", "openai"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    logger.info(f"Logging to file: {log_filename}")
+
+    from debug_utils import initialize_debug_file
+    logger.info(f"Debug file initialized: {initialize_debug_file()}")
+    return log_filename
 
 
 class State(TypedDict, total=False):
@@ -90,16 +140,15 @@ class State(TypedDict, total=False):
         cover_letter_needs_refinement: Whether the cover letter needs to be refined based on critique feedback.
         cv_critique_improvement_instructions: Improvement instructions from critique for CV refinement.
         cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
-        cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
-        cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
-        cv_refinement_count: Number of times CV has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
-        cover_letter_refinement_count: Number of times cover letter has been refined based on critique (workflow.max_refinements, plus extra passes while the score rises, up to workflow.max_refinements_hard_cap).
+        cv_refinement_count: Number of times CV has been refined based on critique (see agents/refinement.py).
+        cover_letter_refinement_count: Number of times cover letter has been refined based on critique.
     """
     messages: Annotated[list, add_messages]
     job_description_info: dict | None  # Extracted job description information
+    job_ad_clarification_asked: bool | None  # clarify_job_ad has asked for more details about a thin job ad (asked once)
+    job_ad_extra_details: str | None  # The user's answer to that question, added to the ad and extracted again
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
-    company_info: dict | None  # Company information from search (keys: 'company_description', 'remote_work', 'search_results')
-    current_node: str | None  # Current node in the graph
+    company_info: dict | None  # Company information from search (keys: 'company_description', 'work_context', 'search_results', 'search_query', 'search_source')
     next: Literal[
         "draft_cv",
         "draft_cover_letter",
@@ -117,22 +166,34 @@ class State(TypedDict, total=False):
     cover_letter_critique: dict | None  # Critique results for cover letter
     cv_needs_refinement: bool | None  # Whether CV needs refinement based on critique
     cover_letter_needs_refinement: bool | None  # Whether cover letter needs refinement based on critique
-    cv_critique_improvement_instructions: str | None  # Improvement instructions for CV from critique
-    cover_letter_critique_improvement_instructions: str | None  # Improvement instructions for cover letter from critique
-    cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
-    cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
+    cv_critique_improvement_instructions: str | None  # The critic's suggestions for the CV redraft (filtered against the user's requests)
+    cover_letter_critique_improvement_instructions: str | None  # The critic's suggestions for the cover letter redraft
+    cv_claims_to_remove: list[str] | None  # Unsupported claims the CV redraft must remove (never filtered)
+    cover_letter_claims_to_remove: list[str] | None  # Unsupported claims the cover letter redraft must remove
+    cv_user_requests: list[str] | None  # The user's requests for the CV so far (the writer preserves them; the filter respects them)
+    cover_letter_user_requests: list[str] | None  # The user's requests for the cover letter so far
+    cv_request_notes: str | None  # The CV writer's notes on the user's latest request; the router tells the user what was not applied as asked, then clears them
+    cover_letter_request_notes: str | None  # The same for the cover letter
+    cv_feedback_to_confirm: str | None  # A request for the CV kept from a message about the cover letter; the router asks before applying it
+    cover_letter_feedback_to_confirm: str | None  # The same for the cover letter
     cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (see workflow settings in config/agent_models.yaml)
-    cv_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
-    cover_letter_previous_quality_score: int | None  # Critique score of the previous draft in this cycle (None for the first draft)
+    cv_previous_defect_count: int | None  # Requirements the previous draft of this cycle did not show (None for the first draft)
+    cover_letter_previous_defect_count: int | None  # The same for the cover letter
     cv_history: list[dict] | None  # History of generated CVs with scores and iteration numbers
     cover_letter_history: list[dict] | None  # History of generated cover letters with scores and iteration numbers
     cv_cycle_start: int | None  # Index in cv_history where the current request's drafts start (set by the router)
     cover_letter_cycle_start: int | None  # Index in cover_letter_history where the current request's drafts start
     cv_final_iteration: int | None  # Draft number finalize_cv selected (names the CV PDF)
     cover_letter_final_iteration: int | None  # Draft number finalize_cover_letter selected (names the cover letter PDF)
-    relevant_experience: str | None  # Retrieved relevant experience from portfolio (RAG)
-    portfolio_text: str | None  # Full portfolio text (the critique checks drafts against it for unsupported claims)
+    cv_placeholders: list[str] | None  # Placeholders such as [EMAIL] left in the final CV
+    cover_letter_placeholders: list[str] | None  # The same for the cover letter
+    cv_placeholders_asked: bool | None  # The user was asked once for the CV's missing details
+    cover_letter_placeholders_asked: bool | None  # The same for the cover letter
+    notices_for_user: dict[str, str] | None  # Fixed notices by source ('cv_claims', 'cv_pdf', ...); the router shows them word for word in its next message to the user
+    relevant_experience: str | None  # The portfolio as the writers see it: whole, or the relevant items of a large one
+    portfolio_text: str | None  # Full portfolio text the user supplied (the critique checks drafts against it); empty without one
+    work_preference: str | None  # The candidate's own remote / hybrid / on-site / no preference, only if they stated it
     cv_pdf_path: str | None  # Path to generated CV PDF file
     cover_letter_pdf_path: str | None  # Path to generated cover letter PDF file
     cv_pdf_style: str | None  # User description for CV PDF appearance (style only)
@@ -141,60 +202,73 @@ class State(TypedDict, total=False):
     cv_latex_last_error: str | None  # Last LaTeX error log for CV PDF compilation
     cover_letter_latex_fix_attempts: int | None  # Number of LaTeX fix attempts for cover letter
     cover_letter_latex_last_error: str | None  # Last LaTeX error log for cover letter PDF compilation
+    cv_pdf_check: dict | None  # PDF text compared with the CV text (agents/pdf_text_check.py)
+    cover_letter_pdf_check: dict | None  # The same for the cover letter
 
 
-def operations_on_state(state):
-    logger.info(f"Current node: {state.get('current_node')}")
-    if 'messages' in state:
-        logger.info(state.get('messages'))
+def _more_input_waiting(timeout: float = 0.05) -> bool:
+    """Whether more typed or pasted text is already waiting on a terminal's standard input (POSIX only)."""
+    try:
+        import select
+        return bool(select.select([sys.stdin], [], [], timeout)[0])
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
 
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
     Read multi-line input from the user, handling long pasted text.
-    
-    This function allows users to paste long, multi-line text. It reads until:
-    - EOF (Ctrl+D on Unix/Mac, Ctrl+Z on Windows) - works great for pasted text
-    - Or two consecutive empty lines (press Enter twice)
-    - Or type "END" on its own line
-    
-    Args:
-        prompt: The prompt to display to the user
-        
-    Returns:
-        str: The complete input text
+
+    The reply ends at:
+    - "END" on its own line;
+    - EOF (Ctrl+D on Unix/Mac, Ctrl+Z on Windows) after some text;
+    - two empty lines in a row typed at a terminal (Enter twice). Within pasted text, where more lines are already
+      waiting, empty lines are kept, so an ad with a double blank line is read whole. From a pipe or file only
+      "END" and the end of the input end a reply.
+
+    Raises:
+        EOFError: the input ended before any text (Ctrl+D on an empty prompt, or piped input that has run out).
+        KeyboardInterrupt: Ctrl+C.
     """
     print(prompt, end="", flush=True)
     lines = []
     empty_line_count = 0
-    
-    try:
-        # Read line by line until EOF, two empty lines, or "END" marker
-        while True:
-            try:
-                line = input()
-                # Check if this is the "END" marker (must be on its own line, case-insensitive)
-                if line.strip().upper() == "END" and len(lines) > 0:
-                    break
-                # Track consecutive empty lines
-                if line.strip() == "":
-                    empty_line_count += 1
-                    if empty_line_count >= 2 and len(lines) > 0:
-                        # Two empty lines = end of input
-                        break
-                else:
-                    empty_line_count = 0
-                lines.append(line)
-            except EOFError:
-                # User pressed Ctrl+D (Unix/Mac) or Ctrl+Z (Windows)
-                # This is the normal way to finish pasting text
+    interactive = sys.stdin.isatty()
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            if not lines:
+                raise
+            break
+        # "END" marker: on its own line, case-insensitive
+        if line.strip().upper() == "END" and len(lines) > 0:
+            break
+        if line.strip() == "":
+            empty_line_count += 1
+            if empty_line_count >= 2 and lines and interactive and not _more_input_waiting():
                 break
-    except KeyboardInterrupt:
-        # User pressed Ctrl+C
-        print("\nInput cancelled.")
-        return ""
-    
-    result = '\n'.join(lines)
-    return result
+        else:
+            empty_line_count = 0
+        lines.append(line)
+    return '\n'.join(lines).strip("\n")
+
+
+def ask_user(question: dict | None) -> str:
+    """
+    Show an interrupt's question on the console and read the reply.
+
+    Raises SessionEnded when the user types 'exit' (or 'quit') at a question asked before the chat: the job ad, the
+    CV, the details questions. In the chat ('chat' in the question) 'exit' goes to the router, which ends the session
+    with its closing message.
+    """
+    question = question or {}
+    logger.info(f"\n\n{question.get('message') or 'Please provide your input:'}")
+    logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+    reply = read_multiline_input()
+    if not question.get("chat") and reply.strip().lower() in EXIT_WORDS:
+        raise SessionEnded(f"you typed '{reply.strip()}'")
+    return reply
 
 
 
@@ -226,15 +300,15 @@ class MasterAgent:
         workflow_config = full_config.get('workflow', {})
         self.max_refinements = workflow_config.get('max_refinements', 2)
         self.max_refinements_hard_cap = workflow_config.get('max_refinements_hard_cap', self.max_refinements)
-        self.quality_improvement_threshold = workflow_config.get('quality_improvement_threshold', 5)
-        self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
-        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}, quality_improvement_threshold: {self.quality_improvement_threshold}")
+        logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}")
         
         # Load agent configurations
         router_config = get_agent_config('router')
         cv_writer_config = get_agent_config('cv_writer')
         cover_letter_config = get_agent_config('cover_letter_writer')
         critique_config = get_agent_config('critique')
+        grounding_config = get_agent_config('grounding', default_model=critique_config['model'],
+                                            default_temperature=critique_config['temperature'])
         job_desc_config = get_agent_config('job_description')
         search_config = get_agent_config('search')
         rag_config = get_agent_config('rag')
@@ -260,23 +334,29 @@ class MasterAgent:
             model=router_config['model'],
             temperature=router_config['temperature']
         )
+        user_input_agent = UserInputAgent()
+        critique_agent = CritiqueAgent(
+            model=critique_config['model'],
+            temperature=critique_config['temperature'],
+            grounding_model=grounding_config['model'],
+            grounding_temperature=grounding_config['temperature'],
+        )
+        # The writers use the critic for the removal pass and the side-by-side draft comparison in finalize.
         cv_writer_agent = CVWriterAgent(
             model=cv_writer_config['model'],
             temperature=cv_writer_config['temperature'],
             filter_model=cv_writer_config['filter_model'],
-            filter_temperature=cv_writer_config['filter_temperature']
+            filter_temperature=cv_writer_config['filter_temperature'],
+            grounding_checker=critique_agent.check_grounding,
+            draft_comparer=critique_agent.compare_drafts,
         )
         cover_letter_writer_agent = CoverLetterWriterAgent(
             model=cover_letter_config['model'],
             temperature=cover_letter_config['temperature'],
             filter_model=cover_letter_config['filter_model'],
-            filter_temperature=cover_letter_config['filter_temperature']
-        )
-        user_input_agent = UserInputAgent()
-        critique_agent = CritiqueAgent(
-            model=critique_config['model'],
-            temperature=critique_config['temperature'],
-            quality_threshold=critique_config['quality_threshold']
+            filter_temperature=cover_letter_config['filter_temperature'],
+            grounding_checker=critique_agent.check_grounding,
+            draft_comparer=critique_agent.compare_drafts,
         )
         experience_retrieval_agent = ExperienceRetrievalAgent(
             model=rag_config['model'],
@@ -295,6 +375,7 @@ class MasterAgent:
         logger.debug("Adding nodes to graph...")
         graph_builder.add_node("load_candidate_documents", document_reader_agent.run)
         graph_builder.add_node("analyze_job_description", job_description_agent.run)
+        graph_builder.add_node("clarify_job_ad", clarify_job_ad)
         graph_builder.add_node("research_company_context", search_agent.run)
         graph_builder.add_node("retrieve_experience", experience_retrieval_agent.run)
         graph_builder.add_node("router", router_agent.run)
@@ -307,13 +388,25 @@ class MasterAgent:
         graph_builder.add_node("finalize_cover_letter", cover_letter_writer_agent.finalize_best_version)
         graph_builder.add_node("generate_cv_pdf", cv_pdf_generator.run)
         graph_builder.add_node("generate_cover_letter_pdf", cover_letter_pdf_generator.run)
+        graph_builder.add_node("ask_cv_missing_details", make_ask_missing_details("cv"))
+        graph_builder.add_node("ask_cover_letter_missing_details", make_ask_missing_details("cover_letter"))
         logger.debug("All nodes added to graph")
 
         # Add edges to the graph
         logger.debug("Adding edges to graph...")
         graph_builder.add_edge(START, "load_candidate_documents")
         graph_builder.add_edge("load_candidate_documents", "analyze_job_description")
-        graph_builder.add_edge("analyze_job_description", "research_company_context")
+        # An ad with no job title and no requirements gets one follow-up question first
+        graph_builder.add_conditional_edges(
+            "analyze_job_description",
+            route_after_job_description,
+            {"clarify_job_ad": "clarify_job_ad", "research_company_context": "research_company_context"},
+        )
+        graph_builder.add_conditional_edges(
+            "clarify_job_ad",
+            route_after_clarify_job_ad,
+            {"analyze_job_description": "analyze_job_description", "research_company_context": "research_company_context"},
+        )
         graph_builder.add_edge("research_company_context", "retrieve_experience")
         graph_builder.add_edge("retrieve_experience", "router")
         
@@ -332,81 +425,42 @@ class MasterAgent:
         graph_builder.add_edge("draft_cv", "critique_cv")
         graph_builder.add_edge("draft_cover_letter", "critique_cover_letter")
         
-        # Conditional routing for CV critique
-        def route_cv_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising
-            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
-            needs_refinement = state.get("cv_needs_refinement", False)
-            refinement_count = state.get("cv_refinement_count", 0)
-            critique = state.get("cv_critique")
-            current_score = critique.get("quality_score") if critique else None
-            previous_score = state.get("cv_previous_quality_score")
+        def route_after_critique(kind: str):
+            # Redraft while within max_refinements, or past it while the draft still has unsupported
+            # claims or the last redraft showed more of the ad's requirements (never beyond
+            # max_refinements_hard_cap); see agents/refinement.py.
+            def route(state):
+                critique = state.get(f"{kind}_critique") or {}
+                refine, progress = should_refine(
+                    state.get(f"{kind}_needs_refinement", False),
+                    state.get(f"{kind}_refinement_count", 0) or 0,
+                    critique.get("defects"),
+                    state.get(f"{kind}_previous_defect_count"),
+                    self.max_refinements,
+                    self.max_refinements_hard_cap,
+                    has_unsupported_claims=bool(critique.get("unsupported_claims")),
+                )
+                target = f"draft_{kind}" if refine else f"finalize_{kind}"
+                logger.info(f"Routing critique_{kind} -> {target} (Refinement count: {state.get(f'{kind}_refinement_count', 0)}, progress: {progress})")
+                return target
+            return route
 
-            refine, quality_improved = should_refine(
-                needs_refinement,
-                refinement_count,
-                current_score,
-                previous_score,
-                self.max_refinements,
-                self.max_refinements_hard_cap,
-                self.quality_improvement_threshold,
+        for kind in ("cv", "cover_letter"):
+            graph_builder.add_conditional_edges(
+                f"critique_{kind}", route_after_critique(kind),
+                {f"draft_{kind}": f"draft_{kind}", f"finalize_{kind}": f"finalize_{kind}"},
             )
-            if quality_improved:
-                logger.info(f"CV quality improved from {previous_score} to {current_score}")
-            if refine:
-                logger.info(f"Routing critique_cv -> draft_cv (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
-                return "draft_cv"
-            logger.info(f"Routing critique_cv -> finalize_cv (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-            return "finalize_cv"
-
-        graph_builder.add_conditional_edges(
-            "critique_cv",
-            route_cv_critique,
-            {
-                "draft_cv": "draft_cv",
-                "finalize_cv": "finalize_cv"
-            }
-        )
-
-        # Conditional routing for Cover Letter critique
-        def route_cover_letter_critique(state):
-            # Redraft while within max_refinements, or past it while the score keeps rising
-            # (never beyond max_refinements_hard_cap); see agents/refinement.py.
-            needs_refinement = state.get("cover_letter_needs_refinement", False)
-            refinement_count = state.get("cover_letter_refinement_count", 0)
-            critique = state.get("cover_letter_critique")
-            current_score = critique.get("quality_score") if critique else None
-            previous_score = state.get("cover_letter_previous_quality_score")
-
-            refine, quality_improved = should_refine(
-                needs_refinement,
-                refinement_count,
-                current_score,
-                previous_score,
-                self.max_refinements,
-                self.max_refinements_hard_cap,
-                self.quality_improvement_threshold,
+            # A final document with placeholders such as [EMAIL] asks the user once before its PDF.
+            graph_builder.add_conditional_edges(
+                f"finalize_{kind}", route_after_finalize(kind),
+                {f"ask_{kind}_missing_details": f"ask_{kind}_missing_details", f"generate_{kind}_pdf": f"generate_{kind}_pdf"},
             )
-            if quality_improved:
-                logger.info(f"Cover letter quality improved from {previous_score} to {current_score}")
-            if refine:
-                logger.info(f"Routing critique_cover_letter -> draft_cover_letter (Refinement count: {refinement_count}, Quality improved: {quality_improved})")
-                return "draft_cover_letter"
-            logger.info(f"Routing critique_cover_letter -> finalize_cover_letter (Refinement count: {refinement_count}, Needs refinement: {needs_refinement}, Quality improved: {quality_improved})")
-            return "finalize_cover_letter"
-
-        graph_builder.add_conditional_edges(
-            "critique_cover_letter",
-            route_cover_letter_critique,
-            {
-                "draft_cover_letter": "draft_cover_letter",
-                "finalize_cover_letter": "finalize_cover_letter"
-            }
-        )
+            graph_builder.add_conditional_edges(
+                f"ask_{kind}_missing_details", route_after_ask(kind),
+                {f"draft_{kind}": f"draft_{kind}", f"generate_{kind}_pdf": f"generate_{kind}_pdf"},
+            )
         
         graph_builder.add_edge("collect_user_input", "router")
-        graph_builder.add_edge("finalize_cv", "generate_cv_pdf")
-        graph_builder.add_edge("finalize_cover_letter", "generate_cover_letter_pdf")
         graph_builder.add_edge("generate_cv_pdf", "router")
         graph_builder.add_edge("generate_cover_letter_pdf", "router")
         logger.debug("All edges added to graph")
@@ -446,12 +500,13 @@ class MasterAgent:
         except Exception as e:
             logger.warning(f"Could not generate graph visualization: {e}")
 
-    def run(self):
+    def run(self, trace_dir: str | None = None):
         """
         Stream the LangGraph workflow until completion or user exit.
 
         Args:
-            None
+            trace_dir: If set, record the session there (every graph step, model call with prompt,
+                response, tokens and cost, and every question and reply); see provenance.py.
 
         Returns:
             None
@@ -460,81 +515,50 @@ class MasterAgent:
         
         # Use a thread_id to maintain state across invocations
         thread_id = "main-thread"
-        config = {"configurable": {"thread_id": thread_id}}
+        recorder = None
+        if trace_dir:
+            from provenance import RunRecorder
+            recorder = RunRecorder(trace_dir)
+            config = recorder.graph_config(thread_id)
+            logger.info(f"Recording the session to {trace_dir}")
+        else:
+            config = {"configurable": {"thread_id": thread_id}}
         logger.debug(f"Using thread_id: {thread_id}")
         
-        # Initial state
-        initial_state = State(
-            messages=[],
-            job_description_info=None,
-            candidate_text=None,
-            company_info=None,
-            next=None,
-            generated_cv=None,
-            generated_cover_letter=None,
-            cv_content_feedback=None,
-            cover_letter_content_feedback=None,
-            user_input_message=None,
-            cv_critique=None,
-            cover_letter_critique=None,
-            cv_needs_refinement=None,
-            cover_letter_needs_refinement=None,
-            cv_critique_improvement_instructions=None,
-            cover_letter_critique_improvement_instructions=None,
-            cv_needs_critique=None,
-            cover_letter_needs_critique=None,
-            cv_refinement_count=0,
-            cover_letter_refinement_count=0,
-            cv_history=[],
-            cover_letter_history=[],
-            relevant_experience=None,
-            portfolio_text=None,
-            cv_pdf_path=None,
-            cover_letter_pdf_path=None,
-            cv_pdf_style=None,
-            cover_letter_pdf_style=None,
-        )
-        logger.debug("Initial state created")
+        # Initial state (every other key starts unset; State is total=False)
+        stream_input = State(messages=[], cv_refinement_count=0, cover_letter_refinement_count=0,
+                             cv_history=[], cover_letter_history=[])
 
-        
-        stream_input = initial_state
-        logger.debug(f"Streaming with initial state. Keys: {list(stream_input.keys())}")
-                
-               
         # This is a simplified version of the streaming loop that handles interrupt() calls
         # It uses the invoke() method to run the graph and handle interrupt() calls
-        result = self.graph.invoke(stream_input, config)
-        while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
-            interrupt_data = result["__interrupt__"]    
-            interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
-            logger.info(f"\n\n{interrupt_message}")
-            logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-            
-            human_input = read_multiline_input()
-            
-            result = self.graph.invoke(Command(resume=human_input), config=config)
+        try:
+            if recorder is not None:
+                from provenance import stream_turn
+                try:
+                    interrupt_value = stream_turn(self.graph, stream_input, config, recorder)
+                    while interrupt_value:
+                        human_input = ask_user(interrupt_value)
+                        recorder.event("user_reply", text=human_input)
+                        interrupt_value = stream_turn(self.graph, Command(resume=human_input), config, recorder)
+                except Exception as e:
+                    if not isinstance(e, (SessionEnded, EOFError)):
+                        recorder.record_error("session", e)
+                    raise
+                finally:
+                    recorder.write_json("final_state.json", self.graph.get_state(config).values)
+                    recorder.write_summary()
+                return
 
-        ##########################################################################################################
-        # This is another way to run the graph and handle interrupt() calls. It uses the stream() 
-        # method to stream the graph. It is more verbose as it streams the state object at each step. State
-        # can be accessed and inspected at each step. Currently there is a dummy function operations_on_state() 
-        # that prints the messages.
-        
-        # for state in self.graph.stream(stream_input, config, stream_mode="values"):
-        #     operations_on_state(state)
-            
-        #     while '__interrupt__' in state:
-        #         interrupt_data = state["__interrupt__"]
-        #         # __interrupt__ is a list, and each item has a .value attribute containing the interrupt data
-        #         interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
-        #         logger.info(f"\n\n{interrupt_message}")
-        #         logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-        #         human_input = read_multiline_input()
-        #         for state in self.graph.stream(Command(resume=human_input), config, stream_mode="values"):
-        #             operations_on_state(state)
-
-            
-
+            result = self.graph.invoke(stream_input, config)
+            while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
+                human_input = ask_user(result["__interrupt__"][0].value)
+                result = self.graph.invoke(Command(resume=human_input), config=config)
+        except (SessionEnded, EOFError, KeyboardInterrupt) as e:
+            reason = {EOFError: "the input ended", KeyboardInterrupt: "Ctrl+C"}.get(type(e)) or str(e)
+            notices = pending_notices(self.graph.get_state(config).values)
+            if notices:
+                logger.info("\n\n" + "\n\n".join(notices))
+            logger.info(f"Session ended ({reason}). Documents made so far are in data/generated_CVs/.")
 
 
 
@@ -543,14 +567,37 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Tailor your CV and cover letter to a job ad and render them as PDFs. "
-        "Starting a run makes paid OpenAI and Tavily calls."
+        "Starting a run makes paid OpenAI calls (and Tavily calls if TAVILY_API_KEY is set); with a local model "
+        "(e.g. CV_EDITOR_MODEL=ollama:gemma4:e4b) it makes none."
     )
     parser.add_argument(
         "--draw-graph",
         action="store_true",
         help="also redraw images/graph_visualization.png (needs the optional 'graph' extra)",
     )
+    parser.add_argument(
+        "--trace-dir",
+        metavar="DIR",
+        help="record the session in DIR: every step, model call (prompt, response, tokens, cost) and reply",
+    )
     args = parser.parse_args()
 
+    if enter_project_dir():
+        print(f"Working in the project folder {PROJECT_DIR} (data/, logs/ and the PDFs are there).")
+
+    from config.config_loader import ConfigError, missing_api_keys
+    try:
+        missing = missing_api_keys()
+    except ConfigError as e:
+        sys.exit(f"Configuration error: {e}")
+    if missing:
+        sys.exit(f"{' and '.join(missing)} {'is' if len(missing) == 1 else 'are'} not set. Put "
+                 f"{'it' if len(missing) == 1 else 'them'} in .env (see .env_sample), or run on a local model "
+                 "without API keys: CV_EDITOR_MODEL=ollama:gemma4:e4b (see README.md).")
+
+    earlier = move_earlier_outputs()
+    if earlier:
+        print(f"The previous session's drafts and PDFs were moved to {earlier}.")
+    setup_logging()
     agent = MasterAgent(draw_graph=args.draw_graph)
-    agent.run()
+    agent.run(trace_dir=args.trace_dir)

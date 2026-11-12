@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "4dfe9b24afd63c1499b375d4e96247e3b4dc79465c1cced0630c8cf113d5986b",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: professional backend work\nG2: GraphQL (course only)\nG3: Vue (one weekend)\nG4: cloud (AWS/Azure)\nG5: CI/CD ownership\nG6: years of professional experience\n\n# TRAPS (mistakes a writer could make)\nT1: Inflating internship + freelance into 'X years of experience' or 'Software Engineer'\nT2: Claiming she built the Study Buddy backend or led the team\nT3: Listing GraphQL or Vue\nT4: Inventing CI/CD, Docker or AWS\nT5: Reusing old cover letter claim 'third-year student' as current status\nT6: Dropping the visa/work-authorisation fact when notes are given and the ad asks about right to work\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nAiyana Brooks-Tan\nJunior Frontend Developer | React, TypeScript, Node.js\nDublin, Ireland | aiyana.brookstan@example.com | +353 55 555 0404 | github.com/aiyana-bt-example\n| aiyana-bt.example.com\nPROFESSIONAL SUMMARY\nJunior frontend developer with experience building React and TypeScript interfaces, accessible web\ncomponents, and a Next.js booking site. Developed a full-stack final-year project using a\nNode.js/Express API and PostgreSQL, with accessibility testing using NVDA and VoiceOver. Brings\nhands-on experience with unit testing, Storybook, and Git/GitHub.\nEXPERIENCE\nFrontend Developer (Part-time, Freelance) Oct 2025-present\nSelf-employed\n• Built a yoga studio website with marketing pages, a class timetable, and booking requests sent by\nemail, using Next.js, React, and Tailwind CSS; deployed on Vercel.\n• Made small updates to two WordPress sites.\nSoftware Development Intern May 2024-Aug 2024\nHarbourline Media, Dublin\n• Fixed accessibility issues identified in an audit across 20+ components on the company’s React\nnews site, including keyboard navigation, colour contrast, and ARIA labels.\n• Built a reusable, keyboard- and screen-reader-friendly image gallery and documented it with\nStorybook stories.\n• Wrote unit tests with Jest and React Testing Library.\nTeaching Assistant, First-Year Web Development Lab Spring 2025\n• Helped approximately 30 students during one semester.\nBarista (Part-time during studies) 2021-2025\nCorner Bean Cafe, Dublin\nPROJECTS\nTidewatch | Final-Year Project 2024-2025\n• Built an accessible web app for sea swimmers showing tides, water temperature, and weather\naround the Irish coast.\n• Developed the React and TypeScript frontend, plus a Node.js/Express API that caches public\nweather and tide data and a PostgreSQL database for user favourites.\n• Tested with NVDA and VoiceOver; achieved a Lighthouse accessibility score of 100. Received 82%\n(First Class) and demonstrated the project at the college showcase.\n• Technologies: React, TypeScript, Node.js, Express, PostgreSQL, Chart.js, Jest.\nTransit Delay Notifier | Student Hackathon 2024\n• Worked in a three-person team to build a transit delay notifier in 24 hours; developed the frontend.\nTeam placed second.\nStudy Buddy | Group Project 2023\n• Built the React frontend and login screens for a study-session matching web app in a four-person\nstudent team.\n• Technologies: React, JavaScript, Firebase Authentication.\nEDUCATION\nBSc (Hons) Computing - Software Development 2021-2025\nLiffey Institute of Technology\nFirst Class Honours\nRelevant modules: Web Development, Databases, Human-Computer Interaction, Software Testing,\nData Structures & Algorithms\nSKILLS\nFrontend: JavaScript, TypeScript, React, Next.js, HTML5, CSS3, Tailwind CSS\nBackend and databases: Node.js, Express, PostgreSQL\nTesting and tools: Jest, React Testing Library, Storybook, Git/GitHub, Figma\nAccessibility: WCAG 2.1, keyboard navigation, colour contrast, ARIA labels, screen-reader testing\nLANGUAGES\nEnglish (native), Mandarin (conversational)\n\n# OUTPUT 2: COVER LETTER\nDear Verdane Care hiring team,\nI am applying for the Full-Stack Engineer role in the Patient Experience squad. Verdane\nCare’s focus on accessible patient-facing booking and follow-up tools is a strong match for the\nwork I have pursued in frontend development, particularly through building accessible web\nexperiences for people who need clear, usable information.\nFor my final-year project, Tidewatch, I built a React and TypeScript app for sea swimmers,\nsupported by a Node.js/Express API and PostgreSQL database. I tested the interface with\nNVDA and VoiceOver and achieved a Lighthouse accessibility score of 100. During my\ninternship at Harbourline Media, I also addressed accessibility audit findings across more than\n20 React components, built a keyboard- and screen-reader-friendly gallery documented in\nStorybook, and wrote unit tests with Jest and React Testing Library.\nAlongside this experience, I have built a Next.js booking website for a yoga studio and\ndeveloped frontend features in team projects. I would bring practical React, TypeScript,\nNode.js, PostgreSQL, accessibility, and testing experience, along with an interest in\ncontributing to Verdane Care’s patient experience and learning within a team building\nprivacy-conscious care software.\nThank you for considering my application. I would welcome the opportunity to discuss how\nmy project and development experience could contribute to Verdane Care.\nYours sincerely,\nAiyana Brooks-Tan\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

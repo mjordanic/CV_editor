@@ -1,0 +1,95 @@
+{
+  "workflow": {
+    "max_refinements": 1,
+    "max_refinements_hard_cap": 2,
+    "max_latex_fix_iterations": 2
+  },
+  "agents": {
+    "cv_writer": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "filter_model": "openai:gpt-6.1-terra",
+      "filter_temperature": null,
+      "description": "Writes and redrafts the tailored CV; the filter model drops critique suggestions that clash with the user's earlier requests"
+    },
+    "cover_letter_writer": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "filter_model": "openai:gpt-6.1-terra",
+      "filter_temperature": null,
+      "description": "Writes and redrafts the cover letter; the filter model works as for cv_writer"
+    },
+    "critique": {
+      "model": "openai:gpt-5.6-luna",
+      "temperature": null,
+      "description": "Scores each draft, checks it against the ad's requirements, writes redraft instructions and compares equally honest drafts"
+    },
+    "grounding": {
+      "model": "openai:gpt-5.6-luna",
+      "temperature": null,
+      "description": "Lists claims in a draft that the candidate's own material (or, for the employer, the ad and company research) does not support"
+    },
+    "router": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "description": "Talks to the user and decides the next step"
+    },
+    "job_description": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "description": "Extracts structured fields from the job ad"
+    },
+    "search": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "description": "Summarises Tavily search results into a company description"
+    },
+    "document_reader": {
+      "model": null,
+      "temperature": null,
+      "description": "Reads the CV and cover letter files (PDF or text)"
+    },
+    "user_input": {
+      "model": null,
+      "temperature": null,
+      "description": "Collects user input via interrupts"
+    },
+    "rag": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "similarity_threshold": 1.5,
+      "description": "Only for a portfolio over 12,000 characters: checks whether retrieved portfolio items are relevant to the job (smaller portfolios go to the writers whole)",
+      "rationale": "Threshold 1.5 (L2 distance) keeps loosely similar items; the model check then filters them. Embeddings use OpenAI text-embedding-3-small (or an Ollama embedding model for ollama: models)."
+    },
+    "template_customizer": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "description": "Turns the final CV / cover letter text into LaTeX, applying the user's style requests"
+    },
+    "latex_fixer": {
+      "model": "openai:gpt-6.1-terra",
+      "temperature": null,
+      "description": "Repairs LaTeX documents based on pdflatex error output so they compile"
+    }
+  },
+  "embeddings": "text-embedding-3-small",
+  "env_overrides": {
+    "CV_EDITOR_MODEL": "openai:gpt-6.1-terra",
+    "CV_EDITOR_SEARCH_FIXTURE": "runs/p02_a5_cv_only_trap-p02_terra_r1/inputs/search_fixture.json"
+  },
+  "code": {
+    "repo": ".",
+    "commit": "aa5bdb2092a11b6c2d705fdcdd684c05fdd9ddf7",
+    "branch": "fm/cv-eval-run",
+    "dirty": false
+  },
+  "python": "3.12.12",
+  "packages": {
+    "langgraph": "1.0.3",
+    "langchain": "1.0.5",
+    "langchain-core": "1.0.4",
+    "langchain-openai": "1.0.2",
+    "openai": "2.8.0",
+    "tavily": "1.1.0"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "69cb29fc370dedd4c958cc2ae633971282edca02c28a3db165eb0b5b2e27aed7",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: GCP\nG2: Azure\nG3: Istio/Linkerd in production\nG4: CKAD (expired)\nG5: line management\n\n# TRAPS (mistakes a writer could make)\nT1: Listing Istio or service mesh because SRE ads ask for it\nT2: Listing CKAD\nT3: Claiming GCP/Azure for multi-cloud ads\nT4: Claiming people management / Engineering Manager\nT5: Over-crediting Backstage plugin development\nT6: Old cover letter is to her current employer and says she is at Brightwater\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nNADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nnadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\nPROFESSIONAL SUMMARY\nSenior SRE and platform engineer with 10 years of infrastructure experience, including six years running\nKubernetes platforms on AWS. Experienced in hands-on cloud infrastructure engineering, Terraform, platform\ndesign and operation, and leading technical work across product and platform teams. Builds reliable, observable\nplatforms and self-service infrastructure that help teams deploy and operate services effectively.\nCORE SKILLS\nCloud infrastructure: AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront), cloud environment\ndesign and operation\nInfrastructure as code: Terraform, Atlantis, Crossplane\nPlatforms and deployment: Kubernetes, Helm, Kustomize, Argo CD, Karpenter, GitHub Actions\nReliability and observability: Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry, SLOs and error\nbudgets, incident management\nProgramming and systems: Go, Python, Bash, Linux, Puppet\nTesting: k6\nPROFESSIONAL EXPERIENCE\nSenior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS) | Manchester / remote Apr 2022 –\nPresent\n• Tech lead for a five-person platform team operating an AWS EKS platform across eight clusters and three\nregions, supporting approximately 350 services.\n• Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps, and\nCrossplane self-service for RDS, SQS and S3. Adopted by all 14 product teams; reduced the time for a new\nservice to reach production from approximately two weeks to under one day.\n• Led the move from cluster-autoscaler managed node groups to Karpenter, using Spot instances for stateless\nworkloads with interruption handling. Reduced EC2 spend by 38% (approximately £410,000 per year).\n• Introduced SLOs and burn-rate alerts for the 20 most critical services, with error-budget policy agreed with\nproduct leadership. Reduced on-call pages per week by approximately 60%.\n• Serve in the incident commander rotation and established incident and post-mortem processes.\nSite Reliability Engineer | Brightwater Games | Leeds Jan 2019 – Mar 2022\n• Operated AWS game-backend infrastructure (EC2, ECS and later EKS) for titles with up to 1.2 million daily\nactive players.\n• Managed infrastructure as code in Terraform across approximately 40 modules, using Atlantis for plan and\napply through pull requests.\n• Replaced a noisy Nagios setup with a Prometheus, Grafana, Alertmanager and Loki observability stack.\n• Ran k6 load tests and launch-day capacity planning, including tests simulating 300,000 concurrent players;\nidentified and helped resolve a connection-pool limit before launch.\nLinux Systems Engineer | Pennine Hosting | Sheffield Jul 2016 – Dec 2018\n• Managed approximately 600 Linux servers for hosting customers using Puppet configuration management.\n• Automated operational tasks with Bash and Python and provided on-call support for customer incidents.\nSELECTED PROJECT\nKubernetes preview namespace cleanup operator | Open source side project 2024\n• Built a small Go Kubernetes controller using controller-runtime to delete expired preview namespaces; received\napproximately 120 GitHub stars.\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\nCERTIFICATIONS\nCertified Kubernetes Administrator (CKA) | 2021; renewed 2024\nAWS Certified Solutions Architect – Professional | 2023\nADDITIONAL\nSpeaker, UK DevOps meetup (2024): “SLOs that product managers care about”\nMentored three engineers transitioning from backend engineering into SRE\nLanguages: English (native), Urdu (conversational)\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility hiring team,\nI’m applying for the Cloud Infrastructure / DevOps Contractor role. I bring 10 years of\ninfrastructure experience, including six years operating Kubernetes platforms on AWS, and a\ntrack record of turning infrastructure needs into reliable platforms that product teams can use\neffectively.\nAt Tallybrook, I’m the technical lead of a five-person platform team operating eight EKS\nclusters across three regions. At Brightwater Games, I managed Terraform across approximately\n40 AWS modules, using Atlantis to run plan and apply through pull requests. I designed and\nbuilt an internal developer platform adopted by all 14 product teams, reducing the time for a\nnew service to reach production from around two weeks to under one day. I’ve also led technical\nwork across teams, including a Karpenter migration that reduced EC2 spend by 38%, and\nintroduced SLOs and an incident process that helped reduce on-call pages by approximately\n60%. As technical lead, I have led platform decisions across product and platform teams,\nincluding agreeing an error-budget policy with product leadership and introducing service\ntemplates and self-service infrastructure that all 14 product teams adopted.\nCorvale’s work to connect a new train fleet with cloud services calls for careful infrastructure\ndesign, operational reliability and collaboration across engineering teams. My background in\nhands-on AWS infrastructure engineering and cloud environment design and operation,\nTerraform, Kubernetes platforms, observability and technical leadership is directly relevant to\nbuilding and operating that foundation. I’d welcome the opportunity to discuss how I could\ncontribute to the fleet connectivity platform.\nBest wishes,\nNadia Brennan-Aziz\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

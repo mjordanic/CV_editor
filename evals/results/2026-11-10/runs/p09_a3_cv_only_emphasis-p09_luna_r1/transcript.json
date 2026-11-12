@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first: a tailored CV, a cover letter, or both?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any content or PDF appearance changes to either document, or are you satisfied?",
+      "user": "Please give more weight to my incident-response and SLO work - put it in the summary and near the top of my current role."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any changes to either document, or are you satisfied with them?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "emphasise-incidents-slos",
+      "after": "cv",
+      "text": "Please give more weight to my incident-response and SLO work - put it in the summary and near the top of my current role.",
+      "expect": "follow",
+      "correct_behaviour": "The final CV mentions incident response and SLOs in the summary and early in the current role, with no new numbers or claims.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

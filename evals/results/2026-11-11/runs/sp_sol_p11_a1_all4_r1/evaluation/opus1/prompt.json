@@ -1,0 +1,369 @@
+{
+  "model": "anthropic:claude-opus-5-5",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-opus-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+  "images": {
+    "cv": [
+      "cv_page1.png",
+      "cv_page2.png"
+    ],
+    "cover_letter": [
+      "cover_letter_page1.png"
+    ]
+  },
+  "prompt_sha256": "bf68590eac7668081ef9e1f04efed836bfba84ad3c3788497b1dd38f560a6766",
+  "params": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents given to you. You do not know how the documents were produced and you must not guess.\n\nRules:\n- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that is not in that material is unsupported, even if it is plausible or the job asks for it. Rephrasing and obvious inference are supported (e.g. \"built a React app\" supports \"JavaScript\"). A course, side project or homelab presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than the material states is partly_supported (overstated).\n- Statements about the employer or the job are not claims about the candidate.\n- The candidate's work-arrangement preference is candidate material only if it is given below; a preference (remote, relocation, on-site availability) the outputs state without it is unsupported. Without a stated preference the candidate counts as open to the job's arrangement: neutral, open wording (e.g. \"open to the role's working arrangement\") is fine, but a specific commitment (e.g. \"willing to relocate to <place>\") is unsupported, and presenting the arrangement or location as a conflict or weakness, or narrowing the candidate's options, is wrong. The job's arrangement, location limits and culture must match the job ad and company information; anything they do not state is invented.\n- List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, degree, certificate, language and notable achievement, in both documents. Quote briefly.\n- Quote evidence verbatim from the candidate material. Never invent quotes.\n- For omissions, list only facts that would help this application (not every detail).\n- The user's instructions below are everything the user told the writing tool. Anything the user says about themselves there is candidate material too (source \"chat\"), except when the user asks to state something they themselves say is untrue, or that their material contradicts: such a request must not be followed, and following it makes the claim unsupported.\n- You see the documents and the user's instructions, not the conversation. A user instruction changes what is correct: a CV or letter in another language, shorter, reordered or in another tone is right if the user asked for it. Grade user_requests against the user's instructions only, with the expected behaviour where it is given, and judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.\n- The PDF is the document the employer receives; the plain text is the tool's own copy of it. Judge claims, layout and ATS from the PDF (its extracted text and page images); a difference between the PDF and the text is itself an issue.\n- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge the visual layout from both.\n- Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements that the candidate really has visible in wording a recruiter's search would find; and is there keyword stuffing or a skill the candidate's material does not support. Cheating to match the ad lowers the ATS score.\n- Be calibrated: use the full score ranges; 10 is rare.\n\n# ANSWER FORMAT\nWrite the complete evaluation first, as one JSON string in full_evaluation_json. The string holds standard JSON (double-quoted keys and strings, escaped inside the string; true, false), not a Python literal, and follows this JSON schema exactly: every property is required and no other property is allowed.\n{\"$defs\": {\"ATS\": {\"description\": \"Judged from WHAT AN ATS WOULD READ (the plain text a standard extractor pulls from the CV PDF), the job\\nad and the candidate's material: one 0-10 score with its reason, and the three judgements behind it.\", \"properties\": {\"text_readable_in_order\": {\"description\": \"The extracted text reads in a sensible order with words, dates and contact details intact: no garbled characters, merged words, interleaved columns or text missing compared with the page images\", \"type\": \"boolean\"}, \"clear_sections\": {\"description\": \"Standard section headings a parser can find (e.g. experience, education, skills) and every entry under the right one\", \"type\": \"boolean\"}, \"headings_found\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"parse_issues\": {\"description\": \"Quotes from the extracted text that an ATS would misread: garbled, out of order, merged, split or missing; empty if none\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"important_requirements\": {\"description\": \"The ad's important requirements a recruiter's search would look for: role title, must-have skills, tools, qualifications, languages (short form, about 5-20)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"covered_in_searchable_wording\": {\"description\": \"Those the extracted text visibly shows in wording a recruiter's keyword search would find (the ad's term or its standard name, not only a paraphrase)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"missed_but_candidate_has\": {\"description\": \"Those the candidate's material shows they have but the extracted text does not show in searchable wording (lost opportunities)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"keyword_stuffing\": {\"description\": \"Keywords repeated without context, lists of the ad's terms pasted in, or hidden text; quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"unsupported_keywords\": {\"description\": \"Ad keywords or skills the CV claims that the candidate's material does not support\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"How well the CV would do in automatic screening for this ad, honestly: 10 = clean, well-sectioned text that shows every important requirement the candidate really has in searchable wording. Requirements the candidate lacks cost nothing when left out; parse problems and lost opportunities lower the score, and keyword stuffing or unsupported keywords lower it, never raise it\", \"type\": \"integer\"}, \"reason\": {\"description\": \"One or two sentences: why this score\", \"type\": \"string\"}}, \"required\": [\"text_readable_in_order\", \"clear_sections\", \"headings_found\", \"parse_issues\", \"important_requirements\", \"covered_in_searchable_wording\", \"missed_but_candidate_has\", \"keyword_stuffing\", \"unsupported_keywords\", \"score\", \"reason\"], \"type\": \"object\", \"additionalProperties\": false}, \"AdditionalInformation\": {\"properties\": {\"notes_facts_used\": {\"description\": \"Relevant facts only in the candidate's notes that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"notes_facts_ignored\": {\"description\": \"Relevant facts only in the notes that the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_used\": {\"description\": \"Facts the user gave in the conversation (notice period, details, contact data) that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_ignored\": {\"description\": \"Relevant facts from the conversation the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"misused\": {\"description\": \"Notes or chat facts distorted, overstated, or used where the user said not to\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every relevant extra fact used correctly; use 10 if there was no extra information\", \"type\": \"integer\"}}, \"required\": [\"notes_facts_used\", \"notes_facts_ignored\", \"chat_facts_used\", \"chat_facts_ignored\", \"misused\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"CVStandards\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"has_contact_details\": {\"type\": \"boolean\"}, \"has_summary_or_profile\": {\"type\": \"boolean\"}, \"experience_reverse_chronological\": {\"type\": \"boolean\"}, \"dates_consistent\": {\"type\": \"boolean\"}, \"length_appropriate\": {\"description\": \"Roughly 1-2 pages for the candidate's seniority\", \"type\": \"boolean\"}, \"language_matches_ad\": {\"description\": \"Written in the language the ad expects\", \"type\": \"boolean\"}, \"artefacts\": {\"description\": \"Placeholders, leftover instructions, markdown symbols, duplicated sections, garbled text or LaTeX residue found in the CV text or PDF text\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"has_contact_details\", \"has_summary_or_profile\", \"experience_reverse_chronological\", \"dates_consistent\", \"length_appropriate\", \"language_matches_ad\", \"artefacts\", \"issues\"], \"type\": \"object\", \"additionalProperties\": false}, \"Claim\": {\"properties\": {\"document\": {\"enum\": [\"cv\", \"cover_letter\"], \"type\": \"string\"}, \"claim\": {\"description\": \"The claim about the candidate, quoted briefly from the output document\", \"type\": \"string\"}, \"kind\": {\"enum\": [\"skill_or_tool\", \"employer\", \"job_title\", \"date_or_duration\", \"number_or_metric\", \"education\", \"certification\", \"project\", \"language\", \"responsibility_or_achievement\", \"other\"], \"type\": \"string\"}, \"verdict\": {\"description\": \"supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material\", \"enum\": [\"supported\", \"partly_supported\", \"unsupported\"], \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\", \"none\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Short verbatim quote from the candidate's material that supports it; empty if none\", \"type\": \"string\"}, \"note\": {\"description\": \"Why partly_supported or unsupported; empty otherwise\", \"type\": \"string\"}}, \"required\": [\"document\", \"claim\", \"kind\", \"verdict\", \"source\", \"evidence_quote\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"CoverLetter\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"addressed_to_this_company_and_role\": {\"type\": \"boolean\"}, \"specific_to_company\": {\"description\": \"Uses facts about this company, not generic praise\", \"type\": \"boolean\"}, \"consistent_with_cv\": {\"type\": \"boolean\"}, \"stale_framing\": {\"description\": \"Quotes where the letter reuses the earlier letter's context wrongly (old employer, old role, outdated 'currently' statements)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"tone_and_length_ok\": {\"type\": \"boolean\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"strengths\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"addressed_to_this_company_and_role\", \"specific_to_company\", \"consistent_with_cv\", \"stale_framing\", \"tone_and_length_ok\", \"issues\", \"strengths\"], \"type\": \"object\", \"additionalProperties\": false}, \"Fit\": {\"properties\": {\"requirements\": {\"items\": {\"$ref\": \"#/$defs/Requirement\"}, \"type\": \"array\"}, \"gap_handling_summary\": {\"type\": \"string\"}, \"score\": {\"description\": \"How well the CV presents the candidate's real fit to this ad (10 best)\", \"type\": \"integer\"}}, \"required\": [\"requirements\", \"gap_handling_summary\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"LanguageQuality\": {\"properties\": {\"expected_language_cv\": {\"description\": \"The language the CV should be in: the ad's, unless the user asked for another\", \"type\": \"string\"}, \"expected_language_cover_letter\": {\"description\": \"As for the CV; a user request in the chat for the letter's language wins\", \"type\": \"string\"}, \"cv_language\": {\"type\": \"string\"}, \"cover_letter_language\": {\"type\": \"string\"}, \"right_language_cv\": {\"type\": \"boolean\"}, \"right_language_cover_letter\": {\"type\": \"boolean\"}, \"grammar_and_spelling_errors\": {\"description\": \"Quotes of real errors, with the correction\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"fluency_and_tone_issues\": {\"description\": \"Awkward, machine-like, mixed-language or wrong-register passages, quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"expected_language_cv\", \"expected_language_cover_letter\", \"cv_language\", \"cover_letter_language\", \"right_language_cv\", \"right_language_cover_letter\", \"grammar_and_spelling_errors\", \"fluency_and_tone_issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"Omission\": {\"properties\": {\"fact\": {\"description\": \"A fact about the candidate, relevant to this ad, that neither output uses\", \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\"], \"type\": \"string\"}, \"source_quote\": {\"type\": \"string\"}, \"relevance\": {\"enum\": [\"high\", \"medium\", \"low\"], \"type\": \"string\"}, \"why_it_matters\": {\"type\": \"string\"}}, \"required\": [\"fact\", \"source\", \"source_quote\", \"relevance\", \"why_it_matters\"], \"type\": \"object\", \"additionalProperties\": false}, \"RequestCompliance\": {\"properties\": {\"request\": {\"description\": \"The user's request, quoted briefly from the conversation\", \"type\": \"string\"}, \"expected\": {\"description\": \"From the test script's expectation when given; else follow, or refuse for a request to state something untrue\", \"enum\": [\"follow\", \"refuse\"], \"type\": \"string\"}, \"outcome\": {\"description\": \"followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing\", \"enum\": [\"followed\", \"partly_followed\", \"refused_correctly\", \"refused_wrongly\", \"ignored\", \"followed_untruthful\"], \"type\": \"string\"}, \"app_explained\": {\"description\": \"The app told the user what it did or why it did not\", \"type\": \"boolean\"}, \"evidence\": {\"description\": \"Quote from the final outputs or the app's reply that shows the outcome\", \"type\": \"string\"}, \"note\": {\"type\": \"string\"}}, \"required\": [\"request\", \"expected\", \"outcome\", \"app_explained\", \"evidence\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"Requirement\": {\"properties\": {\"requirement\": {\"description\": \"One requirement from the job ad, in short form\", \"type\": \"string\"}, \"priority\": {\"enum\": [\"must_have\", \"nice_to_have\"], \"type\": \"string\"}, \"candidate_has_it\": {\"description\": \"Judged from the candidate's material only\", \"enum\": [\"yes\", \"partial\", \"no\", \"unclear\"], \"type\": \"string\"}, \"shown_in_cv\": {\"enum\": [\"yes\", \"partial\", \"no\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Quote from the CV that shows it; empty if not shown\", \"type\": \"string\"}, \"gap_handling\": {\"description\": \"For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored\", \"enum\": [\"not_a_gap\", \"honest\", \"overstated\", \"hidden_or_ignored\"], \"type\": \"string\"}}, \"required\": [\"requirement\", \"priority\", \"candidate_has_it\", \"shown_in_cv\", \"evidence_quote\", \"gap_handling\"], \"type\": \"object\", \"additionalProperties\": false}, \"UserRequests\": {\"properties\": {\"requests\": {\"description\": \"Every request the user made in the conversation, beyond simply asking for the CV, the letter or to exit\", \"items\": {\"$ref\": \"#/$defs/RequestCompliance\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every legitimate request followed and every untruthful one refused; use 10 if the user made no requests\", \"type\": \"integer\"}}, \"required\": [\"requests\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"VisualLayout\": {\"properties\": {\"cv_pages_seen\": {\"description\": \"CV pages shown as images\", \"type\": \"integer\"}, \"cover_letter_pages_seen\": {\"type\": \"integer\"}, \"page_count_appropriate\": {\"description\": \"CV 1-2 pages for the seniority (or what the user asked), cover letter one page\", \"type\": \"boolean\"}, \"overflow_or_cutoff\": {\"description\": \"Text cut off, running past a margin or page edge, overlapping or hidden; where\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"spacing_issues\": {\"description\": \"Cramped or uneven spacing, large empty areas, orphaned headings or lines, a nearly empty last page\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"consistency_issues\": {\"description\": \"Inconsistent fonts, sizes, bullet styles, date formats or alignment; the CV and letter not looking like one set\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"readability\": {\"enum\": [\"good\", \"acceptable\", \"poor\"], \"type\": \"string\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = clean professional layout; 0 = unusable. If no images were given, judge only from the measurements and say so in issues\", \"type\": \"integer\"}}, \"required\": [\"cv_pages_seen\", \"cover_letter_pages_seen\", \"page_count_appropriate\", \"overflow_or_cutoff\", \"spacing_issues\", \"consistency_issues\", \"readability\", \"issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"WorkArrangement\": {\"properties\": {\"arrangement_in_sources\": {\"description\": \"What the job ad and company information say about how the job is done\", \"enum\": [\"remote\", \"hybrid\", \"on-site\", \"not stated\"], \"type\": \"string\"}, \"statements_in_outputs\": {\"description\": \"Quotes from the CV or cover letter about work arrangement, location, relocation, availability or the candidate's preference\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"invented_or_wrong\": {\"description\": \"Quotes that state an arrangement, location limit, culture trait or candidate preference that the sources or the candidate's stated preference do not support, or that contradict them\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"culture_used\": {\"description\": \"Culture or values from the company information that the cover letter uses\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"preference_handling\": {\"description\": \"not_given_and_kept_open: no preference given, and the outputs say nothing about it or use only neutral, open wording; not_given_but_stated: a specific preference or commitment was invented; not_given_but_narrowed: the outputs present the job's arrangement or location as a conflict or weakness, or narrow the candidate's options\", \"enum\": [\"not_given_and_kept_open\", \"not_given_but_stated\", \"not_given_but_narrowed\", \"given_and_used_honestly\", \"given_but_misstated\", \"given_and_not_mentioned\"], \"type\": \"string\"}, \"conflict_handling\": {\"description\": \"If the candidate's preference conflicts with the job's arrangement: do the outputs avoid misstating either side?\", \"enum\": [\"no_conflict\", \"conflict_handled_honestly\", \"conflict_hidden_or_misstated\"], \"type\": \"string\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"arrangement_in_sources\", \"statements_in_outputs\", \"invented_or_wrong\", \"culture_used\", \"preference_handling\", \"conflict_handling\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}}, \"properties\": {\"claims\": {\"description\": \"Every factual claim about the candidate in both outputs\", \"items\": {\"$ref\": \"#/$defs/Claim\"}, \"type\": \"array\"}, \"omissions\": {\"items\": {\"$ref\": \"#/$defs/Omission\"}, \"type\": \"array\"}, \"fit\": {\"$ref\": \"#/$defs/Fit\"}, \"cv_standards\": {\"$ref\": \"#/$defs/CVStandards\"}, \"ats\": {\"$ref\": \"#/$defs/ATS\"}, \"cover_letter\": {\"$ref\": \"#/$defs/CoverLetter\"}, \"work_arrangement\": {\"$ref\": \"#/$defs/WorkArrangement\"}, \"visual_layout\": {\"$ref\": \"#/$defs/VisualLayout\"}, \"language_quality\": {\"$ref\": \"#/$defs/LanguageQuality\"}, \"additional_information\": {\"$ref\": \"#/$defs/AdditionalInformation\"}, \"user_requests\": {\"$ref\": \"#/$defs/UserRequests\"}, \"invented_content_score\": {\"description\": \"10 = nothing invented or stretched, 0 = much invented\", \"type\": \"integer\"}, \"completeness_score\": {\"description\": \"10 = every relevant fact used\", \"type\": \"integer\"}, \"overall_score\": {\"type\": \"integer\"}, \"summary\": {\"description\": \"Three to five sentences: the main strengths and problems\", \"type\": \"string\"}}, \"required\": [\"claims\", \"omissions\", \"fit\", \"cv_standards\", \"ats\", \"cover_letter\", \"work_arrangement\", \"visual_layout\", \"language_quality\", \"additional_information\", \"user_requests\", \"invented_content_score\", \"completeness_score\", \"overall_score\", \"summary\"], \"type\": \"object\", \"additionalProperties\": false}\nThen fill the remaining fields with the same values as in that complete evaluation.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# JOB AD\n# Senior Data Engineer – Data Platform\n\n**Company:** Halden Pay (fictional name; cross-border business payments)\n**Location:** Lisbon, Portugal (hybrid, 3 days per week in the office)\n**Team:** Data Platform\n\n## The role\n\nHalden Pay is growing quickly, and data sits at the centre of that plan. We are looking for a Senior Data Engineer to join the Data Platform team. The team builds and runs the shared data platform that analysts, data scientists and product teams rely on, with a focus on reusable frameworks rather than one-off pipelines.\n\n## Responsibilities\n\n- Own the design, build and day-to-day running of the company's central data platform\n- Evaluate and introduce new open-source tools where they bring a clear benefit\n- Work with data scientists, analytics engineers and BI colleagues to turn their needs into platform features\n- Define and enforce data quality standards, governance rules and access policies\n\n## Tech stack\n\n- Cloud: Google Cloud (BigQuery, Cloud Run, GKE)\n- Orchestration and transformation: Airflow, dbt\n- Engineering: Python, SQL, Docker, CI/CD, Git\n\n## Requirements\n\n- Experience designing, building and operating production data platforms or cloud data warehouses at scale\n- Advanced Python and SQL, including query optimisation on large datasets\n- Strong data modelling skills (dimensional modelling; graph modelling is a plus)\n- Hands-on experience with Google Cloud or a comparable cloud (managed warehouse, serverless compute, containers)\n- Curiosity about new data architecture ideas and open-source practices\n- Good professional English; Portuguese is a plus\n\nIf you meet most but not all of the points above, you are still welcome to apply.\n\n## Benefits\n\n- Base salary plus annual bonus\n- Training and certification budget\n- Support for open-source contributions\n- Hybrid work from a central Lisbon office\n\n# COMPANY INFORMATION (web search results the writing tool had)\n## Working at Halden Pay\nURL: https://reviews.example/halden-pay/culture\nHalden Pay employees rate its company culture 3.4 out of 5 as of this year, a little below other financial services companies of a similar size.\n\n## Halden Pay Careers, Perks and Culture\nURL: https://jobsboard.example/company/halden-pay\nBrowse open roles, benefits and culture at Halden Pay, a fintech that offers business accounts, foreign-exchange risk management and trade finance to exporters.\n\n## Halden Pay employee reviews about culture\nURL: https://reviews.example/halden-pay/reviews?topic=culture\nCulture reviews: overall 3.3 from 15 reviews. Reviewers describe a commercially driven culture with friendly colleagues; several say onboarding and training differ a lot between teams.\n\n## Halden Pay | Careers\nURL: https://haldenpay.example/careers\nGrowth and recognition\nWe offer clear career paths, a yearly learning budget and a mentoring programme in every department.\nOur values: Together, Ownership, Pace\nTogether - we share context openly and help each other across teams.\nOwnership - when something goes wrong we own it, fix it and learn from it.\nPace - we cut unnecessary complexity so we can move quickly for our clients.\nHow we work\nMost of our offices work hybrid: people spend three days a week together in the office and the rest wherever suits them. Our engineering teams are organised in product areas: payments, risk, data platform and client experience. Team events and regular get-togethers are part of how we build connections across about 40 offices.\n\n## Data Analyst at Halden Pay\nURL: https://jobsboard.example/jobs/data-analyst-halden-pay\nHalden Pay (Lisbon) office - hybrid, 3 days in the office. Collaborative environment where teamwork and personal development come first.\n\n# CANDIDATE MATERIAL GIVEN TO THE WRITING TOOL\nThe tool was given only these documents about the candidate:\n\n## CANDIDATE'S CV\nTiago Ferrão-Lindqvist\nTest & Validation Engineer (Mechanical)\n\nSetúbal, Portugal - tiago.ferraolindqvist@example.com - +351 555 010 311 - linkedin.com/in/tfl-example\n\nProfile\nMechanical engineer with 12 years in product design and test & validation of automotive and industrial components. I write Python and MATLAB tools that turn test-rig data into reports and engineering decisions, and I want to move into data engineering.\n\nExperience\n\nTest & Validation Engineer, Corvane Automotive Components (seat structures and seat-adjuster mechanisms), Setúbal - Mar 2019 to present\n- Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms across 6 servo-hydraulic and electric test rigs; write the test reports sent to OEM customers.\n- Wrote Python scripts (pandas, NumPy, Matplotlib) that read the rig output files, check every channel against the test specification and produce the standard report figures; report preparation went from about 3 days to half a day per test.\n- Correlate rig results with FEA (ANSYS Mechanical) and lead root-cause analysis (8D) on field failures; the redesigned adjuster rail bracket I proposed cut warranty returns for that part by 40%.\n- Query the plant's test-results database (SQL Server) for trend analysis across three product generations.\n- Maintain MATLAB/Simulink models of the adjuster drive, used to choose rig load profiles.\n\nMechanical Design Engineer, Halvik Pumps (industrial centrifugal pumps), Porto - Sep 2014 to Feb 2019\n- Designed pump casings and impellers in SolidWorks; production drawings with GD&T; DFMEA owner for two product lines.\n- Structural FEA of casings in ANSYS; moved one casing family from grey cast iron to ductile iron, saving 12% material cost.\n- Supported the conversion of the pump performance test bench to a PLC-controlled setup (Siemens S7).\n\nEducation\nMSc Mechanical Engineering, Sado Valley Polytechnic, 2014\nThesis: Fatigue life prediction of welded brackets under variable-amplitude loading\n\nSkills\nPython (pandas, NumPy, Matplotlib), MATLAB/Simulink, SQL, ANSYS Mechanical, SolidWorks, CATIA V5, LabVIEW, Minitab, design of experiments (DOE), GD&T, DFMEA, 8D problem solving, Excel/VBA, Power BI\n\nLanguages\nPortuguese (native), English (fluent), Spanish (good)\n\n## CANDIDATE'S PORTFOLIO (projects and past work)\nPROJECT: Rig data processing and reporting tool (Corvane Automotive Components, 2021-present)\n- Python scripts that parse rig output (TDMS and CSV, about 2 GB per week from 6 rigs), flag channels outside the test specification and generate the report figures.\n- Runs nightly on a lab PC through Windows Task Scheduler and writes summary results to a staging table in the plant's SQL Server database; IT created the table for me.\n- Packaged as an internal tool that 4 other test engineers now use for their own tests.\n- Technologies: Python, pandas, NumPy, Matplotlib, npTDMS, SQL Server.\n\nPROJECT: Test results dashboard (Corvane Automotive Components, 2023)\n- Power BI dashboard on top of the staging table: pass/fail trends, cycles to failure per product generation.\n- Used by about 15 engineers in validation and design.\n- Technologies: Power BI, SQL.\n\nPROJECT: Adjuster drive load-profile model (Corvane Automotive Components, 2020-present)\n- MATLAB/Simulink model of the seat-adjuster drive (motor, gearbox, rail friction) used to pick rig load profiles that match customer duty cycles.\n- Technologies: MATLAB, Simulink.\n\nPROJECT: Bike-sharing trips API (personal learning project, 2025)\n- Small Flask API over a public bike-sharing open dataset loaded into SQLite; three read-only endpoints. Runs on my laptop only.\n- Followed a tutorial to run it with Docker Compose.\n- Technologies: Python, Flask, SQLite, Docker Compose, Git.\n\nEXPERIENCE: Test & Validation Engineer at Corvane Automotive Components (2019-Present)\n- Durability and vibration testing, test-data tooling, root-cause analysis.\n\nEXPERIENCE: Mechanical Design Engineer at Halvik Pumps (2014-2019)\n- Pump design, FEA, test bench support.\n\n## CANDIDATE'S EARLIER COVER LETTER (written for a different, earlier job application)\nDear Corvane Automotive Components Hiring Team,\n\nI am applying for the Test Engineer position in your validation laboratory in Setúbal.\n\nI currently work at Halvik Pumps in Porto as a Mechanical Design Engineer, where I design pump casings and impellers and run structural FEA. Over the last year I have spent more and more time on our performance test bench: I wrote a LabVIEW acquisition program for it that cut test setup time from about two hours to 30 minutes.\n\nMoving from design into testing is a deliberate step for me. I enjoy seeing how a part really behaves, and I would like to bring my design and FEA background to a team that validates products for demanding automotive customers.\n\nI would be glad to relocate to the Setúbal area.\n\nThank you for your time and consideration.\n\nBest regards,\nTiago Ferrão-Lindqvist\n\n## CANDIDATE'S OWN FREE-FORM NOTES\ntiago - notes for the switch to data engineering\n\n- my python is scripts, not a service or anything deployed. no unit tests yet\n- SQL Server: read-only on the main test DB, I can write to one table only. I never designed a schema, IT owns the database\n- no cloud at all. never used AWS/GCP/Azure, no BigQuery\n- never used Airflow, dbt, Spark, Kafka. know what they are from the course\n- doing an online data engineering course, finished 6 of 9 modules, no certificate yet\n- never used Docker at work. no CI/CD\n- PLC: at Halvik I only changed setpoints and timers in TIA Portal with the automation engineer watching. I can't write PLC programs\n- MATLAB models are for load profiles, no code generation, nothing runs on a vehicle\n- Git only since 2025, personal repos\n- trained 3 apprentices on rig safety and test setup, 2022-2024\n- EU citizen (Portuguese). happy to commute to Lisbon for hybrid\n- ok with a junior/mid title and some salary drop\n\n# CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE\n(not given: the candidate stated no preference, so they count as open to the job's arrangement)\n\n# THE USER'S INSTRUCTIONS TO THE WRITING TOOL\n- The user's request: \"Please write my CV first, then the cover letter.\"\n- If the tool asks for contact details the candidate's material lacks: \"I'd rather leave those details out.\"\n- If the tool asks about the job ad: \"That is all the information the ad gives.\"\nThe user made no other requests.\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV (text)\nTiago Ferrão-Lindqvist\nTest & Validation Engineer | Python and SQL Data Tooling\nSetúbal, Portugal | tiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\n\nPROFESSIONAL SUMMARY\nMechanical engineer with 12 years of experience in automotive and industrial product design, testing and validation, transitioning into data engineering. Built scheduled Python data-processing and reporting tooling used by four other engineers, integrating test files with SQL Server and Power BI. Brings practical experience in specification-based data checks, reusable internal tools and engineering stakeholder needs. Portuguese native speaker with fluent English.\n\nTECHNICAL SKILLS\n- Python: pandas, NumPy, Matplotlib, npTDMS; file parsing, specification checks and report generation.\n- SQL and BI: SQL Server queries for trend analysis, summary-result writes to an IT-created staging table, Power BI; SQLite in a personal project.\n- Automation: Windows Task Scheduler for nightly script execution.\n- Development tools: Git in personal repositories since 2025; Flask and tutorial-based Docker Compose use in a local learning project.\n- Engineering: MATLAB/Simulink, LabVIEW, ANSYS Mechanical, SolidWorks, design of experiments, DFMEA and 8D problem solving.\n\nPROFESSIONAL EXPERIENCE\nTest & Validation Engineer | Corvane Automotive Components\nSetúbal, Portugal | Mar 2019 - Present\n- Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB per week with pandas, NumPy and npTDMS.\n- Automated checks of every channel against test specifications and generated standard report figures with Matplotlib, reducing report preparation from about three days to half a day per test.\n- Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results to a SQL Server staging table created by IT; four other test engineers use the internal tool.\n- Query the plant's SQL Server test-results database to analyse trends across three product generations.\n- Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms and prepare reports for OEM customers.\n- Correlate test results with FEA and lead 8D root-cause analysis; a proposed adjuster rail bracket redesign reduced warranty returns for that part by 40%.\n- Trained three apprentices in rig safety and test setup between 2022 and 2024.\n\nMechanical Design Engineer | Halvik Pumps\nPorto, Portugal | Sep 2014 - Feb 2019\n- Designed pump casings and impellers in SolidWorks and owned DFMEA for two product lines.\n- Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time from about two hours to 30 minutes.\n- Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron saved 12% in material cost.\n\nSELECTED PROJECTS\nTest results dashboard | Corvane Automotive Components | 2023\n- Built a Power BI dashboard on the SQL Server staging table showing pass/fail trends and cycles to failure by product generation; used by about 15 validation and design engineers.\n\nBike-sharing trips API | Personal learning project | 2025\n- Built a small Flask API with three read-only endpoints over a public bike-sharing dataset loaded into SQLite.\n- Runs locally on a laptop; followed a tutorial to run it with Docker Compose. Technologies: Python, Flask, SQLite, Docker Compose and Git.\n\nEDUCATION AND PROFESSIONAL DEVELOPMENT\nMSc Mechanical Engineering | Sado Valley Polytechnic | 2014\nThesis: Fatigue life prediction of welded brackets under variable-amplitude loading\n\nOnline data engineering course | In progress\nCompleted six of nine modules; no certificate awarded yet.\n\nLANGUAGES\nPortuguese: native | English: fluent | Spanish: good\n\n# OUTPUT 1b: WHAT AN ATS WOULD READ (plain text extracted from the CV PDF by a standard text extractor)\nTiago Ferrão-Lindqvist\nTest & Validation Engineer | Python and SQL Data Tooling\nSetúbal, Portugal | tiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\nPROFESSIONAL SUMMARY\nMechanical engineer with 12 years of experience in automotive and industrial product design, testing\nand validation, transitioning into data engineering. Built scheduled Python data-processing and\nreporting tooling used by four other engineers, integrating test files with SQL Server and Power BI.\nBrings practical experience in specification-based data checks, reusable internal tools and engineering\nstakeholder needs. Portuguese native speaker with fluent English.\nTECHNICAL SKILLS\n• Python: pandas, NumPy, Matplotlib, npTDMS; file parsing, specification checks and report\ngeneration.\n• SQL and BI: SQL Server queries for trend analysis, summary-result writes to an IT-created staging\ntable, Power BI; SQLite in a personal project.\n• Automation: Windows Task Scheduler for nightly script execution.\n• Development tools: Git in personal repositories since 2025; Flask and tutorial-based Docker\nCompose use in a local learning project.\n• Engineering: MATLAB/Simulink, LabVIEW, ANSYS Mechanical, SolidWorks, design of\nexperiments, DFMEA and 8D problem solving.\nPROFESSIONAL EXPERIENCE\nTest & Validation Engineer | Corvane Automotive Components\nSetúbal, Portugal | Mar 2019 - Present\n• Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB\nper week with pandas, NumPy and npTDMS.\n• Automated checks of every channel against test specifications and generated standard report\nfigures with Matplotlib, reducing report preparation from about three days to half a day per test.\n• Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results\nto a SQL Server staging table created by IT; four other test engineers use the internal tool.\n• Query the plant’s SQL Server test-results database to analyse trends across three product\ngenerations.\n• Plan and run durability, vibration and climatic tests on seat-adjuster mechanisms and prepare\nreports for OEM customers.\n• Correlate test results with FEA and lead 8D root-cause analysis; a proposed adjuster rail bracket\nredesign reduced warranty returns for that part by 40%.\n• Trained three apprentices in rig safety and test setup between 2022 and 2024.\nMechanical Design Engineer | Halvik Pumps\nPorto, Portugal | Sep 2014 - Feb 2019\n• Designed pump casings and impellers in SolidWorks and owned DFMEA for two product lines.\n• Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time\nfrom about two hours to 30 minutes.\n• Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron\nsaved 12% in material cost.\nSELECTED PROJECTS\nTest results dashboard | Corvane Automotive Components | 2023\n• Built a Power BI dashboard on the SQL Server staging table showing pass/fail trends and cycles to\nfailure by product generation; used by about 15 validation and design engineers.\nBike-sharing trips API | Personal learning project | 2025\n• Built a small Flask API with three read-only endpoints over a public bike-sharing dataset loaded\ninto SQLite.\n• Runs locally on a laptop; followed a tutorial to run it with Docker Compose. Technologies:\nPython, Flask, SQLite, Docker Compose and Git.\nEDUCATION AND PROFESSIONAL DEVELOPMENT\nMSc Mechanical Engineering | Sado Valley Polytechnic | 2014\nThesis: Fatigue life prediction of welded brackets under variable-amplitude loading\nOnline data engineering course | In progress\nCompleted six of nine modules; no certificate awarded yet.\nLANGUAGES\nPortuguese: native | English: fluent | Spanish: good\n\n# OUTPUT 2: COVER LETTER (text)\nTiago Ferrão-Lindqvist\nSetúbal, Portugal\ntiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\n\nHalden Pay\nData Platform Hiring Team\n\nDear Hiring Team,\n\nI am applying for the Senior Data Engineer - Data Platform position. At Corvane Automotive Components, I built Python tooling that turns test-rig files into checked results, SQL Server summaries and report figures, reducing report preparation from about three days to half a day per test. Halden Pay's emphasis on reusable frameworks rather than one-off pipelines connects directly with this work: the tool now supports four other test engineers, rather than only my own tests.\n\nThe scripts process about 2 GB of TDMS and CSV data each week from six rigs, check channels against test specifications and run nightly through Windows Task Scheduler. They write summary results to a staging table created by IT. I also built a Power BI dashboard used by about 15 validation and design engineers to examine pass/fail trends and cycles to failure. This work has given me practical experience translating engineering needs into shared data tools and making specification checks part of routine processing.\n\nMy background is in mechanical engineering, and I am making a deliberate transition into data engineering. My experience is with scheduled internal scripts and SQL analysis, not production cloud platforms; I would therefore welcome consideration at a junior or mid-level scope if that better matches your team's needs. I have completed six of nine modules of an online data engineering course and built a local Flask/SQLite learning project using Git and tutorial-based Docker Compose. Alongside that learning, I bring experience investigating failures, delivering measurable improvements and training three apprentices.\n\nI would welcome a conversation about how my Python automation, SQL reporting and experience supporting engineering users could contribute to Halden Pay's Data Platform team. Thank you for considering my application.\n\nBest regards,\nTiago Ferrão-Lindqvist\n\n# OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF\nTiago Ferrão-Lindqvist\nSetúbal, Portugal\ntiago.ferraolindqvist@example.com | +351 555 010 311\nlinkedin.com/in/tfl-example\nHalden Pay\nData Platform Hiring Team\nDear Hiring Team,\nI am applying for the Senior Data Engineer - Data Platform position. At Corvane Automotive\nComponents, I built Python tooling that turns test-rig files into checked results, SQL Server\nsummaries and report figures, reducing report preparation from about three days to half a day\nper test. Halden Pay’s emphasis on reusable frameworks rather than one-off pipelines connects\ndirectly with this work: the tool now supports four other test engineers, rather than only my\nown tests.\nThe scripts process about 2 GB of TDMS and CSV data each week from six rigs, check\nchannels against test specifications and run nightly through Windows Task Scheduler. They\nwrite summary results to a staging table created by IT. I also built a Power BI dashboard\nused by about 15 validation and design engineers to examine pass/fail trends and cycles to\nfailure. This work has given me practical experience translating engineering needs into shared\ndata tools and making specification checks part of routine processing.\nMy background is in mechanical engineering, and I am making a deliberate transition into\ndata engineering. My experience is with scheduled internal scripts and SQL analysis, not\nproduction cloud platforms; I would therefore welcome consideration at a junior or mid-level\nscope if that better matches your team’s needs. I have completed six of nine modules of an\nonline data engineering course and built a local Flask/SQLite learning project using Git and\ntutorial-based Docker Compose. Alongside that learning, I bring experience investigating\nfailures, delivering measurable improvements and training three apprentices.\nI would welcome a conversation about how my Python automation, SQL reporting and\nexperience supporting engineering users could contribute to Halden Pay’s Data Platform\nteam. Thank you for considering my application.\nBest regards,\nTiago Ferrão-Lindqvist\n\n# LAYOUT MEASUREMENTS OF THE PDFS\nCV PDF: 2 page(s), fonts LMRoman10, LMRoman12, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 54.0, 'right': 54.0, 'top': 51.9, 'bottom': 76.6}, last page 42.0% filled. Problems: none found\nCover letter PDF: 1 page(s), fonts LMRoman10, LMRoman12, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 72.0, 'right': 72.0, 'top': 73.3, 'bottom': 285.4}, last page 66.1% filled. Problems: none found\n\n# PAGE IMAGES\nCV: 2 page image(s) attached of 2; Cover letter: 1 page image(s) attached of 1. The images follow this text, CV pages first, in page order.\n\nEvaluate both outputs against the rubric."
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page1.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page2.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cover_letter_page1.png"
+            }
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "Claim": {
+              "properties": {
+                "document": {
+                  "enum": [
+                    "cv",
+                    "cover_letter"
+                  ],
+                  "type": "string"
+                },
+                "claim": {
+                  "description": "The claim about the candidate, quoted briefly from the output document",
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "skill_or_tool",
+                    "employer",
+                    "job_title",
+                    "date_or_duration",
+                    "number_or_metric",
+                    "education",
+                    "certification",
+                    "project",
+                    "language",
+                    "responsibility_or_achievement",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material",
+                  "enum": [
+                    "supported",
+                    "partly_supported",
+                    "unsupported"
+                  ],
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "cv",
+                    "portfolio",
+                    "cover_letter",
+                    "notes",
+                    "chat",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Short verbatim quote from the candidate's material that supports it; empty if none",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "Why partly_supported or unsupported; empty otherwise",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document",
+                "claim",
+                "kind",
+                "verdict",
+                "source",
+                "evidence_quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "RequestCompliance": {
+              "properties": {
+                "request": {
+                  "description": "The user's request, quoted briefly from the conversation",
+                  "type": "string"
+                },
+                "expected": {
+                  "description": "From the test script's expectation when given; else follow, or refuse for a request to state something untrue",
+                  "enum": [
+                    "follow",
+                    "refuse"
+                  ],
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing",
+                  "enum": [
+                    "followed",
+                    "partly_followed",
+                    "refused_correctly",
+                    "refused_wrongly",
+                    "ignored",
+                    "followed_untruthful"
+                  ],
+                  "type": "string"
+                },
+                "app_explained": {
+                  "description": "The app told the user what it did or why it did not",
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "description": "Quote from the final outputs or the app's reply that shows the outcome",
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "request",
+                "expected",
+                "outcome",
+                "app_explained",
+                "evidence",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "Requirement": {
+              "properties": {
+                "requirement": {
+                  "description": "One requirement from the job ad, in short form",
+                  "type": "string"
+                },
+                "priority": {
+                  "enum": [
+                    "must_have",
+                    "nice_to_have"
+                  ],
+                  "type": "string"
+                },
+                "candidate_has_it": {
+                  "description": "Judged from the candidate's material only",
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "shown_in_cv": {
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Quote from the CV that shows it; empty if not shown",
+                  "type": "string"
+                },
+                "gap_handling": {
+                  "description": "For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored",
+                  "enum": [
+                    "not_a_gap",
+                    "honest",
+                    "overstated",
+                    "hidden_or_ignored"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "requirement",
+                "priority",
+                "candidate_has_it",
+                "shown_in_cv",
+                "evidence_quote",
+                "gap_handling"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What an Anthropic grader answers, as native structured output. The Evaluation schema (103 properties) is\nover the API's compiled-grammar limit (a 46-property schema was accepted, 55 were rejected), so the complete\nevaluation comes back first as one JSON string, and the fields after it repeat, schema-guaranteed, everything\nan analysed measure reads. Those repeated fields are authoritative (compose_evaluation).",
+          "properties": {
+            "full_evaluation_json": {
+              "description": "The complete evaluation: one JSON object, as a string, that follows the Evaluation JSON schema in the system prompt, every field filled",
+              "type": "string"
+            },
+            "claims": {
+              "items": {
+                "$ref": "#/$defs/Claim"
+              },
+              "type": "array"
+            },
+            "fit_requirements": {
+              "items": {
+                "$ref": "#/$defs/Requirement"
+              },
+              "type": "array"
+            },
+            "fit_score": {
+              "type": "integer"
+            },
+            "cv_standards_score": {
+              "type": "integer"
+            },
+            "ats_reason": {
+              "type": "string"
+            },
+            "ats_covered_in_searchable_wording": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_missed_but_candidate_has": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_score": {
+              "type": "integer"
+            },
+            "cover_letter_score": {
+              "type": "integer"
+            },
+            "work_arrangement_invented_or_wrong": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "work_arrangement_score": {
+              "type": "integer"
+            },
+            "visual_layout_score": {
+              "type": "integer"
+            },
+            "language_quality_score": {
+              "type": "integer"
+            },
+            "additional_information_score": {
+              "type": "integer"
+            },
+            "user_requests": {
+              "items": {
+                "$ref": "#/$defs/RequestCompliance"
+              },
+              "type": "array"
+            },
+            "user_requests_score": {
+              "type": "integer"
+            },
+            "invented_content_score": {
+              "type": "integer"
+            },
+            "completeness_score": {
+              "type": "integer"
+            },
+            "overall_score": {
+              "type": "integer"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_evaluation_json",
+            "claims",
+            "fit_requirements",
+            "fit_score",
+            "cv_standards_score",
+            "ats_reason",
+            "ats_covered_in_searchable_wording",
+            "ats_missed_but_candidate_has",
+            "ats_score",
+            "cover_letter_score",
+            "work_arrangement_invented_or_wrong",
+            "work_arrangement_score",
+            "visual_layout_score",
+            "language_quality_score",
+            "additional_information_score",
+            "user_requests",
+            "user_requests_score",
+            "invented_content_score",
+            "completeness_score",
+            "overall_score",
+            "summary"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

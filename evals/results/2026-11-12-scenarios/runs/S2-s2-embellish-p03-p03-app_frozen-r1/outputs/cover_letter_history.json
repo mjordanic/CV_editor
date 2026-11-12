@@ -1,0 +1,78 @@
+[
+  {
+    "iteration": 1,
+    "content": "Dear Corvale Mobility Hiring Team,\n\nI’m applying for the Cloud Infrastructure / DevOps Contractor – Fleet Connectivity role. I’m a QA automation engineer moving toward DevOps and platform engineering, with recent experience building and improving CI infrastructure and test environments used by three product teams.\n\nAt Odrava Health Software, I own GitLab CI pipelines supporting around 25 developers. I reduced average pipeline time from 38 to 14 minutes and monthly runner costs by about 30% by profiling and restructuring jobs, and built short-lived merge-request environments using Docker Compose and Helm on a shared Kubernetes cluster. These environments give teams a place to review features and run end-to-end tests before merge. I’ve also collected test results in PostgreSQL and built Grafana dashboards to help teams identify flaky tests. This work has taught me to make infrastructure useful to the teams who depend on it, and to communicate how it works; I authored an internal CI guide used for onboarding and mentored two QA interns.\n\nI’m building my infrastructure-as-code and platform skills through personal projects, including a k3s homelab with GitOps and a Hetzner VPS provisioned with Terraform. My cloud experience is currently learning-focused: I’ve used AWS free-tier EC2 and S3, and I have not used Terragrunt or managed production cloud infrastructure. I would bring a practical foundation in CI/CD, Linux, Kubernetes-based test environments, monitoring and automation, while continuing to develop toward broader infrastructure ownership.\n\nCorvale’s work connecting a new train fleet with cloud services is compelling to me because it combines infrastructure, system design and close collaboration across teams. I’d welcome the opportunity to discuss how my experience improving delivery infrastructure and supporting product teams could contribute to the Fleet Connectivity team.\n\nThank you for your consideration.\n\nMarta Kowal-Brandt",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is professional, clear, and well structured. It uses strong quantified evidence, including reducing pipeline time from 38 to 14 minutes and runner costs by approximately 30%, and it explains the candidate's transition from QA automation toward DevOps. The tone is credible because it accurately distinguishes production experience from personal learning. The main weakness is that it spends valuable space explicitly listing limitations while not fully extracting the strongest relevant evidence from the candidate material, such as cert-manager/TLS, Argo CD, Prometheus/Loki, Linux, and the specific stakeholder impact of the ephemeral environments. It also does not directly demonstrate systems architecture, networking, security, or technical proposal leadership, although the original material provides only limited support for those areas.",
+      "ats_compatibility_feedback": "The letter is ATS-readable: it uses standard paragraphs, a conventional greeting and closing, and searchable terms such as GitLab CI, Kubernetes, Docker Compose, Helm, Terraform, AWS, EC2, S3, PostgreSQL, Grafana, Linux, CI/CD, and infrastructure-as-code. AI screening probability is moderate rather than high because several central job terms are absent or weakly represented, particularly Terragrunt, system design, systems architecture, networking, TLS/certificate management, security, observability, and technical leadership. The letter should not add unsupported claims, but it can use the candidate's documented cert-manager/TLS, monitoring, GitOps, and stakeholder-coordination experience more precisely.",
+      "job_alignment_feedback": "The strongest alignment is with CI/CD infrastructure, Kubernetes-based test environments, automation, monitoring, analytical improvement, documentation, and communication with product and QA teams. The candidate has relevant hands-on infrastructure experience, but it is primarily test infrastructure and shared-cluster namespace-level work rather than production cloud infrastructure ownership. The material shows personal Terraform and AWS learning experience, not strong Terraform/Terragrunt or production AWS operation. It does not establish mTLS, train/vehicle connectivity, IoT or remote-device integration, broader systems architecture, or virtual-machine experience. The letter's candid explanation of the cloud and Terragrunt limitations is professionally responsible, but the role is a demanding contractor position expected to shape infrastructure from the start, so alignment remains partial. The collaboration and ownership themes are supported by owning pipelines, writing onboarding documentation, and mentoring interns, but the letter could connect these more explicitly to Corvale's Lead, Shape, and Own values without inventing experience.",
+      "improvement_instructions": "HIGH-IMPACT: In the third paragraph, replace the limitation-heavy wording beginning \"My cloud experience is currently learning-focused...\" with a more concise, evidence-led statement. For example: \"My production experience is centred on CI/CD and Kubernetes-based test infrastructure rather than production cloud operations. In personal projects, I provisioned a Hetzner VPS with Terraform and built a k3s GitOps homelab; I have also used AWS EC2 and S3 through the free tier. I have not yet used Terragrunt or managed production cloud infrastructure.\" This preserves truthful disclosure while giving the relevant experience more prominence.\n\nHIGH-IMPACT: In the paragraph describing personal projects, add the documented networking and observability details without overstating them. Change the sentence beginning \"I’m building my infrastructure-as-code...\" to include: \"The homelab also uses Argo CD for GitOps, Prometheus, Grafana and Loki for monitoring, Traefik ingress, and cert-manager for TLS.\" Do not describe this as mTLS or production security experience, because the candidate information does not support that claim.\n\nHIGH-IMPACT: In the Odrava paragraph, make stakeholder impact and technical ownership more explicit. After the sentence about short-lived merge-request environments, add: \"The environments gave QA and product teams a shared way to review features before merge, while automated end-to-end tests ran against the same environments.\" This more directly supports the requirement for bringing stakeholders along and supporting teams that depend on infrastructure.\n\nMINOR: In the final paragraph, use one or two supported company-value terms naturally. For example, change \"how my experience improving delivery infrastructure and supporting product teams could contribute\" to \"how my experience owning delivery infrastructure, shaping practical improvements, and supporting product teams could contribute.\" This aligns with Corvale's Lead, Shape, and Own language without claiming unsupported experience with train systems or production cloud architecture.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "I own GitLab CI pipelines supporting around 25 developers... and built short-lived merge-request environments using Docker Compose and Helm on a shared Kubernetes cluster."
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "I authored an internal CI guide used for onboarding and mentored two QA interns."
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "I reduced average pipeline time from 38 to 14 minutes and monthly runner costs by about 30% by profiling and restructuring jobs."
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "I’ve used AWS free-tier EC2 and S3."
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

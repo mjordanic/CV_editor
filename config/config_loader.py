@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 _config_cache: Optional[Dict[str, Any]] = None
 
 
+class ConfigError(ValueError):
+    """A setting the user gave (e.g. an environment variable) cannot be used; startup stops with this message."""
+
+
 def get_config_path() -> str:
     """
     Get the path to the agent_models.yaml configuration file.
@@ -111,12 +115,14 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
         if 'temperature' not in agent_config:
             agent_config['temperature'] = default_temperature
         
-        _apply_model_override(agent_config)
+        _apply_model_override(agent_name, agent_config)
         logger.debug(f"Loaded config for '{agent_name}': model={agent_config.get('model')}, temperature={agent_config.get('temperature')}")
         
         # Return complete config with all fields from YAML
         return agent_config
         
+    except ConfigError:
+        raise
     except Exception as e:
         logger.warning(f"Error loading configuration for '{agent_name}': {e}. Using defaults.")
         return {
@@ -126,15 +132,63 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
 
 
 MODEL_OVERRIDE_ENV = "CV_EDITOR_MODEL"
+CRITIC_MODEL_OVERRIDE_ENV = "CV_EDITOR_CRITIC_MODEL"
+GROUNDING_MODEL_OVERRIDE_ENV = "CV_EDITOR_GROUNDING_MODEL"
+
+# The critic's two calls (the quality review and the fact check) run on a model different from the
+# writers', so the critic does not share the writers' blind spots. CV_EDITOR_MODEL never replaces
+# them; each has its own override.
+CRITIC_OVERRIDE_ENVS = {
+    "critique": CRITIC_MODEL_OVERRIDE_ENV,
+    "grounding": GROUNDING_MODEL_OVERRIDE_ENV,
+}
 
 
-def _apply_model_override(agent_config: Dict[str, Any]) -> None:
+# Providers that run on the user's own machine. A local CV_EDITOR_MODEL means "send nothing to a
+# cloud provider", so it also applies to the critic unless the critic's own variables are set.
+LOCAL_PROVIDERS = ("ollama",)
+
+
+def is_local_model(model: Optional[str]) -> bool:
+    return bool(model) and model.split(":", 1)[0].strip().lower() in LOCAL_PROVIDERS
+
+
+def model_override(agent_name: str) -> Optional[str]:
+    """
+    The model that replaces this agent's model(s) for one run, or None.
+
+    Writer-side agents follow CV_EDITOR_MODEL. The critic's two calls follow their own variables
+    (CV_EDITOR_CRITIC_MODEL, CV_EDITOR_GROUNDING_MODEL), never a cloud CV_EDITOR_MODEL. A local
+    CV_EDITOR_MODEL (e.g. "ollama:gemma4:e4b") also applies to them when their own variable is not
+    set: a local run must not send the candidate's material to a cloud model, nor fail at startup
+    without a cloud key. The checker then shares the writer's model, which is logged.
+    """
+    writer_model = os.environ.get(MODEL_OVERRIDE_ENV, "").strip()
+    own_env = CRITIC_OVERRIDE_ENVS.get(agent_name)
+    if own_env is None:
+        return writer_model or None
+    own = os.environ.get(own_env, "").strip()
+    if own:
+        return own
+    if is_local_model(writer_model):
+        logger.warning(f"{MODEL_OVERRIDE_ENV}={writer_model} is a local model and {own_env} is not set: "
+                       f"'{agent_name}' uses the same model, so the checker shares the writer's model")
+        return writer_model
+    return None
+
+
+def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None:
     """
     If CV_EDITOR_MODEL is set (e.g. "ollama:gemma4:e4b" or "openai:gpt-6-luna"), use that model for
-    every agent that uses one, in place of the models in agent_models.yaml. Handy for local runs
-    and for comparing models without editing the file.
+    every writer-side agent that uses one, in place of the models in agent_models.yaml. Handy for
+    local runs and for comparing models without editing the file.
+
+    The critic is exempt: it is meant to run on a different model from the writers', so
+    CV_EDITOR_CRITIC_MODEL replaces the quality review's model ('critique') and
+    CV_EDITOR_GROUNDING_MODEL the fact check's ('grounding'). Only a local CV_EDITOR_MODEL also
+    reaches them when those are not set (see model_override).
     """
-    override = os.environ.get(MODEL_OVERRIDE_ENV, "").strip()
+    override = model_override(agent_name)
     if not override:
         return
     for key in ("model", "filter_model"):
@@ -143,9 +197,17 @@ def _apply_model_override(agent_config: Dict[str, Any]) -> None:
     # Some models accept only their default temperature: CV_EDITOR_TEMPERATURE=default leaves it unset.
     temperature = os.environ.get("CV_EDITOR_TEMPERATURE", "").strip()
     if temperature and agent_config.get("model"):
+        if temperature == "default":
+            value = None
+        else:
+            try:
+                value = float(temperature)
+            except ValueError:
+                raise ConfigError(f"CV_EDITOR_TEMPERATURE={temperature!r} is not a number: use e.g. 0.2 "
+                                  "(with a point), or 'default' for the model's own temperature") from None
         for key in ("temperature", "filter_temperature"):
             if key in agent_config:
-                agent_config[key] = None if temperature == "default" else float(temperature)
+                agent_config[key] = value
 
 
 def local_model_kwargs(model: Optional[str]) -> Dict[str, Any]:
@@ -161,16 +223,21 @@ def local_model_kwargs(model: Optional[str]) -> Dict[str, Any]:
     return {"num_ctx": int(os.environ.get("CV_EDITOR_OLLAMA_NUM_CTX", "16384")), "reasoning": False}
 
 
-def get_all_agents() -> Dict[str, Dict[str, Any]]:
+# The environment variable each hosted provider's API key is read from.
+PROVIDER_KEY_ENVS = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
+
+
+def missing_api_keys() -> list[str]:
     """
-    Get configuration for all agents.
-    
-    Returns:
-        dict: Dictionary mapping agent names to their configurations
+    The API key variables that the configured models (after the CV_EDITOR_* overrides) need and that are not set,
+    e.g. ["OPENAI_API_KEY"]; empty for a fully local run. Checked at startup so a missing key stops the program
+    with one clear line instead of a traceback from the first model client.
     """
-    try:
-        config = load_config()
-        return config.get('agents', {})
-    except Exception as e:
-        logger.error(f"Error loading all agent configurations: {e}")
-        return {}
+    needed = set()
+    for name in (load_config().get("agents") or {}):
+        cfg = get_agent_config(name)
+        for key in ("model", "filter_model"):
+            provider = str(cfg.get(key) or "").split(":", 1)[0].strip().lower()
+            if provider in PROVIDER_KEY_ENVS:
+                needed.add(PROVIDER_KEY_ENVS[provider])
+    return sorted(env for env in needed if not os.environ.get(env, "").strip())

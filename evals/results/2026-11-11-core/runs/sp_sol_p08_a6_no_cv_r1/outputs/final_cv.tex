@@ -1,0 +1,56 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.35em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em,parsep=0pt}
+\pagestyle{empty}
+\begin{document}
+{\Huge\bfseries\color{primarycolor} Oskar}\par
+{\large\color{accentcolor} Full-Stack Developer | React, TypeScript, Node.js}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Full-stack developer with professional experience since 2014, strongest in frontend development. Builds onboarding features with React and TypeScript, backed by NestJS, PostgreSQL and AWS. Experience includes identity verification, secure document uploads, A/B testing and technical leadership on a mobile app with approximately 50,000 downloads.
+
+\cvsection{TECHNICAL SKILLS}
+\textbf{Frontend:} React, TypeScript, React Native, Angular\\
+\textbf{Backend and databases:} Node.js, NestJS, Express, PostgreSQL, Prisma, TypeORM\\
+\textbf{AWS:} ECS, S3, Lambda, SQS\\
+\textbf{Additional experience:} Third-party SDK integration, A/B testing, Apollo Server BFF maintenance, Laravel, WordPress
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\textbf{Fullstack Developer | Älvgrind Fintech AB | 2021–Present}\par
+Onboarding team working with React, TypeScript, NestJS, PostgreSQL and AWS.
+\begin{itemize}
+\item Implemented a BankID identity verification step using a provider SDK, supporting QR-code and same-device flows with React, TypeScript, NestJS, PostgreSQL and AWS ECS (2022).
+\item A/B tested the identity step on 10\% of traffic before full rollout; onboarding conversion increased from 61\% to 74\%.
+\item Built a document-upload flow for ID documents up to 20 MB using S3 presigned URLs, ClamAV scanning in Lambda and scan-status processing through SQS into PostgreSQL (2023).
+\item Incrementally migrated the onboarding backend from Express to NestJS, route by route behind the same API gateway, using TypeORM and later Prisma (2021–2022). Presented the migration at a meetup in 2022.
+\item Served as acting team lead for four months during parental-leave cover in 2024, conducting one-to-ones and sprint planning.
+\end{itemize}
+
+\textbf{Developer | Sjöbris Digital Agency AB | 2018–2021}
+\begin{itemize}
+\item Delivered client web and mobile projects using Angular, React, React Native, Node.js, Laravel and WordPress.
+\item Led the technical delivery of a React Native ferry-ticket app in a two-developer team, building most of the app while the other developer handled the payment backend (2019–2020).
+\item Supported ticket purchasing and offline ticket display; the app reached approximately 50,000 downloads. Technologies included TypeScript, Node.js and Firebase Cloud Messaging.
+\end{itemize}
+
+\textbf{Earlier Experience | Nordkust Media | Four years before Sjöbris Digital}
+\begin{itemize}
+\item Developed newspaper websites.
+\end{itemize}
+\end{document}

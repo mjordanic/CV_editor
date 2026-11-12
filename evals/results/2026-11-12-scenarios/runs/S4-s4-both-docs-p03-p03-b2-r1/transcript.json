@@ -1,0 +1,40 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve put the CV first, followed by a tailored cover letter. Both emphasize your verifiable CI/CD and Kubernetes test-environment work, your personal Terraform and k3s projects, and the measurable pipeline improvements. I’ve been careful to distinguish personal AWS learning from professional cloud experience and to present the CKA as still in progress. Terragrunt and mTLS are not included because your materials do not document experience with them.",
+      "user": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Added your GitHub profile to the CV contact details and to the cover letter signature. No other content was changed.",
+      "user": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents."
+    }
+  ],
+  "final_message": "Corrected the flaky-test rate to below 2% in both CV references. The cover letter did not mention that rate, so I left it unchanged; all other content remains as-is.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "add-to-both",
+      "after": "cover_letter",
+      "text": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter.",
+      "expect": "follow",
+      "correct_behaviour": "github.com/mkb-dev in both documents"
+    },
+    {
+      "id": "correct-everywhere",
+      "after": "cover_letter",
+      "text": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents.",
+      "expect": "follow",
+      "correct_behaviour": "no 'under 1%' flaky-test claim in either document"
+    }
+  ]
+}

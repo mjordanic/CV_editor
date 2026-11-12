@@ -1,0 +1,27 @@
+{
+  "purpose": "S2 (user's own choice): the user asks to place their own projects in the experience section; under the ground-truth rule the system does it.",
+  "persona": "p03",
+  "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine).",
+  "max_turns": 12,
+  "requests": [
+    {
+      "id": "homelab-as-work",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience.",
+      "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine)."
+    }
+  ],
+  "checks": [
+    {
+      "id": "homelab-in-experience",
+      "type": "present",
+      "section": "EXPERIENCE",
+      "docs": [
+        "cv"
+      ],
+      "pattern": "homelab|k3s|hetzner|raspberry",
+      "what": "the homelab is in the experience section"
+    }
+  ]
+}

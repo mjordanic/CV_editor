@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.65in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\definecolor{headingcolor}{RGB}{0,100,0}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{headingcolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.9em}{0.35em}
+\setlist[itemize]{leftmargin=*,itemsep=0.12em,topsep=0.18em}
+\pagestyle{empty}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\[0.45em]
+{\small Wroclaw, Poland | marta.kowalbrandt@example.com | +48 555 303 303 | \href{https://gitlab.com/mkb-example}{gitlab.com/mkb-example}}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience, including the last two focused mostly on CI/CD pipelines, test environments and build tooling. Owns GitLab CI pipelines for three product teams and has built short-lived Kubernetes test environments with Helm. Personal infrastructure projects include a k3s cluster deployed with GitOps, monitoring and logging, and Terraform-provisioned infrastructure for a Hetzner VPS. Seeking to move into a DevOps or platform engineering role.
+
+\section*{TECHNICAL SKILLS}
+\textbf{Infrastructure and delivery:} GitLab CI, Jenkins, Docker, Docker Compose, Helm, Terraform (personal project)\\
+\textbf{Kubernetes and GitOps:} Kubernetes (namespace-level access and Helm test environments at work); k3s and Argo CD (personal project)\\
+\textbf{Observability:} Prometheus, Grafana, Loki; Grafana dashboards for test metrics\\
+\textbf{Programming and data:} Python, Bash, Java (test code), SQL, PostgreSQL\\
+\textbf{Testing:} pytest, Playwright, Selenium, Postman\\
+\textbf{Systems:} Linux, Git; AWS EC2 and S3 basics (personal learning)
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021--Present}
+\begin{itemize}
+\item Own GitLab CI pipelines for three product teams (approximately 25 developers), covering build, unit, integration and end-to-end test stages, and artifact publishing.
+\item Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests into their own stage; reduced monthly CI runner costs by about 30\%.
+\item Built short-lived merge-request test environments with Docker Compose and later Helm on the company's shared Kubernetes cluster; environments run end-to-end tests and are automatically removed after merge or 48 hours of inactivity.
+\item Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced the flaky-test rate from 7\% to below 1\%.
+\item Wrote Bash and Python tooling for seeding PostgreSQL test data and created Grafana dashboards for flaky-test metrics.
+\item Wrote the internal guide to how CI works, which is used in team onboarding; mentored two QA interns in 2023.
+\end{itemize}
+\textbf{QA Engineer | Brightmill Software House, Wroclaw | 2019--2021}
+\begin{itemize}
+\item Tested web and mobile applications for client projects using manual and automated testing.
+\item Introduced a Selenium and Java automated regression suite for the largest client project.
+\item Configured Jenkins jobs for nightly regression runs.
+\end{itemize}
+
+\section*{SELECTED INFRASTRUCTURE PROJECTS}
+\textbf{Homelab k3s Cluster with GitOps | Personal | 2024--2025}
+\begin{itemize}
+\item Operated a three-node Raspberry Pi 5 k3s cluster, deploying applications from a Git repository with Argo CD.
+\item Set up Prometheus, Grafana and Loki for monitoring and logging, with Traefik ingress and cert-manager for TLS.
+\item Provisioned infrastructure for a small Hetzner VPS with Terraform; used Ansible at a basic level.
+\end{itemize}
+\textbf{Merge-Request Ephemeral Environments | Odrava Health | 2023--2024}
+\begin{itemize}
+\item Enabled each merge request to receive a short-lived environment for the application, PostgreSQL and seeded data, deployed via Helm from GitLab CI to the shared Kubernetes cluster.
+\item Configured automatic cleanup after merge or 48 hours of inactivity; QA and product teams use the environments to review features before merge and run end-to-end tests.
+\end{itemize}
+
+\section*{EDUCATION}
+BEng, Computer Engineering | Silesian Lowlands University of Technology | 2018
+
+\section*{CERTIFICATION AND PROFESSIONAL DEVELOPMENT}
+ISTQB Foundation Level | 2019\\
+Studying for the Certified Kubernetes Administrator (CKA); exam booked for January 2027.
+
+\section*{LANGUAGES}
+Polish (native), English (C1), German (A2)
+\end{document}

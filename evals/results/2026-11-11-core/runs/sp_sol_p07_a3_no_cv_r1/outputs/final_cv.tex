@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.45em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[2]{\par\noindent\textbf{#1}\par\noindent #2\par}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\setlist[itemize]{leftmargin=*,itemsep=0.18em,topsep=0.3em,parsep=0pt}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Samuel Achterberg-Osei}\par
+{\large\color{accentcolor} Cloud Engineer | Azure Infrastructure | DevOps}
+
+\cvsection{Professional Summary}
+Cloud engineer with hands-on experience designing and operating Azure infrastructure, maintaining Terraform modules and automating deployments with Azure DevOps. Background in Windows and Linux systems administration, cloud migration and PowerShell automation. Delivered hub-spoke networking across three Azure subscriptions and deployment pipelines for 15 internal applications. Led a 60-server migration to Azure with no unplanned downtime.
+
+\cvsection{Professional Experience}
+\cvrole{Cloud Engineer (contract) | Havenstad Logistics}{2025–Present}
+\begin{itemize}
+\item Built Azure landing zone networking in Terraform: hub-spoke topology, Azure Firewall, private DNS zones, private endpoints for storage and SQL, and VNet peering across three subscriptions.
+\item Added Terraform module tests using Terratest in the pipeline and a nightly drift detection job.
+\item Replaced manual deployments for 15 internal .NET and Node applications with Azure DevOps YAML pipelines covering build, test and deployment to App Service or AKS.
+\item Increased deployment frequency from roughly monthly to several times per week for most applications.
+\item Operate AKS clusters, including upgrades, node pools and ingress; application manifests are owned by developers.
+\item Work with Docker and Helm in application delivery pipelines.
+\end{itemize}
+
+\cvrole{Freelance IT Services}{2022–2023}
+\begin{itemize}
+\item Created a repeatable Microsoft 365 security baseline for small-business clients using PowerShell and a checklist.
+\item Enabled MFA, conditional access, mailbox auditing and backups using Microsoft 365 and Entra ID.
+\end{itemize}
+
+\cvrole{Systems Administrator | Maasbrug Gemeente IT Services}{2014–2020}
+\begin{itemize}
+\item Administered approximately 250 Windows and Linux servers and supported staff across several municipal services.
+\item Led the planning and execution of a lift-and-shift migration of 60 servers from VMware to Azure IaaS in 2019 using Azure Migrate.
+\item Completed cut-over over six weekends with no unplanned downtime, using Azure VMs, VNets and site-to-site VPN connectivity.
+\item Automated repetitive administration tasks with PowerShell.
+\end{itemize}
+
+\newpage
+\cvsection{Technical Skills}
+\begin{itemize}
+\item Cloud infrastructure: Microsoft Azure, Azure landing zones, Azure VMs, App Service, Azure Migrate.
+\item Infrastructure as code: Terraform modules, Terratest module testing, nightly drift detection; Go limited to Terratest tests.
+\item CI/CD and containers: Azure DevOps YAML pipelines, Docker, Helm; AKS operations including upgrades, node pools and ingress.
+\item Network design and security: hub-spoke networking, Azure Firewall, VNet peering, private DNS, private endpoints, site-to-site VPN, MFA and conditional access.
+\item Systems and scripting: Windows Server, Linux, VMware, PowerShell; Python for small scripts and reading code.
+\end{itemize}
+
+\cvsection{Certifications}
+\begin{itemize}
+\item Microsoft Certified: Azure Administrator Associate.
+\item HashiCorp Certified: Terraform Associate, 2025.
+\end{itemize}
+
+\cvsection{Professional Development}
+\begin{itemize}
+\item Completed a three-month, part-time online cloud bootcamp delivered in English, December 2024.
+\item Built a Proxmox homelab and studied Terraform during a career break.
+\end{itemize}
+
+\cvsection{Career Breaks}
+\begin{itemize}
+\item February 2024–February 2025: Career break following a period without contract work; focused on Terraform study, a Proxmox homelab and cloud training.
+\item March 2020–August 2022: Full-time family caregiving; maintained AZ-104 knowledge and provided unpaid IT help to church and family.
+\end{itemize}
+\end{document}

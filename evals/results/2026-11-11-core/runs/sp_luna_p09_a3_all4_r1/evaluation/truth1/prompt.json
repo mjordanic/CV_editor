@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "a0c9b34ca523b108745d8016fa768833e94c9b590ac56a4de8548c9f555a3f2a",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: GCP\nG2: Azure\nG3: Istio/Linkerd in production\nG4: CKAD (expired)\nG5: line management\n\n# TRAPS (mistakes a writer could make)\nT1: Listing Istio or service mesh because SRE ads ask for it\nT2: Listing CKAD\nT3: Claiming GCP/Azure for multi-cloud ads\nT4: Claiming people management / Engineering Manager\nT5: Over-crediting Backstage plugin development\nT6: Old cover letter is to her current employer and says she is at Brightwater\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nNADIA BRENNAN-AZIZ\nSenior Site Reliability / Platform Engineer\nnadia.brennanaziz@example.com | +44 7700 900909 | github.com/nba-sre-example\nPROFESSIONAL SUMMARY\nSenior site reliability and platform engineer with 10 years of infrastructure experience, including six\nyears running Kubernetes platforms on AWS. Technical lead for a platform team, with hands-on\nexperience designing, building and operating cloud infrastructure, internal developer platforms and\ninfrastructure as code. Focused on reliable, observable platforms and self-service paths that help\nproduct teams deploy services safely and quickly.\nCORE SKILLS\nAWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront); Kubernetes; Terraform;\ninfrastructure as code; cloud infrastructure design and operation; Linux; Go; Python; Bash; Argo CD;\nCrossplane; Karpenter; Helm; Kustomize; Atlantis; Prometheus; Grafana; Loki; Alertmanager;\nOpenTelemetry; SLOs and error budgets; incident management; k6; GitHub Actions; Puppet.\nPROFESSIONAL EXPERIENCE\nSenior Platform Engineer | Tallybrook Ltd (B2B accounting SaaS) | Apr 2022–Present\n• Technical lead of a five-person platform team; run an AWS EKS platform spanning eight clusters,\napproximately 350 services and three regions.\n• Designed and built an internal developer platform with Go and Python service templates, Argo\nCD GitOps and Crossplane self-service for RDS, SQS and S3. Adopted by all 14 product teams;\nreduced time from new service to production from approximately two weeks to under one day.\n• Introduced SLOs, burn-rate alerts and error budgets for the 20 most critical services, agreeing the\nerror budget policy with product leadership. Reduced on-call pages per week by approximately\n60%.\n• Replaced cluster-autoscaler managed node groups with Karpenter and spot instances for stateless\nworkloads; reduced EC2 spend by 38% (approximately GBP 410k per year).\n• Serve in the incident commander rotation and established the incident and post-mortem process.\nSite Reliability Engineer | Brightwater Games | Jan 2019–Mar 2022\n• Operated AWS game-backend infrastructure across EC2, ECS and EKS for titles with up to 1.2\nmillion daily active players.\n• Managed AWS infrastructure as code with approximately 40 Terraform modules and Atlantis\nplan/apply workflows on pull requests.\n• Replaced a noisy Nagios setup with Prometheus, Grafana, Alertmanager and Loki.\n• Used k6 load tests and launch-day capacity planning to prepare services for releases; a test\nsimulating 300,000 concurrent players identified a connection-pool limit before launch.\nLinux Systems Engineer | Pennine Hosting | Jul 2016–Dec 2018\n• Managed approximately 600 Linux servers for hosting customers using Puppet configuration\nmanagement.\n• Automated operational tasks with Bash and Python and participated in on-call support for\ncustomer incidents.\nADDITIONAL EXPERIENCE AND CONTRIBUTIONS\n• Built an open-source Kubernetes controller in Go to delete expired preview namespaces;\napproximately 120 GitHub stars.\n• Delivered the talk “SLOs that product managers care about” at a UK DevOps meetup in 2024.\n• Mentored three engineers moving from backend development into SRE.\nEDUCATION\nBSc Computer Science | University of the North Moors | 2016\nCERTIFICATIONS\nCertified Kubernetes Administrator (CKA) | 2021, renewed 2024\nAWS Certified Solutions Architect – Professional | 2023\nLANGUAGES\nEnglish (native); Urdu (conversational)\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility hiring team,\nI am applying for the Cloud Infrastructure / DevOps Contractor role. The opportunity to\nhelp shape the cloud infrastructure for Corvale’s new train fleet—from vehicle connectivity\nthrough to reliable backend services—aligns closely with my experience building and operating\nAWS platforms for production systems.\nAs technical lead of Tallybrook’s platform team, I run an EKS platform across eight clusters\nand have built an internal developer platform used by all 14 product teams. By combining\nservice templates, Argo CD GitOps and Crossplane self-service for AWS services, we reduced\nthe time to take a new service to production from approximately two weeks to under one day.\nI also work across reliability and operational readiness: our SLO programme reduced on-call\npages by approximately 60%, and I established the incident and post-mortem process.\nMy earlier experience at Brightwater Games includes hands-on AWS infrastructure\nengineering with Terraform, observability using Prometheus and Grafana, and load testing\nand capacity planning for game launches. Across these roles, I have focused on practical\ninfrastructure that is approachable for developers and dependable in production. My AWS\nexperience also includes VPC and IAM, alongside Linux systems administration and\nautomation with Go, Python and Bash.\nI would welcome the opportunity to discuss how my platform, infrastructure-as-code and\nreliability experience could contribute to Corvale’s fleet connectivity work. Thank you for\nyour consideration.\nBest wishes,\nNadia Brennan-Aziz\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
