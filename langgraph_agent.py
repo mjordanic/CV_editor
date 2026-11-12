@@ -34,6 +34,7 @@ from agents.rag_agent import ExperienceRetrievalAgent
 from agents.cv_pdf_generator import CVPDFGenerator
 from agents.cover_letter_pdf_generator import CoverLetterPDFGenerator
 from agents.missing_details import make_ask_missing_details, route_after_ask, route_after_finalize
+from agents.notices import pending_notices
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,8 @@ def move_earlier_outputs(folder: str = os.path.join("data", "generated_CVs")) ->
     """
     if not os.path.isdir(folder):
         return None
-    entries = [e for e in os.listdir(folder) if e != "earlier" and not e.startswith(".")]
+    entries = [e for e in os.listdir(folder) if e != "earlier" and not e.startswith(".")
+               and not (os.path.isdir(os.path.join(folder, e)) and not os.listdir(os.path.join(folder, e)))]
     if not entries:
         return None
     target = os.path.join(folder, "earlier", datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -65,6 +67,20 @@ def move_earlier_outputs(folder: str = os.path.join("data", "generated_CVs")) ->
     for entry in entries:
         shutil.move(os.path.join(folder, entry), os.path.join(target, entry))
     return target
+
+
+def enter_project_dir() -> bool:
+    """
+    Relative paths (templates/, data/, logs/, debug/) are the project folder's: started from any other folder, work
+    in the project folder, and still find a file path the user types relative to the folder they started in.
+    Returns whether the working folder was switched.
+    """
+    if os.path.samefile(os.getcwd(), PROJECT_DIR):
+        return False
+    from agents.document_reader import add_user_dir
+    add_user_dir(os.getcwd())
+    os.chdir(PROJECT_DIR)
+    return True
 
 
 def _console_filter(record: logging.LogRecord) -> bool:
@@ -158,6 +174,8 @@ class State(TypedDict, total=False):
     cover_letter_user_requests: list[str] | None  # The user's requests for the cover letter so far
     cv_request_notes: str | None  # The CV writer's notes on the user's latest request; the router tells the user what was not applied as asked, then clears them
     cover_letter_request_notes: str | None  # The same for the cover letter
+    cv_feedback_to_confirm: str | None  # A request for the CV kept from a message about the cover letter; the router asks before applying it
+    cover_letter_feedback_to_confirm: str | None  # The same for the cover letter
     cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cv_previous_defect_count: int | None  # Requirements the previous draft of this cycle did not show (None for the first draft)
@@ -537,6 +555,9 @@ class MasterAgent:
                 result = self.graph.invoke(Command(resume=human_input), config=config)
         except (SessionEnded, EOFError, KeyboardInterrupt) as e:
             reason = {EOFError: "the input ended", KeyboardInterrupt: "Ctrl+C"}.get(type(e)) or str(e)
+            notices = pending_notices(self.graph.get_state(config).values)
+            if notices:
+                logger.info("\n\n" + "\n\n".join(notices))
             logger.info(f"Session ended ({reason}). Documents made so far are in data/generated_CVs/.")
 
 
@@ -561,13 +582,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Relative paths (templates/, data/, logs/, debug/) are the project folder's. Started from a folder that is not
-    # a working folder (no templates/), work in the project folder; a file path the user types is still found
-    # relative to the folder they started in.
-    if not os.path.isdir("templates"):
-        from agents.document_reader import add_user_dir
-        add_user_dir(os.getcwd())
-        os.chdir(PROJECT_DIR)
+    if enter_project_dir():
         print(f"Working in the project folder {PROJECT_DIR} (data/, logs/ and the PDFs are there).")
 
     from config.config_loader import ConfigError, missing_api_keys

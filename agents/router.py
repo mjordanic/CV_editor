@@ -142,6 +142,16 @@ def _latest_user_message(messages: list) -> str:
     return ""
 
 
+_CV_WORDS = re.compile(r"\b(cv|resume|lebenslauf|životopis)\b", re.I)
+_LETTER_WORDS = re.compile(r"\b(cover letter|letter|anschreiben|motivacijsko pismo)\b", re.I)
+_BOTH_WORDS = re.compile(r"\b(both|beide|oba)\b", re.I)
+
+
+def _names_both_documents(text: str) -> bool:
+    """Whether the user's message names both documents (or says 'both')."""
+    return bool(_BOTH_WORDS.search(text or "")) or bool(_CV_WORDS.search(text or "") and _LETTER_WORDS.search(text or ""))
+
+
 STYLE_REQUESTS_HEADER = "Apply every style request below; where two conflict, the later one wins:"
 
 
@@ -662,8 +672,15 @@ class RouterAgent:
         # One user message with changes for both existing documents: the router redrafted one and
         # kept the other's request (feedback for an existing document is stored only for this, and
         # finalize clears it). Once the first is done (the latest message is no longer the user's),
-        # redraft the other with its request before the user is asked anything.
+        # redraft the other with its request before the user is asked anything. A request the user
+        # did not address to both documents is not applied to the other one without asking.
+        to_confirm = None
         if not self._has_user_feedback(messages):
+            to_confirm = next(
+                ((kind, pending.strip()) for kind in ("cover_letter", "cv")
+                 if (pending := state.get(f"{kind}_feedback_to_confirm")) and pending.strip()),
+                None,
+            )
             for kind, generated in (("cover_letter", generated_cover_letter), ("cv", generated_cv)):
                 pending = state.get(f"{kind}_content_feedback")
                 if pending and pending.strip() and generated:
@@ -714,6 +731,13 @@ class RouterAgent:
             ask = "Tell me what you would like to change in the CV or cover letter, or type 'exit' to finish."
             response.message_to_user = f"{done_note}\n\n{notes}\n\n{ask}" if notes else f"{done_note} {ask}"
             next_action = "collect_user_input"
+        if to_confirm:
+            kind, request = to_confirm
+            label = "cover letter" if kind == "cover_letter" else "CV"
+            question = (f"Should I make the same change to the {label} too: \"{request}\"? "
+                        f"Reply yes to apply it, or tell me what to change instead.")
+            response.message_to_user = "\n\n".join(m for m in (response.message_to_user, question) if m)
+            next_action = "collect_user_input"
         
         # Pending fixed notices (e.g. claims still unsupported in a final draft, a PDF that does not
         # match its text) go in front of the next message the user sees, word for word: the model
@@ -757,13 +781,20 @@ class RouterAgent:
         cv_feedback = (response.cv_content_feedback or "").strip()
         cover_letter_feedback = (response.cover_letter_content_feedback or "").strip()
         latest_user_message = _latest_user_message(messages)
+        both_named = _names_both_documents(latest_user_message)
+        # A request kept for the other document waits for one reply from the user (asked above).
+        confirmed = {}
+        for kind in _WRITER_NOTE_LABELS:
+            if latest_user_message and state.get(f"{kind}_feedback_to_confirm"):
+                confirmed[kind] = state[f"{kind}_feedback_to_confirm"]
+                return_state[f"{kind}_feedback_to_confirm"] = None
 
         if next_action == "draft_cv":
             return_state.update(_new_draft_cycle("cv", state))
             if not cv_feedback and generated_cv and latest_user_message:
                 # A cheap model sometimes routes to draft_cv but leaves the feedback field empty;
                 # without this the writer would get no instruction and the request would be lost.
-                cv_feedback = latest_user_message
+                cv_feedback = confirmed.get("cv") or latest_user_message
                 logger.info("Router left cv_content_feedback empty - using the user's latest message as the CV request")
             if cv_feedback:
                 return_state["cv_content_feedback"] = cv_feedback
@@ -773,16 +804,18 @@ class RouterAgent:
             logger.info(f"Storing CV content feedback (will be used when the CV is drafted): {cv_feedback[:100]}")
         elif cv_feedback and next_action == "draft_cover_letter":
             # One message with changes for both existing documents: the cover letter goes first,
-            # and the CV is redrafted with this request once the letter is finalized (see above).
-            return_state["cv_content_feedback"] = cv_feedback
-            logger.info(f"Storing CV content feedback (will be applied after the cover letter): {cv_feedback[:100]}")
+            # and the CV is redrafted with this request once the letter is finalized (see above),
+            # or, if the message did not name both documents, the user is asked first.
+            key = "cv_content_feedback" if both_named else "cv_feedback_to_confirm"
+            return_state[key] = cv_feedback
+            logger.info(f"Storing CV content feedback (after the cover letter, as {key}): {cv_feedback[:100]}")
         elif cv_feedback:
             logger.info("CV feedback extracted but the router did not choose draft_cv - not storing it")
 
         if next_action == "draft_cover_letter":
             return_state.update(_new_draft_cycle("cover_letter", state))
             if not cover_letter_feedback and generated_cover_letter and latest_user_message:
-                cover_letter_feedback = latest_user_message
+                cover_letter_feedback = confirmed.get("cover_letter") or latest_user_message
                 logger.info("Router left cover_letter_content_feedback empty - using the user's latest message as the cover letter request")
             if cover_letter_feedback:
                 return_state["cover_letter_content_feedback"] = cover_letter_feedback
@@ -792,9 +825,11 @@ class RouterAgent:
             logger.info(f"Storing cover letter content feedback (will be used when the cover letter is drafted): {cover_letter_feedback[:100]}")
         elif cover_letter_feedback and next_action == "draft_cv":
             # One message with changes for both existing documents: the CV goes first, and the
-            # cover letter is redrafted with this request once the CV is finalized (see above).
-            return_state["cover_letter_content_feedback"] = cover_letter_feedback
-            logger.info(f"Storing cover letter content feedback (will be applied after the CV): {cover_letter_feedback[:100]}")
+            # cover letter is redrafted with this request once the CV is finalized (see above),
+            # or, if the message did not name both documents, the user is asked first.
+            key = "cover_letter_content_feedback" if both_named else "cover_letter_feedback_to_confirm"
+            return_state[key] = cover_letter_feedback
+            logger.info(f"Storing cover letter content feedback (after the CV, as {key}): {cover_letter_feedback[:100]}")
         elif cover_letter_feedback:
             logger.info("Cover letter feedback extracted but the router did not choose draft_cover_letter - not storing it")
 

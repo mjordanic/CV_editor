@@ -70,6 +70,9 @@ class _AskingGraph:
             self.answers.append(value.resume)
         return {"__interrupt__": [SimpleNamespace(value={"message": "Please paste your CV.", "required": True})]}
 
+    def get_state(self, config):
+        return SimpleNamespace(values={})
+
 
 @pytest.mark.parametrize("lines, answered", [([], 0), (["exit", "END"], 0), (["my CV", "END"], 1)])
 def test_a_session_stops_on_end_of_input_or_exit_instead_of_asking_forever(monkeypatch, caplog, lines, answered):
@@ -155,3 +158,41 @@ def test_an_earlier_sessions_outputs_are_moved_aside_not_deleted(tmp_path):
     assert (tmp_path / moved / "generated_CV_draft_3.txt").read_text() == "old draft 3"
     assert (tmp_path / moved / "temp_latex" / "generated_CV_draft_1.tex").is_file()
     assert app.move_earlier_outputs(str(out)) is None  # only "earlier" is left
+
+
+def test_empty_folders_alone_are_not_moved_aside(tmp_path):
+    out = tmp_path / "generated_CVs"
+    (out / "temp_latex").mkdir(parents=True)
+    assert app.move_earlier_outputs(str(out)) is None
+    assert sorted(p.name for p in out.iterdir()) == ["temp_latex"]
+    (out / "generated_CV_draft_1.txt").write_text("old", encoding="utf-8")
+    moved = app.move_earlier_outputs(str(out))
+    assert sorted(p.name for p in (tmp_path / moved).iterdir()) == ["generated_CV_draft_1.txt"]
+
+
+def test_started_from_a_folder_with_its_own_templates_the_app_works_in_the_project_folder(monkeypatch, tmp_path):
+    (tmp_path / "templates").mkdir()
+    (tmp_path / "ad.txt").write_text("SAMPLE JOB AD", encoding="utf-8")
+    monkeypatch.setattr(document_reader, "_USER_DIRS", [])
+    monkeypatch.chdir(tmp_path)
+    assert app.enter_project_dir() is True
+    assert app.os.path.samefile(app.os.getcwd(), app.PROJECT_DIR)
+    assert document_reader._resolve_user_path("ad.txt") == str(tmp_path / "ad.txt")
+    assert app.enter_project_dir() is False
+
+
+class _GraphWithNotice(_AskingGraph):
+    """Keeps asking, with a notice pending in its state."""
+
+    def get_state(self, config):
+        return SimpleNamespace(values={"notices_for_user": {"cv_claims": "WARNING: the CV still claims Kafka."}})
+
+
+@pytest.mark.parametrize("lines", [[], ["exit", "END"]])
+def test_pending_notices_are_shown_when_the_session_ends_at_a_prompt(monkeypatch, caplog, lines):
+    _feed(monkeypatch, lines)
+    agent = app.MasterAgent.__new__(app.MasterAgent)
+    agent.graph = _GraphWithNotice()
+    with caplog.at_level(logging.INFO, logger=app.__name__):
+        agent.run()
+    assert caplog.text.index("WARNING: the CV still claims Kafka.") < caplog.text.index("Session ended")

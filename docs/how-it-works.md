@@ -44,7 +44,10 @@ redrawn from the code with `--draw-graph`.
    (retrieval-augmented generation, RAG). Without a portfolio it logs "No portfolio".
 5. **Routing decision.** `RouterAgent` reads the chat history, the existing outputs and your feedback, and picks the
    next step: write the CV, write the cover letter, change a PDF's appearance, ask you something, or exit. If you ask
-   for both documents in one message, it writes them one after the other without asking again in between.
+   for both documents in one message, it writes them one after the other without asking again in between. Once both
+   exist, a change goes to both without a question only if your message names both documents (CV/resume/Lebenslauf/
+   životopis and cover letter/letter/Anschreiben/motivacijsko pismo, or both/beide/oba); otherwise the router redrafts
+   the document you asked about and then asks whether to apply the change to the other one too.
 6. **Generation.**
    - `CVWriterAgent` creates or updates a CV; `CoverLetterWriterAgent` creates or updates a cover letter
      (consistent with the freshly generated CV).

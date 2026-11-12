@@ -211,6 +211,9 @@ uv run python langgraph_agent.py --trace-dir DIR # also record every step and mo
   > and make it more compact.
 
   The program then writes the CV and the letter one after the other, with no further questions in between.
+  Once both exist, a change is applied to both without asking only if your message names both documents (CV and
+  cover letter, or "both"; also in German and Croatian); a change asked for one of them is made there, and the
+  program then asks whether to make it in the other one too.
 - Appearance requests ("make it more compact", "use a sans-serif font") change only the PDF's look and keep the
   text.
 - If your documents lack contact details, the program asks you once for them (or which to leave out) before it makes
