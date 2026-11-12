@@ -304,15 +304,15 @@ Roadmap
 -------
 
 Done: PDF generation with LaTeX, quality review with automatic redrafts and a fact check, YAML configuration,
-documents in the job ad's language (or another on request; the evaluation covers German and Croatian letters),
-free-form notes and chat facts as candidate material, asking for missing contact details, an offline test suite and
-an end-to-end evaluation.
+documents in the job ad's language (the evaluation covers a German ad; a language you ask for instead is supported
+but not evaluated), free-form notes and chat facts as candidate material, asking for missing contact details, an
+offline test suite and an end-to-end evaluation.
 
 Open:
 
 - **From the evaluation** ([scenarios report](evals/results/2026-11-12-scenarios/REPORT.md)): let facts you state
   about yourself in the chat pass the fact check; hold a word limit you set for the cover letter; decide what wins
-  when the chat contradicts your own notes.
+  when the chat contradicts your own notes; evaluate documents written in a language you ask for.
 - **Candidate information:** accept any document type (certificates, transcripts, etc.) and build a more complete
   picture of the candidate's skills, aspirations and experience; ask proactively for missing information beyond
   contact details.
