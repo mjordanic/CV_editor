@@ -3,15 +3,26 @@
 Tools for running the CV editor end to end from prepared inputs, recording everything it did, and
 scoring the result with an independent model. They make paid OpenAI calls, paid Anthropic calls when
 a Claude model grades (`ANTHROPIC_API_KEY` in `.env`), and Tavily calls only when you record search
-results. Run them from the repository root with the project's environment
-(`uv run python -m ...` or `.venv/bin/python -m ...`).
+results. Commands that only plan or price (`--dry-run`, `--estimate`, `build_ab_matrix --check`), `summarize`,
+`score_checks` and the analysis notebook make no call. Run everything from the repository root with
+`uv run python -m ...` (this page's style; `.venv/bin/python -m ...` is the same environment).
+
+## Findings so far
+
+| round | question | answer |
+|---|---|---|
+| [`results/2026-11-12-scenarios/`](results/2026-11-12-scenarios/REPORT.md) (138 sessions; app at `578b2ae`) | in a multi-turn chat, does the app beat one model call per turn? | Only at asking for missing contact details (12/12 vs 7/12; a one-line hint brings the baseline to 10/12). Elsewhere it ties, at 4-9x the cost and 3-5x the time per turn. Open app weaknesses: the fact check removes a job title the user stated; letters overshoot a user-set word limit |
+| [`results/2026-11-11-core/`](results/2026-11-11-core/REPORT.md) with the [pilot](results/2026-11-11/REPORT.md) (39 matched cases, 3 arms; app at `25b7876`) | does the multi-agent app beat one call that gets everything at once? | No. One gpt-6-luna call ties the app (overall +0.10, no primary measure differs) at a tenth of the cost ($0.0027 vs $0.0275 a session). One gpt-6.1-sol call scores +0.41 overall (Holm p 0.022), below the 1-point minimum effect, at $0.0436. No arm leaves a fully unsupported claim; the single calls stretch fewer claims |
+| [`results/2026-11-10/`](results/2026-11-10/REPORT.md) (110 sessions; app at `aa5bdb2`) | how does the app do across candidates, inputs, scripted users and two writer models? | Overall 7.36 of 10 (graded by gpt-6.1-sol). terra +0.21 over luna on 19 matched cases, within noise, at about three times the cost; luna sometimes copied the CV into the cover letter (fixed afterwards) |
+
+**Read first:** the core report for the single-document comparison, then the scenarios report. Section 11 below
+lists what a replicator needs to know beyond the commands: the experiment plan, the primary-analysis filter, the
+hand re-asked gradings and the threats to validity.
 
 Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
-`results.csv`/`results.json` (the first one is [`results/2026-11-10/`](results/2026-11-10/REPORT.md); the
-stage 1 pilot of the staged comparison, section 9, is [`results/2026-11-11/`](results/2026-11-11/REPORT.md); stage 2,
-the core, is [`results/2026-11-11-core/`](results/2026-11-11-core/REPORT.md), with stages 1 and 2 analysed together in
-`analysis/output/2026-11-11-stages12-primary/` and `analysis/output/2026-11-11-stages12/`). The multi-turn scenarios (section 10), the app vs a one-call-per-turn baseline, are in
-[`results/2026-11-12-scenarios/`](results/2026-11-12-scenarios/REPORT.md).
+`results.csv`/`results.json`. Stages 1 and 2 are analysed together in
+[`analysis/output/2026-11-11-stages12-primary/`](analysis/output/2026-11-11-stages12-primary/) and
+[`analysis/output/2026-11-11-stages12/`](analysis/output/2026-11-11-stages12/) (section 8).
 
 ## 1. Run one session: `evals/run_case.py`
 
@@ -35,6 +46,11 @@ uv run python -m evals.run_case --run-dir ../runs/p03_a3_all4 --ad a3 --persona 
   `CV_EDITOR_GROUNDING_MODEL` for the fact check (`grounding`). A local `--model` (`ollama:`) also
   applies to the critic unless those flags are given. Without them the models in
   `config/agent_models.yaml` are used. `config.json` in the run folder records the model each agent used.
+- **No keys:** with a local model and a search fixture nothing is sent anywhere, e.g.
+  `uv run python -m evals.run_case --run-dir ../runs/p12_local --ad a7 --persona p12 --inputs cv_only --model ollama:gemma4:e4b`.
+  Expect the local limits of the main README (slow; on a 16 GB Mac `gemma4:e4b`'s LaTeX did not compile). The
+  manifest of a run you stop by hand stays `"status": "running"`, and `outputs/`, `summary.json` and
+  `transcript.json` are written only at the end.
 - A scripted user answers the app: it gives the job ad, asks for the CV and then the cover letter,
   and exits. When the app asks for missing contact details (`ask_*_missing_details`) it declines.
   `--script FILE` (or a name in `scripts/`) overrides its replies (see "Scripted users" below).
@@ -59,7 +75,7 @@ The run folder:
 | `workspace/` | the app's own working folder: logs, debug file, drafts, LaTeX sources and PDFs |
 
 The same recording (without the scripted user) is available in normal use:
-`python langgraph_agent.py --trace-dir DIR`. API keys are never written to these files.
+`uv run python langgraph_agent.py --trace-dir DIR`. API keys are never written to these files.
 
 ### Scripted users
 
@@ -134,9 +150,12 @@ The matrix (110 cases):
   the input sets `all4`, `cv_only`, `no_cv` and `notes_only`.
 
 Estimated cost of the whole matrix (`--estimate`): about 20.4 USD, within the 24 USD budget (20.6 with
-`--truth-check`): luna session 0.013, terra 0.06, a session with change requests twice that, an evaluation
-0.15 (one Claude Sonnet 5.5 grading) and a trap check 0.002 (Claude Haiku
-5.5). `--total-cap` stops new cases at 24 USD whatever the estimate.
+`--truth-check`). The estimate uses the planning prices in `ESTIMATE_USD` (`run_matrix.py`), set before any round
+ran: luna session 0.013, terra 0.06, a session with change requests twice that, an evaluation 0.15 (one Claude
+Sonnet 5.5 grading) and a trap check 0.002 (Claude Haiku 5.5). They are deliberately not the measured costs. The
+measured means are a luna session 0.028 and a terra session 0.088 USD (2026-11-10), and a default-script luna
+session 0.0275 USD (2026-11-11 core); section 9's `AB_UNIT_USD` uses measured prices. `--total-cap` stops new cases
+at 24 USD whatever the estimate.
 
 **Out of credit.** A session or evaluation that the provider refuses for lack of credit (HTTP 429
 `insufficient_quota` or a billing error, as opposed to an ordinary rate limit, which keeps its
@@ -189,8 +208,11 @@ as plain text extracted from the PDFs (pdfplumber, no model). The CV's extracted
 an ATS would read*. It does not see the model, the input-set name or the run id. It returns one
 JSON answer with quoted evidence:
 
-- **claims**: every skill, tool, employer, title, date, number, degree, certificate in both outputs,
-  each `supported`, `partly_supported` (stretched) or `unsupported`, with a quote from the material
+- **claims**: the prompt asks for every skill, tool, employer, title, date, number, degree, certificate in both
+  outputs, each `supported`, `partly_supported` (stretched) or `unsupported`, with a quote from the material. In
+  practice the list is a sample the grader chooses: Sonnet `eval1` listed about 13 claims per session in every arm
+  of the 2026-11-11 rounds (13.1 app, 13.1 SP-luna, 12.4 SP-sol), far fewer than a full CV states. Claim counts
+  and "no unsupported claim" rest on that sample
 - **omissions**: relevant facts in the material that the outputs leave out
 - **fit**: every must-have and nice-to-have requirement: does the candidate have it, does the CV show it,
   and is a gap handled honestly
@@ -220,7 +242,11 @@ JSON answer with quoted evidence:
 - **user_requests**: every request the user made, judged against the script's checklist: followed,
   partly followed, refused correctly (an untruthful request), refused wrongly, ignored, or
   followed_untruthful
-- scores 0-10 for invented content, completeness and overall
+- scores 0-10 for invented content, completeness and overall. `overall_score` is the grader's holistic grade with
+  no anchored definition in the rubric (the only global instruction is to use the full range, 10 being rare); the
+  CV standards, cover letter, work arrangement and language scores have no anchors either. The analysis's
+  *composite* is the mean of seven sub-scores: invented content, completeness, fit, CV standards, cover letter,
+  visual layout and language (`evals/analysis/load.py`)
 
 **Grading modes.** `--grading-mode document-only` (the default, and the mode of the method
 comparison) shows the grader the documents and the inputs above plus a fixed block, *the user's
@@ -294,7 +320,9 @@ the official `anthropic` SDK:
   `full_eval_parsed`, `n_full_disagreements`). OpenAI graders still answer the full `Evaluation` natively.
 - **Bounded retry.** An answer that is not valid JSON, fails validation or was cut off at `max_tokens`
   (64k) is asked for once more (`MAX_ATTEMPTS = 2`); both attempts are logged and paid. A refusal is
-  not retried.
+  not retried. An answer that parses but is empty in substance (every score 0 and the summary "...", or no claims)
+  is not detected by code. In the 2026-11-11 rounds eight such Sonnet `eval1` gradings were re-asked once by hand
+  after the round (section 11); their records do not show it.
 - **Thinking and effort.** Thinking is adaptive (it cannot be turned off on these models); the effort is
   set explicitly, `medium` by default (`--effort low|medium|high|xhigh|max`).
 - **Temperature.** Not settable: Opus 5.5 rejects any `temperature`, and Sonnet 5.5 and Haiku 5.5 reject
@@ -470,6 +498,15 @@ sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_
 credit are left out and listed under `interrupted`. Comparisons between arms are the analysis notebook's
 (`evals/analysis/analysis.ipynb`).
 
+**On a published round** (a copy, since it writes into the folder):
+- Point it at the round's `runs/` folder, e.g. `results/2026-11-11-core/runs`. Given the round folder itself it
+  prints "0 sessions" with no warning.
+- `repeats_summary.json` comes out identical to the published one.
+- The redraft counts in `sessions_summary.json` come out as 0 (e.g. "critique-driven redraft: CV in 0, cover letter
+  in 0" for the core round, whose report says 22 and 30). They are read from `events.jsonl`, which published rounds
+  leave out, and a missing file counts as no redraft rather than unknown. The published `sessions_summary.json` was
+  made from the full traces; each published `summary.json` has the per-session `redrafts` block.
+
 ## 7. Single-prompt baseline: `evals/single_prompt.py`
 
 Does the multi-agent app beat one strong model given everything at once? **Topology: exactly one model
@@ -553,6 +590,27 @@ notebook makes no model calls and runs offline.
 uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
 ```
 
+- `--inplace` rewrites the tracked notebook with the new outputs (about 200 changed lines), and the run writes
+  into `evals/analysis/output/<label>/`, which is tracked too. Run it on a copy, or drop `--inplace`, if you only
+  want to read the results; `git checkout evals/analysis` undoes a run.
+- The committed parameter cell analyses the demo round (`LABEL = "2026-11-10"`), not the latest. The published
+  folders were made with:
+  - `2026-11-11`: `ROUNDS = [results/2026-11-11]`;
+  - `2026-11-11-stages12`: `ROUNDS = [results/2026-11-11, results/2026-11-11-core]` (every grading and run;
+    reproduces byte for byte);
+  - `2026-11-11-stages12-primary`: the primary grade, Sonnet `eval1` on the first writer run only. The notebook has
+    no switch for this filter: it averages every grading of the primary grader and every repeat. The folder can be
+    rebuilt by copying only the `*_r1` run folders of both rounds, with their `eval1`, `opus1` and `truth1`
+    gradings (117 runs), into a scratch folder and pointing `ROUNDS` at it. That reproduces the score, test, trap
+    and calibration tables byte for byte; the cost tables (`cost_by_arm`, `design_costs`,
+    `power_simulation_wilcoxon`, `token_prices`) depend on which other records were kept, and that is not recorded.
+    The two variants differ on reported claims: E−A invented content Holm p is 0.23 (primary) vs 0.055 (all
+    gradings).
+- Without SciPy (the `analysis` group), `stats.wilcoxon` returns nothing and the notebook turns it into p = 1, so
+  every test silently reads "not significant". The `--group analysis` in the command above installs it.
+- The design-cost table prices single-prompt sessions from token estimates (SP-luna 0.0056, SP-sol 0.112 USD), not
+  from the measured means (0.0027 and 0.0436), so `design_costs.csv` overstates single-prompt cost by 2-2.5x.
+
 - Sessions are paired within *cells* (persona, ad, input set, script and work preference). Re-gradings
   of a session are averaged first, then repeats within a cell, so each cell counts once. Cells that only
   one arm has are listed and left out.
@@ -573,6 +631,23 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
   - power and sample sizes.
 - Figures and tables go to `evals/analysis/output/<label>/`. Set `ROUNDS` and `LABEL` in the parameter
   cell to choose the data.
+- **Fixed analysis choices** (notebook and `calibration.py`):
+  - primary contrasts: A−C (app vs SP-luna), B−D (MA-terra vs SP-terra), A−B (luna vs terra inside the app) and
+    A−E (app vs SP-sol); primary measures: invented content, fit, visual layout, overall;
+  - a claim needs the larger p of the Wilcoxon test on cells (Pratt zero handling) and the persona sign-flip test
+    (exact up to 16 personas, else 20,000 permutations) to pass Holm over the four contrasts, within each measure
+    (four families of four, not one of sixteen); in the fixed-sequence reading the measures are taken in the order
+    above;
+  - bootstrap: percentile, 10,000 resamples, 95%, seeded with the design seed 20261111;
+  - non-inferiority on invented content: the lower bound of the persona-cluster interval above −0.5;
+  - minimum effect: 1 point (the power section sizes the study for 0.5 and 1 point; power simulation base grade
+    7.4, cell SD 0.8);
+  - pilot gate: parse errors or cut-off answers in at most 5% of single-prompt sessions;
+  - calibration: Sonnet noise SD ≤ 0.3 on the composite and overall within 1 point in ≥ 90% of sessions;
+    Sonnet-Opus Spearman ρ ≥ 0.7 on the composite; no bias by arm (gap ≤ 0.3 and the same sign in ≥ 80% of
+    non-tied cells); claim audit ≥ 80% of Opus's flagged claims also flagged by Sonnet. The claim audit is only
+    counted for a person to read: the code never passes or fails on it, although the reports print "fails" for the
+    automatic match.
 - The loading and pairing code is in `evals/analysis/load.py` (standard library only). The statistics
   are in `evals/analysis/stats.py` (numpy, plus scipy when it is installed). Both are tested in
   `tests/test_analysis_load.py`; the calibration checks in `tests/test_analysis_calibration.py`.
@@ -586,10 +661,16 @@ and a test runs it):
   **C** SP-luna and **E** SP-sol on the 39 matched cases (p01-p13 on their primary ad x `all4`,
   `cv_only`, `no_cv`), in two stages. **pilot** (36): the 6 pilot cases (p01/a1, p03/a3, p04/a6, p11/a1,
   p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (111): the other 33 cases x 3 arms, plus a
-  second writer run of the 4 extra repeat cases. Haiku was dropped as a re-grader after the pilot (option O1
-  off): the core has no Haiku grading.
+  second writer run of the 4 extra repeat cases. Haiku was graded as a cheap re-grader in the pilot
+  (`haiku1`, `haiku2`) and dropped for the core (`build_ab_matrix.py` calls this "option O1" off): the core has
+  no Haiku grading. The reason is not recorded.
+- **Input sets:** `all4` = CV, portfolio, earlier cover letter and notes; `cv_only` = the CV alone; `no_cv` =
+  portfolio, earlier cover letter and notes (`evals/cases.py`). The main matrix (section 2) also uses
+  `cv_portfolio` and `notes_only`.
 - **`matrix_ab_stage3.json`**, 78 sessions, run only if the core run calls for it: **B** MA-terra and
-  **D** SP-terra on the 39 cases.
+  **D** SP-terra on the 39 cases. Stage 3 has not run. The condition under which the core "calls for it" is not
+  written down in the repository, and no decision about it is recorded, so the two terra contrasts (A−B, B−D)
+  count as not run (p = 1) in the Holm family.
 
 Every session has the labels `arm`, `method`, `writer_model`, `rep`, `stage` and `case` (the matched case,
 the same in every arm: `p03_a3_all4`), and its own gradings (`gradings`: `eval1` by Sonnet for every
@@ -639,10 +720,26 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
   `--truth-check` are refused. The matrix's `evaluate_args` are added to every evaluation command (for
   the grader's options, such as a document-only mode).
 - **Freeze.** Every session's manifest gets the labels `app_commit`, `app_head` and `app_dirty`.
-  `python -m evals.build_ab_matrix --app-commit SHA` writes the frozen commit into both files; from then on
+  `uv run python -m evals.build_ab_matrix --app-commit SHA` writes the frozen commit into both files; from then on
   no session starts if the app's files (`APP_PATHS`: `agents/`, `langgraph_agent.py`, `config/`,
   `templates/`, `evals/run_case.py`, `evals/single_prompt.py`) differ from that commit. Both files are frozen at
   `25b7876`.
+- **Versions behind the published numbers.** Stages 1 and 2 ran the app files at `25b7876` with the eval code of
+  `5ff008d` (core; the manifests record both). develop has changed the app since (the router fixes of PR #33:
+  `agents/router.py`, `agents/document_writer.py` and `langgraph_agent.py`), so `run_matrix` refuses to start a staged session on today's tree,
+  and `--dry-run` does not warn. To rerun stages 1-3 on today's develop, keep the current eval code and check out
+  only the app files at the frozen commit:
+  `git checkout 25b7876 -- agents langgraph_agent.py config templates evals/run_case.py evals/single_prompt.py`
+  (and `git checkout HEAD -- ...` afterwards). The single-prompt prompt is rebuilt from the app's prompt strings at
+  run time and is not published (`prompt.json` is kept private); rebuilt from a published run's `inputs/`, it is
+  identical at `25b7876` and at develop `976cc28`, but no per-session hash of it is recorded.
+- **Recorded commits.** The core round (`5ff008d`), the frozen app (`25b7876`) and the first round (`aa5bdb2`) are
+  on develop. The pilot's sessions record `0b42046` and the scenario sessions `5800bac` (104 of 138 with
+  `dirty: true`), which exist only on work branches, and the `app_frozen` scenario sessions record `65a9a51`, which
+  is not in the repository. The app files of `5800bac` and develop `578b2ae` are identical, so the scenario report's
+  "the app at `578b2ae`" holds in substance. `dirty` is `git status --porcelain` being non-empty when the session
+  started: some uncommitted change or untracked file anywhere in the repository, not necessarily in the app's
+  files; which files is not recorded.
 
 ## 10. Multi-turn scenarios: app vs a chat baseline (`evals/run_scenarios.py`)
 
@@ -650,37 +747,163 @@ Where could the app's structure beat one model call once the user talks to it? E
 conversation, played to the app and to a fair single-call baseline, and scored by deterministic checks (no grader
 model).
 
+- **Systems:** `app` (the current tree's `run_case`), `app_frozen` (the app at `2320a98`, before PR #33's router
+  fixes, run from an exported tree given with `--frozen-tree`; a reference arm on S2, S4 and S5), `b2` and `b2_ask`
+  (below). Each scenario lists its own systems in `scenarios.json`.
 - **Chat baseline "B2"** (`evals/single_prompt_chat.py`): one call per user turn with the whole conversation. Turn 1
   is the single-prompt baseline's prompt (section 7) plus a `message_to_user` field. Later turns wrap the user's words
-  in the app writer's own "apply only these changes" rule. Every answer returns both documents, text and LaTeX, and
+  in the app writer's own "apply only these changes" rule and add three rules of its own (`CHAT_RULES`): keep every
+  earlier change; an appearance request changes only the LaTeX; and "what the candidate tells you about themselves
+  in this chat is true, even if their documents do not say it: use it". The app's writers also count chat statements
+  as candidate material, but its separate grounding check does not, which matters for S2 (the retitle case). Every answer returns both documents, text and LaTeX, and
   every turn's PDFs are compiled as in section 7, with no repair and the plain fallback layout marked. `--ask-hint`
   ("B2+") adds one line telling it to ask for missing details. The scripted user is run_case's: the same request
   list in the same order. When a script has its own `missing_details` answer, contact details are given only if
   the model asks for them.
 - **Scenario scripts** (`evals/scenarios/*.json`) are run_case scripts with a `"checks"` list: present/absent regexes
   (per document or CV section, with an `exempt` pattern for negations), headings and their order, sentence, bullet
-  and word limits, `unchanged_by` (a request's turn left the text byte for byte as it was), `style_in_tex`,
-  `compiled_every_turn`, `told_user` (a keyword proxy on the next message) and `reply_sent`. The types are documented
-  in `evals/score_checks.py`. That module also rebuilds every user turn of an app run from `events.jsonl`, so both
-  systems are scored from the same shape.
+  and word limits, `max_pages`, `unchanged_by` (a request's turn left the text byte for byte as it was),
+  `style_in_tex`, `compiled_every_turn`, `told_user` (a keyword proxy on the next message) and `reply_sent`. The
+  types are documented in `evals/score_checks.py`. That module also rebuilds every user turn of an app run from
+  `events.jsonl`, so both systems are scored from the same shape. On a published run, which has no
+  `events.jsonl`, `score_checks` reproduces the verdicts but returns empty `calls_per_turn`, `seconds_per_turn`
+  and per-turn lists.
 - **The table** (`evals/scenarios/scenarios.json`): S1 long stacked edits, S2 truthfulness under the ground-truth rule (what the user says about themselves is true and applied; a request their own words contradict is refused and explained), S3
   missing details given only if asked, S4 one change for both documents, S5 appearance and content edits
   interleaved. Each scenario lists its cases (persona, ad, input set, script), reps and estimated USD per session
   per system.
 
 ```bash
-.venv/bin/python -m evals.run_scenarios --out OUT --dry-run                       # sessions and cost estimate
-.venv/bin/python -m evals.run_scenarios --out OUT --smoke --env-file .env          # each scenario's first case once
-.venv/bin/python -m evals.run_scenarios --out OUT --env-file .env --total-cap 4.5  # the full set (S6: the cost and
-                                                                                   # time columns of the report)
-.venv/bin/python -m evals.score_checks RUN_DIR                                     # re-score one run folder
+uv run python -m evals.run_scenarios --out OUT --dry-run                      # sessions and cost estimate, no call
+mkdir ../FROZEN && git archive 2320a98 | tar -x -C ../FROZEN                  # the tree app_frozen runs from
+uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --env-file "$PWD/.env"   # each scenario's first case once
+uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --env-file "$PWD/.env" --total-cap 6.0 --workers 6   # the full set
+uv run python -m evals.run_scenarios --out OUT --report-only --frozen-tree ../FROZEN --publish evals/results/<date>-scenarios
+uv run python -m evals.score_checks RUN_DIR                                   # re-score one run folder
 ```
+
+- Give `--env-file` an absolute path: `app_frozen` sessions run with the frozen tree as working directory, so a
+  relative `.env` is not found there.
+- Without `--frozen-tree`, any run that includes `app_frozen` sessions (S2, S4, S5) stops at once:
+  `app_frozen sessions need --frozen-tree`. To leave that arm out, pass `--systems app,b2,b2_ask`.
+- The full set is estimated at 5.16 USD (`--dry-run`), above the table's default `total_cap` of 4.5, so give
+  `--total-cap 6.0` (the published round's cap; it spent 4.16 USD).
+- `--only S2,S3` picks scenarios, `--reps N` overrides the reps, `--model` every writer's model. `--report-only`
+  rewrites the report from scored sessions; `--rescore` re-scores them with today's checks first. `--publish DIR`
+  copies the scored sessions' records (manifest, config, summary, transcript, `checks.json`, inputs, outputs; no
+  event or model-call logs, no workspace) with local paths made relative, plus the report as `tables.md` and
+  `results.json`.
 
 Each session's own cap is 3x its estimate. A session starts only while the money spent, plus the estimates of the
 sessions still running, plus its own estimate stay within `--total-cap`. Scored sessions are skipped, so a stopped
 run resumes. `OUT/report.md` gives, per scenario: each check's pass count per system; USD, seconds and model calls
 per user turn; LaTeX fixes; and the paired app-vs-baseline comparison. The pre-registered rule claims a difference
-only with at least 6 pairs, at least 4 pairs one way and none the other.
+only with at least 6 pairs, at least 4 pairs one way and none the other. It is a decision rule, not a significance
+test: the exact sign-test p it prints can be above 0.05 when a difference is claimed (S3: 5-0 of 12, p = 0.06).
+Pairs share a case and a rep, so the reps of one case count as separate pairs; section 9's analysis argues the
+opposite for repeats (they share persona, ad and inputs). See section 11 for what this and the persona mix mean for
+the scenario results.
+
+## 11. Methods notes for replicators
+
+What the commands above do not tell you, and what a reviewer of the published results should know.
+
+### The experiment plan
+
+The code and the reports cite an experiment plan ("the plan", "plan section 4", "plan section 6",
+"pre-registered", "fixed before the pilot"). **The plan is not in the repository.** Its decisions, as the code
+implements them, are listed under "Fixed analysis choices" in section 8 and in section 9. What git history (commit
+dates on develop) shows about when they were fixed:
+
+- **Before the pilot's data** (pilot published at `b5e7e1a`, 2026-11-11 21:19 +0100): the four primary contrasts,
+  the four primary measures and the non-inferiority margin of −0.5 were in the notebook at `441b976` (12:24 +0100),
+  whose power section already sized the study for 0.5 and 1 point. The scenario counting rule was in this README at
+  `b19a4cd` (2026-11-12 08:03 +0100), before the scenario round (`976cc28`, 10:41).
+- **Not shown to predate the data:** the calibration thresholds first appear in git inside the pilot report itself,
+  and in code only after it (`calibration.py`, added at `5ff008d`, 22:18 +0100), although the pilot report says they
+  were fixed before the pilot. Naming 1 point as *the* pre-registered minimum effect, the bar the core report holds
+  E−A's +0.41 against, first appears with the core results (`2320a98`).
+- **Not recorded at all:** the condition that triggers stage 3, the options behind "option O1" and the rationale for
+  dropping Haiku, and any decision taken on the failed calibration checks (below).
+
+### The primary analysis
+
+The published comparisons use the primary grade: Sonnet `eval1` on the first writer run of each case. The notebook
+has no switch for that filter; section 8 gives the recipe and what it does and does not reproduce.
+
+### Gradings re-asked by hand
+
+Eight Sonnet `eval1` gradings, seven in the core and one in the pilot, were asked a second time, once each, after
+the round, because their answers parsed but were empty in substance: every score 0 and the summary "..." (3), or no
+claims (5). The coded retry rule (section 4, parse failures only) did not fire, and no code detects such answers.
+
+- **Which:** listed in the [core report](results/2026-11-11-core/REPORT.md) ("Re-asked gradings"), with the effect.
+- **Effect on reported results:** with the first answers, C−A invented content had a persona-cluster interval of
+  −0.69 to +0.97 (non-inferiority not shown); with the re-asked ones it is −0.08 to +0.46 (shown). E−A overall moved
+  from +0.59 to +0.41.
+- **What the records show:** nothing. Each re-asked grading publishes `grader.attempts = 1` and one batch attempt,
+  and its two `ledger.tsv` rows both carry the plain label `eval:eval1`, not the `*-attempt1` or `*-discarded`
+  labels section 4 defines. The first answers are kept outside the repository. Only the core report's prose names
+  them; `gradings.csv` cannot tell.
+- The pilot report's "144 batched gradings, all answered on the first attempt" was true when it was written; its
+  `ma_luna_p12_a7_all4_r2` `eval1` was re-asked later, during stage 2.
+
+No other session or grading was excluded. Sessions interrupted by infrastructure or lack of credit are rerun and
+never graded (section 2).
+
+### Calibration outcomes
+
+In both the pilot and the core, the "no bias by arm" check failed on overall for C−A (in the core it rests on 4
+non-tied cases, where Sonnet and Opus disagree), and in the core the automatic claim audit matched 4 of Opus's 12
+flagged claims (33%) against an 80% bar. The code
+treats the claim audit as material for a person to read; the reports print "fails". The plan asks a person to read
+the quotes before the gate is settled; no such reading or gate decision is recorded.
+
+### Threats to validity
+
+- **Fictional inputs, model grader.** Thirteen fictional candidates and eight ads, no real users. Grades come from a
+  model (Sonnet 5.5, checked against Opus 5.5 on a subset), and the scenario checks are regexes and counts.
+- **Tuning on the test set.** The personas and ads were written on 2026-11-10 and used in the first round. The app
+  was then changed in response (PR #25, "cut CV repeats from cover letters": 4 app files, +237 lines between
+  `aa5bdb2` and `25b7876`), and the A/B ran on the same fixtures. Who or what wrote the fixtures is not recorded.
+- **Pilot pooling.** The pilot's 6 cases are pooled into the 39 confirmatory ones, although the pilot was also used
+  to calibrate the graders, re-price the core (`AB_UNIT_USD`) and change a trap definition (p01 T6 made conditional).
+- **Partial blinding.** The grader sees the candidate's inputs and the documents, never the method, model, input-set
+  name or run id. But the single-prompt fallback layout (6 of 39 SP-luna first runs) looks visibly different.
+- **Ceiling on invented content.** No arm has a fully unsupported claim, so the measure moves only on partly
+  supported claims, and the claim list is a sample of about 13 claims per session (section 4). Claim-list length is
+  similar across arms, so the comparison is probably not biased by it, but "no unsupported claims" is weaker than it
+  reads.
+- **Different forms of company context.** The single prompt gets the raw search-result text and no extracted work
+  arrangement; the app's writers get a model's summary and an extracted `work_context`. Same facts, different forms;
+  no A/B case states a work preference.
+- **Non-determinism.** Neither writers nor graders are deterministic (no temperature can be set for the Claude
+  graders; OpenAI writers run at the provider default). A rerun reproduces distributions, not the published numbers.
+- **Scenario unit of analysis.** The scenario rule counts each rep as a pair: S3's 12 pairs are 4 personas x 3 reps,
+  and its sign test treats them as independent. The A/B analysis averages repeats first for the opposite reason.
+  Persona p03 is in 7 of the 13 scripts, including 4 of the 6 S2 cases, so S2 speaks mostly about one candidate.
+- **Three S2 checks disagree with the persona's own ground truth.** The round's rule says a request the user's own
+  words contradict must be refused and explained.
+  - `s2-embellish-p03` requires "production Kubernetes" and "on-call" in the CV, but p03's notes say she has "never
+    been on production on-call" and that the platform team, not she, runs the cluster. Every system declined (0 of 9),
+    which is what the rule asks, and is scored as a failure: S2's "all checks" rates are understated by 3 sessions
+    per system.
+  - `s2-retitle-p03` requires retitling her current job "DevOps Engineer", which p03's `persona.json` lists as a trap
+    (T5), with her real title in her CV.
+  - `s2-homelab-p03` passes on any homelab mention in the experience section, while `persona.json` (trap T3) and the
+    A/B grader's rubric call homelab work presented as professional a stretch.
+
+  So the A/B trap check and the scenario study score the same output in opposite directions. The paired verdicts
+  are unaffected (the forced outcome is the same in every arm), but the scenario report's recommendation to let
+  user-stated facts past the grounding check rests on these cases.
+
+### Small errata
+
+- The notebook's pairing rationale says the main matrix runs `notes_only` only on luna; `matrix.json` has two terra
+  `notes_only` cases (p09/a3). The argument (cells differ by arm, so no imputation) still holds.
+- Some code comments and the notebook use planning vocabulary from notes outside the repository: "the scout's
+  probes" (`scenarios.json`: exploratory runs before the round), "option O1", "finding 1c", "the captain chooses",
+  "the blog's claims".
 
 ## Fixtures
 
@@ -711,7 +934,7 @@ writer may fall into, and the ads it targets). Never give `persona.json` to the 
 | p09 Nadia | strong match, SRE / platform | a3 |
 | p10 Tobias | partial match: modelling strong, production and MLOps weak | a2 (also a1) |
 | p11 Tiago | cross-discipline career changer: mechanical test engineer with Python and MATLAB test-data scripts, no production software | a1 (also a5) |
-| p12 Tomislav | butcher (the repo's sample CV); no forklift licence, master exam not passed, Wednesday shifts limited | a7 |
+| p12 Tomislav | butcher (the same fictional person as `examples/sample_CV_butcher.txt`); no forklift licence, master exam not passed, Wednesday shifts limited | a7 |
 | p13 Katarzyna | care assistant, all German; no driving licence yet, nursing degree not yet recognised | a8 |
 
 `scripts/` holds the named scripted-user variants (see "Scripted users" in section 1).

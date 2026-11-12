@@ -31,7 +31,8 @@ claims about the arms. The comparisons below describe the pilot only. The main c
 - **36 sessions:** 12 per arm, all completed. Every single-prompt answer parsed (`finish_reason: stop` in 24 of 24).
   No single-prompt LaTeX fell back to the built-in layout (0 of 24). No app session was degraded and no model call
   failed. In the app, critique-driven redrafts touched the CV in 7 of 12 sessions and the letter in all 12.
-- **144 batched gradings, all answered on the first attempt:**
+- **144 batched gradings, all answered on the first attempt** (when this report was written; one, the `eval1` of
+  `ma_luna_p12_a7_all4_r2`, was re-asked by hand during stage 2, see below and the core report):
   - `eval1`: Sonnet 5.5 on all 36 sessions, the primary grade.
   - On the 18 first-run sessions: `eval2` (Sonnet again), `opus1` (Opus 5.5), and `haiku1`, `haiku2` (Haiku 5.5).
   - `truth1`: the Haiku trap check on all 36.
