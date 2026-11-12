@@ -776,12 +776,14 @@ model).
 ```bash
 uv run python -m evals.run_scenarios --out OUT --dry-run                      # sessions and cost estimate, no call
 mkdir ../FROZEN && git archive 2320a98 | tar -x -C ../FROZEN                  # the tree app_frozen runs from
-uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --env-file .env   # each scenario's first case once
-uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --env-file .env --total-cap 6.0 --workers 6   # the full set
+uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --env-file "$PWD/.env"   # each scenario's first case once
+uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --env-file "$PWD/.env" --total-cap 6.0 --workers 6   # the full set
 uv run python -m evals.run_scenarios --out OUT --report-only --frozen-tree ../FROZEN --publish evals/results/<date>-scenarios
 uv run python -m evals.score_checks RUN_DIR                                   # re-score one run folder
 ```
 
+- Give `--env-file` an absolute path: `app_frozen` sessions run with the frozen tree as working directory, so a
+  relative `.env` is not found there.
 - Without `--frozen-tree`, any run that includes `app_frozen` sessions (S2, S4, S5) stops at once:
   `app_frozen sessions need --frozen-tree`. To leave that arm out, pass `--systems app,b2,b2_ask`.
 - The full set is estimated at 5.16 USD (`--dry-run`), above the table's default `total_cap` of 4.5, so give
