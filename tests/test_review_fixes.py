@@ -875,3 +875,23 @@ def test_a_tex_left_by_an_earlier_session_is_not_reused_as_the_template(monkeypa
     os.utime(stale, None)  # rendered in this session: a style-only update reuses it
     gen.run(state)
     assert templates[-1] == "EARLIER SESSION'S GREEN STYLE"
+
+
+
+def test_a_pdf_that_cannot_be_made_leaves_a_notice_for_the_user(tmp_path):
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    gen._build_latex_document = lambda template, plain, style: "latex"
+
+    def broken(*_):
+        raise RuntimeError("Failed to compile LaTeX: ! Undefined control sequence.")
+
+    gen._compile_latex = broken
+    out = gen.run({"generated_cv": "Ana Horvat", "cv_history": [{"iteration": 1}], "messages": []})
+    assert out["cv_pdf_path"] is None
+    (notice,) = pending_notices(out)
+    assert "CV PDF could not be made" in notice and "Undefined control sequence" in notice

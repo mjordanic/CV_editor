@@ -292,9 +292,13 @@ class LatexPDFGenerator:
         except Exception as e:
             error_message = f"Error generating {label} PDF: {str(e)}"
             logger.error(error_message)
+            # A notice, so the user is told even when later messages push this one out of the router's view.
+            notice = (f"The {label} PDF could not be made ({str(e)[:300]}). The text version is saved in "
+                      f"{self.output_folder}.")
             return {
                 f"{kind}_pdf_path": None,
                 f"{kind}_latex_fix_attempts": state.get(f"{kind}_latex_fix_attempts", 0),
                 f"{kind}_latex_last_error": str(e),
+                NOTICES_KEY: set_notices(state, {}, {f"{kind}_pdf": notice}),
                 "messages": state.get("messages", []) + [{"role": "assistant", "content": error_message}],
             }

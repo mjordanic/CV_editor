@@ -108,6 +108,28 @@ def test_accumulate_style_keeps_earlier_requests_in_order_once():
     assert _accumulate_style(three, "") == three
 
 
+def test_a_multi_line_style_request_is_stored_once_line_by_line():
+    once = _accumulate_style(None, "titles blue\nmore compact")
+    assert once == f"{STYLE_REQUESTS_HEADER}\n- titles blue\n- more compact"
+    assert _accumulate_style(once, "titles blue\nmore compact") == once
+    assert _accumulate_style(once, "more compact\nsans-serif font").splitlines()[1:] == [
+        "- titles blue", "- more compact", "- sans-serif font"]
+
+
+def test_the_closing_message_is_shown_on_exit_without_pending_notices(monkeypatch, tmp_path, caplog):
+    import logging
+
+    llm = PlumbingLLM(
+        router_script=[_route("draft_cv"), _route("collect_user_input", "The CV is ready. Any changes?"),
+                       _route("exit", "Good luck with the application!")],
+        critique_scores=[(80, "")],
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+    with caplog.at_level(logging.INFO, logger="agents.router"):
+        _play(agent, [_ad(), "exit"])
+    assert "Good luck with the application!" in caplog.text
+
+
 def test_second_style_request_keeps_the_first(monkeypatch, tmp_path):
     from agents import cv_pdf_generator
 

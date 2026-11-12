@@ -152,16 +152,17 @@ def _accumulate_style(previous: str | None, new: str | None) -> str | None:
     Every PDF is rendered from the stored style (a redraft starts again from the base template), so
     replacing it would drop the user's earlier style requests. A request already stored is not added twice.
     """
-    new = (new or "").strip()
-    if not new:
+    def lines(text):
+        return [line.strip().removeprefix("- ") for line in (text or "").splitlines()
+                if line.strip() and line.strip() != STYLE_REQUESTS_HEADER]
+
+    new_items = lines(new)
+    if not new_items:
         return previous
-    items = []
-    for line in (previous or "").splitlines():
-        line = line.strip()
-        if line and line != STYLE_REQUESTS_HEADER:
-            items.append(line.removeprefix("- "))
-    if new not in items:
-        items.append(new)
+    items = lines(previous)
+    for item in new_items:  # a multi-line request is compared line by line, like the stored ones
+        if item not in items:
+            items.append(item)
     if len(items) == 1:
         return items[0]
     return STYLE_REQUESTS_HEADER + "\n" + "\n".join(f"- {item}" for item in items)
@@ -243,6 +244,8 @@ class RouterResponse(BaseModel):
             "Extract instructions about WHAT to include/exclude/change in the CV content. "
             "Examples: 'add research stay at Berkeley in 2021', 'add MATLAB to skills', 'remove section X'. "
             "Do NOT include cover letter content or style/appearance instructions here. "
+            "Fill it only when the user asked for a change to the CV (or to both documents): whatever is put here "
+            "is applied to the CV without asking again. "
             "Short, clear, actionable. Empty if no CV content feedback provided."
         ),
     )
@@ -253,6 +256,8 @@ class RouterResponse(BaseModel):
             "Extract instructions about WHAT to include/exclude/change in the cover letter content. "
             "Examples: 'emphasize my research experience', 'add paragraph about motivation', 'remove mention of X'. "
             "Do NOT include CV content or style/appearance instructions here. "
+            "Fill it only when the user asked for a change to the cover letter (or to both documents): whatever is "
+            "put here is applied to the cover letter without asking again. "
             "Short, clear, actionable. Empty if no cover letter content feedback provided."
         ),
     )
@@ -718,8 +723,8 @@ class RouterAgent:
         shows_message = next_action in ("collect_user_input", "exit")
         if shows_message and pending_notices(state):
             message_to_user = with_notices(state, message_to_user)
-            if next_action == "exit":
-                logger.info(f"\n\n{message_to_user}")  # the console is where the user reads the app's messages
+        if next_action == "exit" and message_to_user:
+            logger.info(f"\n\n{message_to_user}")  # the console is where the user reads the app's messages
         return_state = {
             "next": next_action,
             "messages": messages + [
