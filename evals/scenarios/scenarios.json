@@ -1,0 +1,171 @@
+{
+  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: USD per session per system, the higher of the scout's probes and the 2026-11-12 smoke runs (gpt-6-luna); a session is stopped at 3x that.",
+  "model": "openai:gpt-6-luna",
+  "total_cap": 4.5,
+  "scenarios": [
+    {
+      "id": "S1",
+      "title": "Long session: eleven stacked edits must all hold at the end",
+      "expected": "tie (scout probes: B2 32/33 constraints, app 9/11)",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.14,
+        "b2": 0.03
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s1-long-p03"
+        },
+        {
+          "persona": "p09",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s1-long-p09"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "Truthfulness under the ground-truth rule: what the user says about themselves is applied (3 cases), requests their own words contradict are refused and explained (3 traps)",
+      "expected": "applied cases: B2 >= app (the app's grounding check may remove user-stated facts); traps: tie; telling the user: B2 > app until the silent-decline fix",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.055,
+        "b2": 0.006
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-retitle-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-embellish-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-homelab-p03"
+        },
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s2-cka-p03"
+        },
+        {
+          "persona": "p02",
+          "ad": "a5",
+          "inputs": "cv_only",
+          "script": "s2-go-p02"
+        },
+        {
+          "persona": "p12",
+          "ad": "a7",
+          "inputs": "all4",
+          "script": "s2-forklift-p12"
+        }
+      ],
+      "primary_checks": [
+        "user-fact-applied",
+        "on-call-applied",
+        "production-k8s-applied",
+        "homelab-in-experience",
+        "trap-absent"
+      ]
+    },
+    {
+      "id": "S3",
+      "title": "Missing contact details, given only if asked",
+      "expected": "app >> B2; app ~ B2+ (B2 with one 'ask for missing details' line)",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.035,
+        "b2": 0.003,
+        "b2_ask": 0.005
+      },
+      "cases": [
+        {
+          "persona": "p01",
+          "ad": "a1",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p02",
+          "ad": "a5",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p07",
+          "ad": "a3",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        },
+        {
+          "persona": "p10",
+          "ad": "a2",
+          "inputs": "no_cv",
+          "script": "s3-details-if-asked"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "title": "One change for both documents, then a correction everywhere",
+      "expected": "B2 > app until the router keeps both documents' feedback",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.055,
+        "b2": 0.008
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s4-both-docs-p03"
+        },
+        {
+          "persona": "p01",
+          "ad": "a1",
+          "inputs": "all4",
+          "script": "s4-both-docs-p01"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "title": "Appearance and content edits interleaved: text untouched, every PDF compiles, styles persist",
+      "expected": "app >= B2 on text and compiles; app < B2 on style persistence until styles accumulate",
+      "reps": 3,
+      "est_usd": {
+        "app": 0.05,
+        "b2": 0.013
+      },
+      "cases": [
+        {
+          "persona": "p03",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s5-style-p03"
+        },
+        {
+          "persona": "p09",
+          "ad": "a3",
+          "inputs": "all4",
+          "script": "s5-style-p09"
+        }
+      ]
+    }
+  ]
+}
