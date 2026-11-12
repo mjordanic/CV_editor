@@ -287,8 +287,7 @@ def _run_case_offline(tmp_path, monkeypatch, fake) -> tuple[int, Path]:
     """run_case.main on a fixture persona and ad with `fake` as every chat model (no model or search call)."""
     import subprocess
     from evals import run_case
-    from agents import (cover_letter_pdf_generator, cover_letter_writer, cv_pdf_generator, cv_writer,
-                        document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router)
+    from agents import (cover_letter_pdf_generator, cv_pdf_generator, document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router)
 
     # restore everything run_case changes globally
     monkeypatch.chdir(tmp_path)

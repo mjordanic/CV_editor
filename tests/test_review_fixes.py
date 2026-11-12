@@ -10,7 +10,6 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 from langchain_core.runnables import RunnableLambda
@@ -111,7 +110,7 @@ class LetterLLM(WriterLLM):
 
 
 def test_a_wish_on_the_first_letter_readdresses_the_old_letter_to_this_job(monkeypatch, tmp_path):
-    """N3 (captain: option a): 'mention I can start in March' with an old letter for another company."""
+    """N3: 'mention I can start in March' with an old letter for another company."""
     llm = LetterLLM()
     agent = _writer(monkeypatch, tmp_path, CoverLetterWriterAgent, llm)
     wish = "In the letter, mention that I can start in March."

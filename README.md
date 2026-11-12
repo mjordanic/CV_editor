@@ -326,7 +326,7 @@ Open:
 - **Batch processing:** tailored documents for several job ads in one run.
 - **Web interface:** a web UI next to or instead of the terminal.
 - **Integrations:** professional networks (LinkedIn), job boards, document storage (Google Drive, Dropbox).
-- **CI/CD:** the offline tests exist (434); there is no CI pipeline yet.
+- **CI/CD:** the offline tests exist (483); there is no CI pipeline yet.
 
 Licence
 -------
