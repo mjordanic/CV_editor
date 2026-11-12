@@ -1,0 +1,522 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9029,
+      "output_tokens": 6712,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14467
+    },
+    "cost_usd": 0.043312,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "ab3cb9b1e0559352d815060161664dcb71b391248d9f387f3a608e71834923ba",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-ma_luna_p04_a6_all4_r1-67498dd660",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "eval1-ma_luna_p04_a6_all4_r1-67498dd660",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.086624
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Junior Frontend / Full-Stack Developer",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "notes",
+        "evidence_quote": "junior frontend or junior fullstack",
+        "note": "Candidate wants both, but has no backend job experience."
+      },
+      {
+        "document": "cv",
+        "claim": "Node.js/Express API backed by PostgreSQL",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Node.js/Express API caching data from public weather and tide APIs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fixed accessibility issues across 20+ components",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "on 20+ components",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Teaching Assistant, Spring 2025, approx 30 students",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "teaching assistant for 1st year web dev lab, 1 semester (spring 2025), helped ~30 students",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Second place hackathon 2024, team of three, 24 hours, frontend",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "2nd place at a student hackathon (2024), team of 3, built transit delay notifier in 24h. I did the frontend",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Lighthouse 100, grade 82%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Lighthouse accessibility score 100",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Yoga site Next.js, Tailwind, Vercel",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Next.js, Tailwind CSS, hosted on Vercel",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "WCAG 2.1",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "accessibility (WCAG 2.1)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BSc First Class Honours 2021-2025",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "2021-2025, First Class Honours",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "practical experience across frontend and backend development",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "notes",
+        "evidence_quote": "no backend job experience, only my own projects",
+        "note": "Backend only in one academic project; mildly stretched."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Fixed accessibility issues across more than 20 components; gallery in Storybook",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "on 20+ components",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "tested with NVDA and VoiceOver",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Tested with screen readers (NVDA, VoiceOver)",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Authentication/login experience",
+        "source": "portfolio",
+        "source_quote": "I built the React frontend and the login screens",
+        "relevance": "low",
+        "why_it_matters": "Security basics requirement."
+      },
+      {
+        "fact": "Right to work in Ireland / open to remote",
+        "source": "notes",
+        "source_quote": "Dublin or remote",
+        "relevance": "medium",
+        "why_it_matters": "Ad allows remote only in Austria, Germany, Croatia, Slovenia, so Ireland is a possible issue."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years professional React/TypeScript",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Software Development Intern | Harbourline Media",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Node.js backend and SQL",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Node.js/Express API that caches data",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Semantic HTML, responsive, accessibility",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Fixed accessibility issues across 20+ components",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated testing (unit and E2E), Git",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Wrote unit tests using Jest and React Testing Library",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Web security fundamentals",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Fluent English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (native)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Next.js",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Next.js static generation",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Storybook",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "documented it with Storybook stories",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Honest; junior status is not disguised and nothing is faked. Security and E2E testing are not addressed.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second page mostly empty",
+        "Teaching assistant listed after internship, though it is more recent"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "EXPERIENCE",
+        "SELECTED PROJECTS",
+        "EDUCATION",
+        "ADDITIONAL ACHIEVEMENTS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "PostgreSQL",
+        "Jest",
+        "Git",
+        "accessibility",
+        "Next.js",
+        "Storybook",
+        "English",
+        "semantic HTML",
+        "Playwright",
+        "NestJS"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "PostgreSQL",
+        "Jest",
+        "Git",
+        "accessibility",
+        "Next.js",
+        "Storybook",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "semantic HTML",
+        "responsive layouts"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, readable text with standard headings and most real matching keywords. Semantic HTML and responsive design are not explicit."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company specifics limited to the principles; no product or news reference",
+        "Does not acknowledge being junior or address backend gap",
+        "Phrase 'across frontend and backend' stretches the evidence"
+      ],
+      "strengths": [
+        "Accessibility focus matches the ad",
+        "Concrete evidence",
+        "Concise",
+        "No stale framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "patients first",
+        "healthcare feel simpler and more human"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 only about a quarter filled"
+      ],
+      "consistency_issues": [
+        "Letter body 11pt vs CV 10pt; letter uses mono link font"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Hackathon",
+        "Teaching assistant"
+      ],
+      "notes_facts_ignored": [
+        "Volunteer social media for sea swimming club",
+        "Stamp 1G visa work right"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Honest, well-formatted CV and letter with every claim traceable to the candidate's material; the Vue and GraphQL non-skills were correctly left out. The main weakness is limited tailoring to the ad's gaps (2+ years experience, security, E2E testing, backend depth) and mild stretching in 'across frontend and backend'. The letter is solid but only lightly company-specific. Layout is clean with a mostly empty second CV page."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 4,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3748,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1611,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 48.5,
+          "right": 47.1,
+          "top": 46.9,
+          "bottom": 49.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 27.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMMono10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 71.6,
+          "right": 71.7,
+          "top": 74.2,
+          "bottom": 428.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 49.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.043312,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

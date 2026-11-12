@@ -1,0 +1,123 @@
+{
+  "run_dir": "runs/S4-s4-both-docs-p03-p03-b2-r2",
+  "labels": {
+    "system": "b2",
+    "scenario": "S4",
+    "case": "p03/s4-both-docs-p03",
+    "rep": "2",
+    "method": "single_prompt_chat"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 14,
+    "purpose": "S4 (both documents): one message whose change applies to both existing documents, then a fact correction 'everywhere'.",
+    "persona": "p03",
+    "correct_behaviour": "Both documents get the new contact detail; the corrected figure replaces the old one in both.",
+    "requests": [
+      {
+        "id": "add-to-both",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter.",
+        "correct_behaviour": "github.com/mkb-dev in both documents"
+      },
+      {
+        "id": "correct-everywhere",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents.",
+        "correct_behaviour": "no 'under 1%' flaky-test claim in either document"
+      }
+    ],
+    "checks": [
+      {
+        "id": "added-in-both",
+        "type": "present",
+        "pattern": "github\\.com/mkb-dev(?![\\w-])",
+        "what": "github.com/mkb-dev in both documents"
+      },
+      {
+        "id": "old-figure-gone",
+        "type": "absent",
+        "pattern": "(?:under|below|less than|<)\\s*1\\s?%",
+        "what": "the old figure is in neither document"
+      },
+      {
+        "id": "new-figure-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "(?:under|below|less than|<)\\s*2\\s?%",
+        "what": "the corrected figure is in the CV"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "work_preference": null,
+  "started_at": "2026-11-12T09:03:34+00:00",
+  "method": "single_prompt_chat",
+  "model": "openai:gpt-6-luna",
+  "ask_hint": false,
+  "status": "completed",
+  "system": "b2",
+  "minutes": 1.58,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 3,
+  "user_turns": 3,
+  "requests_sent": [
+    "add-to-both",
+    "correct-everywhere"
+  ],
+  "requests_not_sent": [],
+  "compile_failures": 0,
+  "cost_usd": 0.006529,
+  "finished_at": "2026-11-12T09:05:09+00:00"
+}

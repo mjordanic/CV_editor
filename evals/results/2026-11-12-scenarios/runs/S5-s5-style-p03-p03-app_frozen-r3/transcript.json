@@ -1,0 +1,151 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first: a tailored CV, a cover letter, or both?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Let me know if you’d like any content or PDF appearance changes, or if you’re satisfied.",
+      "user": "Make the section headings in the CV PDF dark green."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The CV PDF has been updated with dark green section headings. Would you like any other content or appearance changes, or are you satisfied with both documents?",
+      "user": "Now use a sans-serif font for the CV PDF."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The CV PDF has been updated to use a sans-serif font. Would you like any other content or appearance changes, or are you satisfied with both documents?",
+      "user": "Please remove the Customer Support Specialist job from the CV."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Warning: the CV PDF does not match the checked text exactly (100.0% of its words found; numbers that differ (- missing, + added): -48, -555, -303, +48555303303). Compare the PDF with data/generated_CVs/generated_CV.txt before you send it.\n\nBoth documents have been generated. Would you like any content or PDF appearance changes to the CV or cover letter, or are you satisfied with them?",
+      "user": "Tighten the spacing and margins in the CV PDF a little. Don't change the wording."
+    },
+    {
+      "turn": 6,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The CV PDF spacing and margins have been tightened. Would you like any further changes to the CV or cover letter, or are you satisfied with both?",
+      "user": "Make my name at the top of the cover letter PDF dark green too, to match the CV."
+    },
+    {
+      "turn": 7,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The cover letter PDF has been updated. Would you like any further changes to the CV or cover letter, or are you satisfied with both?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "s1-green",
+      "after": "cv",
+      "text": "Make the section headings in the CV PDF dark green.",
+      "expect": "follow",
+      "correct_behaviour": "Headings dark green; text unchanged.",
+      "drafts_before": {
+        "cv": 4,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 4
+      },
+      "new_draft": false
+    },
+    {
+      "id": "s2-sans",
+      "after": "cv",
+      "text": "Now use a sans-serif font for the CV PDF.",
+      "expect": "follow",
+      "correct_behaviour": "Sans-serif font; headings still dark green; text unchanged.",
+      "drafts_before": {
+        "cv": 4,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 4
+      },
+      "new_draft": false
+    },
+    {
+      "id": "c1-drop-job",
+      "after": "cv",
+      "text": "Please remove the Customer Support Specialist job from the CV.",
+      "expect": "follow",
+      "correct_behaviour": "Job removed; styles kept.",
+      "drafts_before": {
+        "cv": 4,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 5,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "s3-spacing",
+      "after": "cv",
+      "text": "Tighten the spacing and margins in the CV PDF a little. Don't change the wording.",
+      "expect": "follow",
+      "correct_behaviour": "Tighter layout; text unchanged; styles kept.",
+      "drafts_before": {
+        "cv": 5,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 5,
+        "cover_letter": 4
+      },
+      "new_draft": false
+    },
+    {
+      "id": "s4-letter-green",
+      "after": "cover_letter",
+      "text": "Make my name at the top of the cover letter PDF dark green too, to match the CV.",
+      "expect": "follow",
+      "correct_behaviour": "Letter name dark green; text of both documents unchanged.",
+      "drafts_before": {
+        "cv": 5,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 5,
+        "cover_letter": 4
+      },
+      "new_draft": false
+    }
+  ]
+}

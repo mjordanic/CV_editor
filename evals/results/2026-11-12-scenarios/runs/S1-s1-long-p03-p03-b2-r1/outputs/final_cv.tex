@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\[0.3em]
+{\large DevOps / Platform Engineering | QA Automation Engineer}\\[0.25em]
+\small marta.kowalbrandt@example.com | +48 555 303 303
+\end{center}
+\vspace{0.4em}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience and recent focus on CI/CD pipelines, test environments and build tooling. Owns GitLab CI pipelines for three product teams and has built short-lived Kubernetes test environments deployed through Helm, with experience improving pipeline performance—including reducing average pipeline time from 38 to 14 minutes—maintaining automated test infrastructure and supporting teams with clear internal documentation; seeking to move into a DevOps or platform engineering role.
+
+\section*{LANGUAGES}
+Polish (native), English (C1), German (A2)
+
+\section*{Technical Toolkit}
+Infrastructure and delivery: GitLab CI, Jenkins, Docker, Docker Compose, Helm, Kubernetes (namespace-level work and k3s homelab), Terraform (personal project), Argo CD\\
+Monitoring and systems: Linux, Prometheus, Grafana, Loki, PostgreSQL, Git\\
+Programming and testing: Python, Bash, SQL, Java (test code), pytest, Playwright, Selenium, Postman\\
+Cloud learning: AWS EC2 and S3 basics (personal learning)
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software | 2021--Present}
+\begin{itemize}
+\item Own GitLab CI pipelines for three product teams of approximately 25 developers, covering build, unit, integration and end-to-end test stages, and artifact publishing; Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests into a dedicated stage.
+\item Built merge-request test environments using Docker Compose and later Helm charts deployed to a shared Kubernetes cluster; environments are automatically removed after merge or 48 hours of inactivity.
+\item Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced the flaky test rate from 7\% to under 1\%.
+\item Wrote Bash and Python tooling to seed test data in PostgreSQL; Wrote the internal guide to how CI works, which is used in onboarding; mentored two QA interns in 2023.
+\end{itemize}
+\textbf{QA Engineer | Brightmill Software House | 2019--2021}
+\begin{itemize}
+\item Tested web and mobile applications for client projects using manual and automated testing.
+\item Introduced a Java and Selenium automated regression suite for the largest client project.
+\item Configured Jenkins jobs to run nightly regression tests.
+\end{itemize}
+
+\section*{SELECTED PROJECTS}
+\textbf{Homelab k3s Cluster with GitOps | Personal project | 2024--2025}
+\begin{itemize}
+\item Built a three-node Raspberry Pi 5 k3s cluster with applications deployed from a Git repository using Argo CD.
+\item Set up Prometheus, Grafana and Loki monitoring, Traefik ingress, and cert-manager for TLS.
+\item Provisioned infrastructure for a small Hetzner VPS using Terraform; used Ansible at a basic level.
+\end{itemize}
+\textbf{Merge-Request Ephemeral Environments | Odrava Health | 2023--2024}
+\begin{itemize}
+\item Set up short-lived environments for each merge request, with the application, PostgreSQL and seeded data deployed via Helm to a shared Kubernetes cluster from GitLab CI.
+\item Configured automatic cleanup after merge or 48 hours of inactivity; QA and product teams can review features and run end-to-end tests before merge.
+\end{itemize}
+\textbf{CI Pipeline Speed-up | Odrava Health | 2022}
+\begin{itemize}
+\item Profiled pipelines for three teams, parallelised test jobs, added dependency caching and separated end-to-end tests into a dedicated stage.
+\item Reduced average pipeline time from 38 to 14 minutes and monthly CI runner cost by approximately 30\%.
+\end{itemize}
+\textbf{Flaky Test Dashboard | Odrava Health | 2023}
+\begin{itemize}
+\item Collected CI test results in PostgreSQL and built Grafana dashboards showing flaky tests by team.
+\item Helped teams identify test failures to address; the flaky test rate fell from 7\% to under 1\%.
+\end{itemize}
+
+\section*{Education \& Training}
+BEng Computer Engineering | Silesian Lowlands University of Technology | 2018
+
+\section*{CERTIFICATION AND PROFESSIONAL DEVELOPMENT}
+ISTQB Foundation Level | 2019\\
+Certified Kubernetes Administrator (CKA) preparation; exam booked for January 2027, not yet passed
+\end{document}

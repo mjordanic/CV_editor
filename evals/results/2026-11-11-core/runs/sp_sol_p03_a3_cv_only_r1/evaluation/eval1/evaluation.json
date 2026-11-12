@@ -1,0 +1,457 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6939,
+      "output_tokens": 5438,
+      "cache_creation_input_tokens": 2476,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.037735,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "41d19bbf3231b8d75a12faac9b84f6349daf02c68c7062acc008426c9832e1e3",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p03_a3_cv_only_r1-3e4cd74a01",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p03_a3_cv_only_r1-3e4cd74a01",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.07547
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "7 years of experience, last two on CI/CD",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "QA automation engineer with 7 years of experience, the last two spent mostly on CI/CD pipelines",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Own GitLab CI pipelines for 3 product teams, approx. 25 developers",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Own the GitLab CI pipelines for 3 product teams (~25 developers)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Reduced pipeline time from 38 to 14 minutes",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Cut average pipeline time from 38 to 14 minutes",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "flaky rate 7% to under 1%, ~900 tests",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "flaky rate down from 7% to under 1%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kubernetes (basic), Helm, Docker",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Kubernetes (basic)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Odrava 2021-Present; Brightmill 2019-2021; support 2018-2019; BEng 2018",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Odrava Health Software, Wroclaw | 2021 - now",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "use Linux, Grafana dashboards for test metrics",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Grafana (dashboards for test metrics)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "practical foundation for supporting developers; relevant to observability and reliability",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Grafana (dashboards for test metrics)",
+        "note": "Observability link is stretched from test dashboards."
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Wroclaw location",
+        "source": "cv",
+        "source_quote": "Wroclaw, Poland",
+        "relevance": "low",
+        "why_it_matters": "Role is remote-friendly with occasional Krakow office days."
+      },
+      {
+        "fact": "Ephemeral environments on Kubernetes as infrastructure-like work",
+        "source": "cv",
+        "source_quote": "Helm charts on the company's shared Kubernetes cluster",
+        "relevance": "medium",
+        "why_it_matters": "Closest to the infra requirement; used already."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on cloud infrastructure design and operation",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Helm charts on the company's shared Kubernetes cluster",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "AWS or other major cloud",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Networking incl. mTLS, TLS",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Leading technical topics with stakeholders",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Own GitLab CI pipelines for 3 product teams",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Linux",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Linux, Git, SQL, PostgreSQL",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Backend/JVM background",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Java (test code)",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps in cloud, Terraform and mTLS are not faked; the letter openly acknowledges the broader scope and the transition.",
+      "score": 5
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Headline stays QA rather than targeting the role"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Terraform",
+        "Terragrunt",
+        "AWS",
+        "mTLS",
+        "TLS",
+        "Linux",
+        "Kubernetes",
+        "DevOps",
+        "CI/CD",
+        "Infrastructure as code",
+        "Monitoring"
+      ],
+      "covered_in_searchable_wording": [
+        "Linux",
+        "Kubernetes",
+        "DevOps",
+        "CI/CD"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 5,
+      "reason": "Clean, parseable text with honest keywords, but the candidate lacks most core terms (Terraform, AWS, mTLS) so coverage is low."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Little company-specific content beyond the ad",
+        "Says 'full time' though role is contract",
+        "Does not address contractor model"
+      ],
+      "strengths": [
+        "Honest about the scope gap",
+        "Metrics consistent with CV"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [
+        "seeking to move into DevOps / platform engineering full time"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 8
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Large empty bottom area on both pages"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formulaic phrasing"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left out beyond those given"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 6,
+    "summary": "Honest, clean and well-formatted documents with accurate metrics and no invention. The candidate is a weak fit for the ad (no cloud, Terraform, mTLS), and the letter acknowledges this candidly. The CV is not tailored to the target role and the letter is somewhat generic, with 'full time' framing for a contract role."
+  },
+  "counts": {
+    "claims": 8,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 5,
+    "must_haves_shown": 0,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 5
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2405,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2214,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 56.7,
+          "top": 51.9,
+          "bottom": 145.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 82.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 71.4,
+          "bottom": 285.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 66.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.037735,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "purpose": "A user who changes their mind twice: first only a CV, then a letter after all; and a section move that is then undone.",
+  "correct_behaviour": "The app writes only the CV at first, moves education up and back again as asked (the final CV has education after experience, other changes kept), and then writes the cover letter when the user asks for it after all.",
+  "first": "Please write only my CV - I don't think I need a cover letter for this one.",
+  "cover_letter": "Actually, I've changed my mind - please write the cover letter too.",
+  "max_turns": 14,
+  "requests": [
+    {
+      "id": "education-first",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Please move my education section to the top of the CV, before the work experience.",
+      "correct_behaviour": "Education is moved up (an intermediate draft); the final CV is judged by the next request."
+    },
+    {
+      "id": "education-back",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Sorry, I changed my mind - please put education back after the work experience, where it was. Keep everything else as it is now.",
+      "correct_behaviour": "The final CV has education after the work experience and is otherwise unchanged by these two requests."
+    }
+  ],
+  "expectations": [
+    {
+      "about": "first",
+      "expect": "follow",
+      "correct_behaviour": "Only the CV is written at first; no cover letter is drafted before the user asks."
+    },
+    {
+      "about": "cover_letter",
+      "expect": "follow",
+      "correct_behaviour": "The cover letter is written after all."
+    }
+  ]
+}

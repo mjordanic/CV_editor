@@ -1,0 +1,66 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\usepackage{microtype}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.65em}{0.3em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvitem}[1]{\noindent\textbf{#1}}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em,parsep=0pt}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\\[0.2em]
+{\large\color{accentcolor} Data Scientist}
+
+\cvsection{Professional Summary}
+Data Scientist with experience in forecasting, churn modelling and experimentation at Thistlebox since 2022. Builds Python models used in operational workflows through scheduled notebooks and BigQuery batch scoring. Brings feature engineering, model evaluation and automated testing experience, supported by an MSc in Statistics. Seeking to move into machine learning engineering and develop deeper production engineering expertise.
+
+\cvsection{Technical Skills}
+\begin{itemize}
+\item Programming: Python, SQL, R; pandas, scikit-learn.
+\item Machine learning: LightGBM, XGBoost, SHAP, feature engineering, forecasting, churn modelling and model evaluation.
+\item Cloud and data workflows: GCP experience using BigQuery and Vertex AI Workbench scheduled notebooks; dbt and dbt Cloud scheduler.
+\item Engineering and applications: pytest unit tests, Streamlit; Dockerfile creation for a Streamlit application.
+\item Statistics: experimental design, sequential A/B testing, statsmodels and Bayesian hierarchical models.
+\end{itemize}
+
+\cvsection{Professional Experience}
+\cvitem{Data Scientist | Thistlebox | 2022-Present}
+\begin{itemize}
+\item Built a LightGBM forecasting model predicting weekly orders by recipe and region six weeks ahead, using calendar, price and menu-position features. Reduced WAPE from 23\% to 14\%, with an estimated 9\% reduction in food waste.
+\item Ran forecasting through a Vertex AI Workbench scheduled notebook writing to BigQuery, with outputs accessed by operations in Looker.
+\item Began adding pytest unit tests to forecasting feature code in 2025; coverage is approximately 60\%.
+\item Developed an XGBoost churn model with weekly batch scoring in BigQuery to target retention offers at top-decile customers. Validation using a 10\% holdout showed churn 2.1 percentage points lower in the treated group.
+\item Built a Streamlit sequential A/B testing calculator used by approximately 25 product and growth colleagues. Wrote the application and Dockerfile; the data platform team handled deployment to Cloud Run.
+\item Delivered the internal training session ``Stats for PMs'' three times.
+\end{itemize}
+\cvitem{Junior Data Analyst | Firth Energy Retail | 2020-2022}
+\begin{itemize}
+\item Analysed customer segments and tariffs using R and SQL.
+\item Automated monthly regulatory reports with R Markdown, saving the team approximately two days each month.
+\end{itemize}
+
+\cvsection{Education}
+\cvitem{MSc in Statistics}
+\begin{itemize}
+\item Dissertation on Bayesian hierarchical models; foundation in experimental design and modelling uncertainty.
+\end{itemize}
+
+\cvsection{Additional Project}
+\cvitem{Image Classification | Personal course project | 2025}
+\begin{itemize}
+\item Fine-tuned a small CNN in PyTorch on a public food-image dataset, achieving approximately 80\% accuracy. Used torchvision and Google Colab; learning project only.
+\end{itemize}
+\end{document}

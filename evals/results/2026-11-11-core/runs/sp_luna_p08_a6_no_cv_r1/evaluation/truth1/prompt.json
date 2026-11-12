@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "761eb37930ca8195bca1c34a3444fc942f9543a16c75b4205390474141eba660",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Rust (reading the book)\nG2: Go (did the tour)\nG3: machine learning (unfinished course)\nG4: AWS certification (course only, no exam)\nG5: Terraform authoring\nG6: official team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Copying the 'Learning: Rust, Go' line as skills\nT2: Turning the unfinished AWS Cloud Practitioner course into a certification or the unfinished ML course into ML skills\nT3: Calling him Tech Lead / Team Lead as a job title (project tech lead only; acting lead only in notes)\nT4: Claiming Terraform authoring\nT5: Failing to condense: keeping duplicated Älvgrind sections, hobbies, gymnasium, band\nT6: Dropping qualifiers like 'Vue (a little)', 'Tailwind (some)'\nT7: Old cover letter is to his current employer and says he is at Sjöbris\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nOskar\nFull-Stack Developer | React, TypeScript, Node.js\nPROFESSIONAL SUMMARY\nFull-stack developer with 12 years of professional experience since 2014, strongest in frontend\ndevelopment. Builds customer-facing web and mobile experiences with React and TypeScript,\nalongside Node.js services and PostgreSQL-backed features. Recent work includes BankID identity\nverification, secure document upload, and an incremental Express-to-NestJS migration. Has led\ndelivery of a React Native app with approximately 50,000 downloads and served as acting team lead\nfor four months in 2024.\nCORE SKILLS\nFrontend: React, TypeScript, React Native, Angular\nBackend and databases: Node.js, NestJS, Express, PostgreSQL, GraphQL, Apollo Server, Prisma,\nTypeORM\nCloud and integrations: AWS ECS, S3, Lambda, SQS; Firebase Cloud Messaging; provider SDK\nintegrations\nAdditional: Laravel, WordPress, Python (basic), YAML, Terraform (minor edits)\nTeam leadership: 1:1s and sprint planning as acting team lead\nPROFESSIONAL EXPERIENCE\nFullstack Developer | Älvgrind Fintech AB | 2021–Present\n• Develop onboarding features using React, TypeScript, NestJS, PostgreSQL, and AWS.\n• Work across frontend, backend, and database components for identity verification and secure\ndocument upload features.\n• Contributed to the incremental migration of the onboarding backend from Express to NestJS,\nroute by route behind the same API gateway.\n• Served as acting team lead for four months in 2024 during the team lead’s parental leave, holding\n1:1s and planning sprints.\nDeveloper | Sjöbris Digital Agency AB | 2018–2021\n• Delivered client web and mobile projects using Angular, React, React Native, Laravel, and\nWordPress.\n• Tech lead and primary app developer on a two-developer ferry ticket app project; the other\ndeveloper built the payment backend.\nSELECTED PROJECTS\nBankID Identity Verification Flow | Älvgrind Fintech | 2022\n• Implemented an onboarding identity step using Swedish BankID QR-code and same-device flows\nthrough a provider SDK.\n• A/B-tested on 10% of traffic before full rollout; onboarding conversion increased from 61% to 74%.\n• Technologies: React, TypeScript, NestJS, PostgreSQL, AWS ECS.\nSecure Document Upload | Älvgrind Fintech | 2023\n• Built an ID document upload flow for files up to 20 MB using S3 presigned URLs, ClamAV virus\nscanning in Lambda, and scan-status processing through SQS into PostgreSQL.\n• Technologies: AWS S3, Lambda, SQS, NestJS, PostgreSQL.\nExpress-to-NestJS Migration | Älvgrind Fintech | 2021–2022\n• Migrated the onboarding backend incrementally from Express to NestJS, route by route, behind\nthe same API gateway.\n• Gave a meetup talk about the migration in 2022.\n• Technologies: Node.js, Express, NestJS, TypeORM, Prisma.\nFerry Ticket Mobile App | Sjöbris Digital for a ferry operator | 2019–2020\n• Tech lead and primary app developer in a two-developer team for a React Native app for buying\nand showing ferry tickets offline.\n• The app has approximately 50,000 downloads; the other developer built the payment backend.\n• Technologies: React Native, TypeScript, Node.js, Firebase Cloud Messaging.\nHome Assistant Integrations | Personal project | 2022–Present\n• Built two small custom home automation integrations, published on GitHub with approximately\n40 stars combined.\n• Technologies: Python (basic), YAML.\n\n# OUTPUT 2: COVER LETTER\nDear Verdane Care hiring team,\nI’m applying for the Full-Stack Engineer role in the Patient Experience squad. My recent\nwork at Älvgrind Fintech has involved onboarding features built with React and TypeScript,\nNestJS, PostgreSQL, and AWS—the core technologies named in your role.\nI implemented an identity-verification step using Swedish BankID, including QR-code and\nsame-device flows, and A/B-tested it on 10% of traffic before full rollout. Onboarding\nconversion increased from 61% to 74%. I also worked on secure ID document uploads using S3\npresigned URLs, Lambda virus scanning, SQS, and PostgreSQL. These projects have given me\nexperience building user-facing features across the frontend, APIs, and database components.\nI have also worked on an incremental migration of an onboarding backend from Express to\nNestJS, route by route behind the same API gateway, and shared the migration in a 2022\nmeetup talk. Earlier, I was tech lead and primary app developer for a React Native ferry\nticket app that supports offline ticket use and has approximately 50,000 downloads. Frontend\ndevelopment is where I am strongest, and I have also taken on team coordination, serving as\nacting team lead for four months in 2024 and handling 1:1s and sprint planning.\nVerdane Care’s focus on making booking and follow-up simpler for patients is compelling to\nme, particularly because I value seeing the impact of software on the people who use it. I\nwould welcome the opportunity to bring my React and TypeScript experience, along with my\nNode.js and PostgreSQL work, to your Patient Experience squad.\nThank you for considering my application.\nOskar\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

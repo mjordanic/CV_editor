@@ -67,20 +67,6 @@ def get_logged_message_count() -> int:
     return _logged_message_count
 
 
-def reset_logged_message_count():
-    """
-    Reset the internal message counter.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    global _logged_message_count
-    _logged_message_count = 0
-
-
 def write_to_debug(content: str, section_title: str = ""):
     """
     Write content to the debug file.

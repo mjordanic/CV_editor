@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\setlist[itemize]{leftmargin=1.3em,itemsep=0.2em,topsep=0.2em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\
+QA Automation Engineer transitioning to DevOps / Platform Engineering\\
+Wroclaw, Poland | \href{mailto:marta.kowalbrandt@example.com}{marta.kowalbrandt@example.com} | +48 555 303 303 | \url{gitlab.com/mkb-example}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience, including two years focused primarily on CI/CD pipelines, test environments and build tooling. Hands-on experience owning GitLab CI pipelines for three product teams and building Helm-based ephemeral environments on a shared Kubernetes cluster. Personal infrastructure work includes a k3s homelab, Terraform-provisioned Hetzner VPS infrastructure and introductory AWS learning. Seeking to move into a DevOps or platform engineering role.
+
+\section*{TECHNICAL SKILLS}
+CI/CD and containers: GitLab CI, Jenkins, Docker, Docker Compose\\
+Infrastructure and platforms: Kubernetes (namespace-level access; k3s homelab), Helm, Terraform (personal projects), Ansible (basic), Linux\\
+Monitoring and data: Grafana, Prometheus, Loki, PostgreSQL, SQL\\
+Programming and testing: Python, Bash, Java (test code), pytest, Playwright, Selenium, Postman\\
+Cloud learning: AWS (EC2 and S3 basics)\\
+Other: Git, Argo CD
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021-present}
+\begin{itemize}[label=-]
+\item Own GitLab CI pipelines for three product teams (~25 developers), covering builds, unit, integration and end-to-end test stages, and artifact publishing.
+\item Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests into their own stage; monthly CI runner costs fell by about 30\%.
+\item Built merge-request ephemeral environments with Docker Compose and later Helm on the company's shared Kubernetes cluster, including application services, PostgreSQL and seeded data; environments are removed after merge or 48 hours of inactivity.
+\item Maintain a pytest and Playwright end-to-end suite of about 900 tests.
+\item Built a flaky-test dashboard using Python, PostgreSQL, Grafana and the GitLab API; the flaky rate fell from 7\% to below 1\% after teams addressed the top offenders.
+\item Wrote Bash and Python tooling to seed PostgreSQL test data and documented how the CI system works for team onboarding.
+\item Mentored two QA interns in 2023.
+\end{itemize}
+
+\textbf{QA Engineer | Brightmill Software House, Wroclaw | 2019-2021}
+\begin{itemize}[label=-]
+\item Tested web and mobile applications through manual and automated testing for client projects.
+\item Introduced a Java and Selenium automated regression suite for the largest client project.
+\item Configured Jenkins jobs to run nightly regression tests.
+\end{itemize}
+
+\textbf{Customer Support Specialist (2nd line) | Brightmill Software House | 2018-2019}
+\begin{itemize}[label=-]
+\item Investigated customer issues using logs and databases and reproduced bugs for developers.
+\end{itemize}
+
+\section*{SELECTED INFRASTRUCTURE PROJECT}
+\textbf{Homelab k3s Cluster with GitOps | Personal | 2024-2025}
+\begin{itemize}[label=-]
+\item Built a three-node k3s cluster on Raspberry Pi 5 devices, with applications deployed from a Git repository using Argo CD.
+\item Set up Prometheus, Grafana and Loki for monitoring, plus Traefik ingress and cert-manager for TLS.
+\item Provisioned infrastructure for a small Hetzner VPS with Terraform; used Ansible at a basic level.
+\end{itemize}
+
+\section*{EDUCATION}
+BEng Computer Engineering | Silesian Lowlands University of Technology | 2018
+
+\section*{CERTIFICATIONS AND PROFESSIONAL DEVELOPMENT}
+ISTQB Foundation Level | 2019\\
+Preparing for the Certified Kubernetes Administrator (CKA) exam, scheduled for January 2027
+
+\section*{LANGUAGES}
+Polish (native), English (C1), German (A2)
+
+\end{document}

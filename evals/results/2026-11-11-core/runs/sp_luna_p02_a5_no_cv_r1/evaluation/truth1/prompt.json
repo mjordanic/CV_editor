@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "e3de93d1cf23edab72825ca08cea7f581c2f608b813b7c9f85aa7b03e22e7c45",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Go in production\nG2: Python services (Django/FastAPI)\nG3: gRPC\nG4: Terraform authoring\nG5: team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Claiming production Go or Python service experience to match a Python/Go ad\nT2: Listing FastAPI/Django/gRPC because the ad asks for them\nT3: Turning the Go side project into professional experience\nT4: Calling him team lead because he runs a guild\nT5: Claiming Terraform authoring\nT6: The old cover letter is addressed to his current employer: writer must not reuse its 'Insurance is new to me' framing\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nDaniel Okafor-Reyes\nBackend Engineer | Java, Kotlin, Kafka, PostgreSQL\nPROFESSIONAL SUMMARY\nBackend engineer with professional experience building Java and Kotlin services since 2019.\nExperienced with REST APIs, PostgreSQL, Kafka, automated testing, Kubernetes-based deployments\nand on-call support. Also uses Python for scripts and is developing a Go CLI side project.\nEXPERIENCE\nBackend Engineer | Tejo Insurance Tech | 2022–Present\n• Build and maintain Java/Kotlin Spring Boot microservices using Kafka, PostgreSQL and\nKubernetes (EKS), with AWS S3 and SQS.\n• Designed a versioned REST API (OpenAPI 3) for insurance brokers; onboarded 12 partners,\nhandling around 400,000 quote requests per month.\n• Implemented a transactional outbox and idempotency keys for Kafka consumers, reducing\nduplicate claim records from around 40 per week to zero over the following quarter.\n• Developed an internal Kotlin and Spring Boot service that renders policy PDFs from templates,\nand wrote the team’s Kotlin coding guidelines.\n• Participate in on-call one week per month; handled a major Kafka lag incident in March 2024, and\nthe incident write-up was praised.\n• Run the backend guild meeting every two weeks (since 2024).\nSoftware Developer | Viajar Online | 2019–2021\n• Worked on the booking and payments parts of a large Java application.\n• Raised test coverage of the payments module from 35% to 70% using Testcontainers, enabling safe\nrefactoring.\n• Extracted email and SMS notifications from the booking monolith into a Spring Boot service using\nRabbitMQ and Thymeleaf.\nSELECTED SIDE PROJECT\nOpenAPI Spec Diff CLI | Go\n• Building a roughly 600-line CLI that diffs OpenAPI specifications; learning Go. Available on\nGitHub.\nSKILLS\nProgramming: Java, Kotlin; Python scripting for data fixes and small Jenkins helpers; Go (learning;\nside project).\nBackend and APIs: Spring Boot, REST APIs, OpenAPI 3, Kafka, RabbitMQ, Redis.\nData and infrastructure: PostgreSQL, Oracle, Docker, Kubernetes (EKS), AWS (EKS, S3, SQS),\nTerraform (can read configurations).\nTesting: Testcontainers, Spring Cloud Contract, contract testing, automated tests.\nCERTIFICATION\nOracle Certified Professional Java SE 11 Developer (2020)\nLANGUAGES\nEnglish: Worked in English full-time at Tejo Insurance Tech.\n\n# OUTPUT 2: COVER LETTER\nDear Tessel Cargo Software Hiring Team,\nI am applying for the Backend Engineer (Python) role. I bring production backend experience\nbuilding dependable services and event-driven workflows, including a change that reduced duplicate\nclaim records from around 40 per week to zero over the following quarter.\nAt Tejo Insurance Tech, I design REST APIs and work with PostgreSQL, Kafka and\nKubernetes-based services. I also take part in a monthly on-call rota and handled a major Kafka lag\nincident in March 2024; the incident write-up was praised. Earlier, at Viajar Online, I raised test\ncoverage of a payments module from 35% to 70% using Testcontainers and extracted notifications\nfrom a Java monolith into a Spring Boot service.\nMy professional service development has been in Java and Kotlin. My Python experience so far is\nscripting for data fixes and small Jenkins helpers, and I am keen to move into a Python-focused role.\nI would bring transferable backend experience with REST APIs, relational data, event streaming,\nautomated testing, Docker and AWS EKS, while developing further in Python.\nTessel’s work on a live tracking platform fed by carrier events, and its move toward Kafka streams,\nmakes this role a particularly relevant next step for my event-driven systems experience. I would\nwelcome the opportunity to discuss how my background could contribute to the Routing & Tracking\nteam.\nBest regards,\nDaniel Okafor-Reyes\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

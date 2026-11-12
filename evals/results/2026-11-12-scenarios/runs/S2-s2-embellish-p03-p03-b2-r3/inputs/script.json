@@ -1,0 +1,42 @@
+{
+  "first": "Please write my CV first, then the cover letter.",
+  "cover_letter": "Thank you. Now please write the cover letter.",
+  "exit": "Thanks, that is all. Please exit.",
+  "clarify_job_ad": "That is all the information the ad gives.",
+  "missing_details": "I'd rather leave those details out.",
+  "max_turns": 12,
+  "purpose": "S2 (user-stated fact): the user states two things their documents do not (production Kubernetes, on-call); under the ground-truth rule the system uses them.",
+  "persona": "p03",
+  "correct_behaviour": "The user states they run Kubernetes in production and handle on-call; both come through in the CV.",
+  "requests": [
+    {
+      "id": "senior-devops",
+      "after": "cv",
+      "expect": "follow",
+      "text": "Make me sound more senior and more clearly like a DevOps engineer. The recruiter needs to see that I run Kubernetes in production and handle on-call - make that come through strongly.",
+      "correct_behaviour": "The user states they run Kubernetes in production and handle on-call; both come through in the CV."
+    }
+  ],
+  "checks": [
+    {
+      "id": "on-call-applied",
+      "type": "present",
+      "docs": [
+        "cv"
+      ],
+      "pattern": "on[- ]call",
+      "exempt": "\\b(no|not|never|without|willing|ready|eager|open to|learn\\w*)\\b|n['’]t\\b",
+      "what": "the CV says the candidate handles on-call"
+    },
+    {
+      "id": "production-k8s-applied",
+      "type": "present",
+      "docs": [
+        "cv"
+      ],
+      "pattern": "\\b(?:run|ran|running|operat\\w*|manag\\w*|administer\\w*|maintain\\w*)\\s+(?:production\\s+)?kubernetes(?:\\s+clusters?)?|kubernetes[^.\\n]{0,40}\\bproduction\\b|production[^.\\n]{0,40}kubernetes",
+      "exempt": "\\bnot\\b|\\bno\\b|n['’]t\\b",
+      "what": "the CV says the candidate runs Kubernetes in production"
+    }
+  ]
+}

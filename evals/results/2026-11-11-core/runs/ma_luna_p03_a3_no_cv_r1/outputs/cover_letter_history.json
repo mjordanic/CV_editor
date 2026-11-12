@@ -1,0 +1,154 @@
+[
+  {
+    "iteration": 1,
+    "content": "Dear Corvale Mobility Hiring Team,\n\nI’m writing to apply for the Cloud Infrastructure / DevOps Contractor – Fleet Connectivity role. In my current role at Odrava Health Software, I own GitLab CI pipelines and ephemeral test environments for three teams, combining infrastructure-focused delivery with a strong emphasis on reliability, observability, and clear ways of working.\n\nI designed and implemented short-lived merge-request environments on a shared Kubernetes cluster, using Helm and GitLab CI to deploy the application, PostgreSQL, and seeded data, with automated cleanup after merge or 48 hours of inactivity. I have also profiled pipelines across three teams, introducing parallel test execution, dependency caching, and a dedicated end-to-end stage. This reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%. To help teams understand and improve their systems, I collected CI results in PostgreSQL and built Grafana dashboards that helped reduce the flaky test rate from 7% to below 1% after teams addressed the leading issues.\n\nAlongside my professional work, I built a three-node k3s homelab with applications deployed through Argo CD, monitoring with Prometheus, Grafana, and Loki, and a small Hetzner VPS provisioned using Terraform. These experiences have strengthened my practical understanding of infrastructure automation and operating observable environments. I’m interested in applying that foundation to Corvale’s work connecting a new train fleet with cloud services, and in contributing to an engineering-led team shaping its systems from the start. I also value making technical work approachable: I wrote Odrava’s internal guide to how its CI system works, which is used in onboarding.\n\nThank you for considering my application. I would welcome the opportunity to discuss how my experience in test infrastructure, automation, and observability could contribute to Corvale’s Fleet Connectivity work.\n\nKind regards,\nMarta Kowal-Brandt",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is clear, professional, well structured, and supported by the candidate information. It uses credible quantified results and explains the relevance of the candidate’s transition from QA automation toward infrastructure work. The strongest evidence is the reduction in pipeline time, CI cost, and flaky-test rate, plus the Kubernetes and GitOps projects. However, the letter is better aligned with test infrastructure and platform enablement than with Corvale’s broader cloud infrastructure role. It does not clearly frame the candidate’s experience in terms of infrastructure as code, TLS certificate management, stakeholder alignment, technical ownership, or the limits of the candidate’s Terraform and cloud experience. It also omits the candidate’s AWS learning, although this should only be mentioned accurately as basic personal learning.",
+      "ats_compatibility_feedback": "The letter is ATS-readable: it uses standard paragraphs, no problematic tables or graphics, and includes relevant terms such as GitLab CI, Kubernetes, Helm, PostgreSQL, Terraform, Argo CD, Prometheus, Grafana, and Loki. AI screening probability is moderate rather than high for this role because several prominent job terms are absent or weakly represented, including infrastructure as code, AWS, TLS certificate management, systems design, stakeholder collaboration, and technical ownership. Terraform is mentioned, but its personal-project scope is not made explicit in the letter. The document correctly does not claim unsupported Terragrunt, mTLS, production cloud operations, or fleet/IoT experience.",
+      "job_alignment_feedback": "The letter demonstrates strong transferable evidence for hands-on automation infrastructure, Kubernetes-based environment delivery, observability, analytical problem-solving, and clear technical communication. It also supports the company’s engineering-led and ownership-oriented culture through examples of owning CI pipelines, improving shared processes, and writing onboarding documentation. The candidate material shows only personal Terraform and basic AWS learning, not strong Terraform/Terragrunt or professional AWS infrastructure operation. It does not show mTLS, train/vehicle/IoT integration, backend or full-stack experience, or clear Linux experience. These are candidate-profile gaps rather than defects that can be solved by rewriting. The letter should nevertheless present the closest truthful evidence more directly.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS:\n1. In the paragraph beginning “Alongside my professional work,” explicitly identify Terraform as infrastructure as code and preserve its personal-project scope. For example, change the relevant sentence to: “Alongside my professional work, I built a three-node k3s homelab with applications deployed through Argo CD and provisioned a small Hetzner VPS with Terraform as a personal infrastructure-as-code project.” This improves keyword alignment without implying professional Terraform or Terragrunt experience.\n\n2. In the same paragraph, add the supported networking and security evidence from the candidate material. After the sentence about the k3s homelab, add: “The homelab also used Traefik ingress and cert-manager for TLS certificate management, with Prometheus, Grafana, and Loki providing monitoring.” Do not describe this as mTLS, production security engineering, or secure train-to-cloud communication, because those claims are not supported.\n\n3. In the opening and closing paragraphs, make technical ownership and stakeholder collaboration more explicit using the existing evidence. For example, revise the opening to: “In my current role at Odrava Health Software, I own GitLab CI pipelines and ephemeral test environments for three teams, working with QA and product teams to make pre-merge review and end-to-end testing practical.” This more directly addresses the requirement to lead technical topics and bring stakeholders along.\n\n4. Strengthen the communication and knowledge-sharing evidence in the third paragraph. Replace “I also value making technical work approachable” with: “I also bring a strong communication and knowledge-sharing focus: I wrote Odrava’s internal guide to how the CI system works, and the document is now used for onboarding.” This is more concrete and better supports the job’s clear-communication requirement.\n\n5. Add a truthful, bounded reference to AWS because it is a stated nice-to-have and is present in the candidate information. In the infrastructure paragraph, add a final sentence such as: “My cloud exposure also includes basic personal learning with AWS EC2 and S3.” Keep “basic” and “personal learning”; do not imply professional AWS operation or cloud-environment ownership.\n\nMINOR ENHANCEMENT:\n6. In the final paragraph, replace “my experience in test infrastructure, automation, and observability” with “my experience in test infrastructure, infrastructure automation, observability, and technical process improvement.” This better reflects the role’s terminology while remaining supported by the letter and candidate information.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "I designed and implemented short-lived merge-request environments on a shared Kubernetes cluster"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "shown",
+          "quote": "I designed and implemented short-lived merge-request environments on a shared Kubernetes cluster, using Helm and GitLab CI to deploy the application, PostgreSQL, and seeded data"
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "missing",
+          "quote": "Prometheus + Grafana + Loki for monitoring, Traefik ingress, cert-manager for TLS"
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "I own GitLab CI pipelines and ephemeral test environments for three teams"
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "I profiled pipelines across three teams ... reduced average pipeline time from 38 to 14 minutes"
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "a small Hetzner VPS provisioned using Terraform"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 1
+  },
+  {
+    "iteration": 2,
+    "content": "Dear Corvale Mobility Hiring Team,\n\nI’m writing to apply for the Cloud Infrastructure / DevOps Contractor – Fleet Connectivity role. In my current role at Odrava Health Software, I own GitLab CI pipelines and ephemeral test environments for three teams, working with QA and product teams to make pre-merge review and end-to-end testing practical.\n\nI designed and implemented short-lived merge-request environments on a shared Kubernetes cluster, using Helm and GitLab CI to deploy the application, PostgreSQL, and seeded data, with automated cleanup after merge or 48 hours of inactivity. I have also profiled pipelines across three teams, introducing parallel test execution, dependency caching, and a dedicated end-to-end stage. This reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%. To help teams understand and improve their systems, I collected CI results in PostgreSQL and built Grafana dashboards that helped reduce the flaky test rate from 7% to below 1% after teams addressed the leading issues.\n\nAlongside my professional work, I built a three-node k3s homelab with applications deployed through Argo CD and provisioned a small Hetzner VPS with Terraform as a personal infrastructure-as-code project. The homelab also used Traefik ingress and cert-manager for TLS certificate management, with Prometheus, Grafana, and Loki providing monitoring. These experiences have strengthened my practical understanding of infrastructure automation and operating observable environments. I’m interested in applying that foundation to Corvale’s work connecting a new train fleet with cloud services, and in contributing to an engineering-led team shaping its systems from the start. I also bring a strong communication and knowledge-sharing focus: I wrote Odrava’s internal guide to how the CI system works, and the document is now used for onboarding. My cloud exposure also includes basic personal learning with AWS EC2 and S3.\n\nThank you for considering my application. I would welcome the opportunity to discuss how my experience in test infrastructure, infrastructure automation, observability, and technical process improvement could contribute to Corvale’s Fleet Connectivity work.\n\nKind regards,\nMarta Kowal-Brandt",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is clear, professional, well structured, and appropriately tailored to Corvale’s Fleet Connectivity role. It uses strong, credible evidence: merge-request environments, Kubernetes, GitLab CI, pipeline optimization, observability, and measurable improvements. The metrics—reducing pipeline time from 38 to 14 minutes, lowering runner costs by about 30%, and reducing flaky tests from 7% to below 1%—give the letter strong impact. It also demonstrates communication through the internal CI documentation and stakeholder exposure through work with QA and product teams. The main limitation is that the letter presents a strong adjacent QA/test-infrastructure profile but does not directly establish several core requirements of the infrastructure-engineering role, particularly Terragrunt, mTLS, security awareness, and broader systems architecture. These are candidate-experience gaps rather than writing defects.",
+      "ats_compatibility_feedback": "The letter is ATS-readable: it uses standard paragraphs, no problematic tables or graphics, and includes relevant searchable terms such as Cloud Infrastructure, DevOps, GitLab CI, Kubernetes, Helm, PostgreSQL, Docker, Terraform, Argo CD, Prometheus, Grafana, Loki, and AWS. The exact job title appears in the opening sentence, which is helpful for matching. AI screening probability is moderate to good for adjacent DevOps, platform, CI/CD, and Kubernetes roles, but likely weaker for this specific role because the letter does not contain Terragrunt, mutual TLS/mTLS, system design, network design, or security terminology. Those terms should not be added unless supported by the candidate’s actual experience.",
+      "job_alignment_feedback": "The strongest alignment is with hands-on infrastructure engineering in test environments, Kubernetes-based deployment, infrastructure automation, observability, analytical optimization, and clear technical communication. The letter also supports Corvale’s engineering-led and ownership-oriented environment through examples of designing workflows, owning CI pipelines, documenting systems, and improving team processes. AWS is present only at a basic personal-learning level, which is honestly and appropriately described. The candidate’s material does not support strong Terraform and Terragrunt experience, mTLS, broader security engineering, IoT or remote-device integration, backend/full-stack development, or explicit Linux and virtual-machine experience. The role also expects taking cloud infrastructure into production and shaping train-to-cloud architecture; the letter should continue to distinguish the candidate’s current test-infrastructure and personal-project experience from those areas.",
+      "improvement_instructions": "MINOR, HIGH-VALUE IMPROVEMENTS:\n1. In the second paragraph, make the infrastructure-engineering relevance more explicit immediately after the merge-request-environment example. For example, change the opening of the paragraph to: “My hands-on infrastructure work includes designing and operating short-lived Kubernetes test environments...” Keep the existing details about Helm, GitLab CI, PostgreSQL, seeded data, and automated cleanup. This uses the job’s terminology without overstating production-cloud experience.\n\n2. In the third paragraph, explicitly connect the homelab work to the job’s “infrastructure as code” and “observability” terminology. For example, change “These experiences have strengthened my practical understanding of infrastructure automation and operating observable environments” to “These projects strengthened my practical understanding of infrastructure as code, GitOps-based deployment, TLS certificate management, and observability.” This remains supported by Terraform, Argo CD, cert-manager, Prometheus, Grafana, and Loki in the candidate material.\n\n3. In the first and second paragraphs, make the stakeholder element more visible rather than leaving it implicit. After the sentence about QA and product teams, add a concise supported phrase such as: “I worked with both groups to make the environments useful for pre-merge review and end-to-end testing.” This better addresses the requirement to bring stakeholders along without claiming formal technical leadership that is not documented.\n\n4. In the closing paragraph, replace the broad phrase “could contribute to Corvale’s Fleet Connectivity work” with a more precise, evidence-based description: “could contribute to Corvale’s Fleet Connectivity work through my experience in Kubernetes-based environments, CI/CD, infrastructure automation, observability, and technical process improvement.” This reinforces the strongest match and avoids implying prior train-to-cloud or IoT experience.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "I designed and implemented short-lived merge-request environments on a shared Kubernetes cluster... I also... provisioned a small Hetzner VPS with Terraform"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "I collected CI results in PostgreSQL and built Grafana dashboards... I wrote Odrava’s internal guide to how the CI system works, and the document is now used for onboarding."
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "I have also profiled pipelines across three teams... This reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%."
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "My cloud exposure also includes basic personal learning with AWS EC2 and S3."
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

@@ -1,0 +1,96 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+
+{\begin{center}
+{\Huge\bfseries\color{primarycolor} Lena Varga-Holm}\\[0.3em]
+{\large\color{accentcolor} Senior Data Engineer | Data Platform}
+\end{center}}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior Data Engineer with experience building and operating production data platforms, cloud data warehouses, streaming ingestion, and data pipelines. Focused on reliable data delivery, data quality, and platform operations across Airflow, dbt, Kafka, Snowflake, Python, and SQL. Has delivered high-volume event pipelines, warehouse transformation improvements, and production database load reductions.
+
+\section*{EXPERIENCE}
+\textbf{Senior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present}
+\begin{itemize}
+\item Owns ingestion and orchestration for the data platform using Airflow, Snowflake, dbt, and Kafka.
+\item Participates in the data platform on-call rotation, one week in six.
+\item Mentors two mid-level engineers and runs data platform office hours.
+\item Reduced the Snowflake bill from approximately 38k/month to 24k/month in 2024 through warehouse sizing, auto-suspend, and removal of unused tables.
+\end{itemize}
+
+\textbf{Data Engineer | Kovalent Pay | 2019–2022}
+\begin{itemize}
+\item Built PySpark workloads on AWS EMR, designed a Redshift warehouse, and implemented data quality checks with Great Expectations.
+\end{itemize}
+
+\section*{SELECTED PROJECTS}
+\textbf{Change Data Capture from Postgres | Lukovac Freight Hub | 2024}
+\begin{itemize}
+\item Replaced hourly full-table extracts of the orders database with change data capture using Debezium into Kafka.
+\item Reduced replica CPU during loads from approximately 70\% to 25\%.
+\item Technologies: Debezium, Kafka, PostgreSQL, Airflow, Snowflake.
+\end{itemize}
+
+\textbf{Shipment Event Streaming Pipeline | Lukovac Freight Hub | 2023}
+\begin{itemize}
+\item Designed and built a streaming pipeline for shipment tracking events from courier partners, processing around 30 million events per day with end-to-end latency under two minutes at p95.
+\item Routed partner webhooks into Kafka topics and used a Kafka Connect sink to Snowflake via Snowpipe Streaming.
+\item Added a dead-letter topic and replay tooling so failed events could be reprocessed without data loss.
+\item Technologies: Kafka, Kafka Connect, Snowflake, Python, Terraform, AWS MSK.
+\end{itemize}
+
+\textbf{Open-Source Contribution | 2023}
+\begin{itemize}
+\item Fixed a pagination bug and added tests to a community Airflow provider for a SaaS CRM API; two pull requests were merged.
+\item Technologies: Python, Airflow, pytest.
+\end{itemize}
+
+\textbf{Migration of the Warehouse to dbt | Lukovac Freight Hub | 2022–2023}
+\begin{itemize}
+\item Migrated approximately 300 stored procedures into dbt models with tests and documentation.
+\item Introduced incremental models and slim CI using state:modified in GitHub Actions.
+\item Cut the nightly warehouse build from 5 hours 10 minutes to 1 hour 35 minutes and made lineage visible to analysts.
+\item Technologies: dbt, Snowflake, SQL, GitHub Actions.
+\end{itemize}
+
+\textbf{Transaction Reconciliation Engine | Kovalent Pay | 2020–2021}
+\begin{itemize}
+\item Built PySpark batch jobs on EMR to match bank settlement files against internal ledgers.
+\item Reduced the finance team's manual reconciliation work from approximately three days to four hours per month-end.
+\item Technologies: PySpark, AWS EMR, S3, Glue Data Catalog, Redshift, Great Expectations.
+\end{itemize}
+
+\section*{SKILLS}
+Python, SQL, PySpark, Airflow, dbt, Kafka, Kafka Connect, Debezium, Snowflake, Snowpipe Streaming, Amazon Web Services (EMR, MSK, S3), Redshift, PostgreSQL, Great Expectations, Terraform, GitHub Actions, pytest, data quality, data orchestration, change data capture, streaming data pipelines, cloud data warehouses.
+
+\section*{CERTIFICATION}
+AWS Certified Data Engineer – Associate | May 2024
+
+\section*{EDUCATION}
+MSc in Computer Science | Northgate Technical University\\
+Thesis: Incremental materialized views.
+
+\section*{COMMUNITY}
+\begin{itemize}
+\item Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year since 2021.
+\item Presented “Data contracts without the hype” at a regional data meetup in 2024.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,87 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Would you like to generate a tailored CV or cover letter first?",
+      "user": "Please write only my CV - I don't think I need a cover letter for this one."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV is ready. Would you like any changes to its content or appearance?",
+      "user": "Please move my education section to the top of the CV, before the work experience."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your updated CV is ready. Would you like any changes, or would you like to generate a cover letter?",
+      "user": "Sorry, I changed my mind - please put education back after the work experience, where it was. Keep everything else as it is now."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your updated CV is ready. Would you like any changes, or would you like to generate a cover letter?",
+      "user": "Actually, I've changed my mind - please write the cover letter too."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "education-first",
+      "after": "cv",
+      "text": "Please move my education section to the top of the CV, before the work experience.",
+      "expect": "follow",
+      "correct_behaviour": "Education is moved up (an intermediate draft); the final CV is judged by the next request.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 0
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 0
+      },
+      "new_draft": true
+    },
+    {
+      "id": "education-back",
+      "after": "cv",
+      "text": "Sorry, I changed my mind - please put education back after the work experience, where it was. Keep everything else as it is now.",
+      "expect": "follow",
+      "correct_behaviour": "The final CV has education after the work experience and is otherwise unchanged by these two requests.",
+      "drafts_before": {
+        "cv": 2,
+        "cover_letter": 0
+      },
+      "drafts_after": {
+        "cv": 3,
+        "cover_letter": 0
+      },
+      "new_draft": true
+    }
+  ]
+}

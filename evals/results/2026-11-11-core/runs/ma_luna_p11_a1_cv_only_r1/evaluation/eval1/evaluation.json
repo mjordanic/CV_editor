@@ -1,0 +1,691 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8049,
+      "output_tokens": 5975,
+      "cache_creation_input_tokens": 2434,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.041478,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "074b91b763f15c7ceed8a1cc79cdc3283652900c1d9e1c066b3c1c1fecc01d85",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-ma_luna_p11_a1_cv_only_r1-19e1eb8b05",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-ma_luna_p11_a1_cv_only_r1-19e1eb8b05",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.082956
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "12 years of experience in product design, testing and validation",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "12 years in product design and test & validation",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Developed Python scripts using pandas, NumPy and Matplotlib",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Wrote Python scripts (pandas, NumPy, Matplotlib)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "report preparation from about three days to half a day per test",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "about 3 days to half a day per test",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "reduced warranty returns by 40%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "cut warranty returns for that part by 40%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Supported the change of one casing family from grey cast iron to ductile iron, saving 12%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Corvane Automotive Components, Mar 2019-Present; Halvik Pumps Sep 2014-Feb 2019",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mar 2019 to present",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Engineering headline",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "I want to move into data engineering",
+        "note": "Headline leads with Data Engineering though candidate has no data engineering role; aspirational."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "built practical data-processing tools",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Python scripts that read the rig output files",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "hands-on Python and SQL experience",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Query the plant's test-results database (SQL Server)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My experience has been in engineering data rather than operating a cloud data platform",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Power BI used for reporting; Excel/VBA automation",
+        "source": "cv",
+        "source_quote": "Excel/VBA, Power BI",
+        "relevance": "low",
+        "why_it_matters": "Listed in skills only; minor."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Production data platforms / cloud data warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Advanced Python and SQL incl. query optimisation",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Developed Python scripts using pandas, NumPy and Matplotlib",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dimensional data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Airflow, dbt, Docker, CI/CD, Git",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Good professional English; Portuguese a plus",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Portuguese (native) | English (fluent)",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Gaps are not faked; the letter openly says the experience is engineering data, not a cloud platform. Nothing is overstated.",
+      "score": 4
+    },
+    "cv_standards": {
+      "score": 6,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": false,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Languages heading orphaned at bottom of page 1 and content spills to page 2, which is almost empty",
+        "No location line beyond contact; city missing in header"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Python",
+        "SQL",
+        "Data engineering",
+        "Data modelling",
+        "Google Cloud",
+        "BigQuery",
+        "Airflow",
+        "dbt",
+        "Docker",
+        "CI/CD",
+        "Git",
+        "English",
+        "Portuguese"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "SQL",
+        "Data engineering",
+        "English",
+        "Portuguese"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 5,
+      "reason": "Clean, readable text with standard headings and Python/SQL visible, but the candidate lacks most of the ad's stack so keyword match is inherently low."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Generic salutation",
+        "Does not mention hybrid Lisbon or Portuguese",
+        "Little on transferable analysis strengths such as root cause analysis"
+      ],
+      "strengths": [
+        "Honest about the gap",
+        "Uses company values and platform focus",
+        "Concrete metric"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Ownership",
+        "Pace (simplifying work to move quickly)"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": false,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Languages heading stranded at bottom of page 1 with content alone on page 2",
+        "Page 2 nearly empty"
+      ],
+      "consistency_issues": [
+        "Letter and CV share font"
+      ],
+      "readability": "good",
+      "issues": [
+        "Orphaned section heading"
+      ],
+      "score": 5
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No invented details added",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 6,
+    "summary": "The CV and letter are truthful, stay within the candidate's material and state the gap in cloud platform experience honestly. The weaknesses are the weak fit to the ad, no mention of Portuguese or the hybrid Lisbon context in the letter, and a layout flaw: the Languages heading is stranded on page 1 with its content alone on an almost empty page 2. The letter is solid but generic in its opening."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 5,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 3,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 5
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2531,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1648,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 65.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 8.5,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 8.5% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 71.6,
+          "right": 71.7,
+          "top": 74.2,
+          "bottom": 415.1
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 50.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.041478,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "12 years of experience in product design, testing and validation",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "12 years in product design and test & validation",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Developed Python scripts using pandas, NumPy and Matplotlib",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Wrote Python scripts (pandas, NumPy, Matplotlib)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "report preparation from about three days to half a day per test",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "reduced warranty returns by 40%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "cut warranty returns for that part by 40%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Supported the change of one casing family from grey cast iron to ductile iron, saving 12%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Corvane Automotive Components, Mar 2019-Present; Halvik Pumps Sep 2014-Feb 2019",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mar 2019 to present",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Data Engineering headline",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "I want to move into data engineering",
+            "note": "Headline leads with Data Engineering though candidate has no data engineering role; aspirational."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built practical data-processing tools",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python scripts that read the rig output files",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "hands-on Python and SQL experience",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Query the plant's test-results database (SQL Server)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience has been in engineering data rather than operating a cloud data platform",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "12 years of experience in product design, testing and validation",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "12 years in product design and test & validation",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Developed Python scripts using pandas, NumPy and Matplotlib",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Wrote Python scripts (pandas, NumPy, Matplotlib)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "report preparation from about three days to half a day per test",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "reduced warranty returns by 40%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "cut warranty returns for that part by 40%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Supported the change of one casing family from grey cast iron to ductile iron, saving 12%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+            "note": "Softened, not overstated."
+          },
+          {
+            "document": "cv",
+            "claim": "Corvane Automotive Components, Mar 2019-Present; Halvik Pumps Sep 2014-Feb 2019",
+            "kind": "employer",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mar 2019 to present",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Data Engineering headline",
+            "kind": "job_title",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "I want to move into data engineering",
+            "note": "Headline leads with Data Engineering though candidate has no data engineering role; aspirational."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built practical data-processing tools",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Python scripts that read the rig output files",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "hands-on Python and SQL experience",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Query the plant's test-results database (SQL Server)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience has been in engineering data rather than operating a cloud data platform",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "",
+            "note": "Honest gap statement."
+          }
+        ]
+      }
+    ]
+  }
+}

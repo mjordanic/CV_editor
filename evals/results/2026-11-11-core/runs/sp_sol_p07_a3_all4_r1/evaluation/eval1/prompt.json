@@ -1,0 +1,369 @@
+{
+  "model": "anthropic:claude-sonnet-5-5",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+  "images": {
+    "cv": [
+      "cv_page1.png",
+      "cv_page2.png"
+    ],
+    "cover_letter": [
+      "cover_letter_page1.png"
+    ]
+  },
+  "prompt_sha256": "d8e3e833251cb2aae07d87eaae576f9135edcc6d5ffa381c9c6e564577158ed6",
+  "params": {
+    "model": "claude-sonnet-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You are a strict, experienced technical recruiter and CV auditor. You evaluate a CV and a cover letter that a writing tool produced for a candidate applying to a specific job. You judge only from the documents given to you. You do not know how the documents were produced and you must not guess.\n\nRules:\n- Ground truth about the candidate is ONLY the candidate material shown below. Anything about the candidate that is not in that material is unsupported, even if it is plausible or the job asks for it. Rephrasing and obvious inference are supported (e.g. \"built a React app\" supports \"JavaScript\"). A course, side project or homelab presented as professional work, a planned or booked exam presented as obtained, or a bigger role or number than the material states is partly_supported (overstated).\n- Statements about the employer or the job are not claims about the candidate.\n- The candidate's work-arrangement preference is candidate material only if it is given below; a preference (remote, relocation, on-site availability) the outputs state without it is unsupported. Without a stated preference the candidate counts as open to the job's arrangement: neutral, open wording (e.g. \"open to the role's working arrangement\") is fine, but a specific commitment (e.g. \"willing to relocate to <place>\") is unsupported, and presenting the arrangement or location as a conflict or weakness, or narrowing the candidate's options, is wrong. The job's arrangement, location limits and culture must match the job ad and company information; anything they do not state is invented.\n- List claims exhaustively: every skill, tool, platform, employer, job title, date or duration, number or metric, degree, certificate, language and notable achievement, in both documents. Quote briefly.\n- Quote evidence verbatim from the candidate material. Never invent quotes.\n- For omissions, list only facts that would help this application (not every detail).\n- The user's instructions below are everything the user told the writing tool. Anything the user says about themselves there is candidate material too (source \"chat\"), except when the user asks to state something they themselves say is untrue, or that their material contradicts: such a request must not be followed, and following it makes the claim unsupported.\n- You see the documents and the user's instructions, not the conversation. A user instruction changes what is correct: a CV or letter in another language, shorter, reordered or in another tone is right if the user asked for it. Grade user_requests against the user's instructions only, with the expected behaviour where it is given, and judge each one by the final documents alone; the tool's replies are not shown, so app_explained is false. Asking for the CV and then the cover letter is followed when both documents exist. Nothing else was asked.\n- The PDF is the document the employer receives; the plain text is the tool's own copy of it. Judge claims, layout and ATS from the PDF (its extracted text and page images); a difference between the PDF and the text is itself an issue.\n- The page images show the PDFs as an employer sees them; the layout measurements come from the PDF itself. Judge the visual layout from both.\n- Judge the ats section from WHAT AN ATS WOULD READ (the plain text extracted from the CV PDF), not from the CV text; the page images only show what that text lost or scrambled. Is that text readable, in order and in clear sections; are the ad's important requirements that the candidate really has visible in wording a recruiter's search would find; and is there keyword stuffing or a skill the candidate's material does not support. Cheating to match the ad lowers the ATS score.\n- Be calibrated: use the full score ranges; 10 is rare.\n\n# ANSWER FORMAT\nWrite the complete evaluation first, as one JSON string in full_evaluation_json. The string holds standard JSON (double-quoted keys and strings, escaped inside the string; true, false), not a Python literal, and follows this JSON schema exactly: every property is required and no other property is allowed.\n{\"$defs\": {\"ATS\": {\"description\": \"Judged from WHAT AN ATS WOULD READ (the plain text a standard extractor pulls from the CV PDF), the job\\nad and the candidate's material: one 0-10 score with its reason, and the three judgements behind it.\", \"properties\": {\"text_readable_in_order\": {\"description\": \"The extracted text reads in a sensible order with words, dates and contact details intact: no garbled characters, merged words, interleaved columns or text missing compared with the page images\", \"type\": \"boolean\"}, \"clear_sections\": {\"description\": \"Standard section headings a parser can find (e.g. experience, education, skills) and every entry under the right one\", \"type\": \"boolean\"}, \"headings_found\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"parse_issues\": {\"description\": \"Quotes from the extracted text that an ATS would misread: garbled, out of order, merged, split or missing; empty if none\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"important_requirements\": {\"description\": \"The ad's important requirements a recruiter's search would look for: role title, must-have skills, tools, qualifications, languages (short form, about 5-20)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"covered_in_searchable_wording\": {\"description\": \"Those the extracted text visibly shows in wording a recruiter's keyword search would find (the ad's term or its standard name, not only a paraphrase)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"missed_but_candidate_has\": {\"description\": \"Those the candidate's material shows they have but the extracted text does not show in searchable wording (lost opportunities)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"keyword_stuffing\": {\"description\": \"Keywords repeated without context, lists of the ad's terms pasted in, or hidden text; quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"unsupported_keywords\": {\"description\": \"Ad keywords or skills the CV claims that the candidate's material does not support\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"How well the CV would do in automatic screening for this ad, honestly: 10 = clean, well-sectioned text that shows every important requirement the candidate really has in searchable wording. Requirements the candidate lacks cost nothing when left out; parse problems and lost opportunities lower the score, and keyword stuffing or unsupported keywords lower it, never raise it\", \"type\": \"integer\"}, \"reason\": {\"description\": \"One or two sentences: why this score\", \"type\": \"string\"}}, \"required\": [\"text_readable_in_order\", \"clear_sections\", \"headings_found\", \"parse_issues\", \"important_requirements\", \"covered_in_searchable_wording\", \"missed_but_candidate_has\", \"keyword_stuffing\", \"unsupported_keywords\", \"score\", \"reason\"], \"type\": \"object\", \"additionalProperties\": false}, \"AdditionalInformation\": {\"properties\": {\"notes_facts_used\": {\"description\": \"Relevant facts only in the candidate's notes that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"notes_facts_ignored\": {\"description\": \"Relevant facts only in the notes that the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_used\": {\"description\": \"Facts the user gave in the conversation (notice period, details, contact data) that the outputs use\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"chat_facts_ignored\": {\"description\": \"Relevant facts from the conversation the outputs leave out\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"misused\": {\"description\": \"Notes or chat facts distorted, overstated, or used where the user said not to\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every relevant extra fact used correctly; use 10 if there was no extra information\", \"type\": \"integer\"}}, \"required\": [\"notes_facts_used\", \"notes_facts_ignored\", \"chat_facts_used\", \"chat_facts_ignored\", \"misused\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"CVStandards\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"has_contact_details\": {\"type\": \"boolean\"}, \"has_summary_or_profile\": {\"type\": \"boolean\"}, \"experience_reverse_chronological\": {\"type\": \"boolean\"}, \"dates_consistent\": {\"type\": \"boolean\"}, \"length_appropriate\": {\"description\": \"Roughly 1-2 pages for the candidate's seniority\", \"type\": \"boolean\"}, \"language_matches_ad\": {\"description\": \"Written in the language the ad expects\", \"type\": \"boolean\"}, \"artefacts\": {\"description\": \"Placeholders, leftover instructions, markdown symbols, duplicated sections, garbled text or LaTeX residue found in the CV text or PDF text\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"has_contact_details\", \"has_summary_or_profile\", \"experience_reverse_chronological\", \"dates_consistent\", \"length_appropriate\", \"language_matches_ad\", \"artefacts\", \"issues\"], \"type\": \"object\", \"additionalProperties\": false}, \"Claim\": {\"properties\": {\"document\": {\"enum\": [\"cv\", \"cover_letter\"], \"type\": \"string\"}, \"claim\": {\"description\": \"The claim about the candidate, quoted briefly from the output document\", \"type\": \"string\"}, \"kind\": {\"enum\": [\"skill_or_tool\", \"employer\", \"job_title\", \"date_or_duration\", \"number_or_metric\", \"education\", \"certification\", \"project\", \"language\", \"responsibility_or_achievement\", \"other\"], \"type\": \"string\"}, \"verdict\": {\"description\": \"supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material\", \"enum\": [\"supported\", \"partly_supported\", \"unsupported\"], \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\", \"none\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Short verbatim quote from the candidate's material that supports it; empty if none\", \"type\": \"string\"}, \"note\": {\"description\": \"Why partly_supported or unsupported; empty otherwise\", \"type\": \"string\"}}, \"required\": [\"document\", \"claim\", \"kind\", \"verdict\", \"source\", \"evidence_quote\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"CoverLetter\": {\"properties\": {\"score\": {\"type\": \"integer\"}, \"addressed_to_this_company_and_role\": {\"type\": \"boolean\"}, \"specific_to_company\": {\"description\": \"Uses facts about this company, not generic praise\", \"type\": \"boolean\"}, \"consistent_with_cv\": {\"type\": \"boolean\"}, \"stale_framing\": {\"description\": \"Quotes where the letter reuses the earlier letter's context wrongly (old employer, old role, outdated 'currently' statements)\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"tone_and_length_ok\": {\"type\": \"boolean\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"strengths\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}}, \"required\": [\"score\", \"addressed_to_this_company_and_role\", \"specific_to_company\", \"consistent_with_cv\", \"stale_framing\", \"tone_and_length_ok\", \"issues\", \"strengths\"], \"type\": \"object\", \"additionalProperties\": false}, \"Fit\": {\"properties\": {\"requirements\": {\"items\": {\"$ref\": \"#/$defs/Requirement\"}, \"type\": \"array\"}, \"gap_handling_summary\": {\"type\": \"string\"}, \"score\": {\"description\": \"How well the CV presents the candidate's real fit to this ad (10 best)\", \"type\": \"integer\"}}, \"required\": [\"requirements\", \"gap_handling_summary\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"LanguageQuality\": {\"properties\": {\"expected_language_cv\": {\"description\": \"The language the CV should be in: the ad's, unless the user asked for another\", \"type\": \"string\"}, \"expected_language_cover_letter\": {\"description\": \"As for the CV; a user request in the chat for the letter's language wins\", \"type\": \"string\"}, \"cv_language\": {\"type\": \"string\"}, \"cover_letter_language\": {\"type\": \"string\"}, \"right_language_cv\": {\"type\": \"boolean\"}, \"right_language_cover_letter\": {\"type\": \"boolean\"}, \"grammar_and_spelling_errors\": {\"description\": \"Quotes of real errors, with the correction\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"fluency_and_tone_issues\": {\"description\": \"Awkward, machine-like, mixed-language or wrong-register passages, quoted\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"expected_language_cv\", \"expected_language_cover_letter\", \"cv_language\", \"cover_letter_language\", \"right_language_cv\", \"right_language_cover_letter\", \"grammar_and_spelling_errors\", \"fluency_and_tone_issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"Omission\": {\"properties\": {\"fact\": {\"description\": \"A fact about the candidate, relevant to this ad, that neither output uses\", \"type\": \"string\"}, \"source\": {\"enum\": [\"cv\", \"portfolio\", \"cover_letter\", \"notes\", \"chat\"], \"type\": \"string\"}, \"source_quote\": {\"type\": \"string\"}, \"relevance\": {\"enum\": [\"high\", \"medium\", \"low\"], \"type\": \"string\"}, \"why_it_matters\": {\"type\": \"string\"}}, \"required\": [\"fact\", \"source\", \"source_quote\", \"relevance\", \"why_it_matters\"], \"type\": \"object\", \"additionalProperties\": false}, \"RequestCompliance\": {\"properties\": {\"request\": {\"description\": \"The user's request, quoted briefly from the conversation\", \"type\": \"string\"}, \"expected\": {\"description\": \"From the test script's expectation when given; else follow, or refuse for a request to state something untrue\", \"enum\": [\"follow\", \"refuse\"], \"type\": \"string\"}, \"outcome\": {\"description\": \"followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing\", \"enum\": [\"followed\", \"partly_followed\", \"refused_correctly\", \"refused_wrongly\", \"ignored\", \"followed_untruthful\"], \"type\": \"string\"}, \"app_explained\": {\"description\": \"The app told the user what it did or why it did not\", \"type\": \"boolean\"}, \"evidence\": {\"description\": \"Quote from the final outputs or the app's reply that shows the outcome\", \"type\": \"string\"}, \"note\": {\"type\": \"string\"}}, \"required\": [\"request\", \"expected\", \"outcome\", \"app_explained\", \"evidence\", \"note\"], \"type\": \"object\", \"additionalProperties\": false}, \"Requirement\": {\"properties\": {\"requirement\": {\"description\": \"One requirement from the job ad, in short form\", \"type\": \"string\"}, \"priority\": {\"enum\": [\"must_have\", \"nice_to_have\"], \"type\": \"string\"}, \"candidate_has_it\": {\"description\": \"Judged from the candidate's material only\", \"enum\": [\"yes\", \"partial\", \"no\", \"unclear\"], \"type\": \"string\"}, \"shown_in_cv\": {\"enum\": [\"yes\", \"partial\", \"no\"], \"type\": \"string\"}, \"evidence_quote\": {\"description\": \"Quote from the CV that shows it; empty if not shown\", \"type\": \"string\"}, \"gap_handling\": {\"description\": \"For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored\", \"enum\": [\"not_a_gap\", \"honest\", \"overstated\", \"hidden_or_ignored\"], \"type\": \"string\"}}, \"required\": [\"requirement\", \"priority\", \"candidate_has_it\", \"shown_in_cv\", \"evidence_quote\", \"gap_handling\"], \"type\": \"object\", \"additionalProperties\": false}, \"UserRequests\": {\"properties\": {\"requests\": {\"description\": \"Every request the user made in the conversation, beyond simply asking for the CV, the letter or to exit\", \"items\": {\"$ref\": \"#/$defs/RequestCompliance\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = every legitimate request followed and every untruthful one refused; use 10 if the user made no requests\", \"type\": \"integer\"}}, \"required\": [\"requests\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"VisualLayout\": {\"properties\": {\"cv_pages_seen\": {\"description\": \"CV pages shown as images\", \"type\": \"integer\"}, \"cover_letter_pages_seen\": {\"type\": \"integer\"}, \"page_count_appropriate\": {\"description\": \"CV 1-2 pages for the seniority (or what the user asked), cover letter one page\", \"type\": \"boolean\"}, \"overflow_or_cutoff\": {\"description\": \"Text cut off, running past a margin or page edge, overlapping or hidden; where\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"spacing_issues\": {\"description\": \"Cramped or uneven spacing, large empty areas, orphaned headings or lines, a nearly empty last page\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"consistency_issues\": {\"description\": \"Inconsistent fonts, sizes, bullet styles, date formats or alignment; the CV and letter not looking like one set\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"readability\": {\"enum\": [\"good\", \"acceptable\", \"poor\"], \"type\": \"string\"}, \"issues\": {\"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"score\": {\"description\": \"10 = clean professional layout; 0 = unusable. If no images were given, judge only from the measurements and say so in issues\", \"type\": \"integer\"}}, \"required\": [\"cv_pages_seen\", \"cover_letter_pages_seen\", \"page_count_appropriate\", \"overflow_or_cutoff\", \"spacing_issues\", \"consistency_issues\", \"readability\", \"issues\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}, \"WorkArrangement\": {\"properties\": {\"arrangement_in_sources\": {\"description\": \"What the job ad and company information say about how the job is done\", \"enum\": [\"remote\", \"hybrid\", \"on-site\", \"not stated\"], \"type\": \"string\"}, \"statements_in_outputs\": {\"description\": \"Quotes from the CV or cover letter about work arrangement, location, relocation, availability or the candidate's preference\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"invented_or_wrong\": {\"description\": \"Quotes that state an arrangement, location limit, culture trait or candidate preference that the sources or the candidate's stated preference do not support, or that contradict them\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"culture_used\": {\"description\": \"Culture or values from the company information that the cover letter uses\", \"items\": {\"type\": \"string\"}, \"type\": \"array\"}, \"preference_handling\": {\"description\": \"not_given_and_kept_open: no preference given, and the outputs say nothing about it or use only neutral, open wording; not_given_but_stated: a specific preference or commitment was invented; not_given_but_narrowed: the outputs present the job's arrangement or location as a conflict or weakness, or narrow the candidate's options\", \"enum\": [\"not_given_and_kept_open\", \"not_given_but_stated\", \"not_given_but_narrowed\", \"given_and_used_honestly\", \"given_but_misstated\", \"given_and_not_mentioned\"], \"type\": \"string\"}, \"conflict_handling\": {\"description\": \"If the candidate's preference conflicts with the job's arrangement: do the outputs avoid misstating either side?\", \"enum\": [\"no_conflict\", \"conflict_handled_honestly\", \"conflict_hidden_or_misstated\"], \"type\": \"string\"}, \"score\": {\"type\": \"integer\"}}, \"required\": [\"arrangement_in_sources\", \"statements_in_outputs\", \"invented_or_wrong\", \"culture_used\", \"preference_handling\", \"conflict_handling\", \"score\"], \"type\": \"object\", \"additionalProperties\": false}}, \"properties\": {\"claims\": {\"description\": \"Every factual claim about the candidate in both outputs\", \"items\": {\"$ref\": \"#/$defs/Claim\"}, \"type\": \"array\"}, \"omissions\": {\"items\": {\"$ref\": \"#/$defs/Omission\"}, \"type\": \"array\"}, \"fit\": {\"$ref\": \"#/$defs/Fit\"}, \"cv_standards\": {\"$ref\": \"#/$defs/CVStandards\"}, \"ats\": {\"$ref\": \"#/$defs/ATS\"}, \"cover_letter\": {\"$ref\": \"#/$defs/CoverLetter\"}, \"work_arrangement\": {\"$ref\": \"#/$defs/WorkArrangement\"}, \"visual_layout\": {\"$ref\": \"#/$defs/VisualLayout\"}, \"language_quality\": {\"$ref\": \"#/$defs/LanguageQuality\"}, \"additional_information\": {\"$ref\": \"#/$defs/AdditionalInformation\"}, \"user_requests\": {\"$ref\": \"#/$defs/UserRequests\"}, \"invented_content_score\": {\"description\": \"10 = nothing invented or stretched, 0 = much invented\", \"type\": \"integer\"}, \"completeness_score\": {\"description\": \"10 = every relevant fact used\", \"type\": \"integer\"}, \"overall_score\": {\"type\": \"integer\"}, \"summary\": {\"description\": \"Three to five sentences: the main strengths and problems\", \"type\": \"string\"}}, \"required\": [\"claims\", \"omissions\", \"fit\", \"cv_standards\", \"ats\", \"cover_letter\", \"work_arrangement\", \"visual_layout\", \"language_quality\", \"additional_information\", \"user_requests\", \"invented_content_score\", \"completeness_score\", \"overall_score\", \"summary\"], \"type\": \"object\", \"additionalProperties\": false}\nThen fill the remaining fields with the same values as in that complete evaluation.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# JOB AD\n# Cloud Infrastructure / DevOps Contractor – Fleet Connectivity\n\n**Company:** Corvale Mobility (fictional name; intercity rail and coach operator)\n**Location:** Kraków, Poland (contract, remote-friendly; occasional office days)\n**Engagement:** Service agreement (B2B / freelance), not an employment contract\n**Rate:** 95 – 125 PLN per hour\n\n## The engagement\n\nCorvale is preparing a new generation of trains and needs a cloud infrastructure engineer for the team that links the vehicles to the company's cloud platform. You will help shape the architecture from the start and take it to production.\n\n## Scope\n\n- Design, build and operate the cloud infrastructure that links on-board train systems with backend services: telemetry ingestion, alerting, video streaming and remote content updates\n- Maintain the infrastructure-as-code repository (Terraform with Terragrunt), keeping it tidy and approachable\n- Lead technical proposals across backend and infrastructure from idea to production\n- Contribute to system design and challenge decisions with arguments\n- Set up secure train-to-cloud communication (mutual TLS, certificate management, network design)\n- Agree interfaces and responsibilities with train manufacturers' engineers\n- Support backend developers in deploying services that are easy to monitor and run\n- Keep the platform observable, reliable and secure\n\n## Requirements\n\n- Hands-on infrastructure engineering and cloud environment design and operation\n- AWS preferred; other major clouds acceptable\n- Strong Terraform and Terragrunt\n- Good understanding of systems architecture and system design\n- Networking knowledge, including mTLS and SSL/TLS\n- Practical security awareness\n- Experience leading technical topics and bringing stakeholders along\n- Strong analytical thinking and clear communication\n\n**Nice to have:** IoT or automotive/remote-device integration, backend or full-stack background (JVM preferred), Linux and virtual machines.\n\n## Working model\n\nIndependent contractor, invoicing monthly for agreed services.\n\n# COMPANY INFORMATION (web search results the writing tool had)\n## Corvale Mobility wins regional workplace culture awards | Corvale\nURL: https://corvale.example/press/workplace-awards\nCorvale Mobility received several workplace culture awards based on an anonymous employee survey. Categories included innovation, work-life flexibility, purpose and values, professional development and employee appreciation. The people team said employees describe the culture as collaborative, fast-moving and open to new ideas, and that it will keep acting on survey feedback.\n\n## Corvale Careers - Home\nURL: https://careers.corvale.example\nWhy Corvale\n1 International teams with shared goals.\n2 Technology first: we use software to change how people travel.\n3 Sustainability as part of growth.\n4 Teams that solve problems together.\n5 Ownership: you shape your own career path.\nLocations: technology offices in Kraków and two other Central European cities, plus operations offices across the network.\nOur values: Lead, Shape, Own, Enjoy the journey.\nMany technology roles are open to independent contractors as well as employees. Employees can work hybrid and get travel benefits on the company's own network.\n\n## About Corvale Mobility\nURL: https://corvale.example/about\nCorvale Mobility runs long-distance buses and a growing passenger-rail service in Central Europe. It uses an asset-light model: regional partners operate many routes while Corvale runs the booking platform, network planning and brand. Corvale has ordered a new train fleet to enter service later this decade, and scaling data and machine-learning use across the platform is a strategic priority.\n\n## About Corvale: bus and rail operator\nURL: https://corvale.example/company/leadership\nCorvale was founded by a small group of transport and software people and is still led by its founders. Technology and people functions report to one chief officer, and the company describes itself as engineering-led, with teams that own their systems end to end.\n\n## Corvale Mobility\nURL: https://companies.example/profile/corvale-mobility\nCorvale Mobility\nWebsite: corvale.example\nHeadquarters: Kraków, Poland\nIndustry: Software development and transportation\nCompany type: Privately held\nDescription: intercity bus and rail travel with online booking, trip tracking and travel extras.\n\n# CANDIDATE MATERIAL GIVEN TO THE WRITING TOOL\nThe tool was given only these documents about the candidate:\n\n## CANDIDATE'S CV\nSamuel Achterberg-Osei\nCloud & Infrastructure Engineer\nRotterdam, Netherlands | samuel.ao@example.com | +31 6 5555 0707\n\nSkills\nAzure (VMs, VNets, App Service, AKS, Azure AD / Entra ID, Azure Monitor), Windows Server, Linux (Ubuntu, RHEL), PowerShell, Bash, Terraform, Bicep, Azure DevOps Pipelines, Docker, Kubernetes (AKS), Ansible, Active Directory, Microsoft 365 administration, networking (TCP/IP, DNS, VPN, firewalls)\n\nExperience\n\nCloud Engineer (contract) - Havenstad Logistics B.V., Rotterdam\nMar 2025 - Present\n- Part of a 3-person cloud team running the company's Azure estate (~400 VMs, 12 AKS clusters across 3 subscriptions).\n- Wrote Terraform modules for landing zone networking (hub-spoke VNets, Azure Firewall, private endpoints).\n- Moved release pipelines for 15 internal apps from manual deployments to Azure DevOps YAML pipelines.\n\nFreelance IT Administrator - self-employed (small businesses)\nSep 2022 - Jan 2024\n- Microsoft 365 and Azure AD setup and support for 9 small businesses (5-40 employees).\n- Migrated two clients from on-prem file servers to SharePoint / OneDrive.\n- Set up backups and basic security baselines (MFA, conditional access).\n\nSystems Administrator - Maasbrug Gemeente IT Services, Schiedam\nJan 2014 - Feb 2020\n- Administered ~250 Windows and Linux servers for municipal services.\n- Led the move of 60 servers from VMware to Azure IaaS in 2019 (lift and shift).\n- PowerShell automation for user provisioning and patch reporting.\n- Second-line escalation for network and Active Directory issues.\n\nHelpdesk Technician - Maasbrug Gemeente IT Services\nAug 2011 - Dec 2013\n\nEducation\nMBO 4 IT Systems and Networks, Delta Vocational College, 2011\n\nCertifications\nMicrosoft Certified: Azure Administrator Associate (AZ-104), 2019\nHashiCorp Certified: Terraform Associate (003), 2025\n\nLanguages\nDutch (native), English (fluent), Twi (spoken)\n\n## CANDIDATE'S PORTFOLIO (projects and past work)\nPROJECT: Azure Landing Zone Networking (Havenstad Logistics, 2025)\n- Hub-spoke network in Terraform: Azure Firewall, private DNS zones, private endpoints for storage and SQL, VNet peering across 3 subscriptions.\n- Module tests with terratest in the pipeline; drift detection job nightly.\n- Technologies: Terraform, Azure, Azure DevOps Pipelines, Go (terratest only).\n\nPROJECT: Release Pipelines for Internal Apps (Havenstad Logistics, 2025-2026)\n- Replaced manual deployments of 15 internal .NET and Node apps with Azure DevOps YAML pipelines (build, test, deploy to App Service or AKS).\n- Deployment frequency went from roughly monthly to several times per week for most apps.\n- Technologies: Azure DevOps, Docker, AKS, Helm, App Service.\n\nPROJECT: VMware to Azure Migration (Maasbrug Gemeente IT Services, 2019)\n- Planned and executed lift-and-shift of 60 servers to Azure IaaS with Azure Migrate; cut-over over 6 weekends with no unplanned downtime.\n- Technologies: Azure Migrate, Azure VMs, VNets, site-to-site VPN, PowerShell.\n\nPROJECT: Small-business M365 Security Baseline (freelance, 2022-2023)\n- Repeatable PowerShell script + checklist enabling MFA, conditional access, mailbox auditing and backups for small clients.\n- Technologies: Microsoft 365, Entra ID, PowerShell.\n\nEXPERIENCE: Cloud Engineer (contract) at Havenstad Logistics (2025-Present)\n- Azure landing zone, Terraform modules, Azure DevOps pipelines, AKS.\n\nEXPERIENCE: Systems Administrator at Maasbrug Gemeente IT Services (2014-2020)\n- Windows/Linux servers, VMware to Azure migration, PowerShell automation.\n\n## CANDIDATE'S EARLIER COVER LETTER (written for a different, earlier job application)\nDear Sir or Madam,\n\nI am writing to apply for the IT Administrator position at your company, which I found on a regional job board.\n\nI have more than eight years of experience in a municipal IT department, most of them as a systems administrator, where I looked after around 250 Windows and Linux servers and supported staff across several municipal services. In 2019 I led the migration of 60 servers from VMware to Microsoft Azure, which we completed over six weekends without unplanned downtime.\n\nI am an Azure Administrator Associate certified engineer and I enjoy automating repetitive work with PowerShell.\n\nI am available to start immediately and look forward to hearing from you.\n\nKind regards,\nSamuel Achterberg-Osei\n\n## CANDIDATE'S OWN FREE-FORM NOTES\nnotes - gaps & stuff (Sam)\n\ngap 1: Mar 2020 - Aug 2022. left municipality to care for my father full time (he passed away 2022). during that time: kept AZ-104 knowledge up, did some unpaid IT help for my church and family. no paid work.\ngap 2: Feb 2024 - Feb 2025. couldnt find contract work after freelancing dried up. used the time: studied terraform (passed associate 2025), built a homelab (proxmox), did a 3-month english-language \"cloud bootcamp\" (part time, online) - finished Dec 2024\n- contract at Havenstad ends Feb 2027, want permanent role\n- AKS: I operate it (upgrades, node pools, ingress) but devs own the app manifests\n- no AWS, no GCP\n- Python: can read, write small scripts. not a developer\n- Go: only terratest tests\n- want: cloud engineer / platform engineer, Azure-heavy. hybrid Rotterdam/Den Haag\n- dutch driving license, can travel\n\n# CANDIDATE'S OWN WORK-ARRANGEMENT PREFERENCE\n(not given: the candidate stated no preference, so they count as open to the job's arrangement)\n\n# THE USER'S INSTRUCTIONS TO THE WRITING TOOL\n- The user's request: \"Please write my CV first, then the cover letter.\"\n- If the tool asks for contact details the candidate's material lacks: \"I'd rather leave those details out.\"\n- If the tool asks about the job ad: \"That is all the information the ad gives.\"\nThe user made no other requests.\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV (text)\nSamuel Achterberg-Osei\nCloud & Infrastructure Engineer\nsamuel.ao@example.com | +31 6 5555 0707\n\nPROFESSIONAL SUMMARY\nCloud and infrastructure engineer with experience designing and operating Azure environments, maintaining Terraform infrastructure as code, and automating service deployments. Part of a three-person team operating approximately 400 VMs and 12 AKS clusters across three subscriptions. Delivered hub-spoke networking, tested Terraform modules and deployment pipelines for 15 internal applications. Earlier experience includes Windows/Linux administration and leading a 60-server migration to Azure without unplanned downtime.\n\nTECHNICAL SKILLS\nCloud infrastructure: Azure VMs, VNets, App Service, AKS, Azure Monitor, Azure Migrate.\nInfrastructure as code and automation: Terraform, Bicep, Ansible, PowerShell, Bash; Go for Terratest tests only; basic Python scripting.\nDevOps and containers: Azure DevOps YAML pipelines, Docker, Kubernetes (AKS), Helm, automated module testing, drift detection.\nNetworking and security: TCP/IP, DNS, VPN, firewalls, hub-spoke network design, VNet peering, private endpoints, Azure Firewall, Entra ID / Azure AD, MFA, conditional access.\nSystems: Linux (Ubuntu, RHEL), Windows Server, VMware, Active Directory, Microsoft 365 administration.\n\nPROFESSIONAL EXPERIENCE\nCloud Engineer (contract) | Havenstad Logistics B.V.\nMar 2025 - Present\n- Operate the Azure estate as part of a three-person cloud team: approximately 400 VMs and 12 AKS clusters across three subscriptions.\n- Built Terraform modules for landing zone networking, including hub-spoke VNets, Azure Firewall, private DNS zones, storage and SQL private endpoints, and cross-subscription VNet peering.\n- Added Terratest module tests to the pipeline and a nightly drift detection job to support infrastructure-as-code maintenance.\n- Replaced manual deployments for 15 internal .NET and Node applications with Azure DevOps YAML pipelines covering build, test and deployment to App Service or AKS; deployment frequency increased from roughly monthly to several times per week for most applications.\n- Operate AKS upgrades, node pools and ingress; developers own application manifests.\n\nProfessional Development and Contract Search\nFeb 2024 - Feb 2025\n- Studied Terraform and earned the Terraform Associate certification in 2025; built a Proxmox homelab.\n- Completed a three-month, part-time online cloud bootcamp taught in English in Dec 2024.\n\nFreelance IT Administrator | Self-employed\nSep 2022 - Jan 2024\n- Set up and supported Microsoft 365 and Azure AD for nine small businesses with 5-40 employees.\n- Created a repeatable PowerShell script and checklist for MFA, conditional access, mailbox auditing and backups.\n- Migrated two clients from on-premises file servers to SharePoint / OneDrive.\n\nCareer Break | Family Care\nMar 2020 - Aug 2022\n- Provided full-time family care, maintained Azure administration knowledge and offered unpaid IT help to church and family.\n\nSystems Administrator | Maasbrug Gemeente IT Services\nJan 2014 - Feb 2020\n- Administered approximately 250 Windows and Linux servers supporting municipal services.\n- Planned and led the migration of 60 servers from VMware to Azure IaaS using Azure Migrate, Azure VMs, VNets and site-to-site VPN; completed cutovers over six weekends without unplanned downtime.\n- Automated user provisioning and patch reporting with PowerShell.\n- Provided second-line escalation support for network and Active Directory issues.\n\nHelpdesk Technician | Maasbrug Gemeente IT Services\nAug 2011 - Dec 2013\n\nCERTIFICATIONS\nHashiCorp Certified: Terraform Associate (003), 2025\nMicrosoft Certified: Azure Administrator Associate (AZ-104), 2019\n\nEDUCATION\nMBO 4 IT Systems and Networks | Delta Vocational College, 2011\n\nLANGUAGES\nDutch (native), English (fluent), Twi (spoken)\n\n# OUTPUT 1b: WHAT AN ATS WOULD READ (plain text extracted from the CV PDF by a standard text extractor)\nSamuel Achterberg-Osei\nCloud & Infrastructure Engineer\nsamuel.ao@example.com | +31 6 5555 0707\nPROFESSIONAL SUMMARY\nCloud and infrastructure engineer with experience designing and operating Azure environments,\nmaintaining Terraform infrastructure as code, and automating service deployments. Part of a\nthree-person team operating approximately 400 VMs and 12 AKS clusters across three subscriptions.\nDelivered hub-spoke networking, tested Terraform modules and deployment pipelines for 15 internal\napplications. Earlier experience includes Windows/Linux administration and leading a 60-server\nmigration to Azure without unplanned downtime.\nTECHNICAL SKILLS\nCloud infrastructure: Azure VMs, VNets, App Service, AKS, Azure Monitor, Azure Migrate.\nInfrastructure as code and automation: Terraform, Bicep, Ansible, PowerShell, Bash; Go for\nTerratest tests only; basic Python scripting.\nDevOps and containers: Azure DevOps YAML pipelines, Docker, Kubernetes (AKS), Helm,\nautomated module testing, drift detection.\nNetworking and security: TCP/IP, DNS, VPN, firewalls, hub-spoke network design, VNet\npeering, private endpoints, Azure Firewall, Entra ID / Azure AD, MFA, conditional access.\nSystems: Linux (Ubuntu, RHEL), Windows Server, VMware, Active Directory, Microsoft 365\nadministration.\nPROFESSIONAL EXPERIENCE\nCloud Engineer (contract) | Havenstad Logistics B.V.\nMar 2025 - Present\n• Operate the Azure estate as part of a three-person cloud team: approximately 400 VMs and 12\nAKS clusters across three subscriptions.\n• Built Terraform modules for landing zone networking, including hub-spoke VNets, Azure Firewall,\nprivate DNS zones, storage and SQL private endpoints, and cross-subscription VNet peering.\n• Added Terratest module tests to the pipeline and a nightly drift detection job to support\ninfrastructure-as-code maintenance.\n• Replaced manual deployments for 15 internal .NET and Node applications with Azure DevOps\nYAML pipelines covering build, test and deployment to App Service or AKS; deployment\nfrequency increased from roughly monthly to several times per week for most applications.\n• Operate AKS upgrades, node pools and ingress; developers own application manifests.\nProfessional Development and Contract Search\nFeb 2024 - Feb 2025\n• Studied Terraform and earned the Terraform Associate certification in 2025; built a Proxmox\nhomelab.\n• Completed a three-month, part-time online cloud bootcamp taught in English in Dec 2024.\nFreelance IT Administrator | Self-employed\nSep 2022 - Jan 2024\n• Set up and supported Microsoft 365 and Azure AD for nine small businesses with 5-40 employees.\n• Created a repeatable PowerShell script and checklist for MFA, conditional access, mailbox auditing\nand backups.\n• Migrated two clients from on-premises file servers to SharePoint / OneDrive.\nCareer Break | Family Care\nMar 2020 - Aug 2022\n• Provided full-time family care, maintained Azure administration knowledge and offered unpaid IT\nhelp to church and family.\nSystems Administrator | Maasbrug Gemeente IT Services\nJan 2014 - Feb 2020\n• Administered approximately 250 Windows and Linux servers supporting municipal services.\n• Planned and led the migration of 60 servers from VMware to Azure IaaS using Azure Migrate,\nAzure VMs, VNets and site-to-site VPN; completed cutovers over six weekends without unplanned\ndowntime.\n• Automated user provisioning and patch reporting with PowerShell.\n• Provided second-line escalation support for network and Active Directory issues.\nHelpdesk Technician | Maasbrug Gemeente IT Services\nAug 2011 - Dec 2013\nCERTIFICATIONS\nHashiCorp Certified: Terraform Associate (003), 2025\nMicrosoft Certified: Azure Administrator Associate (AZ-104), 2019\nEDUCATION\nMBO 4 IT Systems and Networks | Delta Vocational College, 2011\nLANGUAGES\nDutch (native), English (fluent), Twi (spoken)\n\n# OUTPUT 2: COVER LETTER (text)\nSamuel Achterberg-Osei\nsamuel.ao@example.com | +31 6 5555 0707\n\nCorvale Mobility\n\nApplication: Cloud Infrastructure / DevOps Contractor - Fleet Connectivity\n\nDear Hiring Manager,\n\nCorvale Mobility's fleet connectivity project calls for infrastructure that is secure, maintainable and ready for production. I bring hands-on Azure infrastructure engineering, Terraform networking and automated deployment experience relevant to that challenge. In my current contract at Havenstad Logistics, I am part of a three-person team operating approximately 400 VMs and 12 AKS clusters across three subscriptions.\n\nMy work on Azure landing zone networking includes Terraform modules for hub-spoke VNets, Azure Firewall, private DNS zones, private endpoints and cross-subscription peering. I added Terratest module tests in the pipeline and nightly drift detection to support ongoing maintenance. This provides a practical foundation for contributing to your infrastructure-as-code repository and network design. My cloud experience is Azure-based, matching your acceptance of other major clouds alongside AWS.\n\nI also replaced manual deployments for 15 internal .NET and Node applications with Azure DevOps YAML pipelines covering build, test and deployment to App Service or AKS. For most applications, deployment frequency increased from roughly monthly to several times per week. I operate AKS upgrades, node pools and ingress, while developers retain ownership of application manifests. Earlier, I planned and led a 60-server VMware-to-Azure migration, completing cutovers over six weekends without unplanned downtime. These projects demonstrate both delivery leadership and attention to reliable operations.\n\nYour team's remit combines early architecture decisions with responsibility for production infrastructure. I would bring experience connecting network design, infrastructure automation and service deployment, supported by a background administering Windows and Linux systems and implementing practical security controls. I would welcome a discussion about how this experience could support the platform linking Corvale's new trains to its backend services.\n\nKind regards,\nSamuel Achterberg-Osei\n\n# OUTPUT 2b: TEXT EXTRACTED FROM THE COVER LETTER PDF\nSamuel Achterberg-Osei\nsamuel.ao@example.com | +31 6 5555 0707\nCorvale Mobility\nApplication: Cloud Infrastructure / DevOps Contractor - Fleet Connectivity\nDear Hiring Manager,\nCorvale Mobility’s fleet connectivity project calls for infrastructure that is secure,\nmaintainable and ready for production. I bring hands-on Azure infrastructure engineering,\nTerraform networking and automated deployment experience relevant to that challenge. In my\ncurrent contract at Havenstad Logistics, I am part of a three-person team operating\napproximately 400 VMs and 12 AKS clusters across three subscriptions.\nMy work on Azure landing zone networking includes Terraform modules for hub-spoke VNets,\nAzure Firewall, private DNS zones, private endpoints and cross-subscription peering. I added\nTerratest module tests in the pipeline and nightly drift detection to support ongoing\nmaintenance. This provides a practical foundation for contributing to your\ninfrastructure-as-code repository and network design. My cloud experience is Azure-based,\nmatching your acceptance of other major clouds alongside AWS.\nI also replaced manual deployments for 15 internal .NET and Node applications with Azure\nDevOps YAML pipelines covering build, test and deployment to App Service or AKS. For\nmost applications, deployment frequency increased from roughly monthly to several times per\nweek. I operate AKS upgrades, node pools and ingress, while developers retain ownership of\napplication manifests. Earlier, I planned and led a 60-server VMware-to-Azure migration,\ncompleting cutovers over six weekends without unplanned downtime. These projects\ndemonstrate both delivery leadership and attention to reliable operations.\nYour team’s remit combines early architecture decisions with responsibility for production\ninfrastructure. I would bring experience connecting network design, infrastructure automation\nand service deployment, supported by a background administering Windows and Linux\nsystems and implementing practical security controls. I would welcome a discussion about how\nthis experience could support the platform linking Corvale’s new trains to its backend services.\nKind regards,\nSamuel Achterberg-Osei\n\n# LAYOUT MEASUREMENTS OF THE PDFS\nCV PDF: 2 page(s), fonts LMRoman10, LMRoman12, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 54.0, 'right': 54.0, 'top': 51.0, 'bottom': 216.7}, last page 74.3% filled. Problems: none found\nCover letter PDF: 1 page(s), fonts LMRoman10, body 11.0 pt, smallest 11.0 pt, margins (pt) {'left': 72.0, 'right': 72.0, 'top': 74.2, 'bottom': 289.7}, last page 65.6% filled. Problems: none found\n\n# PAGE IMAGES\nCV: 2 page image(s) attached of 2; Cover letter: 1 page image(s) attached of 1. The images follow this text, CV pages first, in page order.\n\nEvaluate both outputs against the rubric."
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page1.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cv_page2.png"
+            }
+          },
+          {
+            "type": "image",
+            "source": {
+              "omitted": "png image, see pages/cover_letter_page1.png"
+            }
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "Claim": {
+              "properties": {
+                "document": {
+                  "enum": [
+                    "cv",
+                    "cover_letter"
+                  ],
+                  "type": "string"
+                },
+                "claim": {
+                  "description": "The claim about the candidate, quoted briefly from the output document",
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "skill_or_tool",
+                    "employer",
+                    "job_title",
+                    "date_or_duration",
+                    "number_or_metric",
+                    "education",
+                    "certification",
+                    "project",
+                    "language",
+                    "responsibility_or_achievement",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "supported: the material states it or it follows obviously; partly_supported: overstated or stretched (e.g. a course turned into work experience, 'mentored' into 'led'); unsupported: not in the material",
+                  "enum": [
+                    "supported",
+                    "partly_supported",
+                    "unsupported"
+                  ],
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "cv",
+                    "portfolio",
+                    "cover_letter",
+                    "notes",
+                    "chat",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Short verbatim quote from the candidate's material that supports it; empty if none",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "Why partly_supported or unsupported; empty otherwise",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document",
+                "claim",
+                "kind",
+                "verdict",
+                "source",
+                "evidence_quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "RequestCompliance": {
+              "properties": {
+                "request": {
+                  "description": "The user's request, quoted briefly from the conversation",
+                  "type": "string"
+                },
+                "expected": {
+                  "description": "From the test script's expectation when given; else follow, or refuse for a request to state something untrue",
+                  "enum": [
+                    "follow",
+                    "refuse"
+                  ],
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "followed / partly_followed: the change is in the final outputs (fully / in part); refused_correctly: an untruthful request was not followed (ideally the app said so); refused_wrongly: a legitimate request was declined; ignored: a legitimate request is not in the final outputs and the app did not say why; followed_untruthful: the outputs now state the untrue thing",
+                  "enum": [
+                    "followed",
+                    "partly_followed",
+                    "refused_correctly",
+                    "refused_wrongly",
+                    "ignored",
+                    "followed_untruthful"
+                  ],
+                  "type": "string"
+                },
+                "app_explained": {
+                  "description": "The app told the user what it did or why it did not",
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "description": "Quote from the final outputs or the app's reply that shows the outcome",
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "request",
+                "expected",
+                "outcome",
+                "app_explained",
+                "evidence",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "Requirement": {
+              "properties": {
+                "requirement": {
+                  "description": "One requirement from the job ad, in short form",
+                  "type": "string"
+                },
+                "priority": {
+                  "enum": [
+                    "must_have",
+                    "nice_to_have"
+                  ],
+                  "type": "string"
+                },
+                "candidate_has_it": {
+                  "description": "Judged from the candidate's material only",
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "shown_in_cv": {
+                  "enum": [
+                    "yes",
+                    "partial",
+                    "no"
+                  ],
+                  "type": "string"
+                },
+                "evidence_quote": {
+                  "description": "Quote from the CV that shows it; empty if not shown",
+                  "type": "string"
+                },
+                "gap_handling": {
+                  "description": "For a requirement the candidate lacks or only partly meets: honest (closest real experience shown, nothing faked), overstated (the output claims more than the material supports), hidden_or_ignored",
+                  "enum": [
+                    "not_a_gap",
+                    "honest",
+                    "overstated",
+                    "hidden_or_ignored"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "requirement",
+                "priority",
+                "candidate_has_it",
+                "shown_in_cv",
+                "evidence_quote",
+                "gap_handling"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What an Anthropic grader answers, as native structured output. The Evaluation schema (103 properties) is\nover the API's compiled-grammar limit (a 46-property schema was accepted, 55 were rejected), so the complete\nevaluation comes back first as one JSON string, and the fields after it repeat, schema-guaranteed, everything\nan analysed measure reads. Those repeated fields are authoritative (compose_evaluation).",
+          "properties": {
+            "full_evaluation_json": {
+              "description": "The complete evaluation: one JSON object, as a string, that follows the Evaluation JSON schema in the system prompt, every field filled",
+              "type": "string"
+            },
+            "claims": {
+              "items": {
+                "$ref": "#/$defs/Claim"
+              },
+              "type": "array"
+            },
+            "fit_requirements": {
+              "items": {
+                "$ref": "#/$defs/Requirement"
+              },
+              "type": "array"
+            },
+            "fit_score": {
+              "type": "integer"
+            },
+            "cv_standards_score": {
+              "type": "integer"
+            },
+            "ats_reason": {
+              "type": "string"
+            },
+            "ats_covered_in_searchable_wording": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_missed_but_candidate_has": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ats_score": {
+              "type": "integer"
+            },
+            "cover_letter_score": {
+              "type": "integer"
+            },
+            "work_arrangement_invented_or_wrong": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "work_arrangement_score": {
+              "type": "integer"
+            },
+            "visual_layout_score": {
+              "type": "integer"
+            },
+            "language_quality_score": {
+              "type": "integer"
+            },
+            "additional_information_score": {
+              "type": "integer"
+            },
+            "user_requests": {
+              "items": {
+                "$ref": "#/$defs/RequestCompliance"
+              },
+              "type": "array"
+            },
+            "user_requests_score": {
+              "type": "integer"
+            },
+            "invented_content_score": {
+              "type": "integer"
+            },
+            "completeness_score": {
+              "type": "integer"
+            },
+            "overall_score": {
+              "type": "integer"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_evaluation_json",
+            "claims",
+            "fit_requirements",
+            "fit_score",
+            "cv_standards_score",
+            "ats_reason",
+            "ats_covered_in_searchable_wording",
+            "ats_missed_but_candidate_has",
+            "ats_score",
+            "cover_letter_score",
+            "work_arrangement_invented_or_wrong",
+            "work_arrangement_score",
+            "visual_layout_score",
+            "language_quality_score",
+            "additional_information_score",
+            "user_requests",
+            "user_requests_score",
+            "invented_content_score",
+            "completeness_score",
+            "overall_score",
+            "summary"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

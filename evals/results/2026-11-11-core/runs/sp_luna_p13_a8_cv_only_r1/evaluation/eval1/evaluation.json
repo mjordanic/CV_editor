@@ -1,0 +1,509 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 6884,
+      "output_tokens": 6938,
+      "cache_creation_input_tokens": 2751,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.045524,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "17d3bc2ad4c7528a7904ec6af8e5ac93eb7925a974cfc7f41a6ddb55233e85f7",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p13_a8_cv_only_r1-bb4189c008",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p13_a8_cv_only_r1-bb4189c008",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.091048
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 – heute",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 - heute",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "fünf Jahren Berufserfahrung als Krankenschwester in Polen",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "fünf Jahren Berufserfahrung als Krankenschwester in Polen",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Grundpflege für 10 bis 12 Bewohnerinnen und Bewohner pro Schicht",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "10 bis 12 Bewohnerinnen und Bewohner pro Schicht",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Behandlungspflege nach LG1",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Behandlungspflege nach LG1",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Vivendi PD",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Dokumentation in Vivendi PD",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Deutschkenntnisse auf B2-Niveau",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "telc Deutsch B1-B2 Pflege, B2",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Bachelor Pielęgniarstwo 2014; Anerkennungsverfahren läuft",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Anerkennungsverfahren als Pflegefachfrau beim Regierungspräsidium Stuttgart: läuft",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Erfahrung mit älteren Menschen und Menschen mit Demenz",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "geduldig im Umgang mit Menschen mit Demenz",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Der Leitsatz und feste Tourengruppen sprechen mich an",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "none",
+        "evidence_quote": "",
+        "note": "Statement about the employer, from company info"
+      },
+      {
+        "document": "cover_letter",
+        "claim": "unterstütze bei Kompressionsstrümpfen",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Kompressionsstrümpfe",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Qualifikation in der Behandlungspflege nach LG1",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Behandlungspflege LG1 (Basiskurs), 2021",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Führerschein Klasse B not mentioned (not in material)",
+        "source": "cv",
+        "source_quote": "",
+        "relevance": "low",
+        "why_it_matters": "Required by ad but candidate material does not show it; correctly not invented"
+      },
+      {
+        "fact": "Weekend and early/late shift experience linked to the ad's tour schedule",
+        "source": "cv",
+        "source_quote": "Früh-, Spät- und Wochenenddienste",
+        "relevance": "medium",
+        "why_it_matters": "Ad requires Früh/Spät and weekends; the CV states it but the letter does not"
+      },
+      {
+        "fact": "Sturzprophylaxe training",
+        "source": "cv",
+        "source_quote": "Expertenstandard Sturzprophylaxe",
+        "relevance": "low",
+        "why_it_matters": "Minor relevance"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Pflegehelfer training or 2 years basic care experience",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Pflegehelferin, Seniorenzentrum Am Lindenhof, Freiburg 04/2020 – heute",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Führerschein Klasse B",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Deutsch B2",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Deutsch (telc Deutsch B1-B2 Pflege, B2)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Behandlungspflege LG1",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Behandlungspflege LG1 (Basiskurs), 2021",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Ambulante Pflege experience",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Demenz experience",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Menschen mit Demenz",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Früh/Spät and weekend shifts",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Einsätze im Früh- und Spätdienst sowie an Wochenenden",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Documentation on smartphone (MediFox)",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Pflegedokumentation in Vivendi PD",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; the driving licence is not mentioned since the material lacks it; the lack of outpatient experience is not hidden or overstated.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Profile omits the exact 5 years in Altenpflege"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFIL",
+        "BERUFSERFAHRUNG",
+        "AUSBILDUNG",
+        "WEITERBILDUNG",
+        "SPRACHEN"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Pflegehelferin",
+        "Grundpflege",
+        "Behandlungspflege LG1",
+        "Blutdruck/Blutzucker",
+        "Kompressionsstrümpfe",
+        "Dokumentation",
+        "Deutsch B2",
+        "Demenz",
+        "Früh- und Spätdienst",
+        "Wochenende",
+        "Führerschein B"
+      ],
+      "covered_in_searchable_wording": [
+        "Pflegehelferin",
+        "Grundpflege",
+        "Behandlungspflege LG1",
+        "Blutdruck/Blutzucker",
+        "Kompressionsstrümpfe",
+        "Dokumentation",
+        "Deutsch B2",
+        "Demenz",
+        "Früh- und Spätdienst",
+        "Wochenende"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 9,
+      "reason": "Clean, readable text with standard headings and nearly all of the ad's keywords that the candidate has."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "No mention of weekend and shift availability or the driving licence",
+        "Does not address the switch from inpatient to outpatient care",
+        "No date or sender block"
+      ],
+      "strengths": [
+        "Uses the company's motto and its fixed tour groups",
+        "Concrete duties that match the ad",
+        "Honest on the recognition procedure"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Pflege mit Zeit und Respekt",
+        "feste Tourengruppen"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 1,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Tight spacing between job entries in the CV",
+        "Large empty space at the bottom of both pages"
+      ],
+      "consistency_issues": [
+        "The third job's date wraps onto its own line while the others sit on the title line"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "German",
+      "expected_language_cover_letter": "German",
+      "cv_language": "German",
+      "cover_letter_language": "German",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formulaic wording"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details left as in the CV"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Faithful, clean German CV and letter with no invented content. The ad's keywords are covered, the letter uses real company facts, and the gaps (outpatient experience, driving licence) are neither faked nor discussed. Weaknesses: the letter is somewhat generic, does not mention shift or weekend readiness, and the pages have large empty areas."
+  },
+  "counts": {
+    "claims": 11,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 4,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 3,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 9
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1654,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1549,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.4,
+          "top": 56.4,
+          "bottom": 210.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 75.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.2,
+          "top": 74.2,
+          "bottom": 419.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 50.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.045524,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

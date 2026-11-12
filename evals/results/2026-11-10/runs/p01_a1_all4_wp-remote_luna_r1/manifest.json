@@ -1,0 +1,110 @@
+{
+  "run_dir": "runs/p01_a1_all4_wp-remote_luna_r1",
+  "labels": {
+    "persona": "p01",
+    "ad": "a1",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p01_a1_all4_wp-remote_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p01-lena-data-engineer/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2419
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p01-lena-data-engineer/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 2165
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p01-lena-data-engineer/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1096
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p01-lena-data-engineer/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 833
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": "remote",
+  "started_at": "2026-11-10T20:27:47+00:00",
+  "status": "completed",
+  "minutes": 5.52,
+  "cv_drafts": 3,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 3,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Lisbon, Portugal; 3 days per week in the office. No country, time-zone, relocation, or right-to-work limits stated.",
+    "culture_signals": [
+      "Values: Together (share context openly and help across teams), Ownership (own, fix and learn from problems), and Pace (cut unnecessary complexity to move quickly for clients).",
+      "Collaborative environment; teamwork and personal development come first.",
+      "The company describes a commercially driven culture with friendly colleagues; reviewers say onboarding and training vary considerably between teams.",
+      "Team events and regular get-togethers are part of how the company builds connections."
+    ],
+    "notes": "The job ad specifies hybrid work in Lisbon with 3 office days per week. The company results say most offices use the same 3-day hybrid pattern and describe the Lisbon office as hybrid, so there is no stated difference."
+  },
+  "work_preference_final": "remote",
+  "redrafts": {
+    "cv": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T20:33:19+00:00",
+  "cost_usd": 0.04128
+}

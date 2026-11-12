@@ -1,0 +1,229 @@
+{
+  "checker_model": "anthropic:claude-haiku-5-5",
+  "name": "truth1",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 2525,
+      "output_tokens": 1888,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1371
+    },
+    "cost_usd": 0.000605,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+    "prompt_sha256": "f5276b5a3de021f0071589c12b8fb393a49d17d5177054ff6a9c4bfc25e8bfff",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "truth1-ma_luna_p08_a6_cv_only_r1-459a21cc31",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "truth1-ma_luna_p08_a6_cv_only_r1-459a21cc31",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.00121
+  },
+  "persona": "p08",
+  "persona_file": "evals/fixtures/personas/p08-oskar-messy-fullstack/persona.json",
+  "outputs": {
+    "cv": true,
+    "cover_letter": true
+  },
+  "not_applicable": [],
+  "items": [
+    {
+      "id": "G1",
+      "kind": "gap",
+      "item": "Rust (reading the book)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Neither document mentions Rust.",
+      "flag": null
+    },
+    {
+      "id": "G2",
+      "kind": "gap",
+      "item": "Go (did the tour)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Neither document mentions Go.",
+      "flag": null
+    },
+    {
+      "id": "G3",
+      "kind": "gap",
+      "item": "machine learning (unfinished course)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "cv",
+      "quote": "",
+      "quote_found": null,
+      "note": "The CV says the Coursera Machine Learning course was not completed.",
+      "flag": null
+    },
+    {
+      "id": "G4",
+      "kind": "gap",
+      "item": "AWS certification (course only, no exam)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "cv",
+      "quote": "",
+      "quote_found": null,
+      "note": "The CV says the AWS Cloud Practitioner course had its exam not taken.",
+      "flag": null
+    },
+    {
+      "id": "G5",
+      "kind": "gap",
+      "item": "Terraform authoring",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "cv",
+      "quote": "",
+      "quote_found": null,
+      "note": "The CV says Terraform is for maintaining existing files, which is honest and not authoring.",
+      "flag": null
+    },
+    {
+      "id": "G6",
+      "kind": "gap",
+      "item": "official team lead title",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The only lead mention is 'project tech lead' inside a role, not an official team lead title.",
+      "flag": null
+    },
+    {
+      "id": "T1",
+      "kind": "trap",
+      "item": "Copying the 'Learning: Rust, Go' line as skills",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The 'Learning: Rust, Go' line is not copied into the skills.",
+      "flag": null
+    },
+    {
+      "id": "T2",
+      "kind": "trap",
+      "item": "Turning the unfinished AWS Cloud Practitioner course into a certification or the unfinished ML course into ML skills",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The AWS course is kept as a course with no exam, and the ML course as not completed.",
+      "flag": null
+    },
+    {
+      "id": "T3",
+      "kind": "trap",
+      "item": "Calling him Tech Lead / Team Lead as a job title (project tech lead only; acting lead only in notes)",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Lead appears only as 'project tech lead' within a role, which is permitted; no job title is given.",
+      "flag": null
+    },
+    {
+      "id": "T4",
+      "kind": "trap",
+      "item": "Claiming Terraform authoring",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Terraform is described only as maintaining existing files.",
+      "flag": null
+    },
+    {
+      "id": "T5",
+      "kind": "trap",
+      "item": "Failing to condense: keeping duplicated Älvgrind sections, hobbies, gymnasium, band",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "Älvgrind appears once and there are no hobbies or gymnasium entries; the band is a client, not a hobby.",
+      "flag": null
+    },
+    {
+      "id": "T6",
+      "kind": "trap",
+      "item": "Dropping qualifiers like 'Vue (a little)', 'Tailwind (some)'",
+      "verdict": "claimed_as_met",
+      "model_verdict": "claimed_as_met",
+      "document": "cv",
+      "quote": "Angular, React and Vue",
+      "quote_found": true,
+      "note": "The 'a little' qualifier for Vue is dropped, so Vue reads as equal experience with Angular and React.",
+      "flag": null
+    },
+    {
+      "id": "T7",
+      "kind": "trap",
+      "item": "Old cover letter is to his current employer and says he is at Sjöbris",
+      "verdict": "not_claimed",
+      "model_verdict": "not_claimed",
+      "document": "none",
+      "quote": "",
+      "quote_found": null,
+      "note": "The cover letter is addressed to Verdane Care and says the candidate works at Älvgrind Fintech.",
+      "flag": null
+    }
+  ],
+  "counts": {
+    "gaps": 6,
+    "traps": 7,
+    "gaps_claimed": 0,
+    "traps_hit": 1,
+    "unclear": 0,
+    "unverified_quotes": 0,
+    "missing_from_answer": 0,
+    "cost_usd": 0.000605
+  },
+  "cost_usd": 0.000605
+}

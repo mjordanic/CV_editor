@@ -1,0 +1,591 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8375,
+      "output_tokens": 8671,
+      "cache_creation_input_tokens": 3587,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.056725,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "5048f1db82a037e8a8e84298f09d0fb5a765f5a34eeb9ece663b968fdb143f87",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p10_a2_all4_r1-ffef287d69",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p10_a2_all4_r1-ffef287d69",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.11345
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "6 years in analytics and data science, including 4+ years as a data scientist",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "6 years in analytics and data science (4+ as data scientist)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built operational forecasting and churn-scoring workflows using Python, BigQuery and dbt",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "XGBoost churn model scored weekly in BigQuery",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "approximately 40 A/B tests per year; calculator used by approximately 25 colleagues",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~40 experiments per year",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "WAPE 23% to 14%, food waste down 9%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "forecast error (WAPE) reduced from 23% to 14%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "churn 2.1 percentage-point reduction validated by 10% holdout",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "churn down 2.1 percentage points in the treated group",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "pytest unit tests since 2025, ~60% coverage",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "in 2025 I started writing unit tests (pytest) for the forecasting feature code - ~60% coverage now",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "wrote Streamlit app Dockerfile; platform team handles Cloud Run deployment",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "I wrote the app and the Dockerfile, they handle deployment",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "delivered internal Stats for PMs training three times",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "gave internal training \"Stats for PMs\" 3 times",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "PyTorch course project, ~80% accuracy, labelled as learning project",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Learning project only.",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "feature engineering",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "LightGBM with calendar, price and menu-position features",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Vertex AI Workbench scheduled notebooks",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Vertex AI Workbench scheduled notebook",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Scientist title in header 'Applied Machine Learning'",
+        "kind": "job_title",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Data Scientist",
+        "note": "Tagline mildly stretches toward ML."
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Statistics 2020 Distinction; BSc Mathematics 2019",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Statistics, University of the Lothians, 2020 (Distinction)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "experience combines applied machine learning, experimentation and analytics",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Built the weekly demand forecasting model per recipe",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "weekly forecasting workflow with scheduled notebook runs writing to BigQuery",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Runs as a scheduled notebook job",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "strong Python and SQL skills, experience with BigQuery and dbt",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Write production SQL in BigQuery and maintain dbt models",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Streamlit calculator used by around 25 colleagues; wrote Dockerfile; Cloud Run deployment by platform team",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "used by ~25 people in product and growth",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "pytest tests at approximately 60% coverage",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "~60% coverage now",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Candidate wants to learn production side, open to mid/junior MLE title",
+        "source": "notes",
+        "source_quote": "want ML engineer role to learn production side",
+        "relevance": "medium",
+        "why_it_matters": "Letter could be more candid about the transition and level."
+      },
+      {
+        "fact": "GCP usage (BigQuery daily, Vertex Workbench) as cloud experience",
+        "source": "notes",
+        "source_quote": "GCP: BigQuery daily, Vertex Workbench",
+        "relevance": "medium",
+        "why_it_matters": "Ad asks for cloud experience; CV lists tools but never names GCP."
+      },
+      {
+        "fact": "UK settled status",
+        "source": "notes",
+        "source_quote": "I have UK settled status",
+        "relevance": "low",
+        "why_it_matters": "Role is in Germany; not relevant to UK status."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML, CS or related field",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "MSc Statistics | University of the Lothians | 2020",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping ML to production",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "now moving toward machine learning engineering",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG experience",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Model serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Docker; ... The data platform team handles deployment to Cloud Run.",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Major cloud provider experience",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Vertex AI Workbench scheduled notebooks",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Strong Python",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels, Streamlit)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "MLOps/orchestration tools (MLflow, Airflow...)",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Feature engineering and data ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "feature engineering; ... maintain dbt models",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Version control, CI/CD, automated tests",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "pytest unit tests for forecasting feature code",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Gaps are handled honestly; nothing faked, PyTorch flagged as course, deployment attributed to platform team. RAG/LLM gap is simply not addressed.",
+      "score": 6
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second page holds only skills and languages, mostly empty",
+        "Streamlit bullet is out of date order within the Thistlebox job"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Experience",
+        "Additional Project",
+        "Education",
+        "Technical Skills",
+        "Languages"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Machine learning engineer",
+        "Python",
+        "cloud (GCP)",
+        "feature engineering",
+        "model serving",
+        "MLOps",
+        "RAG",
+        "CI/CD",
+        "automated tests",
+        "Docker",
+        "computer science/ML degree"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "feature engineering",
+        "automated tests (pytest)",
+        "Docker",
+        "machine learning engineering"
+      ],
+      "missed_but_candidate_has": [
+        "GCP / Google Cloud named explicitly",
+        "batch scoring / model deployment wording"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 6,
+      "reason": "Clean parseable text with honest keywords, but GCP is never named and the candidate lacks many must-have terms such as MLOps tools and RAG."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company specifics are thin and mostly restate the ad",
+        "Does not address the RAG/LLM or production-serving gap or the learning motivation",
+        "Sign-off squeezed onto one line"
+      ],
+      "strengths": [
+        "Honest about the move toward production",
+        "Concrete metrics",
+        "No stale Firth framing"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 holds only skills and languages",
+        "Large empty bottom on page 1"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [
+        "Skills section orphaned on a nearly empty second page"
+      ],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly generic phrasing such as 'compelling next step for me'"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "pytest tests ~60% coverage",
+        "Stats for PMs training",
+        "Dockerfile only, platform deploys",
+        "PyTorch course only"
+      ],
+      "notes_facts_ignored": [
+        "Desire to learn production side",
+        "GCP daily use"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist",
+          "note": ""
+        },
+        {
+          "request": "I'd rather leave those details out.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No placeholders in outputs",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "Honest, well-grounded CV and letter that keep metrics accurate and label gaps (course PyTorch, platform-team deployment) without faking. Weaknesses: the fit to a senior production MLE role is inherently weak and the RAG/LLM gap is unaddressed; GCP is never named; the letter is somewhat generic about the company. The CV spills skills onto a nearly empty second page."
+  },
+  "counts": {
+    "claims": 18,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 8,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2952,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1760,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.0,
+          "bottom": 84.1
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 20.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 74.2,
+          "bottom": 428.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 49.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.056725,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

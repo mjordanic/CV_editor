@@ -1,0 +1,517 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8887,
+      "output_tokens": 6986,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 12919
+    },
+    "cost_usd": 0.044463,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "6802c15c8a403d7d3dc815fae389079d95a374d7d00e320c18be22b880eb5b6e",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p09_a3_cv_only_r2-1147c07414",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p09_a3_cv_only_r2-1147c07414",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.088926
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "10 years of experience, including six running Kubernetes platforms on AWS",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "10 years in infrastructure, the last 6 running Kubernetes platforms on AWS",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Technical lead of a five-person platform team, 8 clusters, ~350 services, 3 regions",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Tech lead of the 5-person platform team; run the EKS platform (8 clusters, ~350 services, 3 regions)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "time to production from two weeks to under one day",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~2 weeks to under 1 day",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "SLOs for 20 services, on-call pages down ~60%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "on-call pages per week down ~60%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Karpenter spot, EC2 spend down 38%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "EC2 spend down 38%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Participated in the incident commander rotation",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Incident commander rotation",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Terraform ~40 modules with Atlantis at Brightwater",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Terraform for all AWS infrastructure (~40 modules); Atlantis",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "capacity planning listed as skill",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "launch-day capacity planning",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "CKA 2021 renewed 2024; AWS SA Pro 2023; BSc 2016",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Certified Kubernetes Administrator (CKA) - 2021, renewed 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Pennine Hosting ~600 Linux servers, Puppet, Bash, Python",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Managed ~600 Linux servers for hosting customers; Puppet configuration management",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "used k6 load testing to inform launch-day capacity planning",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Load testing with k6 before launches; launch-day capacity planning",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I operate an EKS platform covering eight clusters",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "run the EKS platform (8 clusters",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Linux and VM background plus Python/Go programming relevant to nice-to-haves",
+        "source": "cv",
+        "source_quote": "Managed ~600 Linux servers",
+        "relevance": "low",
+        "why_it_matters": "Linux nice-to-have; included in CV already"
+      },
+      {
+        "fact": "VPC/IAM networking and security basics could be tied to the ad's networking and security requirements",
+        "source": "cv",
+        "source_quote": "VPC, IAM",
+        "relevance": "medium",
+        "why_it_matters": "Ad asks for networking and security awareness; only listed in skills"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Hands-on cloud infrastructure design and operation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "operating an AWS EKS platform spanning eight clusters",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "AWS",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "AWS Certified Solutions Architect - Professional - 2023",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Managed all AWS infrastructure through Terraform, with approximately 40 modules",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Systems architecture and design",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Built an internal developer platform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Networking incl. mTLS and SSL/TLS",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "partial",
+          "evidence_quote": "VPC, IAM, Route 53, CloudFront",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Practical security awareness",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "IAM",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Leading technical topics",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Technical lead of a five-person platform team",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "IoT/automotive integration",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Linux and VMs",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Managed approximately 600 Linux servers",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; Terragrunt, mTLS and IoT are simply not mentioned and no adjacent experience is framed, and the letter does not address the gaps.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Page 2 holds only a few lines; skills section split across pages",
+        "Location omitted"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "EXPERIENCE",
+        "TECHNICAL SKILLS",
+        "CERTIFICATIONS",
+        "EDUCATION",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "AWS",
+        "Terraform",
+        "Terragrunt",
+        "mTLS",
+        "TLS",
+        "Linux",
+        "infrastructure as code",
+        "system design",
+        "observability",
+        "security",
+        "technical lead"
+      ],
+      "covered_in_searchable_wording": [
+        "AWS",
+        "Terraform",
+        "infrastructure as code",
+        "Linux",
+        "observability",
+        "technical lead"
+      ],
+      "missed_but_candidate_has": [
+        "systems architecture / system design",
+        "security (IAM)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, parseable text with the key AWS/Terraform/IaC terms; architecture and security wording is thin, and Terragrunt and mTLS are absent because the candidate material lacks them."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Mostly restates the CV",
+        "Does not address mTLS, Terragrunt, IoT gaps or the contractor model",
+        "Little company-specific content beyond the train fleet",
+        "Generic salutation"
+      ],
+      "strengths": [
+        "Accurate metrics",
+        "Links work to the ad's scope",
+        "Concise, one page"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 is mostly empty",
+        "Skills block split across the page break"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Somewhat formulaic phrasing such as 'This work aligns with your need'"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [
+        "Contact details kept as in CV"
+      ],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 10
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both CV and cover letter exist",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 7,
+    "overall_score": 8,
+    "summary": "Faithful, clean CV and letter with no invented claims and accurate metrics. The CV is well sectioned and ATS-friendly. Weaknesses: the letter is a CV restatement with little company specificity, it does not bridge the Terragrunt, mTLS and IoT gaps through adjacent experience such as VPC/IAM, and page 2 of the CV is nearly empty."
+  },
+  "counts": {
+    "claims": 12,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 2946,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2275,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 57.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 26.3,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 73.6,
+          "top": 71.4,
+          "bottom": 271.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 67.7,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.044463,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

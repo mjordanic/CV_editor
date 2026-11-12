@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "024ed51e5312885591075ddb751154673b31b31be958808af6574cf47057b7e5",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: AWS\nG2: GCP\nG3: software development\nG4: Go beyond terratest\n\n# TRAPS (mistakes a writer could make)\nT1: Filling the 2020-2022 or 2024 gaps with invented jobs or stretching neighbouring date ranges\nT2: Disclosing more private/medical detail than needed (father's death) instead of a neutral 'career break' if anything\nT3: Claiming AWS or GCP for multi-cloud ads\nT4: Calling him a software developer or claiming Python/Go development\nT5: Old cover letter targets an IT Administrator job and says 'available to start immediately' - no longer true\nT6: The CV lists skills first; writer should keep dates accurate when reordering\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nSamuel Achterberg-Osei\nCloud Infrastructure / DevOps Engineer\nPROFESSIONAL SUMMARY\nCloud infrastructure engineer with hands-on experience designing, building, and operating Azure\nenvironments, including landing-zone network architecture, Terraform infrastructure as code, Azure\nDevOps deployment automation, and AKS operations. Experience includes Azure landing-zone\nnetworking, AKS operations, cloud migration, and security automation. Combines systems\nadministration experience across Windows and Linux with practical infrastructure automation using\nPowerShell.\nCORE SKILLS\nCloud and infrastructure: Microsoft Azure, Azure IaaS, Azure landing zones, Azure Migrate,\nAzure VMs\nInfrastructure as code and automation: Terraform, Terraform modules, PowerShell, Azure\nDevOps YAML pipelines, Go (Terratest tests), Python (small scripts)\nNetworking and security: Hub-spoke networking, VNets, VNet peering, Azure Firewall, private\nDNS zones, private endpoints, site-to-site VPN, Microsoft 365 security baselines, Entra ID, MFA,\nconditional access\nContainers and delivery: AKS operations (upgrades, node pools, ingress), Docker, Helm, App\nService, CI/CD\nSystems: Windows and Linux servers, VMware, Proxmox\nPROFESSIONAL EXPERIENCE\nCloud Engineer (Contract) | Havenstad Logistics 2025–Present\n• Build and maintain Azure landing-zone infrastructure, Terraform modules, and Azure DevOps\npipelines.\n• Designed and implemented hub-spoke cloud network architecture in Terraform, including Azure\nFirewall, private DNS zones, private endpoints for storage and SQL, and VNet peering across three\nsubscriptions.\n• Added Terratest module tests to the pipeline and a nightly infrastructure drift-detection job.\n• Replaced manual deployment processes for 15 internal .NET and Node applications with Azure\nDevOps YAML pipelines for build, test, and deployment to App Service or AKS.\n• Helped increase deployment frequency from roughly monthly to several times per week for most\napplications.\n• Operate AKS upgrades, node pools, and ingress; application manifests remain owned by\ndevelopment teams.\nFreelance IT Support 2022–2023\n• Created a repeatable PowerShell script and checklist for small-business Microsoft 365 security\nbaselines.\n• Enabled MFA, conditional access, mailbox auditing, and backups for small clients.\nSystems Administrator | Maasbrug Gemeente IT Services 2014–2020\n• Administered approximately 250 Windows and Linux servers and supported staff across several\nmunicipal services.\n• Planned and executed the lift-and-shift migration of 60 servers from VMware to Azure IaaS using\nAzure Migrate.\n• Completed cut-over over six weekends with no unplanned downtime.\n• Used PowerShell to automate infrastructure and administrative tasks.\nCAREER BREAKS AND PROFESSIONAL DEVELOPMENT\nCaregiving and unpaid IT support Mar 2020–Aug 2022\n• Left municipal employment to provide full-time care for father; provided unpaid IT help to church\nand family during this period.\nIndependent study and cloud training Feb 2024–Feb 2025\n• Studied Terraform and built a Proxmox homelab.\n• Completed a three-month, part-time online, English-language cloud bootcamp in Dec 2024.\nCERTIFICATIONS\n• Microsoft Azure Administrator Associate\n• HashiCorp Terraform Associate, 2025\n\n# OUTPUT 2: COVER LETTER\nDear Corvale Mobility Hiring Team,\nI am applying for the Cloud Infrastructure / DevOps Contractor – Fleet Connectivity role. The\nopportunity to help shape and operate the infrastructure connecting a new train fleet with\ncloud services is a strong match for my Azure infrastructure and automation experience.\nAs a Cloud Engineer at Havenstad Logistics, I design, build and operate Azure landing-zone\ninfrastructure, Terraform modules (infrastructure as code) and Azure DevOps pipelines. I\ndesigned and implemented a hub-spoke network across three subscriptions, including Azure\nFirewall, private DNS zones, private endpoints and VNet peering. I also added Terratest\nmodule checks and nightly drift detection. For 15 internal applications, I replaced manual\ndeployments with pipelines for build, test and deployment, helping increase release frequency\nfrom roughly monthly to several times a week for most applications.\nEarlier, as a Systems Administrator, I led the migration of 60 servers from VMware to Azure\nIaaS, planning and executing the cut-over over six weekends with no unplanned downtime.\nAcross these roles, I have worked with Windows and Linux systems, networking, and practical\nsecurity automation. I also operate AKS upgrades, node pools and ingress, while application\nmanifests remain owned by development teams. My cloud experience is Azure-focused,\nsupported by the Microsoft Azure Administrator Associate and HashiCorp Terraform Associate\ncertifications.\nI would welcome the opportunity to apply this experience to Corvale’s fleet connectivity work,\nparticularly the design, automation and reliable operation of the cloud infrastructure behind\nconnected services. Thank you for considering my application. I look forward to discussing how\nmy background could contribute to the project.\nKind regards,\nSamuel Achterberg-Osei\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

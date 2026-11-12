@@ -6,6 +6,7 @@ Inputs are the repo's fictional samples (examples/sample_CV.txt, job_description
 
 The recorded session (gpt-5-nano) went: job ad -> "CV first" -> drafts 1-3 scored 72, 82, 86 ->
 "shorten the summary" -> draft 4 scored 82 -> the program kept draft 3 and the summary was unchanged.
+(A draft is now redrafted for a defect, not a low score, so the first cycle here has two drafts.)
 """
 import shutil
 from pathlib import Path
@@ -39,13 +40,15 @@ class ScriptedLLM:
             return schema(company_name="Northwind Analytics", job_title="Data Engineer", work_type="remote")
         if name == "GroundingResponse":
             return schema(unsupported_claims=[])
+        if name == "DraftComparison":
+            return schema(better="B")  # the later of the two drafts
         if name == "RouterResponse":
             return self.router_script.pop(0)
         if name == "CVGenerationResponse":
             n = len(self.writer_instructions) + 1
             instructions = text.split("**Modification Instructions:**", 1)[1].split("**Previous Modification", 1)[0]
             self.writer_instructions.append(instructions)
-            base = text.split("**Existing CV (Base Document):**", 1)[1].split("**Job Description:**", 1)[0]
+            base = text.split("**Existing CV (Base Document):**", 1)[1].split("\n**", 1)[0]
             short = SHORTEN in instructions or "SUMMARY: short" in base
             return schema(cv_content=f"CV draft {n}\nSUMMARY: {'short' if short else 'long'}", notes=f"notes {n}")
         if name == "CritiqueResponse":
@@ -56,7 +59,7 @@ class ScriptedLLM:
                 ats_compatibility_feedback="ok",
                 job_alignment_feedback="ok",
                 improvement_instructions=instructions,
-                critical_issues="Tighten wording." if instructions else "",
+                critical_issues="Tighten wording." if instructions else "",  # a defect: earns a redraft
             )
         raise AssertionError(f"unexpected structured call: {name}")
 
@@ -84,13 +87,13 @@ def _build_agent(monkeypatch, tmp_path, llm):
     import debug_utils
     import langgraph_agent as la
     from agents import (
-        cover_letter_pdf_generator, cover_letter_writer, critique, cv_pdf_generator, cv_writer,
-        job_description, latex_fixer, rag_agent, router, search,
+        cover_letter_pdf_generator, critique, cv_pdf_generator, document_writer, job_description, latex_fixer, latex_pdf_generator, rag_agent, router, search,
     )
 
     monkeypatch.setattr(debug_utils, "_debug_file_path", str(tmp_path / "debug.log"))
-    for module in (router, cv_writer, cover_letter_writer, critique, job_description, search,
-                   rag_agent, cv_pdf_generator, cover_letter_pdf_generator, latex_fixer):
+    # The writers and PDF generators create their models in their shared base modules.
+    for module in (router, document_writer, critique, job_description, search, rag_agent,
+                   latex_pdf_generator, latex_fixer):
         monkeypatch.setattr(module, "init_chat_model", lambda *_, **__: llm)
     monkeypatch.setattr(search.SearchAgent, "search_tavily", lambda self, query: {})
 
@@ -124,24 +127,24 @@ def test_requested_cv_change_is_kept_after_earlier_draft_scored_higher(monkeypat
         router_script=[
             _route("collect_user_input", "What should I write first?"),
             _route("draft_cv", cv_content_feedback=""),
-            _route("collect_user_input", "CV draft 3 is ready. Any changes?"),
+            _route("collect_user_input", "CV draft 2 is ready. Any changes?"),
             _route("draft_cv", cv_content_feedback=SHORTEN),
             _route("exit", "Done."),
         ],
-        # drafts 1-3 as in the recorded session; draft 4 (the requested change) scores lower than draft 3
-        critique_scores=[(72, "Fix the title."), (82, "Fix the title."), (86, "Fix the title."), (82, "")],
+        # drafts 1-2 as in the recorded session; draft 3 (the requested change) scores lower than draft 2
+        critique_scores=[(72, "Fix the title."), (86, "Fix the title."), (80, "")],
     )
     agent, rendered = _build_agent(monkeypatch, tmp_path, llm)
     ad = (REPO / "job_description" / "sample_job_ad.txt").read_text(encoding="utf-8")
 
     final = _play(agent, [ad, "CV first", "Please shorten the summary."])
 
-    assert SHORTEN in llm.writer_instructions[3], "the user's request never reached the CV writer"
+    assert SHORTEN in llm.writer_instructions[2], "the user's request never reached the CV writer"
     assert final["generated_cv"].endswith("SUMMARY: short"), "finalize threw away the requested change"
-    assert final["cv_final_iteration"] == 4
+    assert final["cv_final_iteration"] == 3
     # the PDF is named after the draft it contains
+    assert rendered["generated_CV_draft_2.pdf"].startswith("CV draft 2")
     assert rendered["generated_CV_draft_3.pdf"].startswith("CV draft 3")
-    assert rendered["generated_CV_draft_4.pdf"].startswith("CV draft 4")
 
 
 def test_user_request_gets_a_fresh_redraft_budget(monkeypatch, tmp_path):
@@ -154,13 +157,13 @@ def test_user_request_gets_a_fresh_redraft_budget(monkeypatch, tmp_path):
             _route("draft_cv", cv_content_feedback=SHORTEN),
             _route("exit", "Done."),
         ],
-        critique_scores=[(70, "Fix."), (80, "Fix."), (84, "Fix."), (70, "Fix."), (80, "")],
+        critique_scores=[(70, "Fix."), (80, "Fix."), (70, "Fix."), (80, "")],
     )
     agent, _ = _build_agent(monkeypatch, tmp_path, llm)
     ad = (REPO / "job_description" / "sample_job_ad.txt").read_text(encoding="utf-8")
 
     final = _play(agent, [ad, "Please shorten the summary."])
 
-    assert len(llm.writer_instructions) == 5  # 3 drafts, then the request plus one redraft
-    assert final["cv_final_iteration"] == 5
+    assert len(llm.writer_instructions) == 4  # 2 drafts (budget used), then the request plus one redraft
+    assert final["cv_final_iteration"] == 4
     assert final["generated_cv"].endswith("SUMMARY: short")

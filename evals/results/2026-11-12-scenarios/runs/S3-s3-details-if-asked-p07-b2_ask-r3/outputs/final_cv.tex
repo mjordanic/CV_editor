@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Samuel Achterberg-Osei}\\[0.3em]
+{\large\color{accentcolor} Cloud Infrastructure / DevOps Engineer}\\[0.3em]
+Email: applicant.inbox@example.com \quad | \quad Phone: +44 7700 900123
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Cloud infrastructure engineer with experience designing and operating Azure environments, building infrastructure as code with Terraform, and automating deployments with Azure DevOps. Background includes Azure landing-zone networking, AKS operations, infrastructure security, and migration of virtualized workloads to Azure. Previously administered around 250 Windows and Linux servers in a municipal IT department.
+
+\section*{TECHNICAL SKILLS}
+Cloud and platforms: Microsoft Azure, Azure VMs, Azure Migrate, AKS, App Service, Microsoft 365, Entra ID\\
+Infrastructure as code and automation: Terraform, PowerShell, Python (small scripts), Go (Terratest tests)\\
+CI/CD and containers: Azure DevOps Pipelines, YAML pipelines, Docker, Helm\\
+Networking: Hub-and-spoke networks, VNets, VNet peering, Azure Firewall, private DNS, private endpoints, site-to-site VPN\\
+Security: MFA, Conditional Access, mailbox auditing, backups\\
+Systems: Windows, Linux, VMware, Proxmox
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Cloud Engineer (Contract) | Havenstad Logistics | 2025--Present}
+\begin{itemize}
+\item Build Azure landing-zone infrastructure and Terraform modules.
+\item Designed hub-and-spoke networking across three Azure subscriptions, including Azure Firewall, private DNS zones, private endpoints for storage and SQL, and VNet peering.
+\item Added Terratest module tests to the pipeline and a nightly infrastructure drift-detection job.
+\item Replaced manual deployments of 15 internal .NET and Node applications with Azure DevOps YAML pipelines for build, test, and deployment to App Service or AKS.
+\item Increased deployment frequency from roughly monthly to several times per week for most applications.
+\item Operate AKS, including upgrades, node pools, and ingress.
+\end{itemize}
+
+\textbf{Freelance IT Support | 2022--2023}
+\begin{itemize}
+\item Created a repeatable PowerShell script and checklist for small-business Microsoft 365 security baselines.
+\item Enabled MFA, Conditional Access, mailbox auditing, and backups for small clients.
+\end{itemize}
+
+\textbf{Systems Administrator | Maasbrug Gemeente IT Services | 2014--March 2020}
+\begin{itemize}
+\item Administered around 250 Windows and Linux servers and supported staff across several municipal services.
+\item Planned and executed the migration of 60 servers from VMware to Azure IaaS using Azure Migrate; completed cut-over over six weekends with no unplanned downtime.
+\item Used PowerShell to automate repetitive work.
+\end{itemize}
+
+\section*{CAREER BREAKS AND PROFESSIONAL DEVELOPMENT}
+\textbf{Career break | March 2020--August 2022}
+\begin{itemize}
+\item Took a career break to provide full-time care for a family member; provided unpaid IT help to church and family.
+\end{itemize}
+
+\textbf{Career break and professional development | February 2024--February 2025}
+\begin{itemize}
+\item Completed a three-month, part-time, online English-language cloud bootcamp in December 2024.
+\item Studied Terraform and built a Proxmox homelab.
+\end{itemize}
+
+\section*{CERTIFICATIONS}
+Microsoft Certified: Azure Administrator Associate\\
+HashiCorp Certified: Terraform Associate (2025)
+
+\end{document}

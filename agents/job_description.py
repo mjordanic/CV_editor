@@ -1,13 +1,12 @@
 from typing import Optional, Literal
 import logging
-import os
-import json
 from langchain.chat_models import init_chat_model
 from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langgraph.types import interrupt
 from debug_utils import write_to_debug
+from agents.document_reader import ask_for_document
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +24,20 @@ JOB_DESCRIPTION_EXTRACTION_HUMAN_PROMPT = (
     "- Industry\n"
     "- Whether the job is remote, hybrid, or on-site. If not specified, return 'unknown'.\n"
     "- Candidate minimal requirements (qualifications, skills, experience, education, etc.)\n"
+    "- The ad's must-have requirements and its nice-to-have requirements, each as a list of short items in the ad's own terms\n"
+    "- The language the job description is written in (e.g. English, German)\n"
     "- Any other relevant company or position details\n\n"
     "Job Description:\n\n{job_description}"
 )
 
 
 class JobDescriptionInfo(BaseModel):
-    """Structured information extracted from a job description."""
+    """
+    Structured information extracted from a job description.
+
+    The ad's own text is not a field here: structured output invited the model to type the whole ad
+    again (expensive output tokens on every run). run() adds it to the dict as 'job_description'.
+    """
     company_name: Optional[str] = Field(
         None,
         description="The name of the company posting the job"
@@ -61,15 +67,39 @@ class JobDescriptionInfo(BaseModel):
         None,
         description="The minimum requirements, qualifications, skills, experience, and education needed for the position"
     )
-    job_description: Optional[str] = Field(
+    must_haves: list[str] = Field(
+        default_factory=list,
+        description="The requirements the ad says a candidate must meet, one short item each, in the ad's own terms. Empty if the ad states none."
+    )
+    nice_to_haves: list[str] = Field(
+        default_factory=list,
+        description="The requirements the ad calls preferred, a plus or nice to have, one short item each. Empty if none."
+    )
+    language: Optional[str] = Field(
         None,
-        description="The full original job description text"
+        description="The language the job description is written in, as an English name (e.g. 'English', 'German')"
     )
     additional_info: Optional[str] = Field(
         None,
         description="Any other relevant information about the company or position"
     )
 
+
+
+def output_language_instruction(job_description_info: Optional[dict], document: str) -> str:
+    """
+    Tell a writer which language to write the document in.
+
+    Without this a light model sometimes wrote the letter in the language of the job's country
+    instead of the language of the ad and the user's CV (an English ad for a Zagreb job got a
+    Croatian cover letter). The user's own request for another language still wins.
+    """
+    language = ((job_description_info or {}).get("language") or "").strip()
+    target = f"{language}, the language of the job ad" if language else "the language the job ad is written in"
+    return (
+        f"Write the {document} in {target}, even if the employer or job is in another country. "
+        f"Use another language only if the user's instructions (current or previous) ask for it."
+    )
 
 
 class JobDescriptionAgent:
@@ -118,8 +148,9 @@ class JobDescriptionAgent:
         logger.info("Calling LLM to extract job description information...")
         logger.debug(f"LLM input - job_description length: {len(job_description)}")
         
-        response = chain.invoke(llm_input)
-        
+        # Retried: a parse error or rate limit here would end the session right after the user pasted the ad.
+        response = chain.with_retry(stop_after_attempt=3).invoke(llm_input)
+
         logger.info(f"LLM response received - company: {response.company_name}, job_title: {response.job_title}, work_type: {response.work_type}")
         logger.debug(f"LLM response - location: {response.location}, industry: {response.industry}, requirements_length: {len(response.candidate_minimal_requirements) if response.candidate_minimal_requirements else 0}")
         
@@ -141,48 +172,33 @@ class JobDescriptionAgent:
         """
         logger.info("JobDescriptionAgent.run() called")
         
-        # Check if we've already processed a job description
-        if state.get("job_description_info"):
+        pending_details = (state.get("job_ad_extra_details") or "").strip()
+        if state.get("job_description_info") and not pending_details:
             logger.info("Job description already processed - skipping extraction")
-            # Already have job description info, return it without reprocessing
             return {
                 "messages": [{
                     "role": "assistant",
                     "content": "Job description has already been processed. Use the extracted information to proceed."
                 }]
             }
-        
-        # Pause execution and wait for user to provide job description
-        logger.info("Requesting job description from user via interrupt")
-        job_description_text = interrupt({"message": "Please paste the job description you'd like me to analyze. (filepath or text)", "required": True})
-        
-        logger.info(f"Job description received via interrupt - length: {len(str(job_description_text))} characters")
-        logger.debug(f"Job description preview: {str(job_description_text)[:200]}...")
-        
-        # Ensure we have a string
-        job_description_text = str(job_description_text).strip()
 
-        # Check if the input is a file path
-        if os.path.isfile(job_description_text):
-            try:
-                logger.info(f"Reading job description from file: {job_description_text}")
-                with open(job_description_text, "r", encoding="utf-8") as f:
-                    job_description_text = f.read().strip()
-                logger.info(f"Successfully read job description from file - length: {len(job_description_text)} characters")
-            except Exception as e:
-                logger.error(f"Failed to read job description from file: {e}")
-                return {
-                    "messages": state.get("messages", []) + [{
-                        "role": "assistant",
-                        "content": f"Error: Could not read file '{job_description_text}'. Please check the path and try again."
-                    }]
-                }
-        
+        if pending_details:
+            # The user answered the follow-up question for an ad with almost no details
+            # (clarify_job_ad): extract again from the ad plus what they added.
+            previous = (state.get("job_description_info") or {}).get("job_description") or ""
+            job_description_text = f"{previous}\n\n{pending_details}".strip()
+            logger.info(f"Re-extracting the job description with {len(pending_details)} characters added by the user")
+        else:
+            # Pause until the user gives a job ad with text (pasted, or a path to a readable file);
+            # an empty reply or a wrong path is answered with a new question, not an empty ad.
+            logger.info("Requesting job description from user via interrupt")
+            job_description_text = ask_for_document(
+                "Please paste the job description you'd like me to analyze. (filepath or text)", "job ad"
+            )
+            logger.info(f"Job description received - length: {len(job_description_text)} characters")
+
         # Extract information from job description
         extracted_info = self.extract_info(job_description_text)
-        
-        # Store the full job description text in the extracted info
-        extracted_info.job_description = job_description_text
         
         logger.info("Job description extraction completed successfully")
         
@@ -197,6 +213,10 @@ class JobDescriptionAgent:
 **Job Title:** {extracted_info.job_title or 'Not specified'}
 **Candidate Minimal Requirements:** {extracted_info.candidate_minimal_requirements or 'Not specified'}
 """
+        if extracted_info.must_haves:
+            info_summary += "**Must-haves:** " + "; ".join(extracted_info.must_haves) + "\n"
+        if extracted_info.nice_to_haves:
+            info_summary += "**Nice-to-haves:** " + "; ".join(extracted_info.nice_to_haves) + "\n"
         if extracted_info.additional_info:
             info_summary += f"\n**Additional Information:**\n{extracted_info.additional_info}"
         
@@ -218,9 +238,70 @@ class JobDescriptionAgent:
         # Store extracted info in state for use by other nodes
         updated_state = {
             "messages": state.get("messages", []) + [{"role": "assistant", "content": info_summary}],
-            "job_description_info": extracted_info.model_dump(),
-            "current_node": "job_description"
+            # The ad's own text is added here, not echoed by the model (see JobDescriptionInfo).
+            "job_description_info": {**extracted_info.model_dump(), "job_description": job_description_text},
+            "job_ad_extra_details": None,
         }
         
         return updated_state
 
+
+
+# Answers a light model gives for a field it could not fill.
+_EMPTY_FIELD_ANSWERS = {"", "none", "n/a", "na", "null", "unknown", "not specified", "not provided", "not stated", "unspecified"}
+
+
+def field_value(value) -> str:
+    """An extracted text field, or "" when the model answered with a placeholder such as 'unknown'."""
+    text = (value or "").strip() if isinstance(value, str) else ""
+    return "" if text.strip(" .").lower() in _EMPTY_FIELD_ANSWERS else text
+
+
+
+def job_ad_lacks_details(job_description_info: dict | None) -> bool:
+    """True when extraction found neither a job title nor any requirements (e.g. "We're hiring!")."""
+    info = job_description_info or {}
+    return not field_value(info.get("job_title")) and not field_value(info.get("candidate_minimal_requirements"))
+
+
+def route_after_job_description(state) -> str:
+    """Ask once for more details when the ad has almost none; otherwise go on to company research."""
+    if job_ad_lacks_details(state.get("job_description_info")) and not state.get("job_ad_clarification_asked"):
+        return "clarify_job_ad"
+    return "research_company_context"
+
+
+# Replies to the thin-ad question that mean "go on with the ad as it is" rather than details to add.
+CONTINUE_REPLIES = ("continue", "go on", "proceed", "ok", "okay")
+
+
+def clarify_job_ad(state):
+    """
+    Ask the user, once, for more details about a job ad that has no job title and no requirements.
+
+    The offered reply 'continue' (or 'go on', 'ok', CONTINUE_REPLIES) goes on with the ad as it is,
+    without adding the word to the ad. Any other reply is added to the ad and extracted again
+    (analyze_job_description), so details work in any language; a reply with no details just leaves
+    the extraction as thin as before. This is asked only once.
+    """
+    reply = str(interrupt({
+        "message": (
+            "This job ad has very little detail: I could not find a job title or any requirements, "
+            "so the CV and cover letter can only be tailored loosely. Paste the full ad or add the "
+            "job title and main requirements, or reply 'continue' to go on with the ad as it is."
+        ),
+        "required": True,
+    }) or "").strip()
+    update = {"job_ad_clarification_asked": True}
+    if reply.strip(" .!'\"").lower() in CONTINUE_REPLIES:
+        # The offered "continue" adds nothing to the ad: go on with the extraction as it is.
+        reply = ""
+    if reply:
+        # Stored with the ad (job_description_info), not as a chat message: the router would
+        # otherwise read a reply such as "continue" as a request about the documents.
+        update["job_ad_extra_details"] = reply
+    return update
+
+
+def route_after_clarify_job_ad(state) -> str:
+    return "analyze_job_description" if (state.get("job_ad_extra_details") or "").strip() else "research_company_context"

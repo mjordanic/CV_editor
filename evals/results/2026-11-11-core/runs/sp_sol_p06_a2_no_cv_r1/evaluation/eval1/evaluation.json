@@ -1,0 +1,557 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8817,
+      "output_tokens": 7682,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 13435
+    },
+    "cost_usd": 0.047899,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "fe8e8c9000b859bfd9bd2094ff7ffb1091327dc1617f0c786d31446160d93218",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_sol_p06_a2_no_cv_r1-20dbe9641e",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_sol_p06_a2_no_cv_r1-20dbe9641e",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.095798
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "ML Engineer | Slavonica Document AI | 2023-Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "ML Engineer at Slavonica Document AI (2023-Present)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Data Scientist | Baranjska kreditna banka | 2021-2023",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Data Scientist at Baranjska kreditna banka (2021-2023)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fine-tuned XLM-R base, 23 classes, 94% accuracy, macro F1 0.91",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "23 classes, 94% accuracy, macro F1 0.91",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "FastAPI in Docker on Azure App Service, approx 15,000 documents per day",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~15k documents per day",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "4,000 documents, kappa 0.87, published at regional workshop 2024",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "inter-annotator kappa 0.87",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Drift reporting PSI > 0.2, OCR change 9 points fixed in a week",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "alert when PSI > 0.2",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Doctoral studies in progress, expected 2027, Sveučilište Drava",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "PhD NIJE gotov (expected 2027)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Microsoft Certified: Azure AI Engineer Associate | 2024",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Microsoft Certified: Azure AI Engineer Associate (2024)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "90-minute guest lecture at NLP summer school 2025",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "guest lecture 2025, 90 min",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "English used daily in meetings with Slovenian client",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "engleski radim svaki dan s klijentom iz Slovenije",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Weekend RAG prototype, not production",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Not used in production, no evaluation beyond manual checks",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Summary: production experience in text classification, NER and model monitoring on Azure",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Weekly drift report",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fine-tuned transformer models for document processing at approx 15,000 documents per day",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~15k documents per day",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Built complaint classifiers used for weekly customer service reporting",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "used for weekly reporting to customer service management",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Toolkit includes Python, PyTorch, Hugging Face, MLflow, Azure ML",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "PyTorch, Hugging Face Transformers, FastAPI, Docker, Azure ML, MLflow",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Personal RAG prototype, exploratory, not production",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Weekend prototype",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Deployment and monitoring work aligns with service ownership",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Served as FastAPI service in Docker on Azure App Service",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Open to English-speaking companies",
+        "source": "notes",
+        "source_quote": "open to EN-speaking companies",
+        "relevance": "low",
+        "why_it_matters": "Minor."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Degree in ML/CS or related",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Doctoral studies, in progress",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "4+ years as ML engineer shipping to production",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "ML Engineer | Slavonica Document AI | 2023-Present",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Chat assistants / RAG",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Personal prototype only; assessed through manual checks, not deployed to production.",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Model serving, monitoring, data versioning",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Implemented weekly model drift reporting",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Major cloud provider",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Azure App Service, Azure ML",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Strong Python, MLflow etc.",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Azure ML, MLflow, Evidently",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Feature engineering and data ingestion pipelines",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Built an annotated dataset of 4,000 documents",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fine-tuning language models",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Fine-tuned XLM-R base",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Gaps (years of experience, LLM/RAG production, degree not finished) are shown honestly with nothing faked, though not explicitly framed.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": false,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No contact details (user preferred to omit)",
+        "Second page mostly empty"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "Professional Summary",
+        "Technical Skills",
+        "Professional Experience",
+        "Education",
+        "Certification"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Machine Learning Engineer",
+        "Python",
+        "MLflow",
+        "Azure",
+        "RAG",
+        "model serving",
+        "monitoring",
+        "fine-tuning",
+        "language models",
+        "text datasets",
+        "Docker"
+      ],
+      "covered_in_searchable_wording": [
+        "Machine Learning Engineer",
+        "Python",
+        "MLflow",
+        "Azure",
+        "RAG",
+        "monitoring",
+        "fine-tuning",
+        "Docker"
+      ],
+      "missed_but_candidate_has": [
+        "CI/CD"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, readable text with standard headings and real keywords; no stuffing."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not acknowledge gap in years of experience"
+      ],
+      "strengths": [
+        "Honest about RAG prototype",
+        "Links to support use case",
+        "Uses ownership value"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "on-site",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "service ownership"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Second CV page mostly empty"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Slightly formal phrasing"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "PhD not finished",
+        "Azure certification",
+        "guest lecture",
+        "English daily",
+        "RAG demo only"
+      ],
+      "notes_facts_ignored": [],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "Leave contact details out",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No contact block in CV",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 10,
+    "completeness_score": 8,
+    "overall_score": 9,
+    "summary": "Highly faithful CV and letter; every claim traces to the material, and gaps (RAG, unfinished PhD, no Kubernetes/AWS) are not hidden or faked. ATS wording is clean and the letter is tailored. Weaknesses are the half-empty second page and no explicit framing of the experience-years gap."
+  },
+  "counts": {
+    "claims": 17,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3127,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2200,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 66.9
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 26.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 73.3,
+          "bottom": 299.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 64.5,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.047899,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

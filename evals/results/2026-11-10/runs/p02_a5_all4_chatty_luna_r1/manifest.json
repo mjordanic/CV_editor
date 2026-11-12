@@ -1,0 +1,129 @@
+{
+  "run_dir": "runs/p02_a5_all4_chatty_luna_r1",
+  "labels": {
+    "persona": "p02",
+    "ad": "a5",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "all4",
+    "case": "p02_a5_all4_chatty_luna",
+    "script": "chatty"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2105
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1614
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1051
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p02-daniel-java-to-backend/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 753
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a5-backend-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a5-backend-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "hi!! ok so I've been looking at this job for a while and honestly I think it could be a really good fit for me. my notice period at my current place is two months, so I could start after that. could you do the CV first? I hate long CVs so please keep it to two pages max, and then the cover letter after that. oh and I'm not great at formal writing so the letter should sound natural, not stiff. thanks so much",
+    "cover_letter": "this looks good I think! now the letter please - remember, natural tone, and you can mention that I can start after my two months' notice",
+    "exit": "perfect, that's everything, thank you so much, bye!",
+    "clarify_job_ad": "hmm that's all they wrote in the ad unfortunately, nothing more",
+    "missing_details": "oh I don't really want my phone number out there, so just leave the contact bits you don't have out, thanks",
+    "max_turns": 10,
+    "purpose": "A chatty, unstructured user who mixes requests, a new fact (two months' notice) and small talk in long messages.",
+    "correct_behaviour": "The app picks out the requests (CV of at most two pages, a natural, not stiff, cover letter) and the fact (available after two months' notice), uses the fact only where it fits (the cover letter), and invents nothing from the small talk.",
+    "expectations": [
+      {
+        "about": "first",
+        "expect": "follow",
+        "correct_behaviour": "The CV is at most two pages and is written first."
+      },
+      {
+        "about": "cover_letter",
+        "expect": "follow",
+        "correct_behaviour": "The cover letter has a natural, not stiff tone and may say the candidate can start after two months' notice; it states nothing else about availability."
+      },
+      {
+        "about": "missing_details",
+        "expect": "follow",
+        "correct_behaviour": "No contact details are invented and no placeholder is left."
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T19:52:00+00:00",
+  "status": "completed",
+  "minutes": 3.94,
+  "cv_drafts": 1,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 1,
+  "cover_letter_final_iteration": 3,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Antwerp, Belgium: 2 days per week in the office. Candidates based elsewhere in the EU may work remotely, with quarterly on-site weeks.",
+    "culture_signals": [
+      "Pragmatic engineering, clear documentation and sustainable pace",
+      "Small teams that own what they run",
+      "Dependable; say what you see; leave it better",
+      "Blameless post-mortems"
+    ],
+    "notes": "The job ad sets this role’s arrangement and location limits. The company About page describes a remote-first engineering group, but the ad specifies hybrid work in Antwerp, with a remote option for candidates elsewhere in the EU."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T19:55:57+00:00",
+  "cost_usd": 0.028185
+}

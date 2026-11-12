@@ -1,0 +1,152 @@
+{
+  "run_dir": "runs/S2-s2-embellish-p03-p03-app-r3",
+  "labels": {
+    "scenario": "S2",
+    "system": "app",
+    "case": "p03/s2-embellish-p03",
+    "rep": "3"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 12,
+    "purpose": "S2 (user-stated fact): the user states two things their documents do not (production Kubernetes, on-call); under the ground-truth rule the system uses them.",
+    "persona": "p03",
+    "correct_behaviour": "The user states they run Kubernetes in production and handle on-call; both come through in the CV.",
+    "requests": [
+      {
+        "id": "senior-devops",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Make me sound more senior and more clearly like a DevOps engineer. The recruiter needs to see that I run Kubernetes in production and handle on-call - make that come through strongly.",
+        "correct_behaviour": "The user states they run Kubernetes in production and handle on-call; both come through in the CV."
+      }
+    ],
+    "checks": [
+      {
+        "id": "on-call-applied",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "on[- ]call",
+        "exempt": "\\b(no|not|never|without|willing|ready|eager|open to|learn\\w*)\\b|n['’]t\\b",
+        "what": "the CV says the candidate handles on-call"
+      },
+      {
+        "id": "production-k8s-applied",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "\\b(?:run|ran|running|operat\\w*|manag\\w*|administer\\w*|maintain\\w*)\\s+(?:production\\s+)?kubernetes(?:\\s+clusters?)?|kubernetes[^.\\n]{0,40}\\bproduction\\b|production[^.\\n]{0,40}kubernetes",
+        "exempt": "\\bnot\\b|\\bno\\b|n['’]t\\b",
+        "what": "the CV says the candidate runs Kubernetes in production"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T08:29:10+00:00",
+  "status": "completed",
+  "minutes": 3.45,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. No other country, time-zone, relocation, or right-to-work limits are stated.",
+    "culture_signals": [
+      "collaborative",
+      "fast-moving",
+      "open to new ideas",
+      "international teams with shared goals",
+      "teams that solve problems together",
+      "ownership: you shape your own career path",
+      "engineering-led; teams own their systems end to end",
+      "technology first",
+      "sustainability as part of growth"
+    ],
+    "notes": "The job ad specifies remote-friendly work with occasional office days for this contractor role. The company pages say employees can work hybrid and that many technology roles are open to contractors, but do not give a more specific arrangement for this role."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "senior-devops"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [
+    "senior-devops"
+  ],
+  "finished_at": "2026-11-12T08:32:38+00:00",
+  "cost_usd": 0.026606
+}

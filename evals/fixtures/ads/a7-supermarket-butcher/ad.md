@@ -1,0 +1,23 @@
+# Butcher / Meat Counter Assistant (m/f/d) – Zagreb-Jarun store
+
+**Company:** FreshCart Supermarkets (FICTIONAL)
+**Location:** Zagreb, Croatia (on-site, Zagreb-Jarun store)
+**Employment:** Full-time, 40 h/week, permanent after a 6-month probation period
+
+Pay: €1,250–€1,450 gross/month + €100 shift allowance & 25% Sunday bonus.
+Shifts: early 06:00–14:00 or late 13:00–21:00, alternating weekly; every 2nd Saturday.
+
+## What you'll do
+
+- Cut, portion & package fresh meat for the service counter and self-service shelves
+- Advise customers on cuts, quantities and preparation
+- Keep the counter ≥ 95% stocked at peak hours; rotate stock (FIFO)
+- Record temperature & hygiene checks (HACCP)
+
+## What we ask
+
+- Completed butcher training or ≥ 2 years at a meat counter
+- HACCP knowledge
+- Forklift licence is a plus (deliveries arrive on pallets)
+
+Apply with CV & short letter to jobs@freshcart.example

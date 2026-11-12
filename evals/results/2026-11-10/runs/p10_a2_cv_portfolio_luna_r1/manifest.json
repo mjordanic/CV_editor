@@ -1,0 +1,104 @@
+{
+  "run_dir": "runs/p10_a2_cv_portfolio_luna_r1",
+  "labels": {
+    "persona": "p10",
+    "ad": "a2",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "cv_portfolio",
+    "case": "p10_a2_cv_portfolio_luna",
+    "script": "default"
+  },
+  "inputs_given": [
+    "cv",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cover_letter",
+    "notes"
+  ],
+  "inputs": {
+    "cv": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1780
+    },
+    "portfolio": {
+      "source": "evals/fixtures/personas/p10-tobias-ds-to-mle/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1594
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a2-ml-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a2-ml-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 10
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-10T18:45:51+00:00",
+  "status": "completed",
+  "minutes": 3.83,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Hamburg, Germany. Office-first, with the office as the default; company pages say teams agree a few flexible days. Exact office-day requirements and other location or work-eligibility limits are not stated.",
+    "culture_signals": [
+      "Teams own their services and decide how to solve merchants’ problems",
+      "Pragmatism, humility and candid feedback",
+      "Share context openly",
+      "Take ownership",
+      "Team first",
+      "Learn from mistakes",
+      "Learning culture, including peer feedback and internal tech talks"
+    ],
+    "notes": "The ad describes the job as office-first. Company pages also describe the company as office-first, with a few flexible days agreed by teams; they do not specify the schedule for this role."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-10T18:49:41+00:00",
+  "cost_usd": 0.025631
+}

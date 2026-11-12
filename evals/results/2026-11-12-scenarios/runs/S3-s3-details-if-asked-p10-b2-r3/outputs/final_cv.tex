@@ -1,0 +1,54 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\\[0.35em]
+[EMAIL] | [PHONE] | [LINKEDIN] | [CITY, COUNTRY]
+\end{center}
+\section*{PROFESSIONAL SUMMARY}
+Data scientist with experience developing forecasting and churn models, experimentation tools, and scheduled data workflows. Uses Python, SQL, and BigQuery to build and evaluate analytical solutions, with a focus on measurable outcomes and statistical rigour. Currently strengthening software engineering practices through pytest unit tests and seeking to develop further in production machine learning engineering.
+\section*{CORE SKILLS}
+Machine learning: LightGBM, XGBoost, feature engineering, customer churn propensity, demand forecasting, SHAP\\
+Programming and analytics: Python, SQL, R, pandas, scikit-learn, statsmodels\\
+Data and workflow: BigQuery, dbt, Vertex AI Workbench scheduled notebooks, Looker\\
+Engineering practices: pytest unit testing, Dockerfile authoring, Streamlit\\
+Statistics: Sequential A/B testing, Bayesian hierarchical models, experimental design
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Data Scientist | Thistlebox | 2022–Present}
+\begin{itemize}
+\item Built a weekly recipe-order forecasting workflow for six weeks ahead using LightGBM and calendar, price, and menu-position features; scheduled notebook jobs write forecasts to BigQuery for operational use in Looker.
+\item Improved forecast WAPE from 23\% to 14\%; estimated food-waste reduction was 9\%.
+\item Developed an XGBoost churn propensity model, scored weekly in BigQuery, to target retention offers to top-decile customers; a 10\% holdout validation showed churn down 2.1 percentage points in the treated group.
+\item Built a Streamlit calculator for planning and analysing sequential A/B tests; used by about 25 people in product and growth. Wrote its Dockerfile; the data platform team handles deployment to Cloud Run.
+\item Started writing pytest unit tests for forecasting feature code in 2025; coverage is about 60\%.
+\item Delivered internal “Stats for PMs” training three times.
+\end{itemize}
+\textbf{Junior Data Analyst | Firth Energy Retail | 2020–2022}
+\begin{itemize}
+\item Segmented customers and analysed tariffs using R and SQL.
+\item Automated monthly regulator reports with R Markdown, saving the team about two days each month.
+\end{itemize}
+\section*{EDUCATION}
+MSc in Statistics\\
+Dissertation: Bayesian hierarchical models
+\section*{ADDITIONAL PROJECT}
+\textbf{Image classification course project | 2025}
+\begin{itemize}
+\item Fine-tuned a small CNN in PyTorch on a public food images dataset as part of an online deep learning course; achieved about 80\% accuracy. Learning project only.
+\item Tools: PyTorch, torchvision, Google Colab.
+\end{itemize}
+\end{document}

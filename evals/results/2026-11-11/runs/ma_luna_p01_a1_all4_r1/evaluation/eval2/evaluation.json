@@ -1,0 +1,884 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval2",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9766,
+      "output_tokens": 8050,
+      "cache_creation_input_tokens": 4233,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.055818,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "4b4f9922cbca0190760a69f7d201baf2ceefc5b703b589d7a6d346a58e2fc175",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval2-ma_luna_p01_a1_all4_r1-58a040ea93",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "eval2-ma_luna_p01_a1_all4_r1-58a040ea93",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.111636
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "~140 Airflow DAGs into Snowflake",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "dbt 420+ models, 5h10 to 1h35, slim CI state:modified",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Introduced incremental models and slim CI (state:modified) in GitHub Actions",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Kafka pipeline p95 latency under 2 min, dead-letter and replay",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "end-to-end latency under 2 minutes at p95",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Debezium CDC replica CPU 70% to 25%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "On-call rotation one week in six",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "on-call rotation for data platform, 1 week in 6",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Snowflake bill $38k to $24k/month",
+        "kind": "number_or_metric",
+        "verdict": "partly_supported",
+        "source": "notes",
+        "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+        "note": "Currency dollar assumed; tilde dropped."
+      },
+      {
+        "document": "cv",
+        "claim": "AWS Certified Data Engineer – Associate (May 2024)",
+        "kind": "certification",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Airflow provider open-source, 2 merged PRs",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "2 merged PRs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Redshift cloud data warehouse using dimensional modelling",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "star schema, 30+ fact/dimension tables",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Designs and operates reliable production data platforms",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Own the ingestion layer of the company data platform",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "built and operated production platforms for e-commerce, logistics and payments",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "for e-commerce and payments",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "This work strengthened shared platform capabilities rather than creating one-off pipelines",
+        "kind": "responsibility_or_achievement",
+        "verdict": "partly_supported",
+        "source": "cv",
+        "evidence_quote": "Own the ingestion layer of the company data platform",
+        "note": "Echoes the ad's wording; reusable frameworks not stated in material."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "migrated more than 400 transformations to dbt",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "420+ models",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "production pipeline optimisation, large-scale batch, SQL",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "nightly run time down from 5h10 to 1h35",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "PySpark on EMR 1.2 TB daily, 3 days to 4 hours",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "daily ~1.2 TB of raw files from S3",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "production experience with AWS and Snowflake rather than Google Cloud",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM)",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Talk on data contracts at a regional meetup 2024",
+        "source": "notes",
+        "source_quote": "gave a talk \"Data contracts without the hype\"",
+        "relevance": "medium",
+        "why_it_matters": "Shows curiosity and sharing practices"
+      },
+      {
+        "fact": "Teaches SQL at meetup",
+        "source": "notes",
+        "source_quote": "teach SQL for beginners",
+        "relevance": "low",
+        "why_it_matters": "Collaboration"
+      },
+      {
+        "fact": "Read-only kubectl only",
+        "source": "notes",
+        "source_quote": "k8s: only read-only kubectl",
+        "relevance": "low",
+        "why_it_matters": "Container gap context"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Production data platforms at scale",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Own the ingestion layer of the company data platform",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Advanced Python and SQL, query optimisation",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "reduced nightly runtime from 5h10 to 1h35",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Dimensional modelling",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "dimensional modelling and a star schema",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM)",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Airflow, dbt",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "~140 Airflow DAGs",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Data quality and governance standards",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Introduced data contracts",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Open-source curiosity",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "2 merged pull requests",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Portuguese",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Kubernetes/GKE",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Cloud gap addressed honestly in letter, though repeated twice.",
+      "score": 8
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Second page holds only a few lines",
+        "Dates run into job title in extracted text"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFILE",
+        "EXPERIENCE",
+        "EDUCATION",
+        "CERTIFICATION",
+        "SKILLS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "Rijeka03/2022 - present"
+      ],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "data modelling",
+        "data platform",
+        "cloud data warehouse",
+        "Docker",
+        "CI/CD",
+        "Git",
+        "English"
+      ],
+      "covered_in_searchable_wording": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "data modelling",
+        "data platform",
+        "cloud data warehouse",
+        "Docker",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "CI/CD",
+        "Git"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 8,
+      "reason": "Clean, well-sectioned text with most ad keywords; CI/CD and Git not named explicitly and one date merge."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Paragraph 3 repeats the AWS vs Google Cloud sentence almost verbatim",
+        "Somewhat generic and dense"
+      ],
+      "strengths": [
+        "Honest handling of GCP gap",
+        "Uses company values",
+        "Concrete metrics"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [
+        "Rijeka, Croatia (open to remote, EU time zones)"
+      ],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "Together, Ownership, Pace"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 8
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 holds only a few lines"
+      ],
+      "consistency_issues": [
+        "Title and date run together tightly on first job line"
+      ],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Duplicated cloud sentence in letter"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "AWS certification",
+        "on-call rotation",
+        "Snowflake cost reduction",
+        "Debezium CDC"
+      ],
+      "notes_facts_ignored": [
+        "Meetup talk on data contracts",
+        "SQL teaching"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [
+        "$ currency assumed for Snowflake bill"
+      ],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "Leave out missing contact details",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "No placeholders",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 8,
+    "overall_score": 8,
+    "summary": "Strong, well-grounded CV and letter with notes facts (certification, on-call, cost savings) used well. The GCP gap is handled honestly, but the letter repeats that sentence almost verbatim. The Snowflake figure gets an assumed dollar sign. The CV spills a few lines onto page 2, and the meetup talk is omitted."
+  },
+  "counts": {
+    "claims": 16,
+    "cv_unsupported": 0,
+    "cv_partly": 1,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 7,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 8
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3489,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2698,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12",
+          "LMRoman9"
+        ],
+        "body_font_size": 10.0,
+        "min_font_size": 9.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 51.5,
+          "right": 49.9,
+          "top": 49.7,
+          "bottom": 56.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 13.6,
+        "last_page_nearly_empty": true,
+        "missing_glyphs": 0,
+        "issues": [
+          "the last page is only 13.6% filled"
+        ]
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 60.8,
+          "right": 59.1,
+          "top": 63.4,
+          "bottom": 312.0
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 62.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.055818,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "~140 Airflow DAGs into Snowflake",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "dbt 420+ models, 5h10 to 1h35, slim CI state:modified",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Introduced incremental models and slim CI (state:modified) in GitHub Actions",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Kafka pipeline p95 latency under 2 min, dead-letter and replay",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "end-to-end latency under 2 minutes at p95",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Debezium CDC replica CPU 70% to 25%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "On-call rotation one week in six",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "on-call rotation for data platform, 1 week in 6",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Snowflake bill $38k to $24k/month",
+            "kind": "number_or_metric",
+            "verdict": "partly_supported",
+            "source": "notes",
+            "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+            "note": "Currency dollar assumed; tilde dropped."
+          },
+          {
+            "document": "cv",
+            "claim": "AWS Certified Data Engineer – Associate (May 2024)",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Airflow provider open-source, 2 merged PRs",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "2 merged PRs",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Redshift cloud data warehouse using dimensional modelling",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "star schema, 30+ fact/dimension tables",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Designs and operates reliable production data platforms",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Own the ingestion layer of the company data platform",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built and operated production platforms for e-commerce, logistics and payments",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "for e-commerce and payments",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "This work strengthened shared platform capabilities rather than creating one-off pipelines",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Own the ingestion layer of the company data platform",
+            "note": "Echoes the ad's wording; reusable frameworks not stated in material."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "migrated more than 400 transformations to dbt",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "420+ models",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production pipeline optimisation, large-scale batch, SQL",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "nightly run time down from 5h10 to 1h35",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "PySpark on EMR 1.2 TB daily, 3 days to 4 hours",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "daily ~1.2 TB of raw files from S3",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production experience with AWS and Snowflake rather than Google Cloud",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM)",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "~140 Airflow DAGs into Snowflake",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "~140 Airflow DAGs loading from Postgres, MySQL, Salesforce and 3rd-party APIs into Snowflake",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "dbt 420+ models, 5h10 to 1h35, slim CI state:modified",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Introduced incremental models and slim CI (state:modified) in GitHub Actions",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Kafka pipeline p95 latency under 2 min, dead-letter and replay",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "end-to-end latency under 2 minutes at p95",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Debezium CDC replica CPU 70% to 25%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "replica CPU from ~70% to ~25% during loads",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "On-call rotation one week in six",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "on-call rotation for data platform, 1 week in 6",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Snowflake bill $38k to $24k/month",
+            "kind": "number_or_metric",
+            "verdict": "partly_supported",
+            "source": "notes",
+            "evidence_quote": "snowflake bill went from ~38k/month to ~24k/month",
+            "note": "Currency dollar assumed; tilde dropped; also omitted killing unused tables."
+          },
+          {
+            "document": "cv",
+            "claim": "AWS Certified Data Engineer – Associate (May 2024)",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "got AWS Certified Data Engineer - Associate in May 2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Airflow provider open-source, 2 merged PRs",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "2 merged PRs",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Redshift cloud data warehouse using dimensional modelling",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "star schema, 30+ fact/dimension tables",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Designs and operates reliable production data platforms",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Own the ingestion layer of the company data platform",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built and operated production platforms for e-commerce, logistics and payments",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "for e-commerce and payments",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "This work strengthened shared platform capabilities rather than creating one-off pipelines",
+            "kind": "responsibility_or_achievement",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Own the ingestion layer of the company data platform",
+            "note": "Echoes the ad's wording; reusable frameworks not stated in material."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "migrated more than 400 transformations to dbt",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "420+ models",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production pipeline optimisation, large-scale batch, SQL",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "nightly run time down from 5h10 to 1h35",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "PySpark on EMR 1.2 TB daily, 3 days to 4 hours",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "daily ~1.2 TB of raw files from S3",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "production experience with AWS and Snowflake rather than Google Cloud",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "AWS (S3, EMR, Glue, Lambda, IAM)",
+            "note": ""
+          }
+        ]
+      }
+    ]
+  }
+}

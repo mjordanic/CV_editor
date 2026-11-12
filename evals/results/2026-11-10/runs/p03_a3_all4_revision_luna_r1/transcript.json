@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "What would you like to generate first for the Cloud Infrastructure / DevOps Contractor role: your CV or cover letter?",
+      "user": "Please write my CV first, then the cover letter. In the CV, put my most relevant experience for this job first."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter are ready. Would you like any changes to their content or PDF appearance?",
+      "user": "Please shorten the professional summary to two sentences."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to their content or PDF appearance?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "revision",
+      "after": "cv",
+      "text": "Please shorten the professional summary to two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "The CV is changed as asked, and nothing else is changed.",
+      "drafts_before": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 3,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

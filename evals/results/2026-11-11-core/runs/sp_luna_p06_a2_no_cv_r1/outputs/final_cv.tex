@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Petra Zlatarić-Novosel}\\[0.35em]
+{\large\color{accentcolor} Machine Learning Engineer | NLP and Document AI}
+\end{center}
+\vspace{0.4em}
+
+\section*{PROFESSIONAL SUMMARY}
+Machine Learning Engineer focused on NLP and document AI, with experience building and deploying text classification and named entity recognition systems for Croatian documents. Production work includes a document classifier serving approximately 15,000 documents per day and model drift monitoring. Experienced with Python, Azure, FastAPI, Docker, PyTorch, Hugging Face Transformers, and MLflow.
+
+\section*{SKILLS}
+Programming and data: Python, pandas, Oracle SQL, PostgreSQL\\
+Machine learning and NLP: PyTorch, Hugging Face Transformers, spaCy, scikit-learn, fastText, sentence-transformers, FAISS\\
+Production and MLOps: FastAPI, Docker, Azure App Service, Azure ML, Azure Functions, MLflow, Evidently
+
+\section*{EXPERIENCE}
+\textbf{ML Engineer | Slavonica Document AI | 2023–Present}
+\begin{itemize}
+\item Built and deployed a classifier for scanned incoming documents across 23 classes, achieving 94\% accuracy and a macro F1 score of 0.91.
+\item Fine-tuned XLM-R base and served the model as a FastAPI service in Docker on Azure App Service, processing approximately 15,000 documents per day.
+\item Developed a Croatian named entity recognition model for persons, organisations, OIB numbers, addresses, and legal references in administrative text, fine-tuning BERTic.
+\item Built an annotated dataset of 4,000 documents with an annotation guideline and two annotators; inter-annotator kappa was 0.87.
+\item Implemented weekly model drift reports for input text length, vocabulary, and predicted class distribution, with alerts when PSI exceeded 0.2. Detected a silent OCR change that reduced accuracy by 9 points; the issue was fixed within a week.
+\item Published NER work at a regional workshop in 2024.
+\end{itemize}
+
+\textbf{Data Scientist | Baranjska kreditna banka | 2021–2023}
+\begin{itemize}
+\item Developed models for customer churn prediction and complaint classification.
+\item Built a customer complaint topic classifier using a TF-IDF and logistic regression baseline followed by fastText, covering 11 topics for weekly reporting to customer service management.
+\end{itemize}
+
+\section*{PROJECTS}
+\textbf{Retrieval-Augmented Question Answering Demo | Personal project | 2025}
+\begin{itemize}
+\item Built a weekend prototype for question answering over Croatian laws using a sentence embedding model and an open-weight LLM through an API. The prototype was not used in production and was checked manually.
+\end{itemize}
+
+\section*{EDUCATION}
+Doctoral studies in progress | University of Drava | Expected 2027\\
+Research topic: Named entity recognition in Croatian legal texts.
+
+\section*{CERTIFICATION AND TEACHING}
+Microsoft Certified: Azure AI Engineer Associate | 2024\\
+Guest lecture, NLP Summer School | 2025 | 90 minutes
+\end{document}

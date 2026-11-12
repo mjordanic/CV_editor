@@ -1,0 +1,113 @@
+{
+  "model": "anthropic:claude-haiku-5-5",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable"
+  },
+  "rubric_sha256": "50f49feb879c69f12ff5163166c024831442d0de6b2cefbe036c01f058d782ce",
+  "images": [],
+  "prompt_sha256": "eabcb15098a9e4c65c98aede7343c3d46b3256da1e56f416b40a7f440eb336c0",
+  "params": {
+    "model": "claude-haiku-5-5",
+    "max_tokens": 64000,
+    "system": [
+      {
+        "type": "text",
+        "text": "You check a CV and a cover letter that a writing tool produced for a job candidate. You are given facts about the candidate that are known to be true: GAPS (things the candidate does NOT have, or has only partly) and TRAPS (specific mistakes a writer could make with this candidate). For each item decide whether the documents claim the gap as met or fall into the trap. Each document is the text of the PDF the employer receives.\n\nRules:\n- Judge only the two documents below. Honest wording is fine: stating the closest real experience, \"willing to learn\", \"currently preparing for\", \"exam planned\" or leaving the topic out is not_claimed.\n- A gap is claimed_as_met when the documents say or clearly imply the candidate has it (as held, done, or at work), in any language.\n- A trap is claimed_as_met when the documents make that mistake.\n- For claimed_as_met, quote the words verbatim from the documents, exactly as written (same language, no translation, no paraphrase). Never invent a quote. If you cannot quote it, answer unclear.\n- Answer every item id exactly once.",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "# GAPS (the candidate does not have these)\nG1: Rust (reading the book)\nG2: Go (did the tour)\nG3: machine learning (unfinished course)\nG4: AWS certification (course only, no exam)\nG5: Terraform authoring\nG6: official team lead title\n\n# TRAPS (mistakes a writer could make)\nT1: Copying the 'Learning: Rust, Go' line as skills\nT2: Turning the unfinished AWS Cloud Practitioner course into a certification or the unfinished ML course into ML skills\nT3: Calling him Tech Lead / Team Lead as a job title (project tech lead only; acting lead only in notes)\nT4: Claiming Terraform authoring\nT5: Failing to condense: keeping duplicated Älvgrind sections, hobbies, gymnasium, band\nT6: Dropping qualifiers like 'Vue (a little)', 'Tailwind (some)'\nT7: Old cover letter is to his current employer and says he is at Sjöbris\n\n",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          },
+          {
+            "type": "text",
+            "text": "# OUTPUT 1: CV\nOskar\nFull-Stack Engineer | React, TypeScript, Node.js\nProfessional Summary\nFull-stack developer with professional web development experience since 2014, strongest in frontend\ndevelopment. Builds onboarding features with React, TypeScript, NestJS and PostgreSQL, with\nexperience in AWS integrations, A/B testing and technical leadership. Delivered an identity\nverification flow associated with an increase in onboarding conversion from 61% to 74%.\nTechnical Skills\n- Frontend: React, TypeScript, React Native, Angular.\n- Backend and databases: Node.js, NestJS, Express, PostgreSQL, Prisma, TypeORM.\n- AWS: ECS, S3, Lambda, SQS; application development and integrations.\n- Integrations: Swedish BankID provider SDK, S3 presigned URLs, Firebase Cloud Messaging.\n- GraphQL: maintenance of one backend-for-frontend (BFF) using Apollo Server.\nProfessional Experience\nFullstack Developer | Älvgrind Fintech AB | 2021-Present\n- Develop onboarding features using React, TypeScript, NestJS, PostgreSQL and AWS.\n- Built a Swedish BankID identity verification step supporting QR-code and same-device flows\nthrough a provider SDK. The flow was A/B tested on 10% of traffic before full rollout; onboarding\nconversion increased from 61% to 74%.\n- Implemented document uploads of up to 20 MB using S3 presigned URLs, ClamAV virus scanning\nin Lambda, and scan-status processing through SQS into PostgreSQL.\n- Worked on the incremental migration of the onboarding backend from Express to NestJS, route by\nroute behind the same API gateway, using TypeORM and later Prisma. Presented the migration at\na meetup in 2022.\n- Served as acting team lead for four months in 2024 during the team lead’s parental leave,\nconducting one-to-ones and sprint planning.\nDeveloper | Sjöbris Digital Agency AB | 2018-2021\n- Developed client web and mobile projects using Angular, React, React Native, Node.js, Laravel and\nWordPress.\n- Led the technical delivery of a React Native ferry ticket app in a two-developer team, building\nmost of the app while the other developer handled the payment backend. The app supports ticket\npurchases and offline ticket display and reached approximately 50,000 downloads.\n- Used TypeScript and Firebase Cloud Messaging on the ferry app project, delivered in 2019-2020.\nNewspaper website development | Nordkust Media | 2014-2018\n- Developed newspaper websites over four years before joining Sjöbris Digital.\n\n# OUTPUT 2: COVER LETTER\nOskar\nApplication: Full-Stack Engineer (TypeScript / React) - Patient Experience\nDear Verdane Care hiring team,\nYour Patient Experience role closely matches the work I do at Älvgrind Fintech: building\nuser-facing onboarding features with React and TypeScript, supported by NestJS APIs and\nPostgreSQL. Frontend development is my strongest area, alongside hands-on backend\nexperience. That combination is directly relevant to building Verdane Care’s booking and\nintake journeys end to end, where straightforward interactions matter to the people using\nthem.\nOne example is the Swedish BankID identity verification step I built in 2022, supporting both\nQR-code and same-device flows through a provider SDK. It was A/B tested on 10% of traffic\nbefore full rollout, and onboarding conversion increased from 61% to 74%. This experience\nconnects well with your focus on simplifying patient journeys: delivering the interface and its\nsupporting services, then evaluating the effect on completion.\nI have also implemented document uploads using S3 presigned URLs, ClamAV scanning in\nLambda and scan-status processing through SQS into PostgreSQL. Alongside this, I worked\non an incremental Express-to-NestJS migration behind the existing API gateway. These\nprojects provide relevant experience for third-party integrations and document-handling\nfeatures, without equating fintech identity documents with the specific privacy requirements of\nhealth data.\nMy experience also includes technical leadership of a React Native ferry ticket app with\napproximately 50,000 downloads, and four months as acting team lead in 2024, including\none-to-ones and sprint planning. I would bring that delivery experience, a strong React and\nTypeScript foundation, and practical NestJS and AWS experience to your small squad. I\nwould welcome the opportunity to discuss how my work on onboarding and document flows\ncould contribute to Verdane Care’s patient experience.\nKind regards,\nOskar\n\nAnswer for every item id."
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "TruthVerdict": {
+              "properties": {
+                "id": {
+                  "description": "The item id as given (G1, G2, ... for gaps, T1, T2, ... for traps)",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "claimed_as_met: for a gap, the outputs state or clearly imply the candidate has it; for a trap, the outputs make that mistake. not_claimed: they do not. unclear: you cannot tell",
+                  "enum": [
+                    "claimed_as_met",
+                    "not_claimed",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "document": {
+                  "description": "Where the quote is from; none if not claimed",
+                  "enum": [
+                    "cv",
+                    "cover_letter",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "quote": {
+                  "description": "For claimed_as_met: the shortest verbatim quote from the output that shows it, copied exactly. Empty otherwise",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "One short sentence of reasoning",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "verdict",
+                "document",
+                "quote",
+                "note"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "properties": {
+            "items": {
+              "description": "One entry per given item, every id exactly once",
+              "items": {
+                "$ref": "#/$defs/TruthVerdict"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

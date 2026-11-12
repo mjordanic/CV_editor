@@ -1,0 +1,24 @@
+{
+  "purpose": "The user asks for the cover letter in German while the ad is in English (a German-speaking employer). The first reply asks for the CV only, so the German wish can come with the request for the letter; if the app writes the letter anyway, the wish is sent as a change request once the letter exists, so it reaches the app either way.",
+  "correct_behaviour": "The cover letter is written in correct, natural German; the CV stays in the language of the ad; the letter's facts are the same as in English would be.",
+  "first": "Please write my CV first. Once it is done, I will tell you what I need for the cover letter.",
+  "cover_letter": "Thank you. Now please write the cover letter in German - the hiring manager prefers German.",
+  "max_turns": 12,
+  "requests": [
+    {
+      "id": "letter-in-german",
+      "after": "cover_letter",
+      "unless_sent": "cover_letter",
+      "expect": "follow",
+      "text": "Thank you. Please rewrite the cover letter in German - the hiring manager prefers German. The CV stays as it is.",
+      "correct_behaviour": "The final cover letter is entirely in German, fluent and professional; the CV is not translated."
+    }
+  ],
+  "expectations": [
+    {
+      "about": "cover_letter",
+      "expect": "follow",
+      "correct_behaviour": "The final cover letter is entirely in German, fluent and professional; the CV is not translated."
+    }
+  ]
+}

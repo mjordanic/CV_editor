@@ -1,0 +1,46 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Would you like me to generate a tailored CV, a cover letter, or both? If you want both, which would you like me to create first?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "ask_cv_missing_details"
+      ],
+      "assistant": "The CV still has placeholders for details I do not have: [EMAIL], [PHONE], [LINKEDIN], [LOCATION]. Reply with the details to fill in, or tell me which ones to leave out. An empty reply makes the PDF as it is.",
+      "user": "My email is applicant.inbox@example.com and my phone number is +44 7700 900123. Please leave out anything else, such as LinkedIn or a street address."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV is ready. Would you like any changes, or would you like me to generate a tailored cover letter for this role?",
+      "user": "Thank you. Now please write the cover letter."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document, or are you satisfied?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": []
+}

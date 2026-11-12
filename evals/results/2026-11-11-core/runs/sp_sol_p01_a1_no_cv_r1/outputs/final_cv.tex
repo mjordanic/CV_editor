@@ -1,0 +1,79 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.85em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\newcommand{\cvrole}[1]{\par\noindent\textbf{#1}\par}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\setlength{\emergencystretch}{2em}
+\pagestyle{empty}
+\begin{document}
+{\Huge\bfseries\color{primarycolor} Lena Varga-Holm}\par
+{\large\color{accentcolor} Senior Data Engineer}\par
+
+\cvsection{Professional Summary}
+Senior Data Engineer with experience designing, building and operating production data platforms across logistics and payments. Owns ingestion and orchestration using Airflow, Snowflake, dbt and Kafka, with Python, SQL and AWS experience. Delivered streaming pipelines processing around 30 million events per day, faster warehouse builds and substantial cost reductions. Combines platform ownership and on-call operations with mentoring, data quality engineering and open-source contributions.
+
+\cvsection{Technical Skills}
+\begin{itemize}
+\item Languages: Python, SQL, PySpark
+\item Orchestration and transformation: Airflow, dbt, incremental models
+\item Cloud and warehouses: AWS, EMR, S3, Glue Data Catalog, MSK, Snowflake, Redshift
+\item Streaming and ingestion: Kafka, Kafka Connect, Debezium, PostgreSQL, Snowpipe Streaming
+\item Engineering practices: Terraform, Git, CI/CD, GitHub Actions, pytest
+\item Data quality and modelling: Great Expectations, dbt tests and documentation, warehouse design, incremental materialized views
+\end{itemize}
+
+\cvsection{Professional Experience}
+\cvrole{Senior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present}
+\begin{itemize}
+\item Own ingestion and orchestration for the data platform using Airflow, Snowflake, dbt and Kafka; participate in a one-week-in-six on-call rotation.
+\item Designed and built a shipment event streaming pipeline processing around 30 million events per day with end-to-end p95 latency under two minutes, using partner webhooks, Kafka, Kafka Connect and Snowpipe Streaming on AWS MSK.
+\item Added a dead-letter topic and replay tooling to reprocess failed events without data loss.
+\item Migrated approximately 300 stored procedures into dbt models with tests and documentation; introduced incremental models and slim CI using state:modified in GitHub Actions.
+\item Cut nightly warehouse build time from 5 hours 10 minutes to 1 hour 35 minutes and made lineage visible to analysts.
+\item Replaced hourly full-table extracts from the orders database with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70\% to 25\% in 2024.
+\item Reduced monthly Snowflake costs by approximately 37\% in 2024 through warehouse sizing, auto-suspend and removal of unused tables.
+\item Mentor two mid-level engineers and run data platform office hours.
+\end{itemize}
+
+\newpage
+\cvrole{Data Engineer | Kovalent Pay | 2019–2022}
+\begin{itemize}
+\item Developed PySpark batch jobs on AWS EMR to reconcile bank settlement files against internal ledgers, using S3, Glue Data Catalog, Redshift and Great Expectations.
+\item Reduced finance's manual month-end reconciliation work from approximately three days to four hours.
+\item Worked on Redshift warehouse design and data quality with Great Expectations.
+\end{itemize}
+
+\cvrole{BI Developer / ETL Responsibilities | Adria Retail Group | Earlier experience}
+\begin{itemize}
+\item Started as a BI developer and gradually took over most ETL work during two years at the company.
+\item Migrated 60 nightly SSIS packages to Python scripts, making loads easier to debug and change and reducing dependence on a single SSIS specialist.
+\end{itemize}
+
+\cvsection{Education}
+\textbf{MSc in Computer Science | Northgate Technical University}\par
+Thesis: Incremental materialized views
+
+\cvsection{Certification}
+AWS Certified Data Engineer – Associate | Earned May 2024
+
+\cvsection{Open Source and Community}
+\begin{itemize}
+\item Contributed two merged pull requests to an Airflow provider package in 2023, fixing an API pagination bug and adding tests using Python and pytest.
+\item Presented “Data contracts without the hype” at a regional data meetup in 2024.
+\item Teach beginner SQL at a local women-in-tech meetup, approximately four evenings per year since 2021.
+\end{itemize}
+\end{document}

@@ -1,0 +1,96 @@
+{
+  "run_dir": "runs/sp_luna_p09_a3_no_cv_r1",
+  "labels": {
+    "persona": "p09",
+    "ad": "a3",
+    "model": "openai:gpt-6-luna",
+    "rep": "1",
+    "input_set": "no_cv",
+    "case": "p09_a3_no_cv",
+    "script": "default",
+    "method": "single_prompt",
+    "arm": "C",
+    "stage": "core",
+    "writer_model": "gpt-6-luna",
+    "app_commit": "25b7876b0df4ef5e70060460822752da9b02c2bf",
+    "app_head": "5ff008d35e20cb4baabc49665640bb2f53ecfb55",
+    "app_dirty": "False"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1741
+    },
+    "cover_letter": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 822
+    },
+    "notes": {
+      "source": "evals/fixtures/personas/p09-nadia-sre-strong/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 607
+    }
+  },
+  "job_ad": {
+    "source": "evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": null,
+  "model_override": "openai:gpt-6-luna",
+  "work_preference": null,
+  "started_at": "2026-11-11T22:04:35+00:00",
+  "method": "single_prompt",
+  "model": "openai:gpt-6-luna",
+  "status": "completed",
+  "failure": null,
+  "finish_reason": "stop",
+  "minutes": 0.74,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 1,
+  "calls_by_node": {
+    "single_prompt": 1
+  },
+  "pdfs": {
+    "cv": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cv.pdf"
+    },
+    "cover_letter": {
+      "source": "model_latex",
+      "compiled": true,
+      "compile_error": null,
+      "fallback_error": null,
+      "fallback_dropped_chars": [],
+      "pdf": "outputs/final_cover_letter.pdf"
+    }
+  },
+  "fallback_pdfs": [],
+  "compile_failures": [],
+  "finished_at": "2026-11-11T22:05:19+00:00",
+  "cost_usd": 0.002951,
+  "cost_list_usd": 0.002951
+}

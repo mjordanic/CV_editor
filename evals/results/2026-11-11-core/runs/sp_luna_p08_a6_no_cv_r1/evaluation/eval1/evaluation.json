@@ -1,0 +1,575 @@
+{
+  "evaluator_model": "anthropic:claude-sonnet-5-5",
+  "name": "eval1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-sonnet-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-sonnet-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 8749,
+      "output_tokens": 7886,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14037
+    },
+    "cost_usd": 0.048881,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "e9e928b4418093ad641813663aa5225b213e4c0fa5938232cf6dc497223c5eda",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "eval1-sp_luna_p08_a6_no_cv_r1-6dc31aa71d",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01VTRfcFCwFxZnvSfn5eXqJ1",
+          "custom_id": "eval1-sp_luna_p08_a6_no_cv_r1-6dc31aa71d",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T22:17:48+00:00",
+          "ended_at": "2026-11-11T22:29:16.506114+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.097762
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "12 years of professional experience since 2014",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "12 years if counting from 2014 professionally",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fullstack Developer | Älvgrind Fintech AB | 2021–Present",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Fullstack Developer at Älvgrind Fintech AB (2021-Present)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Developer | Sjöbris Digital Agency AB | 2018–2021",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Developer at Sjöbris Digital Agency AB (2018-2021)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "acting team lead for four months in 2024, 1:1s and sprint planning",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "\"acting team lead\" for 4 months when our lead was on parental leave (1:1s, sprint planning)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Has led delivery of a React Native app with ~50,000 downloads",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Oskar was project tech lead and did most of the app",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BankID conversion 61% to 74%, A/B tested on 10%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "onboarding conversion 61% -> 74%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Contributed to Express to NestJS migration",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Incremental migration of the onboarding backend from Express to NestJS",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Migrated the onboarding backend incrementally (project section)",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Incremental migration of the onboarding backend",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "GraphQL, Apollo Server",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "graphql: maintain one BFF, Apollo server",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Terraform (minor edits)",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "terraform: only small edits",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Meetup talk 2022",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Gave a meetup talk about it in 2022",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Home Assistant integrations ~40 stars",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "~40 stars combined",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Prisma, TypeORM listed together",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "TypeORM then Prisma",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "onboarding features with React, TypeScript, NestJS, PostgreSQL, AWS",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "React/TypeScript, NestJS, PostgreSQL, AWS",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Frontend development is where I am strongest",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "frontend is where I'm strongest",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "I value seeing the impact of software on the people who use it",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "really see the impact of my work",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "the core technologies named in your role",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "React/TypeScript, NestJS, PostgreSQL, AWS",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "A/B testing experience matches nice-to-have",
+        "source": "portfolio",
+        "source_quote": "A/B tested on 10% of traffic",
+        "relevance": "medium",
+        "why_it_matters": "Not highlighted as analytics/A-B skill"
+      },
+      {
+        "fact": "Remote interest",
+        "source": "notes",
+        "source_quote": "interested in remote",
+        "relevance": "low",
+        "why_it_matters": "Job is remote-friendly"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years React and TypeScript",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "React, TypeScript, NestJS, PostgreSQL, and AWS",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Node.js backend and SQL",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Node.js, NestJS, Express, PostgreSQL",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Semantic HTML, accessibility basics",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Automated testing and Git",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Web security fundamentals",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Swedish BankID QR-code and same-device flows; ClamAV virus scanning",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Fluent English",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "AWS and Docker",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "yes",
+          "evidence_quote": "AWS ECS, S3, Lambda, SQS",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "A/B testing",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "A/B-tested on 10% of traffic",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Mentoring",
+          "priority": "nice_to_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "acting team lead for four months in 2024",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Nothing faked; testing, accessibility and English are simply not shown.",
+      "score": 7
+    },
+    "cv_standards": {
+      "score": 7,
+      "has_contact_details": false,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "No contact details (user preferred to leave them out)",
+        "No education section",
+        "Skills list is long and includes less relevant items such as WordPress"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "CORE SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "SELECTED PROJECTS"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Express",
+        "AWS",
+        "A/B testing",
+        "Docker",
+        "Jest",
+        "Playwright",
+        "Git",
+        "accessibility"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Express",
+        "AWS",
+        "A/B testing"
+      ],
+      "missed_but_candidate_has": [],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, parseable text with the main stack keywords visible; testing, Git and accessibility are absent, though the material does not show them either."
+    },
+    "cover_letter": {
+      "score": 6,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": false,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Company-specific content is thin, with only a generic mention of booking and follow-up",
+        "Nothing on accessibility, health data or privacy",
+        "Largely repeats the CV"
+      ],
+      "strengths": [
+        "Accurate",
+        "Concise",
+        "Relevant stack match",
+        "Uses the BankID A/B test metric"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 10
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Page 2 is only about a third filled",
+        "Project entries are tightly spaced with little separation"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 7
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "CV repeats the same facts in experience and projects"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "12 years since 2014",
+        "acting team lead 4 months",
+        "GraphQL Apollo",
+        "Terraform minor edits",
+        "frontend strongest"
+      ],
+      "notes_facts_ignored": [
+        "interested in remote"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "write my CV first, then the cover letter",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "Both documents exist",
+          "note": ""
+        },
+        {
+          "request": "leave contact details out",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "CV header contains only the name",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "Accurate and honest CV and letter with no invented claims; the notes (12 years, acting lead, minor Terraform) are used faithfully. The stack match is clear and the ATS text is clean. Weaknesses: the letter is thin on company specifics and accessibility, a few ad requirements (testing, accessibility, English) are not shown, and the CV is somewhat repetitive between experience and projects."
+  },
+  "counts": {
+    "claims": 17,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 6,
+    "must_haves_shown": 2,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 2,
+    "requests_followed": 2,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 2,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3324,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 1639,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.1,
+          "top": 51.0,
+          "bottom": 65.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 33.6,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 74.2,
+          "bottom": 431.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 48.8,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.048881,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": []
+  }
+}

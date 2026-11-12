@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.72in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,92,153}
+\definecolor{accentcolor}{RGB}{92,101,110}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor,linkcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.9em}{0.35em}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.18em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} NADIA BRENNAN-AZIZ}\\[0.25em]
+{\large Senior Cloud Infrastructure / Platform Engineer}\\[0.25em]
+Manchester, United Kingdom | \href{mailto:nadia.brennanaziz@example.com}{nadia.brennanaziz@example.com} | +44 7700 900909
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior platform and site reliability engineer with 10 years of infrastructure experience, including six years operating Kubernetes platforms on AWS and delivering a 38\% reduction in EC2 spend. Hands-on technical lead experienced in designing and operating AWS infrastructure, managing Terraform-based infrastructure as code, and building platforms that help product teams deploy and operate services while improving delivery speed and reliability through self-service tooling, observability and clear operational processes.
+
+\section*{LANGUAGES}
+English (native); Urdu (conversational)
+
+\section*{EXPERIENCE}
+\textbf{Senior Platform Engineer | Tallybrook Ltd | Manchester / remote | Apr 2022 - Present}
+\begin{itemize}
+\item Tech lead of the five-person platform team; operate an AWS EKS platform spanning eight clusters, approximately 350 services and three regions. Participate in the incident commander rotation and wrote the incident and post-mortem process.
+\item Designed and built an internal developer platform with Go and Python service templates, Argo CD GitOps and Crossplane self-service for RDS, SQS and S3; adopted by all 14 product teams and reduced time from new service to production from approximately two weeks to under one day.
+\item Introduced SLOs, burn-rate alerts and an error-budget policy for the 20 most critical services, agreed with product leadership; reduced on-call pages per week by approximately 60\%.
+\item Migrated node provisioning to Karpenter and introduced Spot instances for stateless workloads with interruption handling; reduced EC2 spend by 38\%, approximately GBP 410,000 per year.
+\end{itemize}
+
+\textbf{Site Reliability Engineer | Brightwater Games | Leeds | Jan 2019 - Mar 2022}
+\begin{itemize}
+\item Operated AWS game backend infrastructure using EC2, ECS and EKS for titles with up to 1.2 million daily active players.
+\item Managed AWS infrastructure as code in Terraform across approximately 40 modules, using Atlantis for plan and apply on pull requests.
+\item Replaced a noisy Nagios setup with Prometheus, Grafana, Alertmanager and Loki.
+\item Ran k6 load tests and launch capacity planning, including tests simulating 300,000 concurrent players; identified and fixed a connection-pool limit before launch.
+\end{itemize}
+
+\section*{SELECTED PROJECT}
+\textbf{Open-source Kubernetes cleanup controller | 2024}
+\begin{itemize}
+\item Built a small Go controller using controller-runtime to delete expired preview namespaces; the project has approximately 120 GitHub stars.
+\end{itemize}
+
+\section*{LEADERSHIP AND COMMUNITY}
+\begin{itemize}
+\item Mentored three backend engineers transitioning into SRE.
+\item Speaker at a UK DevOps meetup in 2024: “SLOs that product managers care about”.
+\end{itemize}
+
+\section*{EDUCATION \& TRAINING}
+BSc Computer Science | University of the North Moors | 2016
+
+\section*{CERTIFICATIONS}
+Certified Kubernetes Administrator (CKA) | 2021, renewed 2024\\
+AWS Certified Solutions Architect - Professional | 2023
+
+\section*{TECHNICAL TOOLKIT}
+AWS (EKS, EC2, VPC, IAM, RDS, S3, SQS, Route 53, CloudFront); Kubernetes; Terraform; Atlantis; Helm; Kustomize; Argo CD; Crossplane; Karpenter; Go; Python; Bash; Prometheus; Grafana; Loki; Alertmanager; OpenTelemetry; k6; GitHub Actions; Puppet; Linux; SLOs and error budgets; incident management; Backstage (catalog).
+
+\end{document}

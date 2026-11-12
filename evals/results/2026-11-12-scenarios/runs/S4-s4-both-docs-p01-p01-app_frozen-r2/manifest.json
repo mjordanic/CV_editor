@@ -1,0 +1,155 @@
+{
+  "run_dir": "runs/S4-s4-both-docs-p01-p01-app_frozen-r2",
+  "labels": {
+    "scenario": "S4",
+    "system": "app_frozen",
+    "case": "p01/s4-both-docs-p01",
+    "rep": "2"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p01-lena-data-engineer/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2419
+    },
+    "portfolio": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p01-lena-data-engineer/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 2165
+    },
+    "cover_letter": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p01-lena-data-engineer/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1096
+    },
+    "notes": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p01-lena-data-engineer/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 833
+    }
+  },
+  "job_ad": {
+    "source": "<frozen-tree>/evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<frozen-tree>/evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 14,
+    "purpose": "S4 (both documents): one message whose change applies to both existing documents, then a fact correction 'everywhere'.",
+    "persona": "p01",
+    "correct_behaviour": "Both documents get the new contact detail; the corrected figure replaces the old one in both.",
+    "requests": [
+      {
+        "id": "add-to-both",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter.",
+        "correct_behaviour": "lenavh.dev in both documents"
+      },
+      {
+        "id": "correct-everywhere",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents.",
+        "correct_behaviour": "no '1h35' in either document"
+      }
+    ],
+    "checks": [
+      {
+        "id": "added-in-both",
+        "type": "present",
+        "pattern": "lenavh\\.dev",
+        "what": "lenavh.dev in both documents"
+      },
+      {
+        "id": "old-figure-gone",
+        "type": "absent",
+        "pattern": "1\\s*h\\s*35|1:35|95\\s*min",
+        "what": "the old figure is in neither document"
+      },
+      {
+        "id": "new-figure-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "1\\s*h(?:ours?)?\\s*50|1:50|110\\s*min",
+        "what": "the corrected figure is in the CV"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T09:11:57+00:00",
+  "status": "completed",
+  "minutes": 5.95,
+  "cv_drafts": 4,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 4,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Lisbon, Portugal; 3 days per week in the office. No other location, time-zone, or work-authorisation limits are stated.",
+    "culture_signals": [
+      "The ad emphasizes reusable frameworks and collaboration with data scientists, analytics engineers, and BI colleagues.",
+      "Company values: Together (share context openly and help across teams), Ownership (own, fix, and learn from problems), and Pace (reduce unnecessary complexity to move quickly for clients).",
+      "Company describes colleagues as friendly and its environment as collaborative, with teamwork and personal development emphasized.",
+      "Company says it offers career paths, a yearly learning budget, and mentoring; the ad also mentions a training and certification budget and support for open-source contributions.",
+      "Culture reviews describe the culture as commercially driven and say onboarding and training vary considerably between teams."
+    ],
+    "notes": "The ad specifies this job is hybrid in Lisbon, with 3 office days per week. This is consistent with the company pages, which describe the Lisbon office as hybrid with 3 days in the office and say most offices follow that pattern."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 4,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 2,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "add-to-both",
+    "correct-everywhere"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T09:17:55+00:00",
+  "cost_usd": 0.048241
+}

@@ -1,0 +1,60 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.8em}{0.35em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.18em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\\[0.2em]
+{\large\color{accentcolor} Data Scientist}\\[0.25em]
+Edinburgh, UK | \href{mailto:tobias.mwangihartley@example.com}{tobias.mwangihartley@example.com} | +44 7700 900110\\
+\href{https://linkedin.com/in/tmh-example}{linkedin.com/in/tmh-example}
+
+\cvsection{Professional Summary}
+Data scientist with six years in analytics and data science, including over four years as a data scientist, now moving towards machine learning engineering. Builds forecasting and customer propensity models used in operational and retention decisions. Combines Python, feature engineering, production SQL in BigQuery and dbt with rigorous model evaluation, experimentation and clear communication of business impact.
+
+\cvsection{Experience}
+\textbf{Data Scientist | Thistlebox (meal-kit subscriptions), Edinburgh}\\
+Feb 2022 - present
+\begin{itemize}
+\item Built a weekly recipe-level demand forecasting model using LightGBM and calendar features, used by operations to order ingredients. Reduced forecast error (WAPE) from 23\% to 14\%, with an estimated 9\% reduction in food waste.
+\item Built an XGBoost churn propensity model used to target retention offers; validated uplift with a holdout.
+\item Write production SQL in BigQuery and maintain dbt models for the analytics layer.
+\item Design and analyse approximately 40 A/B tests annually for growth and product teams; built the team's sequential testing calculator.
+\item Present results to leadership monthly, translating statistical findings into actionable business insights.
+\end{itemize}
+\textbf{Junior Data Analyst | Firth Energy Retail, Glasgow}\\
+Sep 2020 - Jan 2022
+\begin{itemize}
+\item Conducted customer segmentation and tariff analysis using R and SQL.
+\item Automated monthly regulator reports using R Markdown.
+\end{itemize}
+
+\cvsection{Education}
+\textbf{MSc Statistics | University of the Lothians | 2020}\\
+Distinction\\
+Dissertation: Bayesian hierarchical models for small-area energy demand
+
+\textbf{BSc Mathematics | University of the Lothians | 2019}
+
+\cvsection{Skills}
+\textbf{Programming:} Python (pandas, scikit-learn, LightGBM, XGBoost, statsmodels), R (tidyverse, brms), SQL\\
+\textbf{Data and tools:} BigQuery, dbt, Git, Jupyter, Looker\\
+\textbf{Machine learning and statistics:} Feature engineering, time-series forecasting, customer segmentation, churn modelling, model evaluation, A/B testing, causal inference, Bayesian statistics
+
+\cvsection{Languages}
+English (native), Swahili (conversational)
+\end{document}

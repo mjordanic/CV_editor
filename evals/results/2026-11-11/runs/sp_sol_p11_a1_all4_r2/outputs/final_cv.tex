@@ -1,0 +1,76 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{needspace}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\newcommand{\cvsection}[1]{\Needspace{4\baselineskip}\section*{#1}}
+\newcommand{\cvitem}[1]{\par\needspace{4\baselineskip}\textbf{#1}\par}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Tiago Ferrão-Lindqvist}\par
+{\large\color{accentcolor} Mechanical Engineer | Python, SQL and Test-Data Automation}\par
+Setúbal, Portugal | tiago.ferraolindqvist@example.com | +351 555 010 311\par
+\href{https://linkedin.com/in/tfl-example}{linkedin.com/in/tfl-example}
+
+\cvsection{PROFESSIONAL SUMMARY}
+Mechanical engineer with 12 years of experience in product design and test and validation, transitioning into data engineering. Builds Python tools for scheduled data processing, specification checks and reporting, with SQL Server and Power BI experience. Developed an internal tool used by four other engineers that reduced report preparation from about three days to half a day per test. Fluent English and native Portuguese.
+
+\cvsection{TECHNICAL SKILLS}
+\begin{itemize}
+\item Python: pandas, NumPy, Matplotlib, npTDMS; file parsing, data validation and reporting automation.
+\item SQL and BI: SQL Server queries for trend analysis, writes to an IT-created staging table, Power BI dashboards; SQLite in a personal project.
+\item Scheduling: Windows Task Scheduler for nightly processing on a lab PC.
+\item Personal-project tools: Flask, Git; introductory Docker Compose use following a tutorial.
+\item Engineering: MATLAB/Simulink, LabVIEW, ANSYS Mechanical, SolidWorks, design of experiments, 8D root-cause analysis.
+\end{itemize}
+
+\cvsection{PROFESSIONAL EXPERIENCE}
+\cvitem{Test \& Validation Engineer | Corvane Automotive Components}
+Setúbal | Mar 2019 - Present
+\begin{itemize}
+\item Developed Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB per week, flagging channels outside test specifications and generating standard report figures.
+\item Scheduled nightly processing through Windows Task Scheduler on a lab PC and wrote summary results to an SQL Server staging table created by IT; the internal tool is used by four other test engineers.
+\item Reduced report preparation from about three days to half a day per test through automated processing and figure generation.
+\item Query the plant's SQL Server test-results database for trends across three product generations.
+\item Built a Power BI dashboard showing pass/fail trends and cycles to failure per product generation, used by about 15 validation and design engineers.
+\item Plan and run durability, vibration and climatic tests; prepare reports for OEM customers and maintain MATLAB/Simulink models for rig load-profile selection.
+\item Lead 8D root-cause analysis and correlate test results with FEA; a proposed adjuster rail bracket redesign reduced warranty returns for that part by 40\%.
+\item Trained three apprentices in rig safety and test setup between 2022 and 2024.
+\end{itemize}
+
+\cvitem{Mechanical Design Engineer | Halvik Pumps}
+Porto | Sep 2014 - Feb 2019
+\begin{itemize}
+\item Designed pump casings and impellers in SolidWorks, produced drawings with GD\&T and owned DFMEA for two product lines.
+\item Wrote a LabVIEW acquisition program for the performance test bench that reduced setup time from about two hours to 30 minutes.
+\item Performed structural FEA in ANSYS; a casing-family material change saved 12\% in material cost.
+\end{itemize}
+
+\cvsection{PERSONAL PROJECT}
+\cvitem{Bike-sharing Trips API | 2025}
+\begin{itemize}
+\item Built a small Flask API over a public bike-sharing dataset loaded into SQLite, with three read-only endpoints; runs locally on a laptop.
+\item Used Git for the personal repository and followed a tutorial to run the application with Docker Compose.
+\end{itemize}
+
+\cvsection{EDUCATION AND TRAINING}
+\textbf{MSc Mechanical Engineering | Sado Valley Polytechnic | 2014}\par
+Thesis: Fatigue life prediction of welded brackets under variable-amplitude loading\par
+Online data engineering course | In progress: six of nine modules completed; no certificate yet.
+
+\cvsection{LANGUAGES}
+Portuguese: native | English: fluent | Spanish: good
+\end{document}

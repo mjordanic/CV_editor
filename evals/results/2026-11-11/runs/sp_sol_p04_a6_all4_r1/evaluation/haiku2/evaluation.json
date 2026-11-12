@@ -1,0 +1,515 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku2",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9034,
+      "output_tokens": 14991,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14467
+    },
+    "cost_usd": 0.004272,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "3fc1cfe8126c58298da903ef8d6102f7a5672a9402d468e946ae8dc5c8d5a624",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku2-sp_sol_p04_a6_all4_r1-53f3e638fc",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku2-sp_sol_p04_a6_all4_r1-53f3e638fc",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.008544
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Frontend Developer (part-time, freelance), Oct 2025 - Present",
+        "kind": "job_title",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Frontend Developer (part-time, freelance) | Self-employed",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Software Development Intern, Harbourline Media, May 2024 - Aug 2024",
+        "kind": "employer",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Software Development Intern | Harbourline Media",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Fixed accessibility issues across 20+ components",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Fixed accessibility issues across 20+ components",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Teaching Assistant, Spring 2025, helped approximately 30 first-year students",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "helped ~30 students",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Lighthouse accessibility score of 100",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Lighthouse accessibility score 100",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "BSc (Hons) Computing, First Class Honours, 2021-2025",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "BSc (Hons) Computing - Software Development",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Node.js/Express API integrating public weather and tide APIs",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Node.js/Express API caching data from public weather and tide APIs",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "WCAG 2.1 accessibility skill",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "accessibility (WCAG 2.1)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "First Class project grade of 82%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Grade: 82% (First Class)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Professional experience to date is frontend-focused",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Frontend Developer (part-time, freelance)",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Completed a free online GraphQL course (not used in a project)",
+        "source": "notes",
+        "source_quote": "did a free online course on GraphQL but never used it in a project",
+        "relevance": "low",
+        "why_it_matters": "Minor API-related learning; honest to omit as it is not project work"
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "2+ years professional React and TypeScript web apps",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Software Development Intern | Harbourline Media",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Node.js backend services and SQL databases",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Developed a Node.js/Express API that cached data from public weather and tide APIs",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Semantic HTML, responsive layouts, accessibility basics",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "accessibility (WCAG 2.1), keyboard navigation, ARIA labels",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Automated unit and end-to-end testing",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Wrote unit tests with Jest and React Testing Library",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Git-based workflows",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Git/GitHub",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Web security fundamentals and health data privacy",
+          "priority": "must_have",
+          "candidate_has_it": "unclear",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "hidden_or_ignored"
+        },
+        {
+          "requirement": "Fluent English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English: Native",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Next.js or other SSR framework",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Built a yoga studio booking website with Next.js",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Storybook design system",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "documented it with Storybook stories",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Docker or AWS",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        }
+      ],
+      "gap_handling_summary": "Experience gaps (years, backend, E2E, security) are mostly acknowledged through project-experience wording; the cover letter says professional experience is frontend-focused. Security and privacy are not addressed.",
+      "score": 5
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Barista entry (2021-2025) sits last although it is not the oldest role"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "EXPERIENCE",
+        "SELECTED PROJECTS",
+        "EDUCATION",
+        "ADDITIONAL EXPERIENCE AND ACHIEVEMENTS",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "SQL",
+        "accessibility",
+        "WCAG",
+        "Jest",
+        "Git",
+        "Next.js",
+        "Storybook",
+        "Docker",
+        "AWS",
+        "English",
+        "end-to-end testing"
+      ],
+      "covered_in_searchable_wording": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "accessibility",
+        "WCAG",
+        "Jest",
+        "Git",
+        "Next.js",
+        "Storybook",
+        "English"
+      ],
+      "missed_but_candidate_has": [
+        "Responsive layouts (only implied by Tailwind CSS)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 6,
+      "reason": "Clean, well-sectioned extraction with most real strengths visible, but no end-to-end testing or SQL wording and the CV's WCAG 2.1 differs from the ad's 2.2."
+    },
+    "cover_letter": {
+      "score": 8,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Does not mention the Graz or regional location or the arrangement"
+      ],
+      "strengths": [
+        "Links accessibility work to Verdane WCAG 2.2 AA commitment",
+        "Honest that professional experience is frontend-focused"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [
+        "simple and accessible software"
+      ],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Large empty area at the bottom of CV page 1 after the Barista entry"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Student hackathon second place",
+        "Teaching assistant about 30 students",
+        "Volunteer social media for sea swimming club"
+      ],
+      "notes_facts_ignored": [
+        "Vue tried once (correctly not claimed)"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [
+        {
+          "request": "Please write my CV first, then the cover letter.",
+          "expected": "follow",
+          "outcome": "followed",
+          "app_explained": false,
+          "evidence": "CV and cover letter both present in final outputs",
+          "note": ""
+        }
+      ],
+      "score": 10
+    },
+    "invented_content_score": 9,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "Both documents are clean, honest and in English, with real projects and accessibility work well shown. The CV accurately reflects a junior candidate, and the cover letter openly describes the frontend focus. The main weaknesses are the ATS wording gaps (no end-to-end testing or SQL term, WCAG 2.1 versus 2.2) and that security and health-data privacy are not addressed."
+  },
+  "counts": {
+    "claims": 10,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 3,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 1,
+    "requests_followed": 1,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3207,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2154,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.2,
+          "top": 51.0,
+          "bottom": 160.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 58.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.7,
+          "top": 71.4,
+          "bottom": 308.3
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 63.4,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.004272,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "ats.reason",
+        "guaranteed": "Clean, well-sectioned extraction with most real strengths visible, but no end-to-end testing or SQL wording and the CV's WCAG 2.1 differs from the ad's 2.2.",
+        "full": "Clean extraction with clear sections and most real strengths visible in searchable wording, but no database or SQL term beyond PostgreSQL, no end-to-end testing term, and the ad's WCAG version (2.2) differs from the CV's 2.1."
+      }
+    ]
+  }
+}

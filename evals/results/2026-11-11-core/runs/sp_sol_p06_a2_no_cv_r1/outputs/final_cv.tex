@@ -1,0 +1,74 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.9em}{0.4em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+\pagestyle{empty}
+\begin{document}
+{\LARGE\bfseries\color{primarycolor} Petra Zlatarić-Novosel}\\[0.3em]
+{\large\color{accentcolor} Machine Learning Engineer | NLP and Document AI}
+
+\cvsection{Professional Summary}
+Machine learning engineer with production experience in text classification, named entity recognition and model monitoring on Azure. Fine-tuned transformer models for document processing at approximately 15,000 documents per day. Earlier banking experience includes customer complaint classification and churn prediction. Doctoral research focuses on named entity recognition in Croatian legal texts.
+
+\cvsection{Technical Skills}
+\begin{itemize}
+\item Languages and data: Python, SQL, pandas, PostgreSQL, Oracle SQL.
+\item NLP and model development: PyTorch, Hugging Face Transformers, spaCy, scikit-learn, fastText, TF-IDF, XLM-R, BERTic.
+\item Production serving and MLOps: FastAPI, Docker, Azure App Service, Azure ML, Azure Functions, MLflow, Evidently.
+\item Text datasets and retrieval: Label Studio, annotation guidelines, sentence-transformers, FAISS; RAG prototype experience.
+\end{itemize}
+
+\cvsection{Professional Experience}
+\textbf{ML Engineer | Slavonica Document AI | 2023-Present}
+\begin{itemize}
+\item Develop document classification and named entity recognition models for Croatian public administration documents.
+\item Fine-tuned XLM-R base to classify OCR-processed invoices, contracts and decisions into 23 classes, achieving 94\% accuracy and macro F1 of 0.91.
+\item Served the classifier through FastAPI in Docker on Azure App Service, processing approximately 15,000 documents per day.
+\item Fine-tuned BERTic to identify persons, organisations, OIB numbers, addresses and legal references in Croatian administrative text.
+\item Built an annotated dataset of 4,000 documents with annotation guidelines and two annotators, achieving inter-annotator kappa of 0.87. This work was published at a regional workshop in 2024.
+\item Implemented weekly model drift reporting on input text length, vocabulary and predicted class distribution, with alerts when PSI exceeded 0.2, using Python, Evidently, Azure Functions and PostgreSQL.
+\item Detected a silent client-side OCR change that reduced accuracy by 9 percentage points; the issue was fixed within a week.
+\end{itemize}
+
+\textbf{Data Scientist | Baranjska kreditna banka | 2021-2023}
+\begin{itemize}
+\item Developed models for customer churn prediction and customer complaint classification.
+\item Built an 11-topic complaint classifier using a TF-IDF and logistic regression baseline, followed by fastText, for weekly reporting to customer service management.
+\item Used scikit-learn, pandas and Oracle SQL for complaint classification work.
+\end{itemize}
+
+\cvsection{Selected Personal Project}
+\textbf{Retrieval-augmented Question Answering Demo | 2025}
+\begin{itemize}
+\item Built a weekend RAG prototype for question answering over Croatian laws using sentence embeddings, FAISS and an open-weight LLM accessed through an API.
+\item Personal prototype only; assessed through manual checks, not deployed to production.
+\end{itemize}
+
+\cvsection{Education}
+\textbf{Doctoral studies, in progress | Sveučilište Drava}\\
+Expected completion: 2027\\
+Research topic: Named entity recognition in Croatian legal texts.
+
+\cvsection{Certification}
+Microsoft Certified: Azure AI Engineer Associate | 2024
+
+\cvsection{Teaching and Languages}
+\begin{itemize}
+\item Delivered a 90-minute guest lecture at an NLP summer school in 2025.
+\item English: used daily in meetings with a client from Slovenia.
+\end{itemize}
+\end{document}

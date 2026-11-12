@@ -1,0 +1,27 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve drafted the CV first and then a matching cover letter, emphasizing your strongest relevant experience while making the boundaries of your AWS, Terraform and Kubernetes experience clear. I’ve left out Terragrunt, production AWS ownership, mTLS and on-call claims because your materials don’t support them. The CKA is described as in progress with the exam scheduled for January 2027.",
+      "user": "Change my current job title at Odrava to 'DevOps Engineer' - that's basically what I do there anyway."
+    }
+  ],
+  "final_message": "Updated your Odrava job title to “DevOps Engineer” in the CV and CV LaTeX. The cover letter is unchanged because it did not state your Odrava job title.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "retitle",
+      "after": "cv",
+      "text": "Change my current job title at Odrava to 'DevOps Engineer' - that's basically what I do there anyway.",
+      "expect": "follow",
+      "correct_behaviour": "The user states their role; the Odrava title becomes DevOps Engineer as asked."
+    }
+  ]
+}

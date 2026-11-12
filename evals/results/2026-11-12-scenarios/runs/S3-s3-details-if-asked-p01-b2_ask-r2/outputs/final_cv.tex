@@ -1,0 +1,67 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Lena Varga-Holm}\\[0.3em]
+{\large\color{accentcolor} Senior Data Engineer | Data Platform}\\[0.3em]
+applicant.inbox@example.com | +44 7700 900123
+\end{center}
+\vspace{0.4em}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior Data Engineer with experience owning ingestion and orchestration for a production data platform spanning Airflow, Snowflake, dbt and Kafka. Delivered high-volume streaming, CDC and warehouse modernisation, including a 30-million-events-per-day pipeline and measurable improvements in latency, reliability, build time and cloud costs. Hands-on experience with Python, SQL and AWS data services; AWS Certified Data Engineer – Associate.
+
+\section*{CORE SKILLS}
+Data Engineering: Python, SQL, PySpark, batch and streaming data pipelines, change data capture (CDC)\\
+Data Platform: Airflow, Kafka, Kafka Connect, Debezium, Snowflake, dbt\\
+Cloud and Warehousing: AWS MSK, AWS EMR, Amazon S3, Glue Data Catalog, Redshift\\
+Quality, CI/CD and Infrastructure: Great Expectations, pytest, GitHub Actions, Terraform, data tests and documentation\\
+Data Modelling: dbt models, incremental models, Redshift warehouse design
+
+\section*{PROFESSIONAL EXPERIENCE}
+\noindent\textbf{Senior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present}
+\begin{itemize}
+\item Own ingestion and orchestration for the data platform using Airflow, Snowflake, dbt and Kafka.
+\item Designed and built a shipment-event streaming pipeline using partner webhooks, Kafka and Kafka Connect to Snowflake via Snowpipe Streaming; processes around 30 million events per day with end-to-end latency under 2 minutes at p95.
+\item Added a dead-letter topic and replay tooling so failed events can be re-processed without data loss.
+\item Migrated approximately 300 stored procedures into dbt models with tests and documentation; introduced incremental models and slim CI with state:modified in GitHub Actions.
+\item Reduced the nightly warehouse build from 5 hours 10 minutes to 1 hour 35 minutes and made data lineage visible to analysts.
+\item Replaced hourly full-table extracts from the orders database with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70\% to 25\%.
+\item Reduced the Snowflake bill from approximately 38,000 to 24,000 per month in 2024 through warehouse sizing, auto-suspend and removal of unused tables.
+\item Participate in the data platform on-call rotation, one week in six; mentor two mid-level engineers and run data platform office hours.
+\end{itemize}
+\noindent\textbf{Data Engineer | Kovalent Pay | 2019–2022}
+\begin{itemize}
+\item Built PySpark batch jobs on AWS EMR to match bank settlement files against internal ledgers.
+\item Reduced the finance team's manual reconciliation work from approximately 3 days to 4 hours per month-end.
+\item Worked on Redshift warehouse design and data quality using Great Expectations.
+\end{itemize}
+
+\section*{OPEN-SOURCE AND COMMUNITY}
+\begin{itemize}
+\item Fixed a pagination bug and added tests in a community Airflow provider for a SaaS CRM API; two pull requests were merged in 2023.
+\item Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year since 2021.
+\item Gave the talk “Data contracts without the hype” at a regional data meetup in 2024.
+\end{itemize}
+
+\section*{EDUCATION}
+\textbf{MSc in Computer Science | Northgate Technical University}\\
+Thesis: Incremental materialized views
+
+\section*{CERTIFICATION}
+AWS Certified Data Engineer – Associate | May 2024
+\end{document}

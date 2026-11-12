@@ -1,0 +1,234 @@
+[
+  {
+    "iteration": 1,
+    "content": "Dear Tessel Cargo Software Hiring Team,\n\nI am applying for the Backend Engineer (Python) role on the Routing & Tracking team. I have spent nine years building data platforms for e-commerce, payments and logistics, with hands-on work in Python, PostgreSQL, AWS and Kafka. The opportunity to help make shipment tracking reliable for freight forwarders is a strong match for the systems I have worked on and the engineering work I enjoy.\n\nAt Lukovac Freight Hub, I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake, processing around 30 million events per day with end-to-end latency under two minutes at p95. I also replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing load on the production database. These projects involved making event flows dependable and recoverable, including dead-letter handling and replay tooling—experience that connects closely to your work ingesting carrier events and exposing clean streams for analytics.\n\nEarlier, at Kovalent Pay, I built Python and PySpark jobs on AWS EMR for transaction reconciliation, designed a Redshift warehouse used by finance and risk, and added data-quality checks to critical tables. In my current role, I take part in a one-week-in-six data-platform on-call rotation and have worked on reliability improvements, including data contracts with CI checks. I would bring practical Python, SQL, PostgreSQL, AWS and Kafka experience, along with an ownership mindset shaped by operating systems that other teams rely on.\n\nTessel’s focus on dependable live tracking and pragmatic engineering appeals to me. I value clear technical communication and reliability work, and would welcome the chance to discuss how my experience building event-driven data systems could contribute to the Routing & Tracking team.\n\nKind regards,\nLena Varga-Holm",
+    "score": 82,
+    "critique": {
+      "quality_score": 82,
+      "content_quality_feedback": "The cover letter is concise, professional, readable, and well tailored to Tessel's shipment-tracking domain. It uses credible production metrics—30 million events per day, under two minutes at p95, and the one-week-in-six on-call rotation—and connects the candidate's logistics, Kafka, PostgreSQL, AWS, and reliability experience to the role. The main content weakness is positioning: it presents Lena primarily as a data-platform engineer rather than clearly addressing the Backend Engineer (Python) requirements. It also claims several relevant technical details that are supported by the candidate's portfolio but are not reflected in the associated CV, which creates a document-consistency risk even though they are not hallucinations. The letter does not address REST API work, PostgreSQL schema migrations/query tuning, or production backend-service development, and these are important requirements for this specific role.",
+      "ats_compatibility_feedback": "The plain-text structure, standard salutation, short paragraphs, and absence of tables or unusual formatting are ATS-friendly. Relevant terms such as Python, PostgreSQL, AWS, Kafka, Snowflake, data contracts, CI checks, on-call, and event-driven data systems appear naturally. However, the letter has limited keyword coverage for the target role: backend services, REST APIs, Docker, automated testing, CI/CD, GitHub Actions, relational database schema, and production incidents are either absent or insufficiently explicit. The letter is unlikely to be rejected because of formatting, but its AI-screening match could be weakened because it reads more like a data-engineering application than a Python backend application.",
+      "job_alignment_feedback": "The strongest alignment is with event ingestion, Kafka, shipment tracking, AWS, PostgreSQL-related data flows, production reliability, on-call ownership, and logistics. The shipment-event project is highly relevant to Tessel's domain and to its need for dependable live tracking. The letter also reflects the company's pragmatic and ownership-oriented culture through phrases such as \"dependable and recoverable\" and \"systems that other teams rely on.\"\n\nThe candidate's material supports several additional relevant points that the letter does not use: Docker and AWS, GitHub Actions, dbt and pipeline tests, JSON Schema CI checks, pytest work in an Airflow provider, Terraform, and PostgreSQL CDC. These are missing from the letter and should be used selectively.\n\nThe candidate's material does not establish professional REST API design/consumption, FastAPI services, safe PostgreSQL schema migrations, Kubernetes, observability tooling, or EDI formats. Dutch and French are also not listed. These are candidate-experience gaps or unsubstantiated requirements, not writing defects, and should not be added to the letter.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS\n\n1. In the opening paragraph, reposition the application around Python backend and production event systems rather than only data platforms. Replace the sentence beginning \"I have spent nine years building data platforms\" with wording such as: \"I have nine years of professional experience building production data and event-driven systems, including Python services and automation, PostgreSQL-based data flows, AWS workloads, Kafka pipelines, and on-call operations.\" Do not claim nine years of backend-service development specifically, because the candidate information does not establish that.\n\n2. After the shipment-event paragraph, add one compact sentence covering automated testing and CI/CD using only documented experience: \"I have applied automated quality checks through dbt tests on 420+ models, JSON Schema validation in CI, and GitHub Actions workflows; I have also contributed Python fixes and tests to an open-source Airflow provider.\" This directly addresses the job's testing and CI/CD requirement without inventing backend test-suite experience.\n\n3. In the paragraph beginning \"Earlier, at Kovalent Pay,\" explicitly mention the supported Docker and AWS experience: \"Alongside Python and PySpark work on AWS EMR, I have used Docker, AWS services including S3, EMR, Glue and Lambda, and GitHub Actions in data-platform environments.\" Avoid saying that you deployed customer-facing services to AWS unless that experience is documented elsewhere.\n\n4. Add a precise limitation-aware sentence about PostgreSQL instead of implying broader backend database ownership: \"My PostgreSQL experience includes replacing hourly extracts with Debezium CDC, reducing replica CPU during loads from approximately 70% to 25%, and designing reliable data flows around production databases.\" This gives the recruiter relevant PostgreSQL performance evidence while avoiding unsupported claims about schema migrations or API query tuning.\n\n5. Revise the final paragraph to connect the candidate's experience to Tessel's stated culture and role responsibilities. For example, replace the final sentence with: \"Tessel's emphasis on dependable services, pragmatic engineering, clear technical communication, and engineers owning what they run particularly appeals to me; my experience with replayable event pipelines, data contracts, CI checks, and production on-call work would let me contribute to reliable tracking infrastructure.\" This is better aligned than the current broad statement about event-driven data systems.\n\nMINOR ENHANCEMENT\n\n6. In the second paragraph, keep the claims about partner webhooks, dead-letter handling, replay tooling, and the two-minute p95 latency, but ensure the same project details appear consistently in the associated application materials. They are supported by the candidate's portfolio, not by the associated CV as supplied, so this is a consistency improvement rather than a factual correction.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional experience building backend services in Python or a comparable language",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Solid relational database experience, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to a cloud environment",
+          "status": "missing",
+          "quote": "Original CV Skills: \"Cloud & infra: AWS (S3, EMR, Glue, Lambda, IAM), Docker...\""
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "missing",
+          "quote": "Original CV: \"420+ models, tests on every model\"; \"JSON Schema + CI checks\"; portfolio: \"slim CI ... in GitHub Actions\" and \"added tests\""
+        },
+        {
+          "requirement": "Good written and spoken English; ability to explain technical trade-offs clearly",
+          "status": "shown",
+          "quote": "\"I value clear technical communication and reliability work\"; English (C1) is listed in the associated CV."
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "\"I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake\""
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code (Terraform)",
+          "status": "missing",
+          "quote": "Original CV Skills: \"Terraform (basic)\"; candidate notes state limited Kubernetes exposure."
+        },
+        {
+          "requirement": "Exposure to observability tooling such as Prometheus, Grafana, or OpenTelemetry",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Knowledge of logistics, transport or supply-chain domains, or EDI formats",
+          "status": "shown",
+          "quote": "\"building data platforms for e-commerce, payments and logistics\" and \"shipment tracking events\""
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 3
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 3
+  },
+  {
+    "iteration": 2,
+    "content": "Dear Tessel Cargo Software Hiring Team,\n\nI am applying for the Backend Engineer (Python) role on the Routing & Tracking team. I have nine years of professional experience building production data and event-driven systems, including Python services and automation, PostgreSQL-based data flows, AWS workloads, Kafka pipelines, and on-call operations. The opportunity to help make shipment tracking reliable for freight forwarders is a strong match for the systems I have worked on and the engineering work I enjoy.\n\nAt Lukovac Freight Hub, I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake, processing around 30 million events per day with end-to-end latency under two minutes at p95. I also replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing load on the production database. These projects involved making event flows dependable and recoverable, including dead-letter handling and replay tooling—experience that connects closely to your work ingesting carrier events and exposing clean streams for analytics.\n\nI have applied automated quality checks through dbt tests on 420+ models, JSON Schema validation in CI, and GitHub Actions workflows; I have also contributed Python fixes and tests to an open-source Airflow provider.\n\nEarlier, at Kovalent Pay, I built Python and PySpark jobs on AWS EMR for transaction reconciliation, designed a Redshift warehouse used by finance and risk, and added data-quality checks to critical tables. Alongside Python and PySpark work on AWS EMR, I have used Docker, AWS services including S3, EMR, Glue and Lambda, and GitHub Actions in data-platform environments. My PostgreSQL experience includes replacing hourly extracts with Debezium CDC, reducing replica CPU during loads from approximately 70% to 25%, and designing reliable data flows around production databases. In my current role, I take part in a one-week-in-six data-platform on-call rotation and have worked on reliability improvements, including data contracts with CI checks. I would bring practical Python, SQL, PostgreSQL, AWS and Kafka experience, along with an ownership mindset shaped by operating systems that other teams rely on.\n\nTessel’s focus on dependable live tracking and pragmatic engineering appeals to me. Tessel's emphasis on dependable services, pragmatic engineering, clear technical communication, and engineers owning what they run particularly appeals to me; my experience with replayable event pipelines, data contracts, CI checks, and production on-call work would let me contribute to reliable tracking infrastructure.\n\nKind regards,\nLena Varga-Holm",
+    "score": 78,
+    "critique": {
+      "quality_score": 78,
+      "content_quality_feedback": "The cover letter is professional, specific, and strongly relevant to shipment tracking, event streaming, AWS, Kafka, PostgreSQL, data quality, CI/CD, and on-call operations. Its quantified examples—30 million events per day, sub-two-minute p95 latency, 420+ dbt models, and reduced database load—give it credibility and impact. The main content problems are that it is too long for a document the employer explicitly describes as a short cover letter, the fourth paragraph is repetitive, and some wording presents data-engineering experience as broader backend-service experience than the supplied evidence clearly supports. The letter also spends too much space listing technologies instead of directly connecting the candidate's experience to the role's Python services, PostgreSQL, API, testing, and incident-response responsibilities.",
+      "ats_compatibility_feedback": "The plain-text structure, standard headings, conventional greeting, and absence of tables, graphics, or unusual formatting are ATS-friendly. Relevant keywords such as Python, PostgreSQL, AWS, Docker, Kafka, GitHub Actions, CI, automated quality checks, on-call, and shipment tracking appear naturally. However, important job-ad terms are either absent or insufficiently explicit: REST APIs, backend services, automated tests, CI/CD, schema migrations, query tuning, and production deployments. The letter also repeats similar technology lists, which reduces clarity without materially improving keyword coverage. AI screening may score the application as a strong data-platform/event-streaming match but a less certain backend-Python match because the document does not clearly establish three-plus years building Python backend services or experience designing REST APIs.",
+      "job_alignment_feedback": "The strongest alignment is with event ingestion, Kafka streams, logistics/shipment tracking, AWS, Docker, CI/CD, reliability, data quality, and on-call ownership. The candidate's freight/logistics experience is especially valuable, and the letter credibly reflects Tessel's dependable, pragmatic, ownership-oriented culture. The candidate material also supports relevant examples of Debezium CDC, replay tooling, dead-letter handling, Python automation, open-source tests, and production database reliability. Gaps in the candidate material include clear experience building Python web/backend services, designing REST APIs, PostgreSQL schema migrations, observability tools such as Prometheus/Grafana/OpenTelemetry, and practical Kubernetes experience. The letter should not imply those capabilities without evidence. Dutch or French is also not shown, while English is well supported by the clear writing and C1 language level.",
+      "improvement_instructions": "CRITICAL ISSUES\n1. In the opening paragraph, replace the phrase \"including Python services and automation\" with a truthful formulation supported by the candidate information, such as: \"including Python data-processing jobs, internal Python libraries, automation, PostgreSQL data flows, AWS workloads, Kafka pipelines, and on-call operations.\" The supplied material clearly supports Python jobs, scripts, and a library, but does not clearly establish production Python backend services.\n\n2. In the second paragraph, do not imply that the shipment-event pipeline itself was a REST service or customer-facing backend. Replace \"These projects involved making event flows dependable and recoverable\" with a more precise sentence such as: \"This work required dependable and recoverable event flows, including dead-letter handling and replay tooling so failed events could be reprocessed without data loss.\" This preserves the supported evidence and avoids overstating the nature of the system.\n\n3. In the fourth paragraph, remove the unsupported or potentially ambiguous claim that the candidate has broad backend-service experience, and connect the evidence directly to the advertised responsibilities. For example, change the closing portion beginning \"I would bring practical Python...\" to: \"I would bring practical Python, SQL, PostgreSQL, AWS, Docker and Kafka experience, plus an ownership mindset shaped by operating data systems that other teams rely on.\" Do not add REST API design, FastAPI, schema migrations, Kubernetes, or observability claims because they are not supported by the candidate information.\n\n4. In the fourth and fifth paragraphs, eliminate the repeated company-interest statement. Keep one concise paragraph, for example: \"Tessel's focus on dependable live tracking and pragmatic engineering appeals to me. My experience with replayable event pipelines, data contracts, CI checks, and production on-call work aligns with a team that owns what it runs and improves reliability as part of normal engineering work.\" Delete the preceding sentence beginning \"Tessel’s focus...\" or delete the duplicated later sentence, rather than retaining both.\n\nIMPORTANT ALIGNMENT ENHANCEMENTS\n5. In the paragraph beginning \"I have applied automated quality checks,\" make the testing and CI/CD connection explicit without exaggeration. Replace it with: \"I have applied automated tests and quality checks through dbt tests on 420+ models, JSON Schema validation in CI, GitHub Actions workflows, and tests added to an open-source Airflow provider. These practices helped make data changes safer and more repeatable.\" This uses the candidate's supported testing and CI evidence and maps it more directly to the advertisement.\n\n6. In the second paragraph, explicitly identify PostgreSQL and the supported CDC performance result. Replace the sentence beginning \"I also replaced hourly...\" with: \"I also replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70% to 25%.\" This is more concrete and uses the job ad's preferred database term.\n\n7. Shorten the letter to approximately 4 concise body paragraphs and remove the long inventory of tools in the fourth paragraph. Keep the strongest evidence: the shipment-event pipeline, Debezium/PostgreSQL CDC, automated tests and CI, Python/PySpark/AWS work, and on-call ownership. This will make the document more persuasive and better suited to the employer's request for a short cover letter while retaining the highest-value ATS terms.",
+      "critical_issues": "1. Potential overstatement: the opening describes experience with \"Python services,\" but the supplied candidate information clearly documents Python jobs, scripts, an internal library, and data-platform work rather than production Python backend services. This must be narrowed to avoid presenting unsupported backend-service experience.\n2. The letter is unnecessarily repetitive in its final two paragraphs, repeating Tessel's dependable/pragmatic engineering focus and the candidate's replayable pipelines, data contracts, CI checks, and on-call experience. This materially weakens concision and impact.\nClaims the sources (the candidate's own material; for the employer, the job ad and company research) do not support:\n- including Python services",
+      "unsupported_claims": [
+        "including Python services"
+      ],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional experience building backend services in Python or a comparable language",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Solid relational database experience, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to a cloud environment",
+          "status": "shown",
+          "quote": "\"I have used Docker, AWS services including S3, EMR, Glue and Lambda\""
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "shown",
+          "quote": "\"automated quality checks through dbt tests on 420+ models, JSON Schema validation in CI, and GitHub Actions workflows\""
+        },
+        {
+          "requirement": "Good written and spoken English; ability to explain technical trade-offs clearly",
+          "status": "shown",
+          "quote": "The letter is clearly written in English and explains reliability, replay, CDC, and data-quality trade-offs with quantified results."
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "\"I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake\""
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code (Terraform)",
+          "status": "missing",
+          "quote": "Candidate notes state: \"k8s: only read-only kubectl at lukovac, platform team owns it\"; the candidate portfolio supports Terraform use in the streaming project, but the letter does not mention Terraform."
+        },
+        {
+          "requirement": "Exposure to observability tooling such as Prometheus, Grafana, or OpenTelemetry",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Knowledge of logistics, transport or supply-chain domains, or EDI formats",
+          "status": "shown",
+          "quote": "\"shipment tracking\" and \"shipment-event pipeline\" at Lukovac Freight Hub, a logistics marketplace"
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [
+      "including Python services"
+    ],
+    "grounding_checked": true,
+    "defects": 1
+  },
+  {
+    "iteration": 3,
+    "content": "Dear Tessel Cargo Software Hiring Team,\n\nI am applying for the Backend Engineer (Python) role on the Routing & Tracking team. I have nine years of professional experience building production data and event-driven systems, including Python data-processing jobs, internal Python libraries, automation, PostgreSQL data flows, AWS workloads, Kafka pipelines, and on-call operations. The opportunity to help make shipment tracking reliable for freight forwarders is a strong match for the systems I have worked on and the engineering work I enjoy.\n\nAt Lukovac Freight Hub, I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake, processing around 30 million events per day with end-to-end latency under two minutes at p95. I also replaced hourly full-table extracts from PostgreSQL with Debezium CDC into Kafka, reducing replica CPU during loads from approximately 70% to 25%. This work required dependable and recoverable event flows, including dead-letter handling and replay tooling so failed events could be reprocessed without data loss. I have applied automated tests and quality checks through dbt tests on 420+ models, JSON Schema validation in CI, GitHub Actions workflows, and tests added to an open-source Airflow provider. These practices helped make data changes safer and more repeatable.\n\nEarlier, at Kovalent Pay, I built Python and PySpark jobs on AWS EMR for transaction reconciliation, designed a Redshift warehouse used by finance and risk, and added data-quality checks to critical tables. In my current role, I take part in a one-week-in-six data-platform on-call rotation and have worked on reliability improvements, including data contracts with CI checks. I would bring practical Python, SQL, PostgreSQL, AWS, Docker and Kafka experience, plus an ownership mindset shaped by operating data systems that other teams rely on.\n\nTessel's focus on dependable live tracking and pragmatic engineering appeals to me. My experience with replayable event pipelines, data contracts, CI checks, and production on-call work aligns with a team that owns what it runs and improves reliability as part of normal engineering work.\n\nKind regards,\nLena Varga-Holm",
+    "score": 87,
+    "critique": {
+      "quality_score": 87,
+      "content_quality_feedback": "This is a strong, professional cover letter with a clear target role, relevant shipment-tracking context, credible technical detail, and quantified results. The progression from current shipment-event work to earlier Python/PySpark and AWS experience is logical. The letter also reflects Tessel's reliability and ownership culture through references to replay tooling, on-call work, CI checks, and dependable production systems. The main limitation is that it presents the candidate primarily as a data-platform engineer rather than directly addressing the backend-service aspects of the role. Some technical claims are concentrated in a dense second paragraph, which slightly reduces readability.",
+      "ats_compatibility_feedback": "The letter is ATS-friendly in its plain-text structure, conventional greeting, readable paragraphs, and use of relevant terms including Python, PostgreSQL, AWS, Docker, Kafka, GitHub Actions, CI, automated tests, event-driven systems, and on-call operations. AI screening should recognize a strong logistics, streaming, reliability, and cloud-data match. However, the letter does not explicitly use several important job-ad terms that are supported only partially or indirectly: REST APIs, backend services, relational database schema work, Terraform, and automated testing as a standalone capability. It appropriately does not claim unsupported FastAPI, Kubernetes production experience, observability tooling, or API design experience.",
+      "job_alignment_feedback": "The alignment is strong for shipment-event ingestion, Kafka, logistics technology, AWS, reliability, CI/CD practices, and on-call ownership. The candidate's shipment-tracking pipeline, freight/logistics experience, and production-scale event volume are especially relevant to Tessel's domain. The letter also demonstrates clear technical communication through concrete trade-offs and outcomes. The candidate's material does not establish three-plus years specifically building backend services, PostgreSQL query tuning, safe schema migrations, REST API design, production Kubernetes, or observability tooling. It shows Python data-processing and library development, consumption of partner/third-party APIs, PostgreSQL CDC, Docker, AWS, and basic Terraform. These are genuine alignment limitations rather than defects that can be solved by wording alone. Dutch or French is also not present in the candidate material.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS\n1. In the opening paragraph, make the Python evidence more concrete and accurately position it for the backend role. After the sentence ending \"on-call operations,\" add a sentence such as: \"My Python experience includes production data-processing jobs, an internal Python library used by four teams, Python automation replacing 60 SSIS jobs, and small production-focused fixes and tests in an Airflow provider.\" This strengthens the Python match without claiming unsupported FastAPI or general backend-service experience.\n\n2. In the second paragraph, explicitly describe the API-related experience without overstating it. Change \"using partner webhooks, Kafka and Snowflake\" to \"consuming partner webhook events and routing them through Kafka to Snowflake.\" This uses the candidate's supported experience and avoids implying that she designed REST APIs, which is not established in the source material.\n\n3. In the third paragraph, make the cloud and container keywords more visible. Change \"I would bring practical Python, SQL, PostgreSQL, AWS, Docker and Kafka experience\" to \"I would bring practical Python, SQL and PostgreSQL experience, AWS workloads, Docker, Kafka, and GitHub Actions CI/CD experience.\" This more closely matches the job ad while remaining supported by the original CV.\n\n4. In the paragraph discussing reliability practices, name automated testing directly rather than only describing individual examples. Change \"I have applied automated tests and quality checks through dbt tests on 420+ models, JSON Schema validation in CI, GitHub Actions workflows, and tests added to an open-source Airflow provider\" to \"I have applied automated testing and CI/CD practices through dbt tests on 420+ models, JSON Schema validation in CI, GitHub Actions workflows, and pytest tests added to an open-source Airflow provider.\" The addition of \"pytest\" is supported by the candidate portfolio.\n\n5. In the final paragraph, connect the candidate's experience more explicitly to Tessel's event-ingestion and operational culture, but do not claim unsupported REST API, FastAPI, Kubernetes, or observability experience. Replace the sentence beginning \"Tessel's focus\" with: \"Tessel's focus on dependable live tracking and pragmatic engineering appeals to me. My experience operating replayable shipment-event pipelines, reducing production-database load through CDC, introducing data contracts and CI checks, and participating in a one-week-in-six on-call rotation aligns with a team that owns what it runs and improves reliability as part of normal engineering work.\"\n\nMINOR ENHANCEMENT\n6. In the second paragraph, split the long sentence beginning \"I also replaced hourly full-table extracts\" into two sentences: one describing the Debezium CDC change and one describing the replica-CPU result. This will make the most technically important project easier for both recruiters and AI screening systems to parse.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "3+ years of professional experience building backend services in Python or a comparable language",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Solid relational database experience, preferably PostgreSQL, including query tuning and schema migrations",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience designing and consuming REST APIs",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience with Docker and deploying services to AWS",
+          "status": "shown",
+          "quote": "I would bring practical Python, SQL, PostgreSQL, AWS, Docker and Kafka experience"
+        },
+        {
+          "requirement": "Practical understanding of automated testing and CI/CD",
+          "status": "shown",
+          "quote": "I have applied automated tests and quality checks through dbt tests on 420+ models, JSON Schema validation in CI, GitHub Actions workflows, and tests added to an open-source Airflow provider."
+        },
+        {
+          "requirement": "Good written and spoken English; ability to explain technical trade-offs clearly",
+          "status": "shown",
+          "quote": "This work required dependable and recoverable event flows, including dead-letter handling and replay tooling so failed events could be reprocessed without data loss."
+        },
+        {
+          "requirement": "Experience with Kafka or another event-streaming platform",
+          "status": "shown",
+          "quote": "I designed and built a shipment-event pipeline using partner webhooks, Kafka and Snowflake, processing around 30 million events per day"
+        },
+        {
+          "requirement": "Experience with Kubernetes and infrastructure as code, such as Terraform",
+          "status": "missing",
+          "quote": "Terraform (basic)"
+        },
+        {
+          "requirement": "Exposure to observability tooling such as Prometheus, Grafana or OpenTelemetry",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Knowledge of logistics, transport or supply-chain domains, or EDI formats",
+          "status": "shown",
+          "quote": "The opportunity to help make shipment tracking reliable for freight forwarders is a strong match with the systems I have worked on"
+        },
+        {
+          "requirement": "Dutch or French language skills",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 1
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 1
+  }
+]

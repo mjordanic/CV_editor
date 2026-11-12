@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\normalsize\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{0.7em}{0.3em}
+\newcommand{\cvsection}[1]{\section*{#1}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2em}
+\setlist[itemize]{leftmargin=*,itemsep=0.1em,topsep=0.2em,parsep=0pt}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\LARGE\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\[0.3em]
+{\large\color{accentcolor} QA Automation Engineer | CI/CD and Test Infrastructure}\\[0.3em]
+{\small \href{mailto:marta.kowalbrandt@example.com}{marta.kowalbrandt@example.com} | +48 555 303 303 | \href{https://gitlab.com/mkb-example}{gitlab.com/mkb-example}}
+\end{center}
+\cvsection{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience, with the last two focused mainly on CI/CD pipelines, test environments and build tooling. Own GitLab CI pipelines for 3 product teams supporting approximately 25 developers. Reduced average pipeline time from 38 to 14 minutes and built per-merge-request environments using Docker Compose and Helm on a shared Kubernetes cluster. Seeking to move into DevOps / platform engineering full time.
+\cvsection{SKILLS}
+\textbf{CI/CD and build tooling:} GitLab CI, Jenkins, artifact publishing, dependency caching, parallel test execution\\
+\textbf{Containers and environments:} Docker, Docker Compose, Helm, Kubernetes (basic)\\
+\textbf{Scripting and systems:} Python, Bash, Linux, Git, SQL, PostgreSQL\\
+\textbf{Testing and monitoring:} pytest, Playwright, Selenium, Postman, Grafana dashboards for test metrics\\
+\textbf{Additional programming:} Java (test code)
+\cvsection{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software | 2021 - Present}
+\begin{itemize}
+\item Own GitLab CI pipelines for 3 product teams, supporting approximately 25 developers across build, unit, integration and end-to-end test stages and artifact publishing.
+\item Reduced average pipeline time from 38 to 14 minutes by parallelising test jobs, caching dependencies and moving end-to-end tests to on-demand ephemeral environments.
+\item Built ephemeral test environments per merge request using Docker Compose, then Helm charts on the company's shared Kubernetes cluster.
+\item Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced the flaky test rate from 7\% to under 1\%.
+\item Wrote Bash and Python tooling for test data seeding into PostgreSQL.
+\end{itemize}
+\textbf{QA Engineer | Brightmill Software House | 2019 - 2021}
+\begin{itemize}
+\item Performed manual and automated testing of web and mobile applications for client projects.
+\item Introduced a Selenium and Java automated regression suite for the largest client project.
+\item Configured Jenkins jobs for nightly regression runs.
+\end{itemize}
+\textbf{Customer Support Specialist (2nd line) | Brightmill Software House | 2018 - 2019}
+\begin{itemize}
+\item Investigated customer issues using logs and databases and reproduced bugs for developers.
+\end{itemize}
+\cvsection{EDUCATION}
+BEng Computer Engineering | Silesian Lowlands University of Technology | 2018
+\cvsection{LANGUAGES}
+Polish (native) | English (C1) | German (A2)
+\end{document}

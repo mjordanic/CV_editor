@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor,citecolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.25em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Marta Kowal-Brandt}\\[0.35em]
+{\large\color{accentcolor} DevOps / Platform Engineering | QA Automation & Test Infrastructure}
+\end{center}
+\vspace{0.4em}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with experience owning GitLab CI pipelines and ephemeral environments for three teams at Odrava Health Software. Built Kubernetes-based merge-request environments and improved CI pipelines, reducing average runtime from 38 to 14 minutes and monthly CI runner costs by about 30\%. Brings hands-on experience with Helm, Docker, Kubernetes, GitLab CI, and observability, alongside personal k3s/GitOps and Terraform projects. Currently transitioning toward DevOps and platform engineering.
+
+\section*{SKILLS}
+CI/CD: GitLab CI, Jenkins, pipeline optimization, automated regression and end-to-end testing\\
+Containers and orchestration: Docker, Kubernetes (namespace-level access; Helm charts for test environments), Helm, k3s, Argo CD\\
+Infrastructure and automation: Terraform (personal Hetzner VPS project), Ansible (basic), Bash\\
+Observability and data: Prometheus, Grafana, Loki, PostgreSQL\\
+Programming and testing: Python, Java, pytest, pytest-xdist, Selenium, GitLab API\\
+Cloud learning: AWS EC2 and S3 basics (personal free-tier use)
+
+\section*{EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software | 2021 to Present}
+\begin{itemize}
+\item Own GitLab CI pipelines and ephemeral environments for three teams.
+\item Built merge-request environments with an application, PostgreSQL, and seeded data, deployed via Helm to a shared Kubernetes cluster from GitLab CI; environments are removed after merge or 48 hours of inactivity.
+\item Profiled pipelines across three teams, parallelized test jobs, added dependency caching, and split end-to-end tests into a separate stage; reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30\%.
+\item Built a flaky-test dashboard using CI results, PostgreSQL, Python, Grafana, and the GitLab API; the flaky-test rate fell from 7\% to below 1\% after teams addressed the leading offenders.
+\item Wrote the internal guide to how CI works, which is used in onboarding.
+\item Mentored two QA interns in 2023.
+\item Joined two incident calls as an observer.
+\end{itemize}
+
+\textbf{QA Engineer | Brightmill Software House | 2019 to 2021}
+\begin{itemize}
+\item Tested web and mobile applications for different clients.
+\item Introduced the first automated regression suite on the largest project, using Java and Selenium, and configured Jenkins to run it nightly.
+\item The full regression had previously taken two people three days.
+\end{itemize}
+
+\section*{SELECTED PROJECT}
+\textbf{Homelab k3s Cluster with GitOps | Personal | 2024 to 2025}
+\begin{itemize}
+\item Built a three-node Raspberry Pi 5 k3s cluster with applications deployed from a Git repository using Argo CD.
+\item Set up Prometheus, Grafana, and Loki for monitoring, Traefik ingress, and cert-manager for TLS.
+\item Provisioned infrastructure for a small Hetzner VPS with Terraform.
+\item Technologies: k3s, Argo CD, Prometheus, Grafana, Loki, Terraform, Ansible (basic).
+\end{itemize}
+
+\section*{CERTIFICATIONS AND DEVELOPMENT}
+ISTQB Foundation Level, 2019\\
+Certified Kubernetes Administrator (CKA): studying; exam booked for January 2027.\\
+Terraform Associate: completed practice tests; exam not taken.
+
+\end{document}

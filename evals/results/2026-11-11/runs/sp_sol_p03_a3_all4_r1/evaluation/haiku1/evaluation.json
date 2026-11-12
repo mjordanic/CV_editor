@@ -1,0 +1,528 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku1",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9304,
+      "output_tokens": 14886,
+      "cache_creation_input_tokens": 3893,
+      "cache_read_input_tokens": 10223
+    },
+    "cost_usd": 0.004481,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "34ceba0e27c7b03f55045af40b29e1a44abc7521f4e391b175a58d5d1aeb9b8f",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku1-sp_sol_p03_a3_all4_r1-dc37d89b01",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku1-sp_sol_p03_a3_all4_r1-dc37d89b01",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.008962
+  },
+  "evaluation": {
+    "claims": [],
+    "omissions": [
+      {
+        "fact": "Joined two incident calls as an observer",
+        "source": "notes",
+        "source_quote": "did join 2 incident calls as observer",
+        "relevance": "medium",
+        "why_it_matters": "Shows some exposure to production incidents relevant to a reliability-focused role"
+      },
+      {
+        "fact": "Built Grafana dashboards and Prometheus/Loki monitoring in the homelab",
+        "source": "cv",
+        "source_quote": "Set up Prometheus, Grafana and Loki for monitoring",
+        "relevance": "low",
+        "why_it_matters": "Observability is in the ad; the letter could mention it"
+      }
+    ],
+    "fit": {
+      "requirements": [],
+      "gap_handling_summary": "The letter and CV openly state the lack of production cloud operations and architecture background; no gap is faked.",
+      "score": 4
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": []
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "EXPERIENCE",
+        "PERSONAL INFRASTRUCTURE PROJECTS",
+        "TECHNICAL SKILLS",
+        "EDUCATION",
+        "CERTIFICATIONS AND TRAINING",
+        "LANGUAGES"
+      ],
+      "parse_issues": [
+        "2021 - / Present split across lines in the experience heading"
+      ],
+      "important_requirements": [
+        "DevOps or platform engineer role",
+        "Terraform",
+        "Terragrunt",
+        "Kubernetes",
+        "AWS",
+        "mTLS",
+        "SSL/TLS",
+        "Networking",
+        "Security",
+        "Linux",
+        "System design",
+        "Leading technical topics",
+        "Infrastructure as code",
+        "Observability"
+      ],
+      "covered_in_searchable_wording": [
+        "Terraform",
+        "Kubernetes",
+        "Linux",
+        "Docker",
+        "Helm",
+        "Argo CD",
+        "Prometheus",
+        "Grafana",
+        "AWS",
+        "Python",
+        "Java",
+        "TLS"
+      ],
+      "missed_but_candidate_has": [
+        "Leading technical topics (CI guide authored, two interns mentored) appears only as narrative, not as a searchable term"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 7,
+      "reason": "Clean, well-sectioned text with most relevant terms visible, but Terragrunt, mTLS and architecture are absent because the candidate lacks them, and one date range is split across a line."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Last paragraph is generic and does not engage with the on-board or fleet context",
+        "Says diagnostic tooling without support"
+      ],
+      "strengths": [
+        "Honest framing of the transition and namespace-level Kubernetes work",
+        "Links CI/CD and onboarding documentation to the ad's requirement to support backend developers"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "Large empty area at the bottom of CV page 1 before the page break"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Corvale's requirement to help backend developers deploy services that are easy to monitor and run connects directly with this work reads awkwardly"
+      ],
+      "score": 9
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "CKA exam booked for Jan 2027 and not passed",
+        "ISTQB 2019",
+        "Mentored 2 QA interns in 2023",
+        "Wrote the internal CI guide",
+        "Namespace-level access on the Odrava cluster"
+      ],
+      "notes_facts_ignored": [
+        "Joined 2 incident calls as observer",
+        "No production on-call experience"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 9
+    },
+    "user_requests": {
+      "requests": [],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 7,
+    "overall_score": 6,
+    "summary": "Both documents are honest and well grounded: the CV and letter present real CI/CD, Helm and Kubernetes namespace work, and they state plainly that Terraform and AWS come from personal learning and that the CKA is not yet passed. The main weaknesses are the weak fit for this ad, since Terragrunt, mTLS, architecture and production cloud operations are absent, and a few stretched phrases such as diagnostic tooling. The layout is clean and the work-arrangement is handled neutrally. The letter is solid but its last paragraph is generic and it says little about fleet or on-board context."
+  },
+  "counts": {
+    "claims": 0,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 0,
+    "omissions_high": 0,
+    "must_haves": 0,
+    "must_haves_shown": 0,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 0,
+    "requests_followed": 0,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 7
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3445,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2177,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 274.2
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 58.2,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 10.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 77.5,
+          "top": 71.4,
+          "bottom": 295.7
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 64.9,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.004481,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Own the GitLab CI pipelines for 3 product teams (~25 developers)",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Own the GitLab CI pipelines for 3 product teams (~25 developers)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Cut average pipeline time from 38 to 14 minutes",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Cut average pipeline time from 38 to 14 minutes",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Reduced monthly CI runner costs by approximately 30%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "monthly CI runner cost down about 30%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built per-merge-request ephemeral environments with Docker Compose, later Helm on a shared Kubernetes cluster",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Built ephemeral test environments per merge request using Docker Compose, later Helm charts on the company's shared Kubernetes cluster.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Work at namespace level on Kubernetes; platform team operates the cluster",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "I have namespace-level access, I write helm charts for test envs, not the cluster itself",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Maintain approximately 900 pytest and Playwright tests",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Maintain the pytest + Playwright e2e suite (~900 tests)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Authored the internal CI guide used in onboarding",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "I wrote the internal how our CI works doc, people use it in onboarding",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mentored two QA interns in 2023",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "mentored 2 QA interns in 2023",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a three-node Raspberry Pi 5 k3s cluster with Argo CD GitOps",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Three Raspberry Pi 5 nodes running k3s; all apps deployed from a Git repository with Argo CD.",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Provisioned infrastructure for a personal Hetzner VPS using Terraform",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Infrastructure for a small VPS on Hetzner provisioned with Terraform (personal account).",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "AWS EC2 and S3 basics through personal learning",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "free tier AWS for learning (EC2, S3 basics)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "ISTQB Foundation Level, 2019",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "ISTQB Foundation Level cert, 2019",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "CKA exam booked for January 2027, not yet certified",
+            "kind": "certification",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "exam booked for Jan 2027. NOT passed yet",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "7 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "QA automation engineer with 7 years of experience",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Diagnostic tooling",
+            "kind": "skill_or_tool",
+            "verdict": "partly_supported",
+            "source": "cv",
+            "evidence_quote": "Investigated customer issues through logs and databases and reproduced bugs for developers.",
+            "note": "Support work investigated issues in logs, but no diagnostic tooling is shown; the phrase stretches the material."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Clear technical documentation",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "I wrote the internal how our CI works doc",
+            "note": ""
+          }
+        ]
+      },
+      {
+        "field": "ats.reason",
+        "guaranteed": "Clean, well-sectioned text with most relevant terms visible, but Terragrunt, mTLS and architecture are absent because the candidate lacks them, and one date range is split across a line.",
+        "full": "The text parses cleanly and shows many relevant terms, but several ad requirements are absent because the candidate lacks them, and the CV does not spell out the leadership evidence in searchable terms."
+      },
+      {
+        "field": "ats.covered_in_searchable_wording",
+        "guaranteed": [
+          "Terraform",
+          "Kubernetes",
+          "Linux",
+          "Docker",
+          "Helm",
+          "Argo CD",
+          "Prometheus",
+          "Grafana",
+          "AWS",
+          "Python",
+          "Java",
+          "TLS"
+        ],
+        "full": [
+          "Terraform",
+          "Kubernetes",
+          "AWS",
+          "TLS",
+          "Linux",
+          "Observability",
+          "Infrastructure as code"
+        ]
+      },
+      {
+        "field": "ats.missed_but_candidate_has",
+        "guaranteed": [
+          "Leading technical topics (CI guide authored, two interns mentored) appears only as narrative, not as a searchable term"
+        ],
+        "full": [
+          "Leading technical topics (CI guide and mentoring) only as narrative"
+        ]
+      }
+    ]
+  }
+}

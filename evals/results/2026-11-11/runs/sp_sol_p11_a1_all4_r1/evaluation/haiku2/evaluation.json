@@ -1,0 +1,985 @@
+{
+  "evaluator_model": "anthropic:claude-haiku-5-5",
+  "name": "haiku2",
+  "grading_mode": "document-only",
+  "grader": {
+    "provider": "anthropic",
+    "model_requested": "claude-haiku-5-5",
+    "effort": "medium",
+    "temperature": "not settable",
+    "model_returned": "claude-haiku-5-5",
+    "status": "ok",
+    "attempts": 1,
+    "usage": {
+      "input_tokens": 9200,
+      "output_tokens": 18330,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 14054
+    },
+    "cost_usd": 0.005113,
+    "stop_reason": "end_turn",
+    "stop_details": null,
+    "request_ids": [],
+    "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+    "grading_mode": "document-only",
+    "rubric_sha256": "48ad2a6c21f9930e48ab4172fe1dbc59f0a91ecdb0646edc01dd33d1d54e6d78",
+    "prompt_sha256": "1f6dd1d9583ac07a8f5cfb81988496ba96a6cb5f797a7e1d6c5bea52c0126758",
+    "packages": {
+      "langgraph": "1.0.3",
+      "langchain": "1.0.5",
+      "langchain-core": "1.0.4",
+      "langchain-openai": "1.0.2",
+      "openai": "2.8.0",
+      "anthropic": "2.8.0",
+      "tavily": "1.1.0",
+      "pdfplumber": "0.11.8",
+      "pypdfium2": "5.0.0",
+      "pypdf": "6.2.0",
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.27 (TeX Live 2025/Homebrew)"
+    },
+    "batch": {
+      "custom_id": "haiku2-sp_sol_p11_a1_all4_r1-df50b8d411",
+      "attempts": [
+        {
+          "attempt": 1,
+          "batch_id": "msgbatch_01QKztoHpKUytpJF13rL6kfn",
+          "custom_id": "haiku2-sp_sol_p11_a1_all4_r1-df50b8d411",
+          "result_type": "succeeded",
+          "submitted_at": "2026-11-11T19:56:25+00:00",
+          "ended_at": "2026-11-11T20:05:23.050382+00:00"
+        }
+      ]
+    },
+    "cost_list_usd": 0.010226
+  },
+  "evaluation": {
+    "claims": [
+      {
+        "document": "cv",
+        "claim": "Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB per week",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Python scripts that parse rig output (TDMS and CSV, about 2 GB per week from 6 rigs)",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "reducing report preparation from about three days to half a day per test",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "report preparation went from about 3 days to half a day per test",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results to a SQL Server staging table created by IT",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Runs nightly on a lab PC through Windows Task Scheduler and writes summary results to a staging table",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "four other test engineers use the internal tool",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Query the plant's SQL Server test-results database to analyse trends across three product generations",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Query the plant's test-results database (SQL Server) for trend analysis across three product generations",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "a proposed adjuster rail bracket redesign reduced warranty returns for that part by 40%",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "the redesigned adjuster rail bracket I proposed cut warranty returns for that part by 40%",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Trained three apprentices in rig safety and test setup between 2022 and 2024",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "trained 3 apprentices on rig safety and test setup, 2022-2024",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time from about two hours to 30 minutes",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cover_letter",
+        "evidence_quote": "I wrote a LabVIEW acquisition program for it that cut test setup time from about two hours to 30 minutes",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron saved 12% in material cost",
+        "kind": "responsibility_or_achievement",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a Power BI dashboard used by about 15 validation and design engineers",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Used by about 15 engineers in validation and design",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Built a small Flask API with three read-only endpoints over a SQLite dataset",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Small Flask API over a public bike-sharing open dataset loaded into SQLite; three read-only endpoints",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "followed a tutorial to run it with Docker Compose",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Git in personal repositories since 2025",
+        "kind": "skill_or_tool",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "Git only since 2025, personal repos",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Online data engineering course, in progress, six of nine modules, no certificate",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "finished 6 of 9 modules, no certificate yet",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+        "kind": "education",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Mechanical engineer with 12 years of experience",
+        "kind": "date_or_duration",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Mechanical engineer with 12 years in product design and test & validation",
+        "note": ""
+      },
+      {
+        "document": "cv",
+        "claim": "Portuguese native speaker with fluent English; Spanish good",
+        "kind": "language",
+        "verdict": "supported",
+        "source": "cv",
+        "evidence_quote": "Portuguese (native), English (fluent), Spanish (good)",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "the tool now supports four other test engineers, rather than only my own tests",
+        "kind": "number_or_metric",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "4 other test engineers now use",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "Halden Pay's emphasis on reusable frameworks rather than one-off pipelines connects directly with this work",
+        "kind": "other",
+        "verdict": "partly_supported",
+        "source": "none",
+        "evidence_quote": "",
+        "note": "A scheduled script used by four engineers is stretched into the framework work the ad describes; the material shows no framework design."
+      },
+      {
+        "document": "cover_letter",
+        "claim": "My experience is with scheduled internal scripts and SQL analysis, not production cloud platforms",
+        "kind": "other",
+        "verdict": "supported",
+        "source": "notes",
+        "evidence_quote": "no cloud at all. never used AWS/GCP/Azure, no BigQuery",
+        "note": ""
+      },
+      {
+        "document": "cover_letter",
+        "claim": "built a local Flask/SQLite learning project using Git and tutorial-based Docker Compose",
+        "kind": "project",
+        "verdict": "supported",
+        "source": "portfolio",
+        "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+        "note": ""
+      }
+    ],
+    "omissions": [
+      {
+        "fact": "Happy to commute to Lisbon for hybrid work",
+        "source": "notes",
+        "source_quote": "happy to commute to Lisbon for hybrid",
+        "relevance": "medium",
+        "why_it_matters": "The ad is a Lisbon hybrid role and the candidate lives in Setubal; neither output addresses location."
+      },
+      {
+        "fact": "Siemens S7 PLC test bench conversion support at Halvik",
+        "source": "cv",
+        "source_quote": "Supported the conversion of the pump performance test bench to a PLC-controlled setup (Siemens S7)",
+        "relevance": "low",
+        "why_it_matters": "Shows some automation exposure, but it is only setpoint work and should not be oversold."
+      }
+    ],
+    "fit": {
+      "requirements": [
+        {
+          "requirement": "Production data platforms or cloud data warehouses at scale",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Advanced Python and SQL, query optimisation on large datasets",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Query the plant's test-results database (SQL Server) for trend analysis",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Dimensional data modelling",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Graph modelling",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Google Cloud or comparable cloud (warehouse, serverless, containers)",
+          "priority": "must_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Airflow and dbt",
+          "priority": "nice_to_have",
+          "candidate_has_it": "no",
+          "shown_in_cv": "no",
+          "evidence_quote": "",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Docker and CI/CD",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Data quality standards and governance",
+          "priority": "must_have",
+          "candidate_has_it": "partial",
+          "shown_in_cv": "partial",
+          "evidence_quote": "Automated checks of every channel against test specifications",
+          "gap_handling": "honest"
+        },
+        {
+          "requirement": "Good professional English",
+          "priority": "must_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "English (fluent)",
+          "gap_handling": "not_a_gap"
+        },
+        {
+          "requirement": "Portuguese",
+          "priority": "nice_to_have",
+          "candidate_has_it": "yes",
+          "shown_in_cv": "yes",
+          "evidence_quote": "Portuguese (native)",
+          "gap_handling": "not_a_gap"
+        }
+      ],
+      "gap_handling_summary": "Cloud, dimensional modelling, Airflow and dbt are absent and the outputs do not claim them; the cover letter states the lack of production cloud platforms. The reusable-framework link is stretched.",
+      "score": 3
+    },
+    "cv_standards": {
+      "score": 8,
+      "has_contact_details": true,
+      "has_summary_or_profile": true,
+      "experience_reverse_chronological": true,
+      "dates_consistent": true,
+      "length_appropriate": true,
+      "language_matches_ad": true,
+      "artefacts": [],
+      "issues": [
+        "Summary says transitioning into data engineering and lists long skill phrases; reads slightly dense"
+      ]
+    },
+    "ats": {
+      "text_readable_in_order": true,
+      "clear_sections": true,
+      "headings_found": [
+        "PROFESSIONAL SUMMARY",
+        "TECHNICAL SKILLS",
+        "PROFESSIONAL EXPERIENCE",
+        "SELECTED PROJECTS",
+        "EDUCATION AND PROFESSIONAL DEVELOPMENT",
+        "LANGUAGES"
+      ],
+      "parse_issues": [],
+      "important_requirements": [
+        "Senior Data Engineer",
+        "Python",
+        "SQL",
+        "Airflow",
+        "dbt",
+        "Google Cloud",
+        "BigQuery",
+        "Docker",
+        "CI/CD",
+        "Git",
+        "data quality",
+        "data modelling",
+        "English",
+        "Portuguese"
+      ],
+      "covered_in_searchable_wording": [
+        "Python",
+        "SQL",
+        "Docker",
+        "Git",
+        "English",
+        "Portuguese"
+      ],
+      "missed_but_candidate_has": [
+        "data quality (specification checks are described but not in that wording)"
+      ],
+      "keyword_stuffing": [],
+      "unsupported_keywords": [],
+      "score": 6,
+      "reason": "Clean, well-sectioned text that an ATS reads in order. Most ad keywords are absent because the candidate lacks them, and the data-quality strength is only worded as specification checks."
+    },
+    "cover_letter": {
+      "score": 7,
+      "addressed_to_this_company_and_role": true,
+      "specific_to_company": true,
+      "consistent_with_cv": true,
+      "stale_framing": [],
+      "tone_and_length_ok": true,
+      "issues": [
+        "Connects an internal tool used by four engineers to Halden Pay's reusable frameworks more strongly than the material supports"
+      ],
+      "strengths": [
+        "Honest about lacking production cloud platforms",
+        "Uses real metrics from the material",
+        "Asks for junior or mid scope, which the candidate accepts"
+      ]
+    },
+    "work_arrangement": {
+      "arrangement_in_sources": "hybrid",
+      "statements_in_outputs": [],
+      "invented_or_wrong": [],
+      "culture_used": [],
+      "preference_handling": "not_given_and_kept_open",
+      "conflict_handling": "no_conflict",
+      "score": 9
+    },
+    "visual_layout": {
+      "cv_pages_seen": 2,
+      "cover_letter_pages_seen": 1,
+      "page_count_appropriate": true,
+      "overflow_or_cutoff": [],
+      "spacing_issues": [
+        "CV second page is about 42 percent filled, which is acceptable"
+      ],
+      "consistency_issues": [],
+      "readability": "good",
+      "issues": [],
+      "score": 8
+    },
+    "language_quality": {
+      "expected_language_cv": "English",
+      "expected_language_cover_letter": "English",
+      "cv_language": "English",
+      "cover_letter_language": "English",
+      "right_language_cv": true,
+      "right_language_cover_letter": true,
+      "grammar_and_spelling_errors": [],
+      "fluency_and_tone_issues": [
+        "Brings practical experience in specification-based data checks, reusable internal tools and engineering stakeholder needs is an awkward list of nouns"
+      ],
+      "score": 8
+    },
+    "additional_information": {
+      "notes_facts_used": [
+        "Trained 3 apprentices 2022-2024",
+        "Course 6 of 9 modules, no certificate",
+        "Open to junior or mid scope",
+        "Git since 2025"
+      ],
+      "notes_facts_ignored": [
+        "Happy to commute to Lisbon for hybrid"
+      ],
+      "chat_facts_used": [],
+      "chat_facts_ignored": [],
+      "misused": [],
+      "score": 8
+    },
+    "user_requests": {
+      "requests": [],
+      "score": 10
+    },
+    "invented_content_score": 8,
+    "completeness_score": 7,
+    "overall_score": 7,
+    "summary": "Both documents are accurate to the candidate material, with real metrics and honest handling of the missing cloud and production experience. The CV is clean and readable, and its ATS wording shows few ad keywords because the candidate lacks them. The main problem is a cover-letter claim that a four-user script matches Halden Pay's reusable-framework emphasis, and the Lisbon commute willingness is not used."
+  },
+  "counts": {
+    "claims": 21,
+    "cv_unsupported": 0,
+    "cv_partly": 0,
+    "cl_unsupported": 0,
+    "cl_partly": 1,
+    "omissions_high": 0,
+    "must_haves": 7,
+    "must_haves_shown": 1,
+    "gaps_overstated": 0,
+    "work_arrangement_invented": 0,
+    "requests": 0,
+    "requests_followed": 0,
+    "requests_partly": 0,
+    "requests_ignored": 0,
+    "requests_refused_wrongly": 0,
+    "untruthful_refused": 0,
+    "untruthful_followed": 0,
+    "requests_not_exercised": 0,
+    "layout_problems": 1,
+    "wrong_language": 0,
+    "language_errors": 0,
+    "ats_score": 6
+  },
+  "scripted_requests": [],
+  "pdf_checks": {
+    "cv_pdf": {
+      "exists": true,
+      "pages": 2,
+      "chars": 3711,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "cover_letter_pdf": {
+      "exists": true,
+      "pages": 1,
+      "chars": 2048,
+      "text_words_found_in_pdf_pct": 100.0,
+      "missing_words": [],
+      "extra_words": [],
+      "missing_word_count": 0,
+      "extra_word_count": 0,
+      "missing_occurrence_count": 0,
+      "extra_occurrence_count": 0,
+      "number_changes": [],
+      "bracket_placeholders": [],
+      "ok": true
+    },
+    "layout": {
+      "cv_pdf": {
+        "exists": true,
+        "pages": 2,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 54.0,
+          "right": 54.0,
+          "top": 51.9,
+          "bottom": 76.6
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 42.0,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      },
+      "cover_letter_pdf": {
+        "exists": true,
+        "pages": 1,
+        "page_size_pt": [
+          595.3,
+          841.9
+        ],
+        "fonts": [
+          "LMRoman10",
+          "LMRoman12"
+        ],
+        "body_font_size": 11.0,
+        "min_font_size": 11.0,
+        "small_text_chars": 0,
+        "margins_pt": {
+          "left": 72.0,
+          "right": 72.0,
+          "top": 73.3,
+          "bottom": 285.4
+        },
+        "overflow_chars": 0,
+        "tight_margin": false,
+        "last_page_fill_pct": 66.1,
+        "last_page_nearly_empty": false,
+        "missing_glyphs": 0,
+        "issues": []
+      }
+    }
+  },
+  "cost_usd": 0.005113,
+  "full_evaluation": {
+    "parsed": true,
+    "disagreements": [
+      {
+        "field": "claims",
+        "guaranteed": [
+          {
+            "document": "cv",
+            "claim": "Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB per week",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Python scripts that parse rig output (TDMS and CSV, about 2 GB per week from 6 rigs)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "reducing report preparation from about three days to half a day per test",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "report preparation went from about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results to a SQL Server staging table created by IT",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Runs nightly on a lab PC through Windows Task Scheduler and writes summary results to a staging table",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "four other test engineers use the internal tool",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Query the plant's SQL Server test-results database to analyse trends across three product generations",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Query the plant's test-results database (SQL Server) for trend analysis across three product generations",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "a proposed adjuster rail bracket redesign reduced warranty returns for that part by 40%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "the redesigned adjuster rail bracket I proposed cut warranty returns for that part by 40%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Trained three apprentices in rig safety and test setup between 2022 and 2024",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "trained 3 apprentices on rig safety and test setup, 2022-2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time from about two hours to 30 minutes",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cover_letter",
+            "evidence_quote": "I wrote a LabVIEW acquisition program for it that cut test setup time from about two hours to 30 minutes",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron saved 12% in material cost",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a Power BI dashboard used by about 15 validation and design engineers",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Used by about 15 engineers in validation and design",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a small Flask API with three read-only endpoints over a SQLite dataset",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Small Flask API over a public bike-sharing open dataset loaded into SQLite; three read-only endpoints",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "followed a tutorial to run it with Docker Compose",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Git in personal repositories since 2025",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Git only since 2025, personal repos",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Online data engineering course, in progress, six of nine modules, no certificate",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "finished 6 of 9 modules, no certificate yet",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mechanical engineer with 12 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mechanical engineer with 12 years in product design and test & validation",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Portuguese native speaker with fluent English; Spanish good",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Portuguese (native), English (fluent), Spanish (good)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "the tool now supports four other test engineers, rather than only my own tests",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "4 other test engineers now use",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Halden Pay's emphasis on reusable frameworks rather than one-off pipelines connects directly with this work",
+            "kind": "other",
+            "verdict": "partly_supported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "A scheduled script used by four engineers is stretched into the framework work the ad describes; the material shows no framework design."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience is with scheduled internal scripts and SQL analysis, not production cloud platforms",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "no cloud at all. never used AWS/GCP/Azure, no BigQuery",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built a local Flask/SQLite learning project using Git and tutorial-based Docker Compose",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+            "note": ""
+          }
+        ],
+        "full": [
+          {
+            "document": "cv",
+            "claim": "Built Python scripts to parse TDMS and CSV output from six test rigs, processing about 2 GB per week",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Python scripts that parse rig output (TDMS and CSV, about 2 GB per week from 6 rigs)",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "reducing report preparation from about three days to half a day per test",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "report preparation went from about 3 days to half a day per test",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Run the scripts nightly on a lab PC through Windows Task Scheduler and write summary results to a SQL Server staging table created by IT",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Runs nightly on a lab PC through Windows Task Scheduler and writes summary results to a staging table; IT created the table for me",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "four other test engineers use the internal tool",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Packaged as an internal tool that 4 other test engineers now use",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Query the plant's SQL Server test-results database to analyse trends across three product generations",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Query the plant's test-results database (SQL Server) for trend analysis across three product generations",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "a proposed adjuster rail bracket redesign reduced warranty returns for that part by 40%",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "the redesigned adjuster rail bracket I proposed cut warranty returns for that part by 40%",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Trained three apprentices in rig safety and test setup between 2022 and 2024",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "trained 3 apprentices on rig safety and test setup, 2022-2024",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Wrote a LabVIEW acquisition program for the performance test bench, reducing test setup time from about two hours to 30 minutes",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cover_letter",
+            "evidence_quote": "I wrote a LabVIEW acquisition program for it that cut test setup time from about two hours to 30 minutes",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Performed structural FEA in ANSYS; a casing-family change from grey cast iron to ductile iron saved 12% in material cost",
+            "kind": "responsibility_or_achievement",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "moved one casing family from grey cast iron to ductile iron, saving 12% material cost",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a Power BI dashboard used by about 15 validation and design engineers",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Used by about 15 engineers in validation and design",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Built a small Flask API with three read-only endpoints over a SQLite dataset",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Small Flask API over a public bike-sharing open dataset loaded into SQLite; three read-only endpoints",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "followed a tutorial to run it with Docker Compose",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Git in personal repositories since 2025",
+            "kind": "skill_or_tool",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "Git only since 2025, personal repos",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Online data engineering course, in progress, six of nine modules, no certificate",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "finished 6 of 9 modules, no certificate yet",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "kind": "education",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "MSc Mechanical Engineering, Sado Valley Polytechnic, 2014",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Mechanical engineer with 12 years of experience",
+            "kind": "date_or_duration",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Mechanical engineer with 12 years in product design and test & validation",
+            "note": ""
+          },
+          {
+            "document": "cv",
+            "claim": "Portuguese native speaker with fluent English; Spanish good",
+            "kind": "language",
+            "verdict": "supported",
+            "source": "cv",
+            "evidence_quote": "Portuguese (native), English (fluent), Spanish (good)",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "the tool now supports four other test engineers, rather than only my own tests",
+            "kind": "number_or_metric",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "4 other test engineers now use",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "Halden Pay's emphasis on reusable frameworks rather than one-off pipelines connects directly with this work",
+            "kind": "other",
+            "verdict": "partly_supported",
+            "source": "none",
+            "evidence_quote": "",
+            "note": "A scheduled script used by four engineers is stretched into the framework work the ad describes; the material shows no framework design."
+          },
+          {
+            "document": "cover_letter",
+            "claim": "My experience is with scheduled internal scripts and SQL analysis, not production cloud platforms",
+            "kind": "other",
+            "verdict": "supported",
+            "source": "notes",
+            "evidence_quote": "no cloud at all. never used AWS/GCP/Azure, no BigQuery",
+            "note": ""
+          },
+          {
+            "document": "cover_letter",
+            "claim": "built a local Flask/SQLite learning project using Git and tutorial-based Docker Compose",
+            "kind": "project",
+            "verdict": "supported",
+            "source": "portfolio",
+            "evidence_quote": "Followed a tutorial to run it with Docker Compose",
+            "note": ""
+          }
+        ]
+      }
+    ]
+  }
+}
