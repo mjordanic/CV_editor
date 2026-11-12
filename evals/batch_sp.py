@@ -39,8 +39,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from evals.batch import (FAILED, IN_FLIGHT, RETRY, SUBMITTING, UNANSWERED, Adapter, BatchStore, Job, Outcome, Prepared,
-                         make_custom_id, now, run_round)
+from evals.batch import (FAILED, IN_FLIGHT, RETRY, SUBMITTING, UNANSWERED, Adapter, BatchStore, Job, NotSubmitted,
+                         Outcome, Prepared, make_custom_id, now, run_round)
 from provenance import BATCH_PRICE_FACTOR
 
 REPO = Path(__file__).resolve().parent.parent
@@ -69,12 +69,16 @@ class OpenAIBatches(Adapter):
     def submit(self, key: str, store_id: str, prepared: list[Prepared]) -> str:
         from evals.credit import OutOfCredit, is_out_of_credit
         path = self.state_dir / f"{key}.jsonl"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("".join(p.request + "\n" for p in prepared), encoding="utf-8")
+        try:  # nothing is sent before the upload
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("".join(p.request + "\n" for p in prepared), encoding="utf-8")
+            client = self.client
+        except Exception as e:
+            raise NotSubmitted(f"{type(e).__name__}: {e}"[:500]) from e
         try:
             with open(path, "rb") as f:
-                uploaded = self.client.files.create(file=f, purpose="batch")
-            batch = self.client.batches.create(input_file_id=uploaded.id, endpoint=ENDPOINT, completion_window="24h",
+                uploaded = client.files.create(file=f, purpose="batch")
+            batch = client.batches.create(input_file_id=uploaded.id, endpoint=ENDPOINT, completion_window="24h",
                                                metadata={"cv_eval_store": store_id, "cv_eval_batch": key})
         except Exception as e:
             if is_out_of_credit(e):

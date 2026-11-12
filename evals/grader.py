@@ -373,8 +373,9 @@ def log_attempts(recorder, result: GradingResult, request: GradingRequest, node:
 
 
 def anthropic_client():
-    """The Anthropic client (credentials from ANTHROPIC_API_KEY, loaded from .env by the caller). An
-    out-of-credit or spend-limit error is not retried by evals.credit's policy (see send)."""
+    """The Anthropic client (credentials from ANTHROPIC_API_KEY, loaded from .env by the caller), with the SDK's own
+    retries. send() turns an out-of-credit or spend-limit error into evals.credit.OutOfCredit at once and never
+    re-asks after an API error."""
     import anthropic
     return anthropic.Anthropic()
 
@@ -412,6 +413,41 @@ def _send_anthropic(request: GradingRequest, recorder, node: str, client=None) -
     return GradingResult(status, answer, attempts, request.grader.describe())
 
 
+def cut_off_usage(error: BaseException) -> tuple[str | None, dict] | None:
+    """(model, usage) of an OpenAI answer cut off at the output limit: openai.LengthFinishReasonError carries the
+    completion, billed although the SDK refuses to parse it. None for any other error, or without usage."""
+    if type(error).__name__ != "LengthFinishReasonError":
+        return None
+    completion = getattr(error, "completion", None)
+    usage = getattr(completion, "usage", None)
+    if usage is None:
+        return None
+    details = getattr(usage, "prompt_tokens_details", None)
+    return getattr(completion, "model", None), {
+        "input_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+        "output_tokens": getattr(usage, "completion_tokens", 0) or 0,
+        "cached_tokens": getattr(details, "cached_tokens", 0) or 0}
+
+
+def record_cut_off(recorder, error: BaseException, node: str | None, model: str | None = None,
+                   batch_id: str | None = None) -> float:
+    """The billed cost of an answer cut off at the output limit (cut_off_usage), added to the recorder's totals:
+    the LangChain callback logs that call as an error, without its usage. `model` names the model when the
+    completion does not; a reply from an OpenAI batch is priced at the Batch rate. Returns the cost (0.0 if unknown)."""
+    from provenance import cost_usd
+    found = cut_off_usage(error)
+    if found is None:
+        return 0.0
+    returned, usage = found
+    model = returned or model
+    cost = cost_usd(model, usage["input_tokens"], usage["output_tokens"], usage["cached_tokens"]) or 0.0
+    cost *= BATCH_PRICE_FACTOR if batch_id else 1
+    if recorder is not None:
+        recorder._add_usage(model, node, usage["input_tokens"], usage["output_tokens"], usage["cached_tokens"], cost)
+        recorder.event("answer_cut_off", node=node, model=model, usage=usage, cost_usd=cost)
+    return cost
+
+
 def _send_langchain(request: GradingRequest, recorder, llm=None) -> GradingResult:
     from evals.credit import CreditGuard, OutOfCredit, install_no_retry_patch, is_out_of_credit
     install_no_retry_patch()
@@ -430,7 +466,17 @@ def _send_langchain(request: GradingRequest, recorder, llm=None) -> GradingResul
         except BaseException as e:
             if isinstance(e, OutOfCredit) or is_out_of_credit(e):
                 raise OutOfCredit(str(e)) from e
-            raise
+            if cut_off_usage(e) is None:
+                raise
+            # cut off at the output limit: billed, did not parse; re-asked like any unparseable answer
+            attempts.append({
+                "provider": request.grader.provider, "model_requested": request.grader.model,
+                "model_returned": cut_off_usage(e)[0], "request_id": None,
+                "temperature": request.grader.temperature, "effort": None,
+                "seconds": round(time.time() - started, 2), "stop_reason": "length", "usage": cut_off_usage(e)[1],
+                "parse_error": "answer cut off at the output limit",
+                "cost_usd": record_cut_off(recorder, e, None, request.grader.model)})
+            continue
         raw = result.get("raw")
         meta = getattr(raw, "response_metadata", None) or {}
         parsed = result.get("parsed")

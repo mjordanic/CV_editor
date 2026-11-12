@@ -284,6 +284,36 @@ def test_the_stage_cap_counts_only_that_stages_spend(tmp_path, monkeypatch):
         "skip (total cap reached)"
 
 
+def test_the_cost_of_a_failed_grading_or_trap_check_stays_in_the_ledger(tmp_path, monkeypatch):
+    """A refusal or unparseable answer exits 1 after writing summary.json with its billed cost; the retry on the next
+    run deletes that folder, so the cost must already be in the ledger (--total-cap counts it)."""
+    from evals import run_matrix
+    cases = _load(STAGE12)["cases"]
+    case = next(c for c in cases if c["stage"] == "pilot" and c["rep"] == 1 and c["arm"] == "A")
+    commands = []
+    _fake_subprocess(monkeypatch, commands)
+    passing = run_matrix.subprocess.run
+    failing = {"eval1", "truth1"}
+
+    def fake_run(cmd, *a, **kw):
+        name = next((cmd[cmd.index(f) + 1] for f in ("--eval-name", "--name") if f in cmd), None)
+        if name not in failing:
+            return passing(cmd, *a, **kw)
+        commands.append(cmd)
+        folder = Path(cmd[3]) / "evaluation" / name
+        folder.mkdir(parents=True)
+        (folder / "summary.json").write_text(json.dumps({"status": "parse_error", "cost_usd": 0.35}))
+        return type("Done", (), {"stdout": "", "stderr": "", "returncode": 1})()
+    monkeypatch.setattr(run_matrix.subprocess, "run", fake_run)
+    opts = _opts(tmp_path, cases)
+    assert run_matrix.run_one(case, opts) == (case["id"], "failed: eval1, truth1")
+    ledger = lambda: [line.split("\t")[1:3] for line in (tmp_path / "ledger.tsv").read_text().splitlines()]  # noqa: E731
+    assert ["eval:eval1-failed", "0.350000"] in ledger() and ["truth-failed", "0.350000"] in ledger()
+    failing.clear()  # the retry deletes the failed folders and succeeds; the failed costs stay counted
+    assert run_matrix.run_one(case, opts) == (case["id"], "ok")
+    assert run_matrix.spent(tmp_path / "ledger.tsv") == pytest.approx(0.03 + 6 * 0.15 + 2 * 0.35)
+
+
 def test_out_of_credit_in_a_named_grading_stops_the_matrix(tmp_path, monkeypatch):
     from evals import run_matrix
     from evals.credit import EXIT_OUT_OF_CREDIT

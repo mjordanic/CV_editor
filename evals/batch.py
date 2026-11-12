@@ -50,7 +50,6 @@ from typing import Any, Callable, Iterable
 IN_FLIGHT = "submitted"
 SUBMITTING = "submitting"
 RETRY = "retry"
-FINISHED = ("ok", "done")
 UNANSWERED = ("errored", "expired", "canceled")  # the provider sent nothing to the model: not billed
 FAILED = (*UNANSWERED, "parse_error", "refused", "request_changed", "session_error", "collect_error")
 RESUBMITTABLE = UNANSWERED  # by --resubmit-failed (never an answered request)
@@ -78,6 +77,25 @@ def make_custom_id(*parts: str, key: str) -> str:
 
 class PendingSubmission(RuntimeError):
     """An earlier run stopped while submitting a batch: it may exist at the provider."""
+
+
+class NotSubmitted(Exception):
+    """Raised by an adapter's submit for an error known to leave no batch at the provider: one raised before the
+    request was sent, or the provider's own refusal (an HTTP 4xx answer). Any other error, or an interrupt, may come
+    after the provider created the batch."""
+
+
+def provider_refused(error: BaseException | None) -> bool:
+    """Whether the provider answered the request with an HTTP 4xx error (it created nothing): the error or one of its
+    causes carries such a status_code."""
+    seen = set()
+    while error is not None and id(error) not in seen:
+        seen.add(id(error))
+        code = getattr(error, "status_code", None)
+        if isinstance(code, int) and 400 <= code < 500:
+            return True
+        error = error.__cause__ or error.__context__
+    return False
 
 
 class BatchStore:
@@ -284,8 +302,10 @@ def _submit(store: BatchStore, adapter: Adapter, group: list[Prepared], log: Cal
     store.save()  # before the call: a run that dies inside it leaves a "submitting" entry, never a duplicate
     try:
         batch_id = adapter.submit(key, store.data["store_id"], group)
-    except BaseException:
-        store.batches.remove(entry)  # the call failed: nothing was created
+    except BaseException as e:
+        if not (isinstance(e, NotSubmitted) or provider_refused(e)):
+            raise  # an interrupt, a timeout or a lost connection: the batch may exist; the entry stays "submitting"
+        store.batches.remove(entry)  # the request never reached the provider, or it refused it: nothing was created
         for p in group:
             if previous[p.custom_id] is None:
                 store.items.pop(p.custom_id)

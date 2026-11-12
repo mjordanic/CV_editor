@@ -15,9 +15,9 @@ Metrics: overall, invented-content, completeness, fit, CV-standards, cover-lette
 evaluator's counts (unsupported and stretched claims, high-relevance omissions, overstated gaps,
 invented work arrangement), and the truth check's counts when a truth_check.json exists.
 
-It also writes RUNS_DIR/sessions_summary.json (`session_totals`): over all sessions, how many
-actually redrafted (critique-driven redrafts and user-driven redrafts per document, from
-events.jsonl via evals/iterations.py), the mean of the new rubric scores (visual layout, language,
+It also writes sessions_summary.json (`session_totals`; next to --out when given, else into RUNS_DIR): over all
+sessions, how many actually redrafted (critique-driven redrafts and user-driven redrafts per document, from
+events.jsonl via evals/iterations.py, or from each summary.json's `redrafts` block when the log is not there), the mean of the new rubric scores (visual layout, language,
 additional information, user requests) and the user-request outcomes per script (followed, ignored,
 untruthful requests refused or followed). Per script it also counts, from each session's script and
 transcript alone, the scripted requests that were sent and those "not exercised" (never sent, so never
@@ -28,6 +28,9 @@ Comparisons between arms (paired by case, with tests and intervals) are made by 
 
 Sessions interrupted because the provider ran out of credit (manifest status "interrupted: out of
 credit") are left out of every number and listed under "interrupted".
+
+RUNS_DIR may also be a round folder whose sessions are in its runs/ subfolder. A folder with no session in it is
+reported and nothing is written.
 
 Usage:
     .venv/bin/python -m evals.summarize RUNS_DIR [--out RUNS_DIR/repeats_summary.json] [--only-repeated]
@@ -119,8 +122,16 @@ def is_interrupted(run: Path) -> bool:
     return str(_manifest(run).get("status") or "").startswith("interrupted")
 
 
+def runs_dir_of(path: Path) -> Path:
+    """The folder holding the run folders: PATH, or PATH/runs when PATH has none and that subfolder exists (a round
+    folder)."""
+    has_runs = lambda d: d.is_dir() and any((p / "manifest.json").is_file() for p in d.iterdir())  # noqa: E731
+    return path / "runs" if not has_runs(path) and has_runs(path / "runs") else path
+
+
 def run_folders(runs_dir: Path) -> tuple[list[Path], list[str]]:
     """(run folders to count, names of interrupted runs left out)."""
+    runs_dir = runs_dir_of(runs_dir)
     runs = sorted(p for p in runs_dir.iterdir() if p.is_dir() and (p / "manifest.json").is_file())
     return [r for r in runs if not is_interrupted(r)], [r.name for r in runs if is_interrupted(r)]
 
@@ -217,6 +228,11 @@ def main(argv=None) -> int:
     parser.add_argument("--grader", default=PRIMARY_GRADER,
                         help=f"count only this grader's evaluations (default {PRIMARY_GRADER})")
     args = parser.parse_args(argv)
+    found, left_out = run_folders(args.runs_dir)
+    if not found:
+        print(f"no session in {args.runs_dir} ({len(left_out)} interrupted): give a runs folder (a round's sessions "
+              "are in its runs/ subfolder); nothing written", file=sys.stderr)
+        return 1
     summary = summarize(args.runs_dir, args.grader)
     if args.only_repeated:
         summary = {c: d for c, d in summary.items()
@@ -225,7 +241,8 @@ def main(argv=None) -> int:
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(format_table(summary))
     totals = session_totals(args.runs_dir)
-    (args.runs_dir / "sessions_summary.json").write_text(json.dumps(totals, indent=2), encoding="utf-8")
+    totals_out = (args.out.parent if args.out else args.runs_dir) / "sessions_summary.json"
+    totals_out.write_text(json.dumps(totals, indent=2), encoding="utf-8")
     r = totals["redrafts"]
     print(f"\n{totals['sessions']} sessions; critique-driven redraft: CV in {r['cv']['sessions_with_critique_redraft']}, "
           f"cover letter in {r['cover_letter']['sessions_with_critique_redraft']}, either in "
@@ -238,7 +255,7 @@ def main(argv=None) -> int:
     if totals["interrupted"]:
         print(f"left out (interrupted, out of credit): {', '.join(totals['interrupted'])}")
     print("mean±sd across repeats; (ev±x) = mean spread between evaluator re-scores of the same run", file=sys.stderr)
-    print(f"written to {out}", file=sys.stderr)
+    print(f"written to {out} and {totals_out}", file=sys.stderr)
     return 0
 
 

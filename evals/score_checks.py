@@ -17,9 +17,10 @@ documents whose PDF was made in that turn.
 
 Check types (every check has "id", "type" and "what"; `docs` defaults to both documents):
     present / absent        {pattern, docs?, section?, exempt?}: the regex is found in every document (present) or
-                            in none (absent); `section` limits a CV search to that section; a match whose sentence
-                            also matches `exempt` (e.g. a negation) does not count, nor, with `exempt_entry`, one
-                            in an entry whose title line matches it
+                            in none (absent); a missing document fails both; `section` limits a CV search to that
+                            section (a missing section fails only present); a match whose sentence also matches
+                            `exempt` (e.g. a negation) does not count, nor, with `exempt_entry`, one in an entry
+                            whose title line matches it
     heading                 {pattern, present?: true}: a section heading of the CV matches (or, false, none does)
     heading_order           {first, then, adjacent?}: the first heading comes before the second (right before it)
     max_sentences           {section, n}: that CV section's first paragraph has at most n sentences
@@ -33,9 +34,11 @@ Check types (every check has "id", "type" and "what"; `docs` defaults to both do
     told_user               {request, pattern}: the message the user saw after that request matches
     reply_sent              {reply}: the scripted user sent that reply (e.g. "missing_details": the system asked)
 
-An app run is scored only while its events.jsonl is there. A published app run leaves that log out (see
-run_scenarios' publish step), and without it the per-turn checks (unchanged_by, compiled_every_turn, style_in_tex,
-told_user, reply_sent) cannot be decided, so score_run refuses it and leaves its checks.json as it is.
+Only a finished session is scored: one still "running" (killed) or "interrupted: ..." (out of credit, a provider or
+network failure, Ctrl+C or SIGTERM) is refused. An app run is scored only while its events.jsonl is there. A
+published app run leaves that log out (see run_scenarios' publish step), and without it the per-turn checks
+(unchanged_by, compiled_every_turn, style_in_tex, told_user, reply_sent) cannot be decided, so score_run refuses it
+and leaves its checks.json as it is.
 
 Usage: .venv/bin/python -m evals.score_checks RUN_DIR [RUN_DIR ...]   (prints a line per run, writes checks.json)
 """
@@ -51,8 +54,22 @@ APP_TEX = {"cv": "generated_CV", "cover_letter": "generated_cover_letter"}
 JOB_AD_TURN = "<path to job ad>"
 
 
-class NoTurnRecord(RuntimeError):
+class NotScorable(RuntimeError):
+    """A run folder score_run refuses; its checks.json (if any) is left as it is."""
+
+
+class NoTurnRecord(NotScorable):
     """An app run without events.jsonl: its turns cannot be rebuilt, so it is not scored."""
+
+
+class Unfinished(NotScorable):
+    """A session that did not finish: still "running" (killed), or interrupted (out of credit, a provider or network
+    failure, Ctrl+C or SIGTERM). Not the system's result, so it is not scored, and run_scenarios runs it again."""
+
+
+def finished(status: str | None) -> bool:
+    """A final status: completed, stopped (too many turns, cost cap) or an error of the system under test."""
+    return bool(status) and status != "running" and not str(status).startswith("interrupted")
 
 
 # ------------------------------------------------------------------------------------------- text helpers
@@ -250,8 +267,8 @@ def run_check(check: dict, session: dict) -> tuple[bool, str]:
         details, ok = [], True
         for doc in _docs(check):
             text = _region(session, doc, check.get("section"))
-            if text is None:
-                if kind == "present":
+            if text is None:  # no document fails both kinds; a missing section only fails "present"
+                if kind == "present" or final.get(doc) is None:
                     ok = False
                 details.append(f"{doc}: no {'section' if final.get(doc) is not None else 'document'}")
                 continue
@@ -342,8 +359,11 @@ def score_session(session: dict, checks: list[dict]) -> dict:
 
 def score_run(run_dir: str | Path, script_path: str | Path | None = None) -> dict:
     """Score a run folder with its own script's checks (or those of `script_path`, e.g. a fixed check); writes and
-    returns checks.json. Raises NoTurnRecord for an app run without events.jsonl (checks.json is not touched)."""
+    returns checks.json. Raises Unfinished for a session that did not finish, and NoTurnRecord for an app run without
+    events.jsonl (checks.json is not touched)."""
     session = load_session(run_dir)
+    if not finished(session["status"]):
+        raise Unfinished(f"{run_dir}: the session did not finish (status {session['status']!r}): not scored")
     if session["method"] != "single_prompt_chat" and not (Path(run_dir) / "events.jsonl").is_file():
         raise NoTurnRecord(f"{run_dir}: app run without events.jsonl (a published run): its per-turn checks cannot "
                            "be decided, so it is not scored and its checks.json is kept")
@@ -362,7 +382,7 @@ def main(argv=None) -> int:
     for run_dir in args:
         try:
             r = score_run(run_dir)
-        except NoTurnRecord as e:
+        except NotScorable as e:
             print(f"skipped {e}", file=sys.stderr)
             rc = 1
             continue

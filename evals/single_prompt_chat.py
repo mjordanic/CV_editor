@@ -149,18 +149,8 @@ class ChatUser:
 
 
 def call(llm, messages: list, callbacks: list) -> ChatTurnResponse:
-    """One turn's model call (no retry)."""
-    import openai
-    chain = llm.with_structured_output(ChatTurnResponse, include_raw=True)
-    try:
-        result = chain.invoke(messages, config={"callbacks": callbacks, "metadata": {"langgraph_node": NODE},
-                                                "run_name": NODE})
-    except openai.LengthFinishReasonError as e:
-        raise sp.AnswerNotParsed("the model's answer was cut off", "length") from e
-    parsed = result.get("parsed") if isinstance(result, dict) else result
-    if parsed is None:
-        raise sp.AnswerNotParsed(f"the model's answer did not parse: {result.get('parsing_error')}")
-    return parsed
+    """One turn's model call (no retry; single_prompt.structured_call)."""
+    return sp.structured_call(llm, ChatTurnResponse, messages, callbacks, NODE)[0]
 
 
 def parse_args(argv=None):
@@ -204,8 +194,7 @@ def main(argv=None) -> int:
     load_dotenv(args.env_file or REPO / ".env")  # keys stay in this process; nothing from the env is written
 
     from agents.pdf_text_check import check_pdf
-    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, CreditGuard, OutOfCredit,
-                              install_no_retry_patch, is_infrastructure_error)
+    from evals.credit import EXIT_OUT_OF_CREDIT, INTERRUPTED_STATUS, CreditGuard, OutOfCredit, install_no_retry_patch
     from evals.evaluate import company_text
     from provenance import RunRecorder
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
@@ -229,7 +218,7 @@ def main(argv=None) -> int:
     recorder.write_json("prompt.json", [{"role": m.type, "content": m.content} for m in messages])
 
     user = ChatUser(script)
-    turns, transcript, status, answer, pdfs = [], [], "completed", None, {}
+    turns, transcript, status, answer, pdfs, failure, finish_reason = [], [], "completed", None, {}, None, None
     rid, text, said_before = "first", script["first"], None
     t0 = time.time()
     try:
@@ -266,7 +255,7 @@ def main(argv=None) -> int:
         status = INTERRUPTED_STATUS
         recorder.record_error("session", e)
     except Exception as e:  # noqa: BLE001 - record what happened
-        status = INFRASTRUCTURE_STATUS if is_infrastructure_error(e) else f"error: {type(e).__name__}: {e}"[:500]
+        status, failure, finish_reason = sp.failed_session(e)
         recorder.record_error("session", e)
 
     out = run_dir / "outputs"
@@ -290,7 +279,7 @@ def main(argv=None) -> int:
                                             else answer.message_to_user, "observations": [],
                                             "requests": user.request_log})
     calls = recorder.totals["llm_calls"] + recorder.totals["llm_errors"]
-    summary = {"status": status, "method": METHOD, "system": system,
+    summary = {"status": status, "method": METHOD, "system": system, "failure": failure, "finish_reason": finish_reason,
                "minutes": round((time.time() - t0) / 60, 2), "outputs": files, "calls": calls,
                "user_turns": len(turns), "requests_sent": [r["id"] for r in user.request_log],
                "requests_not_sent": [r["id"] for r in user.pending],

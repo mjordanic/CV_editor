@@ -196,6 +196,19 @@ def test_truth_check_verifies_quotes_and_downgrades_a_fabricated_one(tmp_path):
         score_truth(run, name="truth1", llm=stub)
 
 
+def test_a_failed_truth_check_exits_1_with_a_message(tmp_path, monkeypatch, capsys):
+    from evals import score_truth as st
+
+    def fails(*a, **k):
+        raise st.TruthCheckFailed("truth-check output did not parse (parse_error): bad JSON")
+
+    monkeypatch.setattr(st, "score_truth", fails)
+    env = tmp_path / "empty.env"
+    env.write_text("")
+    assert st.main([str(tmp_path), "--env-file", str(env)]) == 1
+    assert "truth check failed: truth-check output did not parse" in capsys.readouterr().err
+
+
 def test_truth_check_needs_a_persona(tmp_path):
     from evals.score_truth import score_truth
     run = _run_with_outputs(tmp_path, "CV", "CL", persona=None)

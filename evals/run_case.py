@@ -75,6 +75,11 @@ DEFAULT_SCRIPT = {
 REQUEST_STAGES = ("cv", "cover_letter")
 EXPECT = ("follow", "refuse")
 REPLY_KEYS = ("first", "cover_letter", "exit", "clarify_job_ad", "missing_details")
+EXIT_STOPPED = 130  # the session was stopped by Ctrl+C or SIGTERM (status "interrupted: stopped")
+
+
+class Stopped(BaseException):
+    """SIGTERM: like Ctrl+C's KeyboardInterrupt, it passes the app's `except Exception` handlers and ends the session."""
 
 
 def script_requests(script: dict) -> list[dict]:
@@ -115,6 +120,17 @@ def _git(*args: str) -> str | None:
         return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, timeout=10).stdout.strip() or None
     except Exception:  # noqa: BLE001
         return None
+
+
+def _code_version() -> dict:
+    """The commit this code is, from git, only when REPO is a git checkout of its own. An exported tree (`git archive`,
+    as an app_frozen tree) has no .git, and git would report the HEAD of whatever repository contains it: its commit
+    is None here, and run_scenarios records the checked frozen commit as the label app_commit."""
+    top = _git("rev-parse", "--show-toplevel")
+    if not top or Path(top).resolve() != REPO.resolve():
+        return {"repo": str(REPO), "commit": None, "branch": None, "dirty": None}
+    return {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+            "dirty": bool(_git("status", "--porcelain"))}
 
 
 def _package_versions() -> dict:
@@ -251,8 +267,7 @@ def effective_config() -> dict:
         "env_overrides": {k: os.environ.get(k) for k in (MODEL_OVERRIDE_ENV, CRITIC_MODEL_OVERRIDE_ENV, GROUNDING_MODEL_OVERRIDE_ENV, "CV_EDITOR_TEMPERATURE",
                                                           "CV_EDITOR_SEARCH_FIXTURE", "CV_EDITOR_SEARCH_RECORD")
                           if os.environ.get(k)},
-        "code": {"repo": str(REPO), "commit": _git("rev-parse", "HEAD"), "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
-                 "dirty": bool(_git("status", "--porcelain"))},
+        "code": _code_version(),
         "python": platform.python_version(),
         "packages": _package_versions(),
     }
@@ -484,8 +499,8 @@ def main(argv=None) -> int:
     subprocess.run = run_with_timeout
 
     from provenance import CountingEmbeddings, RunRecorder, stream_turn
-    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, CreditGuard, OutOfCredit,
-                              install_no_retry_patch, is_infrastructure_error)
+    from evals.credit import (EXIT_OUT_OF_CREDIT, INFRASTRUCTURE_STATUS, INTERRUPTED_STATUS, STOPPED_STATUS,
+                              CreditGuard, OutOfCredit, install_no_retry_patch, is_infrastructure_error)
     recorder = RunRecorder(run_dir, cost_cap_usd=args.cost_cap)
     credit_guard = CreditGuard()  # out of credit: no retries, the session ends at once (evals/credit.py)
     install_no_retry_patch()
@@ -528,7 +543,7 @@ def main(argv=None) -> int:
     import signal
 
     def stop_on_sigterm(signum, frame):  # a stopped run still records what it did, with its status
-        raise RuntimeError("stopped by SIGTERM")
+        raise Stopped("stopped by SIGTERM")
 
     signal.signal(signal.SIGTERM, stop_on_sigterm)
 
@@ -563,6 +578,10 @@ def main(argv=None) -> int:
         status = INTERRUPTED_STATUS
         recorder.record_error("session", e)
         user.observations.append(f"interrupted: the model provider reported no credit left ({e})"[:300])
+    except (KeyboardInterrupt, Stopped) as e:  # stopped by hand: not the app's failure, not graded, redone
+        status = STOPPED_STATUS
+        recorder.record_error("session", e)
+        user.observations.append(f"interrupted: the run was stopped ({type(e).__name__}: {e})"[:300])
     except Exception as e:  # noqa: BLE001 - record what happened
         # A provider or network failure is not the app's: the session is not graded and run_matrix re-runs it.
         status = INFRASTRUCTURE_STATUS if is_infrastructure_error(e) else f"error: {type(e).__name__}: {e}"[:500]
@@ -607,6 +626,9 @@ def main(argv=None) -> int:
     if status == INTERRUPTED_STATUS:
         print(f"out of credit: the session was interrupted and is marked '{INTERRUPTED_STATUS}'", file=sys.stderr)
         return EXIT_OUT_OF_CREDIT
+    if status == STOPPED_STATUS:
+        print(f"stopped: the session is marked '{STOPPED_STATUS}'", file=sys.stderr)
+        return EXIT_STOPPED
     return 0 if status == "completed" else 1
 
 

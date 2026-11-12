@@ -128,7 +128,8 @@ def _run_fields(run: Path) -> dict:
         "writer_model": writer,
         "arm": arm_name(method, writer),
         "status": status,
-        "interrupted": status.startswith("interrupted"),
+        # not finished: interrupted (out of credit, infrastructure, Ctrl+C / SIGTERM) or still "running" (killed)
+        "interrupted": status == "running" or status.startswith("interrupted"),
         "session_usd": manifest.get("cost_usd", summary.get("cost_usd")),
         "session_minutes": manifest.get("minutes", summary.get("minutes")),
         "llm_calls": calls,
@@ -326,14 +327,4 @@ def token_usage(*paths: str | Path) -> list[dict]:
                     out.append({"kind": kind, "run_id": run.name, "model": short_model(model),
                                 "uncached_in": (u.get("input_tokens") or 0) - cached, "cached_in": cached,
                                 "output": u.get("output_tokens") or 0, "cost_usd": u.get("cost_usd") or 0.0})
-    return out
-
-
-def persona_meta(fixtures_dir: str | Path) -> dict[str, dict]:
-    """{persona id: seniority, fit level, archetype, language} from fixtures/personas/*/persona.json."""
-    out = {}
-    for f in sorted(Path(fixtures_dir).glob("*/persona.json")):
-        p = _json(f)
-        if p.get("id"):
-            out[p["id"]] = {k: p.get(k) for k in ("seniority", "fit_level", "archetype", "language")}
     return out

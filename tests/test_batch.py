@@ -311,6 +311,45 @@ def test_a_run_that_died_while_submitting_is_never_submitted_twice(tmp_path, cap
     assert (run / "evaluation" / "eval1" / "evaluation.json").exists()
 
 
+def test_an_interrupt_after_the_provider_created_the_batch_never_submits_twice(tmp_path, capsys):
+    run = _case_run(tmp_path, "sp")
+    fake = FakeAnthropic()
+    create = fake.messages.batches.create
+
+    def create_then_interrupt(requests):  # the batch exists at the provider, then Ctrl+C before its id comes back
+        create(requests)
+        raise KeyboardInterrupt()
+    fake.messages.batches.create = create_then_interrupt
+    with pytest.raises(KeyboardInterrupt):
+        _grade([str(run), "--eval-name", "eval1"], fake)
+    assert len(fake.created) == 1
+    state = _state(tmp_path / "batches" / "grading" / "state.json")
+    assert [b["status"] for b in state["batches"]] == ["submitting"]
+    fake.messages.batches.create = create
+    capsys.readouterr()
+    assert _grade([str(run), "--eval-name", "eval1"], fake) == 2  # asks for reconciliation, never submits again
+    assert "--adopt b001=" in capsys.readouterr().err and len(fake.created) == 1
+
+
+def test_a_submission_the_provider_refused_is_prepared_again(tmp_path):
+    run = _case_run(tmp_path, "sp")
+    fake = FakeAnthropic()
+    create = fake.messages.batches.create
+
+    class Refused(Exception):
+        status_code = 400
+
+    def refuse(requests):
+        raise Refused("invalid request")
+    fake.messages.batches.create = refuse
+    with pytest.raises(Refused):
+        _grade([str(run), "--eval-name", "eval1"], fake)
+    state = _state(tmp_path / "batches" / "grading" / "state.json")
+    assert state["batches"] == [] and state["items"] == {}
+    fake.messages.batches.create = create
+    assert _grade([str(run), "--eval-name", "eval1"], fake) == 0 and len(fake.created) == 1
+
+
 def test_a_grading_finished_synchronously_is_never_redone(tmp_path):
     from evals.evaluate import evaluate
     run = _case_run(tmp_path, "sp")

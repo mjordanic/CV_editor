@@ -1,12 +1,12 @@
 {
-  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: USD per session per system, the higher of the scout's probes and the 2026-11-12 smoke runs (gpt-6-luna); a session is stopped at 3x that. app_frozen: the app at the frozen commit 2320a98 (before the router fixes of #33), run from an exported tree with --frozen-tree, as a reference arm on S2, S4 and S5.",
+  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: USD per session per system, the higher of the exploratory runs before the round and the 2026-11-12 smoke runs (gpt-6-luna); a session is stopped at 3x that. app_frozen: the app at the frozen commit 2320a98 (before the router fixes of #33), run from an exported tree with --frozen-tree and --frozen-commit 2320a98, as a reference arm on S2, S4 and S5.",
   "model": "openai:gpt-6-luna",
-  "total_cap": 4.5,
+  "total_cap": 6.0,
   "scenarios": [
     {
       "id": "S1",
       "title": "Long session: eleven stacked edits must all hold at the end",
-      "expected": "tie (scout probes: B2 32/33 constraints, app 9/11)",
+      "expected": "tie (exploratory runs before the round: B2 32/33 constraints, app 9/11)",
       "reps": 3,
       "est_usd": {
         "app": 0.14,

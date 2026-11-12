@@ -352,6 +352,9 @@ def main(argv=None) -> int:
     except OutOfCredit as e:
         print(f"out of credit: the truth check was interrupted ({e})", file=sys.stderr)
         return EXIT_OUT_OF_CREDIT
+    except TruthCheckFailed as e:  # recorded in summary.json (status, cost); no truth_check.json
+        print(f"truth check failed: {e}", file=sys.stderr)
+        return 1
     print(json.dumps({"run_dir": str(args.run_dir), "name": args.name, "persona": record["persona"],
                       "counts": record["counts"]}))
     return 0

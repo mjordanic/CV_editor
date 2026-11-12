@@ -19,8 +19,8 @@ results. Commands that only plan or price (`--dry-run`, `--estimate`, `build_ab_
 lists what a replicator needs to know beyond the commands: the experiment plan, the primary-analysis filter, the
 hand re-asked gradings and the threats to validity.
 
-Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records and aggregate
-`results.csv`/`results.json`. Stages 1 and 2 are analysed together in
+Published rounds are in `results/<date>/`: a `REPORT.md`, per-session records (`runs/`) and aggregate results
+(`results.csv` and `results.json`; the scenarios round has `results.json` and `tables.md`). Stages 1 and 2 are analysed together in
 [`analysis/output/2026-11-11-stages12-primary/`](analysis/output/2026-11-11-stages12-primary/) and
 [`analysis/output/2026-11-11-stages12/`](analysis/output/2026-11-11-stages12/) (section 8).
 
@@ -127,7 +127,9 @@ uv run python -m evals.run_matrix --out ../runs --env-file PATH/.env [--workers 
 `matrix.json` lists the cases (`id`, `persona`, `ad`, `input_set`, `inputs`, `model`, `rep`, optional
 `work_preference`, `script`, and `method` for single-prompt cases, section 7); every case must resolve to tracked files in `fixtures/` and `scripts/`
 (checked before anything runs, and by the tests). Each case runs one session and then the evaluator
-(`eval1`). `OUT/ledger.tsv` records every cost; no new case starts past `--total-cap` (default: the matrix file's
+(`eval1`). `OUT/ledger.tsv` records every cost, including that of a grading or truth check that failed (refused,
+did not parse, crashed: `eval-failed`, `eval:<name>-failed`, `truth-failed`) before its retry replaces it; no new
+case starts past `--total-cap` (default: the matrix file's
 `total_cap`, else 24 USD, the budget for this round),
 finished sessions and evaluations are never redone, so an interrupted matrix resumes. `--dry-run`
 prints the commands without running anything; `--estimate` prints the expected cost of the selected
@@ -163,7 +165,7 @@ backoff) stops at once without retries (`evals/credit.py`), is marked `interrupt
 and exits with code 75. The matrix then starts nothing new, lets running cases end at their own
 first credit error, prints how many cases finished, were interrupted or did not finish and the spend
 so far, and exits with code 75. Partial costs stay in the ledger (`eval-interrupted` for an
-evaluation). Run the same command after a top-up: finished cases are skipped, an interrupted session
+evaluation, `truth-interrupted` for a truth check). Run the same command after a top-up: finished cases are skipped, an interrupted session
 is redone from scratch, and a finished session whose evaluation was interrupted gets only the
 evaluation. Interrupted sessions are left out of `summarize.py`'s numbers and listed separately.
 
@@ -175,6 +177,11 @@ runs it again at once, one time, for both methods alike (the second attempt's ma
 multi-agent session that completed without its company research, with a delivered draft whose fact check could
 not run, or without a document's final PDF says so in its manifest (`degraded`: `company_research_failed`,
 `grounding_unchecked`, `pdf_failed`).
+
+**Stopped sessions.** A session stopped with Ctrl+C or SIGTERM is marked `interrupted: stopped` by `run_case`
+(exit code 130), with what it did up to then. Like a session killed outright (its manifest still says `running`), it
+is not graded, the analysis loader (`evals/analysis/load.py`) leaves it out, and the next run of the matrix redoes it
+from scratch.
 
 - `--repeats N` runs each selected case N times as `<id>_r1` .. `_rN` (rep 1 keeps the matrix id).
 - `--rescore K` scores every run K times (`eval1` .. `evalK`; existing ones are kept), so running it on
@@ -412,9 +419,11 @@ uv run python -m evals.batch_grade --jobs FILE --status | --dry-run      # no ca
   arms and its Sonnet, Opus, Haiku and trap-check gradings are always in the same batch.
 - **Durable.** `<runs>/batches/grading/state.json` records each request's `custom_id` (stable: grading name, run
   folder, hash), request hash and batch id before the run waits. Running the same command again collects ended
-  batches and submits only what is due; a grading already on disk is never redone. A run that died inside a
-  submission stops the next one until it is settled: `--adopt b003=msgbatch_...` if the console shows the batch,
-  `--forget-pending` if not.
+  batches and submits only what is due; a grading already on disk is never redone. A run stopped inside a
+  submission (Ctrl+C, a timeout, a lost connection: the provider may already have created the batch) keeps the
+  batch's "submitting" entry and stops the next run until it is settled: `--adopt b003=msgbatch_...` if the console
+  shows the batch, `--forget-pending` if not. Only an error known to leave no batch (raised before the request was
+  sent, or the provider's own HTTP 4xx refusal) removes the entry, and the requests go out again on the next run.
 - **Ledger.** Collected costs go to `<runs>/ledger.tsv` when it exists (`eval:<name>`, `truth`, `*-failed`,
   `*-attempt1` for a re-asked first answer, and `*-discarded` for a billed reply that was not written), so
   run_matrix's caps see them.
@@ -498,21 +507,22 @@ sent, replaced and not exercised counted separately (`scripted_sent`, `scripted_
 credit are left out and listed under `interrupted`. Comparisons between arms are the analysis notebook's
 (`evals/analysis/analysis.ipynb`).
 
-**On a published round** (a copy, since it writes into the folder):
-- Point it at the round's `runs/` folder, e.g. `results/2026-11-11-core/runs`. Given the round folder itself it
-  prints "0 sessions" with no warning.
-- `repeats_summary.json` comes out identical to the published one.
-- The redraft counts in `sessions_summary.json` come out as 0 (e.g. "critique-driven redraft: CV in 0, cover letter
-  in 0" for the core round, whose report says 22 and 30). They are read from `events.jsonl`, which published rounds
-  leave out, and a missing file counts as no redraft rather than unknown. The published `sessions_summary.json` was
-  made from the full traces; each published `summary.json` has the per-session `redrafts` block.
+**Where it reads and writes.** `RUNS_DIR` is a runs folder or a round folder whose sessions are in its `runs/`
+subfolder. A folder with no session in it is reported ("no session in ...") and nothing is written. The redraft
+counts come from each session's `events.jsonl`, or, when that log is not there (published rounds leave it out), from
+the `redrafts` block of its `summary.json`. `repeats_summary.json` goes to `--out` (default `RUNS_DIR`) and
+`sessions_summary.json` next to it.
+
+**On a published round:** with `--out` pointing outside the round (e.g. `--out ../check/repeats_summary.json`),
+nothing in the round is written. For `results/2026-11-11-core` both files come out identical to the published ones
+(22 and 30 sessions with a critique-driven redraft).
 
 ## 7. Single-prompt baseline: `evals/single_prompt.py`
 
 Does the multi-agent app beat one strong model given everything at once? **Topology: exactly one model
 call per case** (default `openai:gpt-6.1-sol`) and nothing else: no router, critic, grounding check,
 redraft, LaTeX conversion, LaTeX repair or re-conversion call. The multi-agent default-script session it
-is compared with makes a median of 22 model calls on three models.
+is compared with makes a median of 22 model calls on two chat models, plus the embedding model.
 
 ```bash
 # one case
@@ -609,7 +619,7 @@ uv run --group analysis jupyter execute --inplace evals/analysis/analysis.ipynb
 - Without SciPy (the `analysis` group), `stats.wilcoxon` returns nothing and the notebook turns it into p = 1, so
   every test silently reads "not significant". The `--group analysis` in the command above installs it.
 - The design-cost table prices single-prompt sessions from token estimates (SP-luna 0.0056, SP-sol 0.112 USD), not
-  from the measured means (0.0027 and 0.0436), so `design_costs.csv` overstates single-prompt cost by 2-2.5x.
+  from the measured means (0.0027 and 0.0436), so `design_costs.csv` overstates single-prompt cost by 2.1x (SP-luna) and 2.6x (SP-sol).
 
 - Sessions are paired within *cells* (persona, ad, input set, script and work preference). Re-gradings
   of a session are averaged first, then repeats within a cell, so each cell counts once. Cells that only
@@ -662,8 +672,7 @@ and a test runs it):
   `cv_only`, `no_cv`), in two stages. **pilot** (36): the 6 pilot cases (p01/a1, p03/a3, p04/a6, p11/a1,
   p12/a7, p13/a8, `all4`) x 3 arms x 2 writer runs. **core** (111): the other 33 cases x 3 arms, plus a
   second writer run of the 4 extra repeat cases. Haiku was graded as a cheap re-grader in the pilot
-  (`haiku1`, `haiku2`) and dropped for the core (`build_ab_matrix.py` calls this "option O1" off): the core has
-  no Haiku grading. The reason is not recorded.
+  (`haiku1`, `haiku2`) and dropped for the core: the core has no Haiku grading. The reason is not recorded.
 - **Input sets:** `all4` = CV, portfolio, earlier cover letter and notes; `cv_only` = the CV alone; `no_cv` =
   portfolio, earlier cover letter and notes (`evals/cases.py`). The main matrix (section 2) also uses
   `cv_portfolio` and `notes_only`.
@@ -705,7 +714,8 @@ uv run python -m evals.batch_grade --jobs ../runs-ab/pilot_gradings.json --env-f
   the plan's figures and caps. Unit prices (`AB_UNIT_USD` in `run_matrix.py`) are the stage-1 pilot's
   measured means (`evals/results/2026-11-11`): app session luna 0.0286; single-prompt sessions luna 0.0028,
   sol 0.0439; gradings, measured through the Batch API and stored at list price, Sonnet 0.093, Opus 0.352,
-  Haiku 0.0098; trap check 0.001. Not in the pilot: the terra app session (the 2026-11-10 mean, 0.085) and a
+  Haiku 0.0098; trap check 0.001. Not in the pilot: the terra app session (0.085, the 2026-11-10 mean of its 20 default-script terra sessions;
+  0.088 over all 32 terra sessions, section 2) and a
   terra single call (6k input and 10k output tokens at provenance's prices, a ceiling: 0.06). At these units
   the pilot comes to 6.78 USD with Batch, what it spent. Core (111 sessions): **20.67 USD standard, 11.73 USD
   with Batch grading** (sessions on direct OpenAI calls); stage 3: 20.03 / 12.84. `--sp-batch` would also
@@ -748,7 +758,8 @@ conversation, played to the app and to a fair single-call baseline, and scored b
 model).
 
 - **Systems:** `app` (the current tree's `run_case`), `app_frozen` (the app at `2320a98`, before PR #33's router
-  fixes, run from an exported tree given with `--frozen-tree`; a reference arm on S2, S4 and S5), `b2` and `b2_ask`
+  fixes, run from an exported tree given with `--frozen-tree` and `--frozen-commit 2320a98`; a reference arm on S2,
+  S4 and S5), `b2` and `b2_ask`
   (below). Each scenario lists its own systems in `scenarios.json`.
 - **Chat baseline "B2"** (`evals/single_prompt_chat.py`): one call per user turn with the whole conversation. Turn 1
   is the single-prompt baseline's prompt (section 7) plus a `message_to_user` field. Later turns wrap the user's words
@@ -778,27 +789,35 @@ model).
 ```bash
 uv run python -m evals.run_scenarios --out OUT --dry-run                      # sessions and cost estimate, no call
 mkdir ../FROZEN && git archive 2320a98 | tar -x -C ../FROZEN                  # the tree app_frozen runs from
-uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --env-file "$PWD/.env"   # each scenario's first case once
-uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --env-file "$PWD/.env" --total-cap 6.0 --workers 6   # the full set
+uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --frozen-commit 2320a98 --env-file .env   # each scenario's first case once
+uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --frozen-commit 2320a98 --env-file .env --workers 6   # the full set
 uv run python -m evals.run_scenarios --out OUT --report-only --frozen-tree ../FROZEN --publish evals/results/<date>-scenarios
 uv run python -m evals.score_checks RUN_DIR                                   # re-score one run folder
 ```
 
-- Give `--env-file` an absolute path: `app_frozen` sessions run with the frozen tree as working directory, so a
-  relative `.env` is not found there.
-- Without `--frozen-tree`, any run that includes `app_frozen` sessions (S2, S4, S5) stops at once:
-  `app_frozen sessions need --frozen-tree`. To leave that arm out, pass `--systems app,b2,b2_ask`.
-- The full set is estimated at 5.16 USD (`--dry-run`), above the table's default `total_cap` of 4.5, so give
-  `--total-cap 6.0` (the published round's cap; it spent 4.16 USD).
+- `--env-file` may be relative: it is resolved against the folder you run the command from before any session
+  starts, so `app_frozen` sessions, which run with the frozen tree as working folder, read the same file.
+- `app_frozen` sessions (S2, S4, S5) need `--frozen-tree` and `--frozen-commit`. The commit must be in this
+  repository, and every app file (`APP_PATHS`, section 9) it holds must be in the tree byte for byte; otherwise the
+  run stops before any session. Each `app_frozen` manifest gets the checked commit as the label `app_commit`: that
+  label is the record of the frozen version. `config.json`'s `code.commit` is what the tree's own `run_case` asks git;
+  an exported tree has no `.git`, and the current `run_case` then records null (the one at `2320a98` records the HEAD
+  of whatever repository the tree sits in). To leave the arm out, pass `--systems app,b2,b2_ask`.
+- The full set is estimated at 5.16 USD (`--dry-run`); the table's `total_cap` is 6.0 USD, the published round's cap
+  (it spent 4.16 USD). `--total-cap` overrides it.
 - `--only S2,S3` picks scenarios, `--reps N` overrides the reps, `--model` every writer's model. `--report-only`
   rewrites the report from scored sessions; `--rescore` re-scores them with today's checks first. `--publish DIR`
   copies the scored sessions' records (manifest, config, summary, transcript, `checks.json`, inputs, outputs; no
   event or model-call logs, no workspace) with local paths made relative, plus the report as `tables.md` and
   `results.json`.
 
-Each session's own cap is 3x its estimate. A session starts only while the money spent, plus the estimates of the
-sessions still running, plus its own estimate stay within `--total-cap`. Scored sessions are skipped, so a stopped
-run resumes. `OUT/report.md` gives, per scenario: each check's pass count per system; USD, seconds and model calls
+Each session's own cap is 3x its estimate. A session starts only while the money spent (the scored sessions and the
+earlier unfinished attempts of the planned ones), plus the estimates of the sessions still running, plus its own
+estimate stay within `--total-cap`. Scored sessions are skipped, so a stopped run resumes. Only a finished session
+is scored: one that was killed (still `running`) or interrupted (out of credit, a provider or network failure,
+Ctrl+C or SIGTERM) gets no `checks.json`, is set aside as `<name>.unfinished-<time>` on the next pass and runs
+again. A session that runs out of credit (exit code 75) stops the pool: no new session starts, and the command
+exits with code 75 after writing the report. An `absent` check fails when the document is missing. `OUT/report.md` gives, per scenario: each check's pass count per system; USD, seconds and model calls
 per user turn; LaTeX fixes; and the paired app-vs-baseline comparison. The pre-registered rule claims a difference
 only with at least 6 pairs, at least 4 pairs one way and none the other. It is a decision rule, not a significance
 test: the exact sign-test p it prints can be above 0.05 when a difference is claimed (S3: 5-0 of 12, p = 0.06).
@@ -825,8 +844,8 @@ dates on develop) shows about when they were fixed:
   and in code only after it (`calibration.py`, added at `5ff008d`, 22:18 +0100), although the pilot report says they
   were fixed before the pilot. Naming 1 point as *the* pre-registered minimum effect, the bar the core report holds
   E−A's +0.41 against, first appears with the core results (`2320a98`).
-- **Not recorded at all:** the condition that triggers stage 3, the options behind "option O1" and the rationale for
-  dropping Haiku, and any decision taken on the failed calibration checks (below).
+- **Not recorded at all:** the condition that triggers stage 3, the rationale for dropping Haiku as a re-grader, and
+  any decision taken on the failed calibration checks (below).
 
 ### The primary analysis
 
@@ -884,6 +903,11 @@ the quotes before the gate is settled; no such reading or gate decision is recor
 - **Scenario unit of analysis.** The scenario rule counts each rep as a pair: S3's 12 pairs are 4 personas x 3 reps,
   and its sign test treats them as independent. The A/B analysis averages repeats first for the opposite reason.
   Persona p03 is in 7 of the 13 scripts, including 4 of the 6 S2 cases, so S2 speaks mostly about one candidate.
+- **`told_user` is a keyword proxy.** It passes when the message after the request contains a refusal or
+  explanation keyword (`can't`, `did not`, `instead`, `truthful`, ...). In S2 it misses three clear explanations
+  (b2 CKA r1, b2 Go r2, app CKA r1): by keyword every system told the user why in 7 of 9 trap sessions, read by hand
+  b2 9/9, app 8/9 and app_frozen 7/9. S2's "all checks" is then 15/18 for b2 and 12/18 for the app (13/18 and 11/18
+  by keyword). `told-user` is not a primary check, so the paired verdicts are the same either way.
 - **Three S2 checks disagree with the persona's own ground truth.** The round's rule says a request the user's own
   words contradict must be refused and explained.
   - `s2-embellish-p03` requires "production Kubernetes" and "on-call" in the CV, but p03's notes say she has "never
@@ -903,9 +927,6 @@ the quotes before the gate is settled; no such reading or gate decision is recor
 
 - The notebook's pairing rationale says the main matrix runs `notes_only` only on luna; `matrix.json` has two terra
   `notes_only` cases (p09/a3). The argument (cells differ by arm, so no imputation) still holds.
-- Some code comments and the notebook use planning vocabulary from notes outside the repository: "the scout's
-  probes" (`scenarios.json`: exploratory runs before the round), "option O1", "finding 1c", "the captain chooses",
-  "the blog's claims".
 
 ## Fixtures
 

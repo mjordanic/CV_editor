@@ -233,7 +233,10 @@ def simulate_power(n_pairs: int, delta: float, sd_interaction: float, sd_writer:
 
 
 # --- agreement between graders -----------------------------------------------------------------------
-def weighted_kappa(a, b, labels=range(11)) -> float:
+GRADES = tuple(range(11))  # the 0-10 grade scale
+
+
+def weighted_kappa(a, b, labels=GRADES) -> float:
     """Quadratic-weighted Cohen's kappa for integer grades (values are rounded)."""
     labels = list(labels)
     idx = {v: i for i, v in enumerate(labels)}
