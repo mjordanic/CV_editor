@@ -200,7 +200,7 @@ def test_every_scenario_case_resolves_to_tracked_fixtures():
     from evals.cases import find_ad, find_persona, parse_inputs
     spec = json.loads((SCENARIO_DIR / "scenarios.json").read_text(encoding="utf-8"))
     for scenario in spec["scenarios"]:
-        assert set(scenario["est_usd"]) <= {"app", "b2", "b2_ask"}
+        assert set(scenario["est_usd"]) <= {"app", "app_frozen", "b2", "b2_ask"}
         for case in scenario["cases"]:
             find_ad(case["ad"]), find_persona(case["persona"]), parse_inputs(case["inputs"])
             script = json.loads((SCENARIO_DIR / f"{case['script']}.json").read_text(encoding="utf-8"))
@@ -410,3 +410,50 @@ def test_the_paired_reading_claims_a_difference_only_by_the_pre_registered_rule(
     assert paired(rows([1, 1, 1, 1, 1], [0, 0, 0, 0, 0]), "app", "b2", ["x"])["verdict"].startswith("too few pairs")
     assert paired(rows([1] * 6, [0] * 6), "app", "b2")["app_only"] == 0  # all checks: "told" fails for both
     assert sign_test(4, 0) == pytest.approx(0.125) and sign_test(0, 0) == 1.0
+
+
+def test_frozen_app_sessions_need_a_tree_and_run_from_it(tmp_path, monkeypatch):
+    from evals import run_scenarios as rs
+    session = {"name": "S4-x-p03-app_frozen-r1", "scenario": "S4", "system": "app_frozen", "rep": 1, "est_usd": 0.05,
+               "case": "p03/s4-both-docs-p03", "persona": "p03", "ad": "a3", "inputs": "all4", "script": "s4-both-docs-p03"}
+    with pytest.raises(SystemExit):
+        rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tmp_path / "no-tree")
+    tree = tmp_path / "tree"
+    (tree / "evals").mkdir(parents=True)
+    (tree / "evals" / "run_case.py").write_text("")
+    seen = {}
+
+    def fake_run(cmd, cwd=None, **kw):
+        seen.update(cmd=cmd, cwd=cwd)
+        return type("Done", (), {"returncode": 1})()
+
+    monkeypatch.setattr(rs.subprocess, "run", fake_run)
+    rs.run([session], tmp_path / "out", "openai:gpt-6-luna", None, 1.0, 1, tree)
+    assert seen["cwd"] == tree and seen["cmd"][2] == "evals.run_case" and "system=app_frozen" in seen["cmd"]
+    assert str(SCENARIO_DIR / "s4-both-docs-p03.json") in seen["cmd"]  # today's scenario script, from this repo
+
+
+def test_publish_copies_shareable_records_with_local_paths_made_relative(tmp_path):
+    from evals import run_scenarios as rs
+    out, run = tmp_path / "out", tmp_path / "out" / "runs" / "S3-s3-p01-b2-r1"
+    (run / "outputs").mkdir(parents=True)
+    (run / "inputs").mkdir()
+    (run / "workspace").mkdir()
+    (run / "manifest.json").write_text(json.dumps({"run_dir": str(run), "repo": str(REPO / "evals"),
+                                                   "labels": {"scenario": "S3", "system": "b2"},
+                                                   "key": "sk-" + "a" * 40}))
+    (run / "checks.json").write_text(json.dumps({"system": "b2", "checks": []}))
+    (run / "events.jsonl").write_text("{}")
+    (run / "outputs" / "final_cv.txt").write_text(f"see {run}/outputs")
+    (run / "outputs" / "final_state.json").write_text("{}")
+    (run / "inputs" / "script.json").write_text("{}")
+    dest = tmp_path / "published"
+    assert rs.publish(out, dest) == 1
+    pub = dest / "runs" / "S3-s3-p01-b2-r1"
+    manifest = json.loads((pub / "manifest.json").read_text())
+    assert manifest["run_dir"] == "runs/S3-s3-p01-b2-r1" and manifest["repo"] == "<repo>/evals"
+    assert "sk-" + "a" * 40 not in (pub / "manifest.json").read_text()
+    assert (pub / "outputs" / "final_cv.txt").read_text() == "see runs/S3-s3-p01-b2-r1/outputs"
+    assert (pub / "inputs" / "script.json").is_file() and (pub / "checks.json").is_file()
+    assert not (pub / "events.jsonl").exists() and not (pub / "workspace").exists()
+    assert not (pub / "outputs" / "final_state.json").exists()

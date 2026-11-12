@@ -1,7 +1,8 @@
 """Run the multi-turn scenarios (evals/scenarios/scenarios.json) for the app and the chat baseline, score and report.
 
-Each session is a subprocess: evals/run_case.py for the app ("app"), evals/single_prompt_chat.py for the chat
-baseline ("b2", and "b2_ask" with --ask-hint), on the scenario case's persona, ad, input set and script, every
+Each session is a subprocess: evals/run_case.py for the app ("app"; "app_frozen" runs the run_case of another tree,
+--frozen-tree, e.g. an export of an earlier commit: `git archive <sha> | tar -x -C DIR`), evals/single_prompt_chat.py
+for the chat baseline ("b2", and "b2_ask" with --ask-hint), on the scenario case's persona, ad, input set and script, every
 writer on --model. Every finished session is scored by evals/score_checks.py (checks.json in its folder). The report
 (report.md, results.json) has, per scenario, each check's pass count per system, cost, time and model calls per
 user turn, and the paired comparison app vs each baseline (same case and rep), read by the pre-registered rule:
@@ -17,6 +18,10 @@ Usage (from the repo root):
     .venv/bin/python -m evals.run_scenarios --out DIR --smoke --env-file .env     # each scenario's first case once
     .venv/bin/python -m evals.run_scenarios --out DIR --env-file .env [--only S2,S3] [--systems app,b2] [--reps 3]
     .venv/bin/python -m evals.run_scenarios --out DIR --report-only   # or --rescore: re-score with today's checks
+    .venv/bin/python -m evals.run_scenarios --out DIR --report-only --publish evals/results/<date>-scenarios
+
+--publish copies each scored session's records (manifest, config, summary, transcript, checks.json, inputs/, outputs/
+without final_state.json; no events, model-call logs or workspace) with local paths made relative, plus the report.
 """
 from __future__ import annotations
 
@@ -35,7 +40,8 @@ REPO = Path(__file__).resolve().parent.parent
 SCENARIO_DIR = REPO / "evals" / "scenarios"
 SCENARIOS = SCENARIO_DIR / "scenarios.json"
 CAP_FACTOR = 3
-RUNNERS = {"app": "evals.run_case", "b2": "evals.single_prompt_chat", "b2_ask": "evals.single_prompt_chat"}
+RUNNERS = {"app": "evals.run_case", "app_frozen": "evals.run_case", "b2": "evals.single_prompt_chat",
+           "b2_ask": "evals.single_prompt_chat"}
 MIN_PAIRS, MIN_ONE_WAY = 6, 4
 
 
@@ -92,7 +98,10 @@ def _cost(run_dir: Path) -> float:
         return 0.0
 
 
-def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total_cap: float, workers: int) -> None:
+def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total_cap: float, workers: int,
+        frozen_tree: Path | None = None) -> None:
+    if any(s["system"] == "app_frozen" for s in sessions) and not (frozen_tree and (frozen_tree / "evals" / "run_case.py").is_file()):
+        sys.exit("app_frozen sessions need --frozen-tree: a tree with evals/run_case.py (an export of the frozen commit)")
     from evals.score_checks import score_run
     runs = out / "runs"
     runs.mkdir(parents=True, exist_ok=True)
@@ -112,7 +121,8 @@ def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total
             run_dir.rename(run_dir.with_name(f"{run_dir.name}.unfinished-{int(time.time())}"))
         started = time.time()
         with open(runs / f"{s['name']}.log", "w", encoding="utf-8") as log:
-            code = subprocess.run(command(s, run_dir, model, env_file), cwd=REPO, stdout=log,
+            code = subprocess.run(command(s, run_dir, model, env_file),
+                                  cwd=frozen_tree if s["system"] == "app_frozen" else REPO, stdout=log,
                                   stderr=subprocess.STDOUT).returncode
         cost = _cost(run_dir)
         with lock:
@@ -247,6 +257,41 @@ def report(out: Path, spec: dict) -> str:
     return text
 
 
+PUBLISHED_FILES = ("manifest.json", "config.json", "summary.json", "transcript.json", "checks.json")
+
+
+def _relative_paths(text: str, run_dir: Path, published: str) -> str:
+    """Local absolute paths in a record made relative: the run folder, the repository, other trees, the home folder."""
+    for local, shown in ((str(run_dir), published), (str(REPO), "<repo>"), (str(Path.home()), "~")):
+        text = text.replace(local, shown)
+    return text
+
+
+def publish(out: Path, dest: Path) -> int:
+    """Copy every scored session's shareable records to dest/runs/<name>/, and report.md and results.json to dest/."""
+    from provenance import scrub
+    rows = collect(out)
+    for r in rows:
+        src, target = out / "runs" / r["name"], dest / "runs" / r["name"]
+        for path in [*(src / f for f in PUBLISHED_FILES), *sorted((src / "inputs").glob("*")),
+                     *sorted(p for p in (src / "outputs").glob("*") if p.name != "final_state.json")]:
+            if not path.is_file():
+                continue
+            to = target / path.relative_to(src)
+            to.parent.mkdir(parents=True, exist_ok=True)
+            if path.suffix in (".json", ".txt", ".tex", ".md"):
+                text = _relative_paths(path.read_text(encoding="utf-8"), src, f"runs/{r['name']}")
+                if path.suffix == ".json":
+                    text = json.dumps(scrub(json.loads(text)), indent=2, ensure_ascii=False)
+                to.write_text(text, encoding="utf-8")
+            else:
+                shutil.copy(path, to)
+    for name in ("report.md", "results.json"):
+        if (out / name).is_file():
+            shutil.copy(out / name, dest / name)
+    return len(rows)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", required=True, help="output folder (runs/, report.md, results.json)")
@@ -263,6 +308,8 @@ def main(argv=None) -> int:
     parser.add_argument("--env-file", help=".env file with API keys (read by each session, never copied)")
     parser.add_argument("--total-cap", type=float, help="USD for all sessions together (default: the table's)")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--frozen-tree", help="the tree app_frozen sessions run from (an export of the frozen commit)")
+    parser.add_argument("--publish", help="after the report, copy the scored sessions' records here (see above)")
     args = parser.parse_args(argv)
     spec = load_spec(args.spec)
     out = Path(args.out).resolve()
@@ -279,8 +326,11 @@ def main(argv=None) -> int:
         if shutil.which("pdflatex") is None:
             sys.exit("pdflatex is not installed: every session needs it")
         run(sessions, out, args.model or spec["model"], args.env_file,
-            args.total_cap if args.total_cap is not None else spec["total_cap"], args.workers)
+            args.total_cap if args.total_cap is not None else spec["total_cap"], args.workers,
+            Path(args.frozen_tree).resolve() if args.frozen_tree else None)
     print(report(out, spec))
+    if args.publish:
+        print(f"published {publish(out, Path(args.publish))} sessions to {args.publish}")
     return 0
 
 
