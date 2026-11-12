@@ -1,10 +1,10 @@
-"""Three router plumbing fixes, run through the real compiled graph with a scripted model (no network).
+"""Router plumbing, run through the real compiled graph with a scripted model (no network).
 
 1. One message with changes for both existing documents: both documents are redrafted, the second
    right after the first is finalized (before, only the routed document's request was kept).
 2. A new PDF style request is added to the earlier ones instead of replacing them.
 3. The writer's notes on the user's request (e.g. a part it did not apply) reach the router's next
-   message to the user, once.
+   message to the user, once, also when that message is the fixed text used for an action not offered.
 """
 from agents.router import STYLE_REQUESTS_HEADER, _accumulate_style
 from tests.test_session_replay import REPO, ScriptedLLM, _build_agent, _play, _route
@@ -181,3 +181,34 @@ def test_notes_of_both_documents_reach_the_reply_after_the_second_one(monkeypatc
 
     # the bypass to the letter does not show a message, so the CV's notes wait for the final reply
     assert "CV writer: Kotlin is already listed" in _writers_notes(llm.router_prompts[-1])
+
+
+def test_writer_notes_survive_the_fallback_when_the_router_repeats_a_finished_redraft(monkeypatch, tmp_path):
+    declined = "Kotlin was NOT added: nothing in your material shows Kotlin."
+    llm = PlumbingLLM(
+        router_script=[
+            _route("draft_cv"),
+            _route("collect_user_input", "The CV is ready. Any changes?"),
+            _route("draft_cv", cv_content_feedback=CV_CHANGE),
+            # draft_cv is withdrawn after the redraft ran; the model picks it again
+            _route("draft_cv", "Redrafting the CV again."),
+            _route("exit", "Done."),
+        ],
+        critique_scores=[(80, ""), (80, "")],
+        cv_notes=["", declined],
+    )
+    agent, _ = _build_agent(monkeypatch, tmp_path, llm)
+
+    final = _play(agent, [_ad(), CV_CHANGE, "exit"])
+
+    shown = [m for m in final["messages"] if _role(m) == "assistant" and "The CV draft is ready." in _content(m)]
+    assert len(shown) == 1 and declined in _content(shown[0])
+    assert not final.get("cv_request_notes")
+
+
+def _role(m):
+    return m.get("role") if isinstance(m, dict) else {"ai": "assistant", "human": "user"}.get(m.type, m.type)
+
+
+def _content(m):
+    return m.get("content") if isinstance(m, dict) else m.content

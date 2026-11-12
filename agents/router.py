@@ -180,6 +180,17 @@ def _format_writer_notes(state) -> str:
     return "\n\n".join(parts) if parts else "None."
 
 
+def _writer_notes_for_user(state) -> str:
+    """The writers' notes on the user's latest request, worded for the user, or "" when there are none. Used when
+    the router replaces the model's message with a fixed one, so the notes are still shown before they are cleared."""
+    parts = [
+        f"{label}: {notes.strip()}"
+        for kind, label in _WRITER_NOTE_LABELS.items()
+        if (notes := state.get(f"{kind}_request_notes")) and notes.strip()
+    ]
+    return ("About your last request:\n" + "\n".join(parts)) if parts else ""
+
+
 def _new_draft_cycle(kind: str, state) -> dict:
     """
     State update that starts a new draft cycle for 'cv' or 'cover_letter'.
@@ -692,10 +703,11 @@ class RouterAgent:
                 if not self._has_user_feedback(messages)
                 else "I can't do that step yet."
             )
-            response.message_to_user = (
-                f"{done_note} Tell me what you would like to change "
-                "in the CV or cover letter, or type 'exit' to finish."
-            )
+            # The writers' notes are cleared below once a message is shown, so this fixed message
+            # must carry them (e.g. a part of the request that was not applied).
+            notes = _writer_notes_for_user(state)
+            ask = "Tell me what you would like to change in the CV or cover letter, or type 'exit' to finish."
+            response.message_to_user = f"{done_note}\n\n{notes}\n\n{ask}" if notes else f"{done_note} {ask}"
             next_action = "collect_user_input"
         
         # Pending fixed notices (e.g. claims still unsupported in a final draft, a PDF that does not
