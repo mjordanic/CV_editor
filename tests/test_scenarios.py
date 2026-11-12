@@ -457,3 +457,6 @@ def test_publish_copies_shareable_records_with_local_paths_made_relative(tmp_pat
     assert (pub / "inputs" / "script.json").is_file() and (pub / "checks.json").is_file()
     assert not (pub / "events.jsonl").exists() and not (pub / "workspace").exists()
     assert not (pub / "outputs" / "final_state.json").exists()
+    (out / "report.md").write_text("tables")
+    rs.publish(out, dest)
+    assert (dest / "tables.md").read_text() == "tables" and not (dest / "report.md").exists()

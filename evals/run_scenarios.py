@@ -21,7 +21,8 @@ Usage (from the repo root):
     .venv/bin/python -m evals.run_scenarios --out DIR --report-only --publish evals/results/<date>-scenarios
 
 --publish copies each scored session's records (manifest, config, summary, transcript, checks.json, inputs/, outputs/
-without final_state.json; no events, model-call logs or workspace) with local paths made relative, plus the report.
+without final_state.json; no events, model-call logs or workspace) with local paths made relative, plus the report
+(as tables.md) and results.json.
 """
 from __future__ import annotations
 
@@ -288,9 +289,10 @@ def publish(out: Path, dest: Path, frozen_tree: Path | None = None) -> int:
                 to.write_text(text, encoding="utf-8")
             else:
                 shutil.copy(path, to)
-    for name in ("report.md", "results.json"):
+    # report.md is published as tables.md: a round's own REPORT.md sits beside it (one file on case-insensitive disks)
+    for name, published in (("report.md", "tables.md"), ("results.json", "results.json")):
         if (out / name).is_file():
-            shutil.copy(out / name, dest / name)
+            shutil.copy(out / name, dest / published)
     return len(rows)
 
 

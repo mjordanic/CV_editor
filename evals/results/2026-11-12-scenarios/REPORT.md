@@ -25,7 +25,7 @@
   - three requests the user's own words contradict must be **refused and explained**.
 - **Pre-registered reading:** pairs share a case and a rep. A difference is claimed only with ≥6 pairs, ≥4 discordant pairs one way and none the other (exact sign test p shown).
 
-The full tables are in [`report.md`](report.md) and [`results.json`](results.json). Each session's records are in `runs/<scenario>-<script>-<persona>-<system>-r<rep>/`: manifest, config, summary, transcript, `checks.json`, inputs and outputs. Event logs, model-call logs and workspaces are kept private.
+The full tables are in [`tables.md`](tables.md) and [`results.json`](results.json). Each session's records are in `runs/<scenario>-<script>-<persona>-<system>-r<rep>/`: manifest, config, summary, transcript, `checks.json`, inputs and outputs. Event logs, model-call logs and workspaces are kept private.
 
 ## Results
 
