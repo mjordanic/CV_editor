@@ -13,8 +13,9 @@ English ("add my research stay at Berkeley", "make the titles blue") until you a
   Each change you ask for costs about 1 to 2 cents more. Company research uses Tavily, a web search service; it is
   optional. With a free local model ([below](#try-it-without-api-keys-local-model)) it costs nothing, but it is slow
   and the results are rough.
-- **Your data:** your CV and the job ad are sent to OpenAI, and to Tavily if you set a Tavily key. With a local model
-  nothing leaves your computer.
+- **Your data:** your CV and the job ad are sent to OpenAI. If you set a Tavily key, a search query built from the
+  ad's company details (name, website, location, industry) is sent to Tavily; your CV is not. With a local model
+  nothing leaves your computer: the program makes no web search then, even when a Tavily key is set.
 - **How long:** about 2 to 8 minutes for both documents (mean 3.9 minutes, 10 November 2026).
 - **How well it works:** about as well as asking the same model once with everything in one message, at roughly ten
   times the cost. What the app adds is its guard rails: it asks for missing contact details and checks every claim
@@ -69,8 +70,10 @@ scripted conversations, 138 sessions, against one model call per user turn):
 
 - **Where the app does better:** it asked for missing contact details in 12 of 12 sessions; the plain one-call
   baseline asked in 7 of 12. A one-line hint in the baseline's prompt brings it to 10 of 12.
-- **Elsewhere it ties the baseline**, at 4 to 9 times the cost and 3 to 5 times the time per turn. In both systems,
-  appearance-only changes left the text unchanged in every session.
+- **Elsewhere no difference was detected**, at about 4 to 9 times the cost and 2 to 5 times the time per turn. The
+  widest gap favours the baseline: with 11 stacked edits it passed every check in 5 of 6 sessions, the app in 1 of 6
+  (mostly cover letters over a 200-word limit). In both systems, appearance-only changes left the text unchanged in
+  every session.
 - **Known weaknesses:** the app's fact check can remove a job title you state about yourself in the chat (2 of 3
   runs of the current app); cover letters went over a word limit you set (5 of 6 runs); when what you say in the
   chat contradicts your own notes, every system kept to the notes (0 of 9).
@@ -148,7 +151,8 @@ Try it without API keys (local model)
 -------------------------------------
 
 You can run every step on a free local model with [Ollama](https://ollama.com), a program that runs AI models on your
-own computer. No OpenAI or Tavily key is needed, and nothing is sent anywhere.
+own computer. No OpenAI or Tavily key is needed, and nothing is sent anywhere: company research makes no web search
+on a local model, even when `TAVILY_API_KEY` is set.
 
 ```bash
 ollama pull gemma4:e4b            # a 9.6 GB download; or a smaller model, see below
@@ -233,9 +237,9 @@ variable, logging and customisation are in **[docs/how-it-works.md](docs/how-it-
 Testing and evaluation
 ----------------------
 
-- **Offline tests:** `uv run --group analysis pytest` runs the test suite without API keys. Four tests in
-  `tests/test_analysis_calibration.py` need SciPy from the `analysis` dependency group: after a plain `uv sync`,
-  `uv run pytest` reports 4 failed, 430 passed.
+- **Offline tests:** `uv run pytest` runs the test suite without API keys. Four tests in
+  `tests/test_analysis_calibration.py` need SciPy from the `analysis` dependency group and are skipped without it;
+  `uv run --group analysis pytest` runs them too. Tests that compile LaTeX are skipped when `pdflatex` is missing.
 - **Evaluation:** [`evals/`](evals/README.md) runs the program end to end on the tracked fictional candidates and
   ads, with a scripted user and recorded search results, and grades the documents with an independent model. It has
   the single-call baseline the results above compare with, a staged comparison with Anthropic Batch grading, an

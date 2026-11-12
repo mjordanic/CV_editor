@@ -5,7 +5,7 @@ import os
 import json
 import logging
 from langchain.chat_models import init_chat_model
-from config.config_loader import local_model_kwargs
+from config.config_loader import is_local_model, local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
 from debug_utils import write_to_debug
 from agents.work_context import NOT_STATED, WORK_CONTEXT_PROMPT, WorkContext
@@ -140,11 +140,19 @@ class SearchAgent:
             logger.info(f"Testing mode: company research replays {self.fixture_path} (no live web search)")
             self.tavily_client = None
             return
+        # A local model means the run sends nothing to a cloud service, so no web search either,
+        # even when a TAVILY_API_KEY is set (e.g. copied from .env_sample).
+        if is_local_model(model):
+            self.tavily_client = None
+            self.skip_reason = "a local model is in use, so no web search is made"
+            logger.info(f"Company research is skipped: {self.skip_reason}")
+            return
         # Initialize TavilyClient lazily to ensure environment variables are loaded
-        # Without a key (e.g. a local run with Ollama) company research is skipped, not fatal.
+        # Without a key company research is skipped, not fatal.
         api_key = os.getenv("TAVILY_API_KEY")
         self.tavily_client = TavilyClient(api_key=api_key) if api_key else None
         if self.tavily_client is None:
+            self.skip_reason = "TAVILY_API_KEY is not set"
             logger.warning("TAVILY_API_KEY is not set - company research will be skipped")
 
     def search_tavily(self, query: str):
@@ -273,6 +281,7 @@ class SearchAgent:
         # fails (network, rate limit, quota), carry on without it instead of ending the session
         # after the user has already pasted the job ad.
         company_name = field_value(job_description_info.get("company_name"))
+        search_source = None  # set only when a search is made (recorded fixture or Tavily)
         if not company_name:
             # Without a name the query is only a location or "No additional information provided",
             # and the summary of whatever comes back reached the writers as "Company Information".
@@ -280,7 +289,13 @@ class SearchAgent:
             results = {}
             company_description = NO_COMPANY_NAME
             formatted_query = None
+        elif getattr(self, "fixture", None) is None and getattr(self, "skip_reason", None):
+            logger.info(f"Company research skipped: {self.skip_reason}")
+            results = {}
+            company_description = NO_COMPANY_INFO
+            formatted_query = None
         else:
+            search_source = f"fixture:{self.fixture_path}" if getattr(self, "fixture", None) is not None else "tavily"
             try:
                 results = self.search_tavily(formatted_query) or {}
                 company_description = self.process_search_results(results, company_name)
@@ -327,7 +342,7 @@ class SearchAgent:
             "work_context": work_context,
             "search_results": results,  # Store raw search results if needed
             "search_query": formatted_query,
-            "search_source": f"fixture:{self.fixture_path}" if getattr(self, "fixture", None) is not None else "tavily",
+            "search_source": search_source,
         }
         
         logger.info(f"Company info prepared - arrangement: {work_context['arrangement']}, description_length: {len(company_description_str)}")

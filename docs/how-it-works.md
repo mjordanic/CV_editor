@@ -30,12 +30,13 @@ redrawn from the code with `--draw-graph`.
    or a path to a missing file is asked again. If the ad has neither a job title nor any requirements, you are asked
    once to add details or reply `continue` (the `clarify_job_ad` step).
 3. **Company research.** If the ad names the company, `SearchAgent` builds a Tavily query and summarises the results
-   with a model (results about another company are not used). Without a `TAVILY_API_KEY` this step is skipped with a
-   warning. From the job ad and the results together it extracts the work arrangement (remote / hybrid / on-site),
-   location or country limits and culture signals, shows them on the console and gives them to the writers; anything
-   neither source states stays "not stated" and is never invented. If you stated a work-arrangement preference that
-   the job does not match, the assistant tells you; without a stated preference you are treated as open to the
-   job's arrangement.
+   with a model (results about another company are not used). Only that query goes to Tavily, never the CV. Without a
+   `TAVILY_API_KEY`, or when the search agent runs on a local model, no web search is made and this step is skipped
+   with a log line. From the job ad and the results together it extracts the work arrangement (remote / hybrid /
+   on-site), location or country limits and culture signals, shows them on the console and gives them to the writers;
+   anything neither source states stays "not stated" and is never invented. If you stated a work-arrangement
+   preference that the job does not match, the assistant tells you; without a stated preference you are treated as
+   open to the job's arrangement.
 4. **Portfolio.** `ExperienceRetrievalAgent` gives the writers your portfolio (`data/portfolio/portfolio.txt`, if
    you supplied one) whole. Only a portfolio over 12,000 characters is indexed (one paid embedding call, or a local
    Ollama embedding model on a local run) and searched for the items relevant to the job description: a two-stage
@@ -171,7 +172,7 @@ agent is built.
 | variable | meaning |
 |---|---|
 | `OPENAI_API_KEY` | needed for the shipped OpenAI models. Without it, and without a local `CV_EDITOR_MODEL`, the program stops at startup with a Python traceback ending in `openai.OpenAIError: The api_key client option must be set ...` |
-| `TAVILY_API_KEY` | optional; company research is skipped without it |
+| `TAVILY_API_KEY` | optional; company research is skipped without it, and on a local model |
 | `ANTHROPIC_API_KEY` | only for the evaluation tools when a Claude model grades (`evals/README.md`) |
 | `CV_EDITOR_MODEL=<provider:model>` | replaces the writer-side models for one run without editing the config, never the critic's |
 | `CV_EDITOR_CRITIC_MODEL=<provider:model>` | replaces the quality review's model (`critique`) |
@@ -184,7 +185,8 @@ agent is built.
 
 A local `CV_EDITOR_MODEL` (an `ollama:` model) is the exception to "never the critic's": it also replaces the
 critic's models unless `CV_EDITOR_CRITIC_MODEL` or `CV_EDITOR_GROUNDING_MODEL` is set, so a local run sends nothing
-to OpenAI and needs no OpenAI key; the log then says the checker shares the writer's model.
+to OpenAI and needs no OpenAI key; the log then says the checker shares the writer's model. A local run also makes no
+Tavily search, even when `TAVILY_API_KEY` is set.
 
 ## Customisation
 

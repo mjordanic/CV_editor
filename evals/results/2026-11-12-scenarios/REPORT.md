@@ -5,7 +5,7 @@
 **Answer from this round:**
 - **The app does better than the plain baseline in one place:** asking for missing contact details. A one-line prompt hint closes that gap.
 - **The router fixes of #33 work:** the two editing failures of the frozen app (one change for both documents, PDF styles) are gone.
-- **Elsewhere the fixed app ties the baseline, at 4–9× the cost and 3–5× the time per user turn.**
+- **Elsewhere no difference is detected between the fixed app and the baseline, at 3.7–8.9× the cost and 2.0–5.1× the time per user turn** (S1–S5: cost 5.6, 6.0, 4.2, 8.9, 3.7×; time 3.9, 3.2, 2.0, 5.1, 2.6×). The widest gap favours the baseline: on S1 it passes every check in 5/6 sessions, the app in 1/6.
 - **Two app weaknesses remain:**
   - its fact check removes a job title the user stated about themselves;
   - its cover letters overshoot a word limit the user set.
@@ -85,7 +85,7 @@ The fixed app costs a little more than the frozen one on S4 ($0.021 vs $0.019 pe
    - **Grounding vs the ground-truth rule.** The fact check treats a user's statement about themselves as an unsupported claim and redraft removes it (retitle, 3 of 6 app runs). Pass the user's self-statements to the grounding check as candidate facts, and keep claims the user stated out of `claims_to_remove`.
    - **User-set limits.** The letter overshot "under 200 words" in 5 of 6 sessions. A deterministic word-count check in finalize, with one redraft on a breach, would hold it.
 4. **Both systems' prompts fall short of the ground-truth rule when the chat contradicts the documents** (Kubernetes / on-call, 0/9). If the owner wants the chat to win in that case, the shared truthfulness protocol (`agents/document_writer.py`) should say so explicitly.
-5. **Positioning:** at about 4–9× the cost and 3–5× the latency per turn, the app is a guarded pipeline (missing-details guard, text-invariant appearance edits), not a better interactive editor.
+5. **Positioning:** at about 4–9× the cost and 2–5× the latency per turn, the app is a guarded pipeline (missing-details guard, text-invariant appearance edits), not a better interactive editor.
 
 ## Reproduce
 

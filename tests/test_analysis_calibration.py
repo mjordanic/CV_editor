@@ -9,7 +9,10 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from evals.analysis import calibration, load
+from evals.analysis import calibration, load, stats
+
+# The rank-agreement check needs SciPy (the `analysis` dependency group); without it these tests are skipped.
+needs_scipy = pytest.mark.skipif(stats._sps is None, reason="SciPy is not installed (uv sync --group analysis)")
 
 PRIMARY, SECOND = "sonnet", "opus"
 A, B = "multi_agent/gpt-6-luna", "single_prompt/gpt-6-luna"
@@ -48,6 +51,7 @@ def test_composite_is_the_mean_of_its_subscores_and_none_when_one_is_missing():
     assert load.composite(row) is None
 
 
+@needs_scipy
 def test_every_check_passes_when_graders_agree():
     rows = _round([6, 7, 8, 5], [7, 8, 9, 6], [6, 7, 8, 5], [7, 8, 9, 6], regrade_delta=0.2, overall_delta=1)
     t = _by_check(calibration.section6_checks(rows, PRIMARY, SECOND, [(A, B, "q", True)]))
@@ -62,6 +66,7 @@ def test_every_check_passes_when_graders_agree():
     assert audit["passed"] is None and audit["result"].startswith("4 claims in 4 of 8 runs")
 
 
+@needs_scipy
 def test_noisy_primary_and_disagreeing_graders_fail():
     # the primary re-grades 0.5 apart and 2 overall points apart; the second grader reverses the ranking and
     # sees arm B as worse than A
@@ -88,6 +93,7 @@ def test_arm_bias_without_non_tied_cells_passes_on_the_gap_alone():
     assert "no cell non-tied" in bias["result"] and bias["passed"] is True
 
 
+@needs_scipy
 def test_first_grading_is_the_lowest_evaluation_name():
     # the second grading (eval2) disagrees completely, but checks 3 and 4 only use eval1
     rows = _round([6, 7, 8, 5], [7, 8, 9, 6], [6, 7, 8, 5], [7, 8, 9, 6], regrade_delta=3)
@@ -106,6 +112,7 @@ def test_checks_without_data_say_so_and_do_not_pass_or_fail():
     assert all(r["passed"] is None and r["result"].startswith("no data") for r in t)
 
 
+@needs_scipy
 def test_pilot_round_reproduces_the_pilot_gate():
     rows = load.read_rows(REPO / "evals" / "results" / "2026-11-11")
     contrasts = [(A, B), (A, "single_prompt/gpt-6.1-sol"), ("multi_agent/gpt-6.1-terra", "single_prompt/gpt-6.1-sol")]
@@ -119,3 +126,11 @@ def test_pilot_round_reproduces_the_pilot_gate():
     assert by[f"no bias by arm: single_prompt/gpt-6.1-sol - {A}"]["result"].startswith("gap 0.214")
     assert by["claim audit"]["result"].startswith("7 claims in 5 of 18 runs")
     assert all(r["passed"] is True for r in t if r["check"] != "claim audit")
+
+
+def test_rank_agreement_names_missing_scipy(monkeypatch):
+    monkeypatch.setattr(stats, "_sps", None)
+    rows = _round([6, 7, 8, 5], [7, 8, 9, 6], [6, 7, 8, 5], [7, 8, 9, 6])
+    t = _by_check(calibration.section6_checks(rows, PRIMARY, SECOND, [(A, B, "q", True)]))
+    rank = t["primary vs second (rank agreement)"]
+    assert "SciPy is not installed" in rank["result"] and rank["passed"] is None
