@@ -775,10 +775,10 @@ model).
 
 ```bash
 uv run python -m evals.run_scenarios --out OUT --dry-run                      # sessions and cost estimate, no call
-mkdir FROZEN && git archive 2320a98 | tar -x -C FROZEN                        # the tree app_frozen runs from
-uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree FROZEN --env-file .env   # each scenario's first case once
-uv run python -m evals.run_scenarios --out OUT --frozen-tree FROZEN --env-file .env --total-cap 6.0 --workers 6   # the full set
-uv run python -m evals.run_scenarios --out OUT --report-only --frozen-tree FROZEN --publish evals/results/<date>-scenarios
+mkdir ../FROZEN && git archive 2320a98 | tar -x -C ../FROZEN                  # the tree app_frozen runs from
+uv run python -m evals.run_scenarios --out OUT --smoke --frozen-tree ../FROZEN --env-file .env   # each scenario's first case once
+uv run python -m evals.run_scenarios --out OUT --frozen-tree ../FROZEN --env-file .env --total-cap 6.0 --workers 6   # the full set
+uv run python -m evals.run_scenarios --out OUT --report-only --frozen-tree ../FROZEN --publish evals/results/<date>-scenarios
 uv run python -m evals.score_checks RUN_DIR                                   # re-score one run folder
 ```
 
