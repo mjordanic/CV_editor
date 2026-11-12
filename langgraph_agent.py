@@ -122,6 +122,8 @@ class State(TypedDict, total=False):
     cover_letter_claims_to_remove: list[str] | None  # Unsupported claims the cover letter redraft must remove
     cv_user_requests: list[str] | None  # The user's requests for the CV so far (the writer preserves them; the filter respects them)
     cover_letter_user_requests: list[str] | None  # The user's requests for the cover letter so far
+    cv_request_notes: str | None  # The CV writer's notes on the user's latest request; the router tells the user what was not applied as asked, then clears them
+    cover_letter_request_notes: str | None  # The same for the cover letter
     cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
     cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
     cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)

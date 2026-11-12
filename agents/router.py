@@ -59,6 +59,11 @@ ROUTER_SYSTEM_PROMPT = (
     "Do not give a reason that suggests it could do it otherwise, and never offer anything that is not one of the "
     "available actions.\n"
     "- If the user changes their mind within a message, follow their LAST stated wish.\n\n"
+    "WHAT THE WRITERS DID WITH THE USER'S REQUEST:\n"
+    "- The context may include the writers' notes on the user's latest request. If they say that any part of the "
+    "request was not applied, or was applied differently from what the user asked, say so plainly in your next "
+    "message to the user: which part, what was done instead, and why, in one or two sentences. Never say a change "
+    "was made if the notes say it was not.\n\n"
     "WORK ARRANGEMENT:\n"
     "- If the user says in their latest message whether they want remote, hybrid or on-site work (or that they have "
     "no preference), put it in 'work_preference'. Never guess it from anything else.\n"
@@ -79,6 +84,7 @@ ROUTER_HUMAN_PROMPT = (
     "- Cover Letter Generated: {cover_letter_generated}\n\n"
     "IMPORTANT: Check the conversation history to see if the user requested both documents. If one document has been generated but the other hasn't, and the user previously requested both, route to generate the missing document.\n\n"
     "**Available Feedback for Modifications (if any):**\n{feedback_context}\n\n"
+    "**Writers' Notes on the User's Latest Request (not yet shown to the user):**\n{writer_notes}\n\n"
     "Based on this context, determine:\n"
     "1. What message should be shown to the user (if the conversation needs user input)\n"
     "2. What the next action should be (you can ONLY choose from the available actions listed in the system prompt)\n"
@@ -134,6 +140,44 @@ def _latest_user_message(messages: list) -> str:
         if isinstance(content, str) and content.strip():
             return content.strip() if _message_role(msg) == "user" else ""
     return ""
+
+
+STYLE_REQUESTS_HEADER = "Apply every style request below; where two conflict, the later one wins:"
+
+
+def _accumulate_style(previous: str | None, new: str | None) -> str | None:
+    """
+    The stored PDF style with the new request added after the earlier ones.
+
+    Every PDF is rendered from the stored style (a redraft starts again from the base template), so
+    replacing it would drop the user's earlier style requests. A request already stored is not added twice.
+    """
+    new = (new or "").strip()
+    if not new:
+        return previous
+    items = []
+    for line in (previous or "").splitlines():
+        line = line.strip()
+        if line and line != STYLE_REQUESTS_HEADER:
+            items.append(line.removeprefix("- "))
+    if new not in items:
+        items.append(new)
+    if len(items) == 1:
+        return items[0]
+    return STYLE_REQUESTS_HEADER + "\n" + "\n".join(f"- {item}" for item in items)
+
+
+_WRITER_NOTE_LABELS = {"cv": "CV", "cover_letter": "Cover letter"}
+
+
+def _format_writer_notes(state) -> str:
+    """The writers' notes on the user's latest request for each document, for the router prompt."""
+    parts = [
+        f"{label} writer: {notes.strip()}"
+        for kind, label in _WRITER_NOTE_LABELS.items()
+        if (notes := state.get(f"{kind}_request_notes")) and notes.strip()
+    ]
+    return "\n\n".join(parts) if parts else "None."
 
 
 def _new_draft_cycle(kind: str, state) -> dict:
@@ -555,7 +599,8 @@ class RouterAgent:
             "candidate_text": candidate_text_formatted,
             "cv_generated": "Yes" if generated_cv is not None else "No",
             "cover_letter_generated": "Yes" if generated_cover_letter is not None else "No",
-            "feedback_context": feedback_context
+            "feedback_context": feedback_context,
+            "writer_notes": _format_writer_notes(state),
         }
         
         logger.debug(f"LLM input prepared - messages_history length: {len(messages_history)}, feedback_context length: {len(feedback_context)}")
@@ -597,7 +642,28 @@ class RouterAgent:
                     }
                 ],
             }
-        
+
+        # One user message with changes for both existing documents: the router redrafted one and
+        # kept the other's request (feedback for an existing document is stored only for this, and
+        # finalize clears it). Once the first is done (the latest message is no longer the user's),
+        # redraft the other with its request before the user is asked anything.
+        if not self._has_user_feedback(messages):
+            for kind, generated in (("cover_letter", generated_cover_letter), ("cv", generated_cv)):
+                pending = state.get(f"{kind}_content_feedback")
+                if pending and pending.strip() and generated:
+                    label = "cover letter" if kind == "cover_letter" else "CV"
+                    logger.info(f"Pending {label} content feedback from the user's last message - routing to draft_{kind}")
+                    return {
+                        "next": f"draft_{kind}",
+                        **_new_draft_cycle(kind, state),
+                        "messages": messages + [
+                            {
+                                "role": "assistant",
+                                "content": f"Now applying your requested changes to the {label}.",
+                            }
+                        ],
+                    }
+
         logger.info("Calling LLM for routing decision...")
         
         # Make a single LLM call to determine routing (retried: one parse error or rate limit must
@@ -654,6 +720,12 @@ class RouterAgent:
         
         if shows_message and pending_notices(state):
             return_state[NOTICES_KEY] = None
+        if shows_message:
+            # Shown to the user with this message (the prompt asks the model to state what was not
+            # applied as asked); cleared so they are not repeated after a later request.
+            for kind in _WRITER_NOTE_LABELS:
+                if state.get(f"{kind}_request_notes"):
+                    return_state[f"{kind}_request_notes"] = None
 
         if response.work_preference and response.work_preference != state.get("work_preference"):
             # Only what the user said; the writers state it honestly and the critique counts it as the user's own fact.
@@ -662,8 +734,9 @@ class RouterAgent:
 
         # Store content feedback for the writers. Feedback for a document that does not exist yet
         # is kept for later (the user may want the other document first). Feedback for an existing
-        # document is stored only on the turn that redrafts it; finalize clears it afterwards, so a
-        # request is applied once and cannot loop.
+        # document is stored only on the turn that redrafts it, or that redrafts the other document
+        # (it is then redrafted right after that one); finalize clears it afterwards, so a request
+        # is applied once and cannot loop.
         cv_feedback = (response.cv_content_feedback or "").strip()
         cover_letter_feedback = (response.cover_letter_content_feedback or "").strip()
         latest_user_message = _latest_user_message(messages)
@@ -681,6 +754,11 @@ class RouterAgent:
         elif cv_feedback and not generated_cv:
             return_state["cv_content_feedback"] = cv_feedback
             logger.info(f"Storing CV content feedback (will be used when the CV is drafted): {cv_feedback[:100]}")
+        elif cv_feedback and next_action == "draft_cover_letter":
+            # One message with changes for both existing documents: the cover letter goes first,
+            # and the CV is redrafted with this request once the letter is finalized (see above).
+            return_state["cv_content_feedback"] = cv_feedback
+            logger.info(f"Storing CV content feedback (will be applied after the cover letter): {cv_feedback[:100]}")
         elif cv_feedback:
             logger.info("CV feedback extracted but the router did not choose draft_cv - not storing it")
 
@@ -695,20 +773,26 @@ class RouterAgent:
         elif cover_letter_feedback and not generated_cover_letter:
             return_state["cover_letter_content_feedback"] = cover_letter_feedback
             logger.info(f"Storing cover letter content feedback (will be used when the cover letter is drafted): {cover_letter_feedback[:100]}")
+        elif cover_letter_feedback and next_action == "draft_cv":
+            # One message with changes for both existing documents: the CV goes first, and the
+            # cover letter is redrafted with this request once the CV is finalized (see above).
+            return_state["cover_letter_content_feedback"] = cover_letter_feedback
+            logger.info(f"Storing cover letter content feedback (will be applied after the CV): {cover_letter_feedback[:100]}")
         elif cover_letter_feedback:
             logger.info("Cover letter feedback extracted but the router did not choose draft_cover_letter - not storing it")
-        
+
         # Store style feedback (for PDF generator) - can be stored regardless of next_action
-        # Style will be applied when PDF is generated (after content is finalized)
+        # Style will be applied when PDF is generated (after content is finalized). A new request
+        # is added to the earlier ones, so the user's earlier style requests are kept.
         if response.cv_pdf_style:
-            return_state["cv_pdf_style"] = response.cv_pdf_style
+            return_state["cv_pdf_style"] = _accumulate_style(state.get("cv_pdf_style"), response.cv_pdf_style)
             if response.next_action == "update_cv_pdf_style":
                 logger.info(f"Routing to update_cv_pdf_style with style: {response.cv_pdf_style[:100]}..." if len(response.cv_pdf_style) > 100 else f"Routing to update_cv_pdf_style with style: {response.cv_pdf_style}")
             else:
                 logger.info(f"Storing CV PDF style feedback (will be applied when PDF is generated): {response.cv_pdf_style[:100]}..." if len(response.cv_pdf_style) > 100 else f"Storing CV PDF style feedback (will be applied when PDF is generated): {response.cv_pdf_style}")
         
         if response.cover_letter_pdf_style:
-            return_state["cover_letter_pdf_style"] = response.cover_letter_pdf_style
+            return_state["cover_letter_pdf_style"] = _accumulate_style(state.get("cover_letter_pdf_style"), response.cover_letter_pdf_style)
             if response.next_action == "update_cover_letter_pdf_style":
                 logger.info(f"Routing to update_cover_letter_pdf_style with style: {response.cover_letter_pdf_style[:100]}..." if len(response.cover_letter_pdf_style) > 100 else f"Routing to update_cover_letter_pdf_style with style: {response.cover_letter_pdf_style}")
             else:
