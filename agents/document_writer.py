@@ -363,6 +363,9 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         if mode == "request" and user_feedback and user_feedback.strip():
             # The user's requests for this document, kept in state (traces and final_state.json show them).
             updates[f"{kind}_user_requests"] = previous_requests + [user_feedback.strip()]
+            # The writer's notes on this request (e.g. a part it did not apply, or applied
+            # differently): the router passes them on in its next message to the user.
+            updates[f"{kind}_request_notes"] = (notes or "").strip() or None
 
         history = state.get(f"{kind}_history", []) or []
         iteration = len(history) + 1
