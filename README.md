@@ -16,7 +16,8 @@ English ("add my research stay at Berkeley", "make the titles blue") until you a
 - **Your data:** your CV and the job ad are sent to OpenAI. If you set a Tavily key, a search query built from the
   ad's company details (name, website, location, industry) is sent to Tavily; your CV is not. With a local model
   nothing leaves your computer: the program makes no web search then, even when a Tavily key is set.
-- **How long:** about 2 to 8 minutes for both documents (mean 3.9 minutes, 10 November 2026).
+- **How long:** about 2 to 6 minutes for both documents (mean 3.6 minutes over 49 sessions on the shipped
+  configuration, 11 November 2026).
 - **How well it works:** about as well as asking the same model once with everything in one message, at roughly ten
   times the cost. What the app adds is its guard rails: it asks for missing contact details and checks every claim
   against your material. See [How well does it work?](#how-well-does-it-work).
@@ -43,7 +44,8 @@ How well does it work?
 ----------------------
 
 The project tests itself on 13 fictional candidates and 8 job ads (no real people, no real users). The finished
-documents are graded by an independent model (Claude Sonnet 5.5) or, in the conversations, by deterministic checks.
+documents are graded by an independent model (Claude Sonnet 5.5; the 10 November round by `gpt-6.1-sol`) or, in the
+conversations, by deterministic checks.
 All results, with every document and grade, are published in [`evals/results/`](evals/results/).
 
 **One CV and cover letter per job ad** ([report](evals/results/2026-11-11-core/REPORT.md), 11 November 2026, 39

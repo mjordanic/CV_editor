@@ -43,7 +43,7 @@ claims about the arms. The comparisons below describe the pilot only. The main c
 
 | arm | overall | composite* | invented content | fit | visual layout | ATS | sessions with a flagged claim | partly-supported claims | unsupported claims |
 |---|---|---|---|---|---|---|---|---|---|
-| MA-luna | 7.58 | 7.65 | 9.00 | 7.08 | 7.00 | 7.50 | 7 | 15 | 0 |
+| MA-luna | 7.58 | 7.63 | 8.92 | 7.08 | 7.00 | 7.50 | 7 | 15 | 0 |
 | SP-luna | 8.17 | 8.05 | 9.42 | 7.25 | 7.50 | 7.92 | 6 | 8 | 0 |
 | SP-sol | 8.17 | 8.11 | 9.58 | 6.92 | 7.83 | 7.75 | 1 | 2 | 0 |
 
@@ -54,7 +54,7 @@ Paired by case (6 pairs; the two runs averaged first):
 - **Invented content:** +0.63 and +0.75.
 - **Visual layout:** +0.50 and +1.00.
 
-No contrast is significant at this size: Holm-adjusted p ≥ 0.25. The notebook's tables are in
+No contrast is significant at this size: the smallest Holm-adjusted p is 0.125 (invented content, SP-luna minus MA-luna). The notebook's tables are in
 [`evals/analysis/output/2026-11-11/`](../../analysis/output/2026-11-11/).
 
 **Trap check (`truth1`).** The counts are:
