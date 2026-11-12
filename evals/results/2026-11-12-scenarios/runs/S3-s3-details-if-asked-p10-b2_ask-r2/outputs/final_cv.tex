@@ -1,0 +1,86 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.5em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.25em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Tobias Mwangi-Hartley}\\[0.4em]
+{\small [EMAIL] | [PHONE] | [LINKEDIN] | [LOCATION]}
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Data scientist with experience developing forecasting, churn propensity and experimentation solutions using Python, SQL and R. Hands-on with feature engineering, model evaluation, scheduled notebook workflows, batch scoring and automated tests. Now seeking to grow into machine learning engineering, building on applied modelling experience and practical collaboration with data platform teams.
+
+\section*{EXPERIENCE}
+\textbf{Data Scientist | Thistlebox} \hfill \textit{2022–Present}
+\begin{itemize}
+\item Work across experimentation, forecasting and churn modelling.
+\item In 2025, began writing pytest unit tests for forecasting feature code; coverage is approximately 60\%.
+\item Delivered internal training, “Stats for PMs,” three times.
+\end{itemize}
+
+\textbf{Junior Data Analyst | Firth Energy Retail} \hfill \textit{2020–2022}
+\begin{itemize}
+\item Segmented customers and analysed tariffs using R and SQL.
+\item Automated monthly regulator reports with R Markdown, saving the team about two days each month.
+\end{itemize}
+
+\section*{SELECTED PROJECTS}
+\textbf{Recipe Demand Forecasting | Thistlebox} \hfill \textit{2022–2024}
+\begin{itemize}
+\item Built weekly forecasts of orders per recipe and region, six weeks ahead, using LightGBM and calendar, price and menu-position features.
+\item Ran the workflow as a scheduled notebook job in Vertex AI Workbench, writing results to BigQuery for operations to use in Looker.
+\item Improved WAPE from 23\% to 14\%; estimated food waste reduction was 9\%.
+\item Technologies: Python, LightGBM, BigQuery, Vertex AI Workbench, Looker.
+\end{itemize}
+
+\textbf{Churn Propensity and Retention Targeting | Thistlebox} \hfill \textit{2024–2025}
+\begin{itemize}
+\item Built an XGBoost churn model scored weekly in BigQuery; retention offers were sent to top-decile customers.
+\item In a 10\% holdout validation, churn decreased by 2.1 percentage points in the treated group.
+\item Technologies: Python, XGBoost, SHAP, BigQuery, dbt.
+\end{itemize}
+
+\textbf{Sequential A/B Testing Calculator | Thistlebox} \hfill \textit{2023}
+\begin{itemize}
+\item Built a Streamlit app for planning and analysing experiments with sequential boundaries, used by approximately 25 people in product and growth.
+\item Wrote the app and its Dockerfile; the data platform team handled deployment to Cloud Run.
+\item Technologies: Python, Streamlit, statsmodels, Docker.
+\end{itemize}
+
+\textbf{Image Classification Course Project | Personal} \hfill \textit{2025}
+\begin{itemize}
+\item Fine-tuned a small CNN on a public food images dataset as part of an online deep learning course; achieved approximately 80\% accuracy. Learning project only.
+\item Technologies: PyTorch, torchvision, Google Colab.
+\end{itemize}
+
+\section*{EDUCATION}
+MSc in Statistics\\
+Dissertation: Bayesian hierarchical models.
+
+\section*{SKILLS}
+\textbf{Programming and analysis:} Python, pandas, scikit-learn, R, SQL\\
+\textbf{Machine learning and statistics:} LightGBM, XGBoost, PyTorch, feature engineering, forecasting, churn propensity modelling, SHAP, experimental design, Bayesian hierarchical models\\
+\textbf{Data and workflow tools:} BigQuery, Vertex AI Workbench, Looker, dbt, R Markdown\\
+\textbf{Applications and testing:} Streamlit, Docker, pytest
+
+\section*{ADDITIONAL INFORMATION}
+UK settled status
+
+\end{document}

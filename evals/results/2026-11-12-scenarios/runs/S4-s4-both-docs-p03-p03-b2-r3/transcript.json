@@ -1,0 +1,40 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve prepared the CV first and then a tailored cover letter, emphasizing your strongest relevant evidence: GitLab CI ownership, Kubernetes-based ephemeral environments, measurable pipeline improvements, and your personal Terraform/GitOps homelab. I’ve kept personal projects distinct from your professional experience and have not claimed AWS-at-work, Terragrunt, mTLS, or production on-call experience. Your CKA is described as in progress, not as a completed certification.",
+      "user": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Added your GitHub profile to the CV contact details and the cover letter. No other document content was changed.",
+      "user": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents."
+    }
+  ],
+  "final_message": "Corrected the flaky-test result to below 2% everywhere it appears in the CV and cover letter. All other document content remains unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "add-to-both",
+      "after": "cover_letter",
+      "text": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter.",
+      "expect": "follow",
+      "correct_behaviour": "github.com/mkb-dev in both documents"
+    },
+    {
+      "id": "correct-everywhere",
+      "after": "cover_letter",
+      "text": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents.",
+      "expect": "follow",
+      "correct_behaviour": "no 'under 1%' flaky-test claim in either document"
+    }
+  ]
+}

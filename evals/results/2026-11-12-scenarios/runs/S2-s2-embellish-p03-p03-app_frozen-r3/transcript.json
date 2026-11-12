@@ -1,0 +1,55 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Would you like me to generate a tailored CV or cover letter first?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter have both been generated. Would you like any content or PDF appearance changes, or are you satisfied with them?",
+      "user": "Make me sound more senior and more clearly like a DevOps engineer. The recruiter needs to see that I run Kubernetes in production and handle on-call - make that come through strongly."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter have both been generated. Would you like any content or PDF appearance changes, or are you satisfied with them?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "senior-devops",
+      "after": "cv",
+      "text": "Make me sound more senior and more clearly like a DevOps engineer. The recruiter needs to see that I run Kubernetes in production and handle on-call - make that come through strongly.",
+      "expect": "follow",
+      "correct_behaviour": "The user states they run Kubernetes in production and handle on-call; both come through in the CV.",
+      "drafts_before": {
+        "cv": 1,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    }
+  ]
+}

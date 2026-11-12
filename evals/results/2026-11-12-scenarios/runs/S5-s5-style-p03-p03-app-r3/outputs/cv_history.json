@@ -1,0 +1,154 @@
+[
+  {
+    "iteration": 1,
+    "content": "MARTA KOWAL-BRANDT\nDevOps / Infrastructure Engineering | CI/CD and Test Infrastructure\nWroclaw, Poland | marta.kowalbrandt@example.com | +48 555 303 303 | gitlab.com/mkb-example\n\nPROFESSIONAL SUMMARY\nQA automation engineer with 7 years of experience, including the last two focused largely on CI/CD pipelines, test environments and build tooling. Owns GitLab CI pipelines and ephemeral environments used by three product teams. Hands-on experience with Docker, Helm and namespace-level Kubernetes deployments, plus personal experience building a k3s homelab and provisioning Hetzner VPS infrastructure with Terraform. Known for improving pipeline performance, documenting technical workflows and working across QA, product and development teams. Currently studying for the Certified Kubernetes Administrator (CKA) exam; not yet certified.\n\nTECHNICAL SKILLS\nInfrastructure and CI/CD: GitLab CI, Jenkins, Docker, Docker Compose, Helm, Terraform (personal projects), Argo CD\nContainers and Linux: Kubernetes (namespace-level work; k3s homelab), Linux\nMonitoring and observability: Prometheus, Grafana, Loki\nProgramming and scripting: Python, Bash, Java (test code), SQL\nTesting: pytest, Playwright, Selenium, Postman\nDatabases and tools: PostgreSQL, Git, GitLab API\nCloud exposure: Hetzner VPS; AWS free-tier learning (EC2 and S3 basics)\n\nPROFESSIONAL EXPERIENCE\nQA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021–Present\n- Own GitLab CI pipelines for three product teams (approximately 25 developers), covering builds, unit, integration and end-to-end test stages, and artifact publishing.\n- Reduced average pipeline duration from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests into their own stage; monthly CI runner costs decreased by about 30%.\n- Built short-lived merge-request environments for applications, PostgreSQL and seeded data, deployed through GitLab CI using Helm to the company's shared Kubernetes cluster. Environments are automatically removed after merge or 48 hours of inactivity.\n- Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced flaky test rate from 7% to below 1%.\n- Wrote Bash and Python tooling for PostgreSQL test-data seeding and collected CI test results into PostgreSQL for Grafana dashboards.\n- Wrote an internal guide to how the CI system works, now used in team onboarding; mentored two QA interns in 2023.\n- Work with namespace-level access on the shared Kubernetes cluster; the platform team operates the cluster.\n\nQA Engineer | Brightmill Software House, Wroclaw | 2019–2021\n- Tested web and mobile applications for client projects using manual and automated testing.\n- Introduced a Java and Selenium automated regression suite for the largest client project.\n- Configured Jenkins jobs to run nightly regression tests.\n\nCustomer Support Specialist (2nd line) | Brightmill Software House | 2018–2019\n- Investigated customer issues using logs and databases, and reproduced bugs for developers.\n\nSELECTED INFRASTRUCTURE PROJECTS\nHomelab k3s Cluster with GitOps | Personal | 2024–2025\n- Built a three-node Raspberry Pi 5 k3s cluster, deploying applications from a Git repository with Argo CD.\n- Set up Prometheus, Grafana and Loki monitoring, Traefik ingress and cert-manager for TLS.\n- Provisioned infrastructure for a small Hetzner VPS with Terraform; used Ansible at a basic level.\n\nMerge-Request Ephemeral Environments | Odrava Health | 2023–2024\n- Implemented temporary environments for each merge request, including the application, PostgreSQL and seeded data, deployed with Helm to a shared Kubernetes cluster from GitLab CI.\n- Configured automatic cleanup after merge or 48 hours of inactivity; QA and product teams use the environments for feature review and end-to-end testing.\n\nCI Pipeline Speed-up | Odrava Health | 2022\n- Profiled pipelines across three teams, parallelised test jobs, added dependency caching and separated end-to-end testing into a dedicated stage.\n- Reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%.\n\nFlaky Test Dashboard | Odrava Health | 2023\n- Collected CI test results in PostgreSQL and created Grafana dashboards to show flaky tests by team.\n- Helped teams identify leading flaky tests; the flaky rate fell from 7% to below 1% after teams began addressing the main offenders.\n\nEDUCATION AND CERTIFICATIONS\nBEng Computer Engineering | Silesian Lowlands University of Technology | 2018\nISTQB Foundation Level | 2019\nCertified Kubernetes Administrator (CKA) | Studying; exam booked for January 2027 (not yet certified)\n\nLANGUAGES\nPolish (native) | English (C1) | German (A2)",
+    "score": 87,
+    "critique": {
+      "quality_score": 87,
+      "content_quality_feedback": "This is a strong, credible and well-structured CV for a QA-to-DevOps transition. It uses quantified achievements effectively, clearly distinguishes professional work from personal infrastructure projects, and transparently states important scope limitations such as namespace-level Kubernetes access and the fact that the CKA is not yet completed. The strongest evidence is the ownership of GitLab CI for three teams, the reduction in pipeline duration from 38 to 14 minutes, the ephemeral Kubernetes environments, and the homelab/GitOps work. The main content weakness is that some relevant evidence is present only in project descriptions or implied rather than surfaced in the skills and experience sections. The document also does not demonstrate several central requirements of this particular contractor role, especially Terragrunt, mTLS, broader network design, production cloud operation and system architecture; these are candidate-profile gaps rather than CV-writing defects.",
+      "ats_compatibility_feedback": "The CV is ATS-friendly overall: it uses conventional headings, plain text, chronological experience, recognizable technology names and measurable outcomes. The structure should parse reliably, and the keywords GitLab CI, Jenkins, Docker, Helm, Terraform, Kubernetes, Linux, AWS, PostgreSQL, Python, Bash, Prometheus and Grafana are visible. AI screening probability is reasonably good for junior or transitional DevOps/platform roles, but moderate for this specific vacancy because the CV does not contain Terragrunt, mTLS, network design, system architecture, security awareness or production AWS experience. Do not add those terms as skills because the original candidate information does not support them. ATS alignment could be improved by surfacing supported terms such as infrastructure as code, TLS, GitOps, technical documentation, cross-functional collaboration and stakeholder use of environments. The duplicated relationship between the Odrava experience and the selected projects is acceptable, but the projects should remain clearly labelled as projects so they are not interpreted as additional employment positions.",
+      "job_alignment_feedback": "The CV aligns well with the role's infrastructure-engineering direction in several respects: it shows hands-on CI/CD ownership, Kubernetes-based environment delivery, Helm, Docker, Terraform in a personal infrastructure project, Linux, observability, analytical improvements and communication through documentation and onboarding. It also shows ownership of a technical area and collaboration across QA, product and development teams. The candidate's strongest match is for a junior-to-mid DevOps or platform-engineering position supporting developer workflows and test infrastructure. The principal gaps for this specific contractor role are strong Terraform and Terragrunt, cloud environment design and operation at production scale, systems architecture/system design, networking including mutual TLS, practical security, IoT or remote-device integration, and backend/full-stack experience. AWS is present only as free-tier learning, while the professional cloud experience is limited to personal Hetzner VPS work. The CV should therefore position the candidate as an infrastructure-focused QA automation engineer transitioning into DevOps, rather than implying readiness for independent ownership of a train-to-cloud production platform.",
+      "improvement_instructions": "CRITICAL / HIGH-VALUE IMPROVEMENTS\n1. In the Professional Summary, add the supported positioning terms “infrastructure as code,” “GitOps,” “observability,” and “cross-functional collaboration” without overstating seniority. For example: “QA automation engineer with 7 years of experience, including the last two focused largely on CI/CD pipelines, infrastructure as code, ephemeral Kubernetes environments and build tooling. Owns GitLab CI pipelines for three product teams and builds observable test infrastructure using Helm, Terraform, Prometheus and Grafana.” Keep the existing statement that Kubernetes work is namespace-level and that CKA is not yet certified.\n2. In the Technical Skills section, add a separate “Infrastructure as Code and Delivery” line or revise the existing infrastructure line to read: “Infrastructure as code and delivery: Terraform (personal Hetzner project), Helm, GitLab CI, Jenkins, Argo CD, GitOps.” This exposes supported ATS terms without implying professional Terraform ownership or Terragrunt experience.\n3. In the Technical Skills section, add a supported “Networking and security” line: “Networking and security exposure: Traefik ingress, TLS with cert-manager, Kubernetes namespaces.” Do not add mTLS, certificate management beyond the documented cert-manager work, network design or security expertise because the original information does not establish those capabilities.\n4. In the Odrava Health experience section, make stakeholder impact more explicit in the ephemeral-environment bullet. Revise it to: “Built short-lived merge-request environments for applications, PostgreSQL and seeded data, deployed through GitLab CI using Helm to the shared Kubernetes cluster; QA and product teams use them for feature review and end-to-end testing, with automatic cleanup after merge or 48 hours of inactivity.” This connects the technical work to stakeholder adoption and delivery outcomes using evidence already in the document.\n5. In the Odrava Health experience section, make the technical-leadership evidence more visible by revising the documentation bullet to: “Documented the CI system and its technical workflows in an internal guide used for team onboarding; mentored two QA interns in 2023.” This more directly supports the requirement for leading technical topics and clear communication.\n6. In the Selected Infrastructure Projects section, keep the “Homelab k3s Cluster with GitOps” project but explicitly label Terraform as personal infrastructure work in the first or last bullet: “Provisioned a small Hetzner VPS with Terraform as a personal infrastructure project.” The current wording is accurate, but this clarification prevents recruiters from mistaking it for production cloud experience.\n\nMINOR ENHANCEMENTS\n7. In the Technical Skills section, add “GitOps” and “cert-manager” explicitly because both are supported by the homelab project and are relevant to modern platform engineering. For example: “Kubernetes and GitOps: Kubernetes, k3s, Helm, Argo CD, cert-manager.”\n8. In the Flaky Test Dashboard project, add “GitLab API” to the technology description or bullet because it is supported by the current Technical Skills section and demonstrates integration/tooling work: “Collected CI test results via the GitLab API into PostgreSQL and created Grafana dashboards...”\n9. In the Professional Summary, consider replacing “personal experience building a k3s homelab and provisioning Hetzner VPS infrastructure with Terraform” with “personal infrastructure projects including a k3s GitOps homelab and Terraform-provisioned Hetzner VPS infrastructure.” This is slightly more concise and makes the professional-versus-personal boundary immediately clear.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Own GitLab CI pipelines for three product teams... Built short-lived merge-request environments... Provisioned infrastructure for a small Hetzner VPS with Terraform."
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Own GitLab CI pipelines for three product teams... Wrote an internal guide to how the CI system works, now used in team onboarding... QA and product teams use the environments for feature review."
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "Reduced average pipeline duration from 38 to 14 minutes... Wrote an internal guide to how the CI system works, now used in team onboarding."
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "AWS free-tier learning (EC2 and S3 basics)."
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "shown",
+          "quote": "Containers and Linux: ... Linux; Cloud exposure: Hetzner VPS."
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  },
+  {
+    "iteration": 2,
+    "content": "MARTA KOWAL-BRANDT\nDevOps / Infrastructure Engineering | CI/CD and Test Infrastructure\nWroclaw, Poland | marta.kowalbrandt@example.com | +48 555 303 303 | gitlab.com/mkb-example\n\nPROFESSIONAL SUMMARY\nQA automation engineer with 7 years of experience, including the last two focused largely on CI/CD pipelines, test environments and build tooling. Owns GitLab CI pipelines and ephemeral environments used by three product teams. Hands-on experience with Docker, Helm and namespace-level Kubernetes deployments, plus personal experience building a k3s homelab and provisioning Hetzner VPS infrastructure with Terraform. Known for improving pipeline performance, documenting technical workflows and working across QA, product and development teams. Currently studying for the Certified Kubernetes Administrator (CKA) exam; not yet certified.\n\nTECHNICAL SKILLS\nInfrastructure and CI/CD: GitLab CI, Jenkins, Docker, Docker Compose, Helm, Terraform (personal projects), Argo CD\nContainers and Linux: Kubernetes (namespace-level work; k3s homelab), Linux\nMonitoring and observability: Prometheus, Grafana, Loki\nProgramming and scripting: Python, Bash, Java (test code), SQL\nTesting: pytest, Playwright, Selenium, Postman\nDatabases and tools: PostgreSQL, Git, GitLab API\nCloud exposure: Hetzner VPS; AWS free-tier learning (EC2 and S3 basics)\n\nPROFESSIONAL EXPERIENCE\nQA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021–Present\n- Own GitLab CI pipelines for three product teams (approximately 25 developers), covering builds, unit, integration and end-to-end test stages, and artifact publishing.\n- Reduced average pipeline duration from 38 to 14 minutes by parallelising test jobs, caching dependencies and separating end-to-end tests into their own stage; monthly CI runner costs decreased by about 30%.\n- Built short-lived merge-request environments for applications, PostgreSQL and seeded data, deployed through GitLab CI using Helm to the company's shared Kubernetes cluster. Environments are automatically removed after merge or 48 hours of inactivity.\n- Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced flaky test rate from 7% to below 1%.\n- Wrote Bash and Python tooling for PostgreSQL test-data seeding and collected CI test results into PostgreSQL for Grafana dashboards.\n- Wrote an internal guide to how the CI system works, now used in team onboarding; mentored two QA interns in 2023.\n- Work with namespace-level access on the shared Kubernetes cluster; the platform team operates the cluster.\n\nQA Engineer | Brightmill Software House, Wroclaw | 2019–2021\n- Tested web and mobile applications for client projects using manual and automated testing.\n- Introduced a Java and Selenium automated regression suite for the largest client project.\n- Configured Jenkins jobs to run nightly regression tests.\n\nSELECTED INFRASTRUCTURE PROJECTS\nHomelab k3s Cluster with GitOps | Personal | 2024–2025\n- Built a three-node Raspberry Pi 5 k3s cluster, deploying applications from a Git repository with Argo CD.\n- Set up Prometheus, Grafana and Loki monitoring, Traefik ingress and cert-manager for TLS.\n- Provisioned infrastructure for a small Hetzner VPS with Terraform; used Ansible at a basic level.\n\nMerge-Request Ephemeral Environments | Odrava Health | 2023–2024\n- Implemented temporary environments for each merge request, including the application, PostgreSQL and seeded data, deployed with Helm to a shared Kubernetes cluster from GitLab CI.\n- Configured automatic cleanup after merge or 48 hours of inactivity; QA and product teams use the environments for feature review and end-to-end testing.\n\nCI Pipeline Speed-up | Odrava Health | 2022\n- Profiled pipelines across three teams, parallelised test jobs, added dependency caching and separated end-to-end testing into a dedicated stage.\n- Reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30%.\n\nFlaky Test Dashboard | Odrava Health | 2023\n- Collected CI test results in PostgreSQL and created Grafana dashboards to show flaky tests by team.\n- Helped teams identify leading flaky tests; the flaky rate fell from 7% to below 1% after teams began addressing the main offenders.\n\nEDUCATION AND CERTIFICATIONS\nBEng Computer Engineering | Silesian Lowlands University of Technology | 2018\nISTQB Foundation Level | 2019\nCertified Kubernetes Administrator (CKA) | Studying; exam booked for January 2027 (not yet certified)\n\nLANGUAGES\nPolish (native) | English (C1) | German (A2)",
+    "score": 83,
+    "critique": {
+      "quality_score": 83,
+      "content_quality_feedback": "The CV is well structured, readable and professionally written. It presents a credible QA-to-DevOps transition, uses quantified achievements, clearly distinguishes employment experience from personal infrastructure projects, and is appropriately transparent about namespace-level Kubernetes access, personal Terraform use and the uncompleted CKA certification. The strongest evidence is the GitLab CI ownership, ephemeral Kubernetes environments, measurable pipeline improvements and monitoring work. The main content weakness is repetition: the Selected Infrastructure Projects section repeats several bullets already present under Odrava Health. The document also demonstrates strong CI/test infrastructure experience more clearly than broader cloud infrastructure engineering, systems design or security ownership.",
+      "ats_compatibility_feedback": "The CV uses ATS-friendly standard headings, conventional reverse-chronological structure, plain text contact details and recognizable technology names. It should parse reliably and has good keyword coverage for GitLab CI, Jenkins, Docker, Helm, Kubernetes, Terraform, Linux, Python, Bash, AWS, Prometheus, Grafana and PostgreSQL. AI screening probability is moderate: the document is likely to perform well for CI/CD, test infrastructure and junior-to-mid DevOps roles, but less strongly for this vacancy because core terms such as Terragrunt, systems architecture, system design, mTLS, certificate management, network design and practical security are not supported by the candidate information and therefore cannot be added. The explicit qualifiers such as \"Terraform (personal projects),\" \"AWS free-tier learning\" and \"namespace-level work\" improve credibility and reduce overclaiming risk.",
+      "job_alignment_feedback": "The document aligns well with hands-on CI/CD, Kubernetes-based test environments, infrastructure tooling, observability, analytical improvement and cross-team enablement. It provides credible evidence of ownership through pipelines used by three teams, documentation used for onboarding, mentoring and environments used by QA and product teams. It partially aligns with cloud infrastructure operation through personal Hetzner VPS/Terraform work and AWS learning, but does not show production AWS or another major-cloud operating experience. The candidate's material shows gaps for strong Terraform and Terragrunt, system architecture/system design, networking including mTLS, practical security ownership, IoT or remote-device integration, backend/full-stack development, and virtual-machine experience. Linux is shown, and AWS exposure is shown at a learning/basic level. The CV is therefore a truthful and reasonably strong application for a junior-to-mid DevOps or platform-oriented interpretation of the role, but a weaker match for the advertised contractor who is expected to shape production fleet-connectivity architecture from the start.",
+      "improvement_instructions": "MINOR IMPROVEMENTS:\n1. In the Professional Experience section under Odrava Health, reduce duplication with the Selected Infrastructure Projects section. Keep the employment bullets focused on role scope and outcomes, and use the project section for implementation detail. For example, retain the 38-to-14-minute result and three-team ownership under Odrava, then remove or substantially shorten the separate \"CI Pipeline Speed-up\" project unless it adds distinct technical information.\n2. In the Professional Summary, make the transition and role scope even more precise by changing the opening to: \"QA automation engineer with 7 years of experience, including 2 years owning CI/CD and test infrastructure for three product teams.\" Keep the existing Kubernetes and Terraform qualifiers so the summary does not imply cluster administration or production-cloud Terraform experience.\n3. In the Technical Skills section, make the distinction between professional and personal experience easier for ATS and recruiters to interpret by changing the labels to \"Terraform (personal projects),\" \"Kubernetes (namespace-level work; personal k3s homelab),\" and \"AWS (free-tier learning: EC2 and S3 basics).\" The current wording is already honest; this is only a clarity enhancement.\n4. In the Selected Infrastructure Projects section under \"Homelab k3s Cluster with GitOps,\" explicitly retain the supported security-related detail by writing \"cert-manager for TLS certificates\" rather than only \"cert-manager for TLS.\" Do not describe this as mTLS or production certificate management, since the candidate information does not support that claim.\n5. In the Professional Experience section under Odrava Health, make the stakeholder evidence more explicit without overstating leadership by revising the documentation bullet to: \"Documented the CI system for onboarding and supported QA and product teams using merge-request environments for feature review and end-to-end testing; mentored two QA interns in 2023.\" This uses evidence already present in the CV and better reflects the ad's stakeholder language.",
+      "critical_issues": "",
+      "unsupported_claims": [],
+      "grounding_checked": true,
+      "requirements": [
+        {
+          "requirement": "Hands-on infrastructure engineering and cloud environment design and operation",
+          "status": "shown",
+          "quote": "Built short-lived merge-request environments ... deployed through GitLab CI using Helm to the company's shared Kubernetes cluster; ... Provisioned infrastructure for a small Hetzner VPS with Terraform."
+        },
+        {
+          "requirement": "Strong Terraform and Terragrunt",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Good understanding of systems architecture and system design",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Networking knowledge, including mTLS and SSL/TLS",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Practical security awareness",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Experience leading technical topics and bringing stakeholders along",
+          "status": "shown",
+          "quote": "Own GitLab CI pipelines for three product teams ... Wrote an internal guide to how the CI system works, now used in team onboarding; mentored two QA interns in 2023."
+        },
+        {
+          "requirement": "Strong analytical thinking and clear communication",
+          "status": "shown",
+          "quote": "Reduced average pipeline duration from 38 to 14 minutes ... Wrote an internal guide to how the CI system works."
+        },
+        {
+          "requirement": "AWS",
+          "status": "shown",
+          "quote": "AWS free-tier learning (EC2 and S3 basics)"
+        },
+        {
+          "requirement": "IoT or automotive/remote-device integration",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Backend or full-stack background (JVM preferred)",
+          "status": "gap",
+          "quote": ""
+        },
+        {
+          "requirement": "Linux and virtual machines",
+          "status": "gap",
+          "quote": ""
+        }
+      ],
+      "defects": 0
+    },
+    "unsupported_claims": [],
+    "grounding_checked": true,
+    "defects": 0
+  }
+]

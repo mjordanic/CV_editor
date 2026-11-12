@@ -1,0 +1,158 @@
+{
+  "run_dir": "runs/S4-s4-both-docs-p03-p03-app_frozen-r3",
+  "labels": {
+    "scenario": "S4",
+    "system": "app_frozen",
+    "case": "p03/s4-both-docs-p03",
+    "rep": "3"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<frozen-tree>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<frozen-tree>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<frozen-tree>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 14,
+    "purpose": "S4 (both documents): one message whose change applies to both existing documents, then a fact correction 'everywhere'.",
+    "persona": "p03",
+    "correct_behaviour": "Both documents get the new contact detail; the corrected figure replaces the old one in both.",
+    "requests": [
+      {
+        "id": "add-to-both",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Please add my GitHub profile github.com/mkb-dev to the contact details in both the CV and the cover letter.",
+        "correct_behaviour": "github.com/mkb-dev in both documents"
+      },
+      {
+        "id": "correct-everywhere",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Correction: the flaky-test rate went down to under 2%, not under 1%. Please fix this everywhere it appears, in both documents.",
+        "correct_behaviour": "no 'under 1%' flaky-test claim in either document"
+      }
+    ],
+    "checks": [
+      {
+        "id": "added-in-both",
+        "type": "present",
+        "pattern": "github\\.com/mkb-dev(?![\\w-])",
+        "what": "github.com/mkb-dev in both documents"
+      },
+      {
+        "id": "old-figure-gone",
+        "type": "absent",
+        "pattern": "(?:under|below|less than|<)\\s*1\\s?%",
+        "what": "the old figure is in neither document"
+      },
+      {
+        "id": "new-figure-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "(?:under|below|less than|<)\\s*2\\s?%",
+        "what": "the corrected figure is in the CV"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T09:05:07+00:00",
+  "status": "completed",
+  "minutes": 10.12,
+  "cv_drafts": 7,
+  "cover_letter_drafts": 3,
+  "cv_final_iteration": 5,
+  "cover_letter_final_iteration": 3,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly, with occasional office days. No other country, time-zone, or relocation limits are stated.",
+    "culture_signals": [
+      "collaborative",
+      "fast-moving",
+      "open to new ideas",
+      "international teams with shared goals",
+      "teams that solve problems together",
+      "ownership",
+      "engineering-led",
+      "teams own their systems end to end"
+    ],
+    "notes": "The job ad describes this contractor role as remote-friendly with occasional office days. The company pages say employees can work hybrid; that statement is about employees, not specifically this contractor role."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 7,
+      "first": 1,
+      "critique_redrafts": 4,
+      "critique_skipped": 0,
+      "user_redrafts": 2,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "add-to-both",
+    "correct-everywhere"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T09:15:15+00:00",
+  "cost_usd": 0.075172
+}

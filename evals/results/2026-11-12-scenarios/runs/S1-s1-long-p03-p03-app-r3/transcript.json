@@ -1,0 +1,295 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [
+        "analyze_job_description"
+      ],
+      "assistant": "Please paste the job description you'd like me to analyze. (filepath or text)",
+      "user": "<path to job ad>"
+    },
+    {
+      "turn": 1,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Which would you like to generate first: your tailored CV or cover letter?",
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any content or PDF appearance changes to either document, or are you satisfied with them?",
+      "user": "Please shorten the summary at the top of the CV to at most two sentences."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV summary has been shortened to two sentences, and both your CV and cover letter are ready. Would you like any content or PDF appearance changes to either document, or are you satisfied with them?",
+      "user": "Rename the skills section heading to 'Technical Toolkit'."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter are ready. Would you like any content or PDF appearance changes to either document, or are you satisfied with them?",
+      "user": "Remove the Customer Support Specialist job completely."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The Customer Support Specialist role has been removed from your CV. Would you like any further content or PDF appearance changes to your CV or cover letter, or are you satisfied with both?",
+      "user": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents."
+    },
+    {
+      "turn": 6,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both documents are ready. In the CV, “Wroclaw” was corrected to “Wrocław”; the summary already met the two-sentence limit, the skills heading was already “TECHNICAL TOOLKIT,” and the Customer Support Specialist role was already absent, so those items were unchanged. The cover letter had no city reference, so no text was changed. Would you like any further changes to either document?",
+      "user": "Move the Languages section so it comes right after the summary."
+    },
+    {
+      "turn": 7,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The CV has been updated with the Languages section immediately after the summary. Would you like any further changes to the CV or cover letter?",
+      "user": "Remove my GitLab link from the CV header; I don't want it shown anywhere."
+    },
+    {
+      "turn": 8,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The GitLab link has been removed from the CV header. Would you like any further changes to the CV or cover letter?",
+      "user": "Limit every job in the experience section to at most four bullet points."
+    },
+    {
+      "turn": 9,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Both your CV and cover letter have been generated. Would you like any changes to either document?",
+      "user": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences."
+    },
+    {
+      "turn": 10,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document?",
+      "user": "Rename the Education heading to 'Education & Training'."
+    },
+    {
+      "turn": 11,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document, or are you satisfied with them?",
+      "user": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look."
+    },
+    {
+      "turn": 12,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "Your CV and cover letter are ready. Would you like any changes to either document, or are you satisfied with them?",
+      "user": "Start the letter with 'Dear Hiring Team,'."
+    },
+    {
+      "turn": 13,
+      "waiting_at": [
+        "collect_user_input"
+      ],
+      "assistant": "The cover letter now starts with “Dear Hiring Team,” and all other content and formatting were preserved. Would you like any further changes to either document, or are you satisfied with them?",
+      "user": "Thanks, that is all. Please exit."
+    }
+  ],
+  "observations": [],
+  "requests": [
+    {
+      "id": "k01-summary2",
+      "after": "cv",
+      "text": "Please shorten the summary at the top of the CV to at most two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Please shorten the summary at the top of the CV to at most two sentences.",
+      "drafts_before": {
+        "cv": 2,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 3,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k02-toolkit",
+      "after": "cv",
+      "text": "Rename the skills section heading to 'Technical Toolkit'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the skills section heading to 'Technical Toolkit'.",
+      "drafts_before": {
+        "cv": 3,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 4,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k03-drop-job",
+      "after": "cv",
+      "text": "Remove the Customer Support Specialist job completely.",
+      "expect": "follow",
+      "correct_behaviour": "Remove the Customer Support Specialist job completely.",
+      "drafts_before": {
+        "cv": 4,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 5,
+        "cover_letter": 2
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k04-location",
+      "after": "cv",
+      "text": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents.",
+      "expect": "follow",
+      "correct_behaviour": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents.",
+      "drafts_before": {
+        "cv": 5,
+        "cover_letter": 2
+      },
+      "drafts_after": {
+        "cv": 6,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k05-languages-up",
+      "after": "cv",
+      "text": "Move the Languages section so it comes right after the summary.",
+      "expect": "follow",
+      "correct_behaviour": "Move the Languages section so it comes right after the summary.",
+      "drafts_before": {
+        "cv": 6,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 7,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k06-no-link",
+      "after": "cv",
+      "text": "Remove my GitLab link from the CV header; I don't want it shown anywhere.",
+      "expect": "follow",
+      "correct_behaviour": "Remove my GitLab link from the CV header; I don't want it shown anywhere.",
+      "drafts_before": {
+        "cv": 7,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 8,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k07-4-bullets",
+      "after": "cv",
+      "text": "Limit every job in the experience section to at most four bullet points.",
+      "expect": "follow",
+      "correct_behaviour": "Limit every job in the experience section to at most four bullet points.",
+      "drafts_before": {
+        "cv": 8,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 9,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k08-summary-figure",
+      "after": "cv",
+      "text": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences.",
+      "drafts_before": {
+        "cv": 9,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 11,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k09-education",
+      "after": "cv",
+      "text": "Rename the Education heading to 'Education & Training'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the Education heading to 'Education & Training'.",
+      "drafts_before": {
+        "cv": 11,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 12,
+        "cover_letter": 4
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k10-letter-200",
+      "after": "cover_letter",
+      "text": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+      "expect": "follow",
+      "correct_behaviour": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+      "drafts_before": {
+        "cv": 12,
+        "cover_letter": 4
+      },
+      "drafts_after": {
+        "cv": 12,
+        "cover_letter": 5
+      },
+      "new_draft": true
+    },
+    {
+      "id": "k11-salutation",
+      "after": "cover_letter",
+      "text": "Start the letter with 'Dear Hiring Team,'.",
+      "expect": "follow",
+      "correct_behaviour": "Start the letter with 'Dear Hiring Team,'.",
+      "drafts_before": {
+        "cv": 12,
+        "cover_letter": 5
+      },
+      "drafts_after": {
+        "cv": 12,
+        "cover_letter": 6
+      },
+      "new_draft": true
+    }
+  ]
+}

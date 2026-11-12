@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.72in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,92,153}
+\definecolor{accentcolor}{RGB}{90,99,108}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor,linkcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\setlist[itemize]{leftmargin=1.25em,itemsep=0.18em,topsep=0.25em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\newcommand{\jobline}[1]{\textbf{#1}\par}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{primarycolor} Lena Varga-Holm}\\[0.25em]
+{\large Senior Data Engineer | Data Platform}\\[0.25em]
+[EMAIL] | [PHONE] | [LINKEDIN]
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+Senior Data Engineer with experience owning ingestion and orchestration for production data platforms, building batch and streaming pipelines, and improving warehouse reliability, performance, and cost. Works with Python, SQL, Airflow, dbt, Kafka, Snowflake, and AWS; experienced in data quality, CI workflows, and mentoring engineers.
+
+\section*{PROFESSIONAL EXPERIENCE}
+\jobline{Senior Data Engineer | Lukovac Freight Hub d.o.o. | 2022–Present}
+\begin{itemize}
+\item Own ingestion and orchestration for the data platform using Airflow, Snowflake, dbt, and Kafka.
+\item Designed and built a shipment-event streaming pipeline processing around 30 million events per day, with end-to-end latency under two minutes at p95, using Kafka, Kafka Connect, Snowflake Snowpipe Streaming, Python, Terraform, and AWS MSK.
+\item Added a dead-letter topic and replay tooling so failed events can be reprocessed without data loss.
+\item Migrated approximately 300 stored procedures into dbt models with tests and documentation; introduced incremental models and slim CI using state:modified in GitHub Actions. Cut the nightly warehouse build from 5 hours 10 minutes to 1 hour 35 minutes and made lineage visible to analysts.
+\item Replaced hourly full-table extracts from the orders database with Debezium change data capture into Kafka, reducing replica CPU during loads from approximately 70\% to 25\%.
+\item Reduced the monthly Snowflake bill from approximately 38k to 24k through warehouse sizing, auto-suspend, and removal of unused tables (2024).
+\item Participate in the data platform on-call rotation, one week in six; mentor two mid-level engineers and run data platform office hours.
+\end{itemize}
+
+\jobline{Data Engineer | Kovalent Pay | 2019–2022}
+\begin{itemize}
+\item Built PySpark batch jobs on AWS EMR to match bank settlement files against internal ledgers, using S3, Glue Data Catalog, Redshift, and Great Expectations.
+\item Reduced the finance team's manual reconciliation work from approximately three days to four hours per month-end.
+\item Worked on Redshift warehouse design and data quality using Great Expectations.
+\end{itemize}
+
+\section*{SELECTED OPEN-SOURCE CONTRIBUTION}
+\jobline{Airflow Provider Fixes | 2023}
+\begin{itemize}
+\item Fixed a pagination bug and added tests in a community Airflow provider for a SaaS CRM API; two pull requests were merged.
+\item Technologies: Python, Airflow, pytest.
+\end{itemize}
+
+\section*{EDUCATION}
+\textbf{MSc in Computer Science | Northgate Technical University}\\
+Thesis: Incremental materialized views
+
+\section*{CERTIFICATION}
+AWS Certified Data Engineer – Associate | May 2024
+
+\section*{TECHNICAL SKILLS}
+Programming and query languages: Python, SQL\\
+Data platforms and processing: Snowflake, Redshift, Kafka, Kafka Connect, PySpark, AWS EMR, AWS MSK, S3, Glue Data Catalog, Snowpipe Streaming, PostgreSQL, Debezium\\
+Orchestration and transformation: Airflow, dbt\\
+Infrastructure and delivery: Terraform, GitHub Actions, CI, pytest\\
+Data quality: Great Expectations, dbt tests
+
+\section*{COMMUNITY AND SPEAKING}
+\begin{itemize}
+\item Teach SQL for beginners at a local women-in-tech meetup, approximately four evenings per year since 2021.
+\item Presented “Data contracts without the hype” at a regional data meetup in 2024.
+\end{itemize}
+
+\end{document}

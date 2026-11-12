@@ -1,0 +1,300 @@
+{
+  "run_dir": "runs/S1-s1-long-p03-p03-app-r3",
+  "labels": {
+    "scenario": "S1",
+    "system": "app",
+    "case": "p03/s1-long-p03",
+    "rep": "3"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 24,
+    "purpose": "S1 (stacked edits): eleven lasting requests over one session; every one must still hold at the end.",
+    "persona": "p03",
+    "correct_behaviour": "Every request holds in the final documents; nothing else changes.",
+    "requests": [
+      {
+        "id": "k01-summary2",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Please shorten the summary at the top of the CV to at most two sentences.",
+        "correct_behaviour": "Please shorten the summary at the top of the CV to at most two sentences."
+      },
+      {
+        "id": "k02-toolkit",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Rename the skills section heading to 'Technical Toolkit'.",
+        "correct_behaviour": "Rename the skills section heading to 'Technical Toolkit'."
+      },
+      {
+        "id": "k03-drop-job",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Remove the Customer Support Specialist job completely.",
+        "correct_behaviour": "Remove the Customer Support Specialist job completely."
+      },
+      {
+        "id": "k04-location",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents.",
+        "correct_behaviour": "Please always write the city as 'Wrocław' with the Polish ł, everywhere in my documents."
+      },
+      {
+        "id": "k05-languages-up",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Move the Languages section so it comes right after the summary.",
+        "correct_behaviour": "Move the Languages section so it comes right after the summary."
+      },
+      {
+        "id": "k06-no-link",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Remove my GitLab link from the CV header; I don't want it shown anywhere.",
+        "correct_behaviour": "Remove my GitLab link from the CV header; I don't want it shown anywhere."
+      },
+      {
+        "id": "k07-4-bullets",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Limit every job in the experience section to at most four bullet points.",
+        "correct_behaviour": "Limit every job in the experience section to at most four bullet points."
+      },
+      {
+        "id": "k08-summary-figure",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences.",
+        "correct_behaviour": "Mention the pipeline speed-up from 38 to 14 minutes in the summary, but keep the summary to two sentences."
+      },
+      {
+        "id": "k09-education",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Rename the Education heading to 'Education & Training'.",
+        "correct_behaviour": "Rename the Education heading to 'Education & Training'."
+      },
+      {
+        "id": "k10-letter-200",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+        "correct_behaviour": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look."
+      },
+      {
+        "id": "k11-salutation",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Start the letter with 'Dear Hiring Team,'.",
+        "correct_behaviour": "Start the letter with 'Dear Hiring Team,'."
+      }
+    ],
+    "checks": [
+      {
+        "id": "k01-summary-2-sentences",
+        "type": "max_sentences",
+        "section": "SUMMARY|PROFILE|ABOUT",
+        "n": 2,
+        "what": "summary has at most two sentences (k01, k08)"
+      },
+      {
+        "id": "k02-toolkit-heading",
+        "type": "heading",
+        "pattern": "TECHNICAL TOOLKIT",
+        "what": "skills heading renamed"
+      },
+      {
+        "id": "k03-job-removed",
+        "type": "absent",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "customer support",
+        "what": "Customer Support job gone"
+      },
+      {
+        "id": "k04-no-ascii-wroclaw",
+        "type": "absent",
+        "pattern": "wroclaw",
+        "what": "no 'Wroclaw' without ł in either document"
+      },
+      {
+        "id": "k04-wroclaw-kept",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "Wrocław",
+        "what": "the city is still in the CV, spelled Wrocław"
+      },
+      {
+        "id": "k05-languages-after-summary",
+        "type": "heading_order",
+        "first": "SUMMARY|PROFILE|ABOUT",
+        "then": "LANGUAGE",
+        "adjacent": true,
+        "what": "Languages section right after the summary"
+      },
+      {
+        "id": "k06-no-gitlab",
+        "type": "absent",
+        "pattern": "gitlab\\.com",
+        "what": "GitLab link gone from both documents"
+      },
+      {
+        "id": "k07-max-4-bullets",
+        "type": "max_bullets_per_entry",
+        "section": "EXPERIENCE",
+        "n": 4,
+        "what": "no job has more than four bullets"
+      },
+      {
+        "id": "k08-figure-in-summary",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "section": "SUMMARY|PROFILE|ABOUT",
+        "pattern": "38[^.\\n]{0,40}14",
+        "what": "38 to 14 minutes in the summary"
+      },
+      {
+        "id": "k09-education-heading",
+        "type": "heading",
+        "pattern": "EDUCATION\\s*(&|AND)\\s*TRAINING",
+        "what": "Education heading renamed"
+      },
+      {
+        "id": "k10-letter-under-200",
+        "type": "max_words",
+        "doc": "cover_letter",
+        "n": 199,
+        "what": "cover letter under 200 words"
+      },
+      {
+        "id": "k11-salutation",
+        "type": "present",
+        "docs": [
+          "cover_letter"
+        ],
+        "pattern": "Dear Hiring Team,",
+        "what": "letter opens with 'Dear Hiring Team,'"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T07:58:30+00:00",
+  "status": "completed",
+  "minutes": 18.3,
+  "cv_drafts": 12,
+  "cover_letter_drafts": 6,
+  "cv_final_iteration": 12,
+  "cover_letter_final_iteration": 6,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. No country, time-zone, or right-to-work limits are stated.",
+    "culture_signals": [
+      "collaborative",
+      "fast-moving",
+      "open to new ideas",
+      "international teams with shared goals",
+      "technology first",
+      "teams that solve problems together",
+      "ownership",
+      "engineering-led",
+      "teams own their systems end to end"
+    ],
+    "notes": "The job ad describes this role as remote-friendly with occasional office days. The company pages say employees can work hybrid; the ad’s arrangement applies to this job. The company says its culture signals are based in part on employee survey feedback."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 12,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 9,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 6,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 3,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "k01-summary2",
+    "k02-toolkit",
+    "k03-drop-job",
+    "k04-location",
+    "k05-languages-up",
+    "k06-no-link",
+    "k07-4-bullets",
+    "k08-summary-figure",
+    "k09-education",
+    "k10-letter-200",
+    "k11-salutation"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T08:16:49+00:00",
+  "cost_usd": 0.133571
+}

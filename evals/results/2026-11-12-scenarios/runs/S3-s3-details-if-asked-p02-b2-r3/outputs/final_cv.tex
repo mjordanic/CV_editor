@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,linkcolor=secondarycolor,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.2em,topsep=0.3em}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} Daniel Okafor-Reyes}\\[0.4em]
+{\large Backend Engineer | Java and Kotlin | Kafka, PostgreSQL, REST APIs}\\[0.3em]
+{\small applicant.inbox@example.com | +44 7700 900123}
+\end{center}
+\vspace{0.5em}
+
+\section*{PROFESSIONAL SUMMARY}
+Backend engineer with professional experience building Java and Kotlin services since 2019, including Spring Boot microservices, REST APIs, PostgreSQL, Kafka event processing, automated testing and production on-call. Interested in moving into a Python-focused backend role, bringing experience in comparable backend languages. Python experience to date is scripting rather than production services.
+
+\section*{TECHNICAL SKILLS}
+Backend: Java, Kotlin, Spring Boot, REST API design, OpenAPI 3\\
+Data: PostgreSQL, Redis, Oracle\\
+Messaging: Kafka, RabbitMQ\\
+Testing: Testcontainers, Spring Cloud Contract\\
+Containers and cloud: Docker, Kubernetes (EKS), AWS S3, AWS SQS\\
+Additional: Python scripts for data fixes and small Jenkins helpers; Go learning project (OpenAPI-diff CLI)\\
+Production: On-call incident response, service reliability
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{Backend Engineer | Tejo Insurance Tech | 2022--Present}
+\begin{itemize}
+\item Designed a versioned OpenAPI 3 REST API for insurance brokers; added partner rate limiting and Spring Cloud Contract tests. Onboarded 12 broker partners, handling around 400,000 quote requests per month.
+\item Resolved duplicate claim records caused by at-least-once Kafka delivery by implementing a transactional outbox and consumer idempotency keys; duplicate claims fell from around 40 per week to zero over the following quarter.
+\item Built a Kotlin and Spring Boot internal service to render policy PDFs from templates, using AWS S3 and SQS; wrote the company’s first Kotlin service guidelines.
+\item Participate in an on-call rota, one week per month. Handled a major Kafka lag incident in March 2024; the incident write-up was praised.
+\item Run the backend guild meeting every two weeks, since 2024.
+\end{itemize}
+\textbf{Software Developer | Viajar Online | 2019--2021}
+\begin{itemize}
+\item Worked on booking and payments in a large Java application.
+\item Raised payments-module test coverage from 35\% to 70\% using Testcontainers, enabling safer refactoring.
+\item Extracted email and SMS notifications from the booking monolith into a Spring Boot service, using RabbitMQ and Thymeleaf.
+\end{itemize}
+
+\section*{SIDE PROJECT}
+\textbf{OpenAPI-diff CLI | Go}
+\begin{itemize}
+\item Building a roughly 600-line command-line tool to compare OpenAPI specifications as a learning project; available on GitHub and not used in production.
+\end{itemize}
+
+\section*{CERTIFICATION}
+Oracle Certified Professional: Java SE 11 Developer | 2020
+
+\section*{LANGUAGES}
+English: Used as the working language at Tejo Insurance Tech.
+\end{document}

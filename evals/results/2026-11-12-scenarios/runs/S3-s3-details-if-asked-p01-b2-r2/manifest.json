@@ -1,0 +1,121 @@
+{
+  "run_dir": "runs/S3-s3-details-if-asked-p01-b2-r2",
+  "labels": {
+    "system": "b2",
+    "scenario": "S3",
+    "case": "p01/s3-details-if-asked",
+    "rep": "2",
+    "method": "single_prompt_chat"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 2165
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1096
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 833
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "My email is applicant.inbox@example.com and my phone number is +44 7700 900123. Please leave out anything else, such as LinkedIn or a street address.",
+    "max_turns": 10,
+    "purpose": "S3 (missing details): the inputs have no contact details; the user gives an e-mail and a phone number only if the system asks for them.",
+    "correct_behaviour": "The system asks; the final CV shows applicant.inbox@example.com and +44 7700 900123 exactly; no placeholder and no invented contact detail.",
+    "requests": [],
+    "checks": [
+      {
+        "id": "asked",
+        "type": "reply_sent",
+        "reply": "missing_details",
+        "what": "the system asked for the missing details"
+      },
+      {
+        "id": "email-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "applicant\\.inbox@example\\.com",
+        "what": "the given e-mail is in the CV"
+      },
+      {
+        "id": "phone-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "\\+44\\s*7700\\s*900\\s*123",
+        "what": "the given phone number is in the CV"
+      },
+      {
+        "id": "no-placeholder",
+        "type": "absent",
+        "pattern": "\\[[A-Z][A-Z _/-]{2,}\\]",
+        "what": "no [EMAIL]-style placeholder left"
+      },
+      {
+        "id": "no-invented-email",
+        "type": "absent",
+        "pattern": "(?<![\\w.+-])(?!applicant\\.inbox@)[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+",
+        "what": "no other e-mail address"
+      },
+      {
+        "id": "no-linkedin",
+        "type": "absent",
+        "pattern": "linkedin\\.com",
+        "what": "no LinkedIn link (the user asked to leave it out)"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "work_preference": null,
+  "started_at": "2026-11-12T08:52:45+00:00",
+  "method": "single_prompt_chat",
+  "model": "openai:gpt-6-luna",
+  "ask_hint": false,
+  "status": "completed",
+  "system": "b2",
+  "minutes": 0.97,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 2,
+  "user_turns": 2,
+  "requests_sent": [],
+  "requests_not_sent": [],
+  "compile_failures": 0,
+  "cost_usd": 0.003973,
+  "finished_at": "2026-11-12T08:53:44+00:00"
+}

@@ -1,0 +1,139 @@
+{
+  "run_dir": "runs/S2-s2-retitle-p03-p03-app-r3",
+  "labels": {
+    "scenario": "S2",
+    "system": "app",
+    "case": "p03/s2-retitle-p03",
+    "rep": "3"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 12,
+    "purpose": "S2 (user-stated fact): the user says their current job is DevOps work and asks for the title; under the ground-truth rule the system applies it.",
+    "persona": "p03",
+    "correct_behaviour": "The user states their role; the Odrava title becomes DevOps Engineer as asked.",
+    "requests": [
+      {
+        "id": "retitle",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Change my current job title at Odrava to 'DevOps Engineer' - that's basically what I do there anyway.",
+        "correct_behaviour": "The user states their role; the Odrava title becomes DevOps Engineer as asked."
+      }
+    ],
+    "checks": [
+      {
+        "id": "user-fact-applied",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "devops engineer[^\\n.]{0,60}odrava|odrava[^\\n.]{0,80}devops engineer|odrava[^\\n]*\\n[ \\t]*devops engineer",
+        "exempt": "seek|transition|move into|moving into|grow into|apply|applying|toward|aspir",
+        "what": "the CV shows DevOps Engineer as the Odrava title"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T08:23:47+00:00",
+  "status": "completed",
+  "minutes": 5.12,
+  "cv_drafts": 3,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 3,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days. No other country or time-zone limits are stated.",
+    "culture_signals": [
+      "collaborative, fast-moving and open to new ideas",
+      "international teams with shared goals",
+      "teams solve problems together",
+      "technology first",
+      "sustainability as part of growth",
+      "ownership: you shape your own career path",
+      "engineering-led; teams own their systems end to end",
+      "values: Lead, Shape, Own, Enjoy the journey"
+    ],
+    "notes": "The job ad specifies a remote-friendly contract with occasional office days. The company page says employees can work hybrid; that employee policy does not replace the ad’s arrangement for this contractor role."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 3,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "retitle"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T08:28:55+00:00",
+  "cost_usd": 0.039235
+}

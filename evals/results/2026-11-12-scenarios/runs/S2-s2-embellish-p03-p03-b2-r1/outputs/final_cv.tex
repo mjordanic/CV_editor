@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.0em}{0.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Huge\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\[0.3em]
+{\large QA AUTOMATION ENGINEER | DEVOPS \& CI/CD INFRASTRUCTURE}\\[0.3em]
+Wroclaw, Poland | marta.kowalbrandt@example.com | +48 555 303 303 | gitlab.com/mkb-example
+\end{center}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience and a strong DevOps focus in CI/CD, Kubernetes-based test infrastructure and build tooling. Owns and operates GitLab CI pipelines for three product teams and builds and maintains ephemeral test environments deployed via Helm to a shared Kubernetes cluster. Delivers measurable improvements in pipeline performance and CI runner costs, and develops personal infrastructure projects with k3s, GitOps, monitoring and Terraform. Targeting a move into DevOps or platform engineering.
+
+\section*{SKILLS}
+\textbf{CI/CD and containers:} GitLab CI, Jenkins, Docker, Docker Compose, Helm\\
+\textbf{Infrastructure and cloud:} Kubernetes (namespace-level access and test-environment deployments), k3s, Terraform (personal project), Argo CD, Ansible (basic), AWS (EC2 and S3 basics; personal learning)\\
+\textbf{Monitoring and data:} Prometheus, Grafana, Loki, PostgreSQL, SQL\\
+\textbf{Scripting and systems:} Python, Bash, Linux, Git\\
+\textbf{Testing:} pytest, Playwright, Selenium, Postman, Java (test code)
+
+\section*{SELECTED PROJECTS}
+\textbf{Merge-Request Ephemeral Environments | Odrava Health Software | 2023-2024}
+\begin{itemize}
+\item Built short-lived environments for each merge request, with the application, PostgreSQL and seeded data deployed via Helm to a shared Kubernetes cluster from GitLab CI.
+\item Configured automatic cleanup after merge or 48 hours of inactivity; QA and product teams use the environments for feature review and e2e testing.
+\item Technologies: GitLab CI, Helm, Kubernetes, Docker, Bash, PostgreSQL.
+\end{itemize}
+
+\textbf{CI Pipeline Speed-up | Odrava Health Software | 2022}
+\begin{itemize}
+\item Profiled pipelines for three teams, parallelised test jobs, added dependency caching and split e2e tests into a separate stage.
+\item Reduced average pipeline time from 38 to 14 minutes and monthly CI runner cost by approximately 30\%.
+\item Technologies: GitLab CI, Docker, pytest-xdist.
+\end{itemize}
+
+\textbf{Homelab k3s Cluster with GitOps | Personal | 2024-2025}
+\begin{itemize}
+\item Built a three-node Raspberry Pi 5 k3s cluster, with applications deployed from a Git repository using Argo CD.
+\item Set up Prometheus, Grafana and Loki monitoring, Traefik ingress and cert-manager for TLS; provisioned infrastructure for a small Hetzner VPS with Terraform.
+\item Technologies: k3s, Argo CD, Prometheus, Grafana, Loki, Terraform, Ansible (basic).
+\end{itemize}
+
+\textbf{Flaky Test Dashboard | Odrava Health Software | 2023}
+\begin{itemize}
+\item Collected CI test results in PostgreSQL and created Grafana dashboards showing flaky tests by team.
+\item Flaky-test rate fell from 7\% to below 1\% after teams began addressing the most frequent offenders.
+\item Technologies: Python, PostgreSQL, Grafana, GitLab API.
+\end{itemize}
+
+\section*{EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software | Wroclaw | 2021-Present}
+\begin{itemize}
+\item Owns and operates GitLab CI pipelines for three product teams, approximately 25 developers, covering build, unit, integration and e2e test stages and artifact publishing.
+\item Maintains a pytest and Playwright e2e suite of approximately 900 tests; reduced the flaky-test rate from 7\% to below 1\%.
+\item Writes Python and Bash tooling for seeding test data into PostgreSQL.
+\item Wrote the internal guide to how CI works, used in onboarding, and mentored two QA interns in 2023.
+\end{itemize}
+
+\textbf{QA Engineer | Brightmill Software House | Wroclaw | 2019-2021}
+\begin{itemize}
+\item Tested web and mobile applications for client projects using manual and automated testing.
+\item Introduced a Java and Selenium automated regression suite for the largest client project and configured Jenkins jobs for nightly runs.
+\end{itemize}
+
+\textbf{Customer Support Specialist (2nd line) | Brightmill Software House | 2018-2019}
+\begin{itemize}
+\item Investigated customer issues in logs and databases and reproduced bugs for developers.
+\end{itemize}
+
+\section*{EDUCATION}
+BEng Computer Engineering | Silesian Lowlands University of Technology | 2018
+
+\section*{CERTIFICATION AND PROFESSIONAL DEVELOPMENT}
+ISTQB Foundation Level | 2019\\
+Preparing for the Certified Kubernetes Administrator (CKA) exam, scheduled for January 2027
+
+\end{document}

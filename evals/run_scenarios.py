@@ -260,14 +260,16 @@ def report(out: Path, spec: dict) -> str:
 PUBLISHED_FILES = ("manifest.json", "config.json", "summary.json", "transcript.json", "checks.json")
 
 
-def _relative_paths(text: str, run_dir: Path, published: str) -> str:
-    """Local absolute paths in a record made relative: the run folder, the repository, other trees, the home folder."""
-    for local, shown in ((str(run_dir), published), (str(REPO), "<repo>"), (str(Path.home()), "~")):
+def _relative_paths(text: str, run_dir: Path, published: str, frozen_tree: Path | None = None) -> str:
+    """Local absolute paths in a record made relative: the run folder, the repository, the frozen tree, the home folder."""
+    pairs = [(str(run_dir), published), (str(REPO), "<repo>")]
+    pairs += [(str(frozen_tree), "<frozen-tree>")] if frozen_tree else []
+    for local, shown in (*pairs, (str(Path.home()), "~")):
         text = text.replace(local, shown)
     return text
 
 
-def publish(out: Path, dest: Path) -> int:
+def publish(out: Path, dest: Path, frozen_tree: Path | None = None) -> int:
     """Copy every scored session's shareable records to dest/runs/<name>/, and report.md and results.json to dest/."""
     from provenance import scrub
     rows = collect(out)
@@ -280,7 +282,7 @@ def publish(out: Path, dest: Path) -> int:
             to = target / path.relative_to(src)
             to.parent.mkdir(parents=True, exist_ok=True)
             if path.suffix in (".json", ".txt", ".tex", ".md"):
-                text = _relative_paths(path.read_text(encoding="utf-8"), src, f"runs/{r['name']}")
+                text = _relative_paths(path.read_text(encoding="utf-8"), src, f"runs/{r['name']}", frozen_tree)
                 if path.suffix == ".json":
                     text = json.dumps(scrub(json.loads(text)), indent=2, ensure_ascii=False)
                 to.write_text(text, encoding="utf-8")
@@ -330,7 +332,8 @@ def main(argv=None) -> int:
             Path(args.frozen_tree).resolve() if args.frozen_tree else None)
     print(report(out, spec))
     if args.publish:
-        print(f"published {publish(out, Path(args.publish))} sessions to {args.publish}")
+        frozen = Path(args.frozen_tree).resolve() if args.frozen_tree else None
+        print(f"published {publish(out, Path(args.publish), frozen)} sessions to {args.publish}")
     return 0
 
 

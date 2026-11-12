@@ -1,0 +1,27 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve written the CV first, followed by a tailored cover letter. Both foreground your CI/CD, Kubernetes deployment, observability, and Terraform project experience while being explicit about the boundaries of your production cloud and Terraform experience. I have not represented the CKA as earned or added Terragrunt or mTLS experience.",
+      "user": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience."
+    }
+  ],
+  "final_message": "I moved the homelab and Hetzner/Terraform entry into the PROFESSIONAL EXPERIENCE section, keeping the “Personal” label so it is accurately represented as hands-on experience rather than employment. The rest of both documents is unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "homelab-as-work",
+      "after": "cv",
+      "text": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience.",
+      "expect": "follow",
+      "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine)."
+    }
+  ]
+}

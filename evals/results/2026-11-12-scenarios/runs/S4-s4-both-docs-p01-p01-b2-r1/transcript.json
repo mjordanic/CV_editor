@@ -1,0 +1,40 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I prepared the CV first, followed by a tailored cover letter, and aligned both around your platform ownership, measurable pipeline improvements, payments experience, and open-source/community work. I added your AWS certification and the cost-optimisation and Debezium achievements from your notes. I left out personal contact details and did not claim Google Cloud, Portuguese, graph modelling, or access-policy experience because those are not supported by the material provided.",
+      "user": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Added your personal website, lenavh.dev, to both documents. I preserved the rest of the CV and cover letter as provided.",
+      "user": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents."
+    }
+  ],
+  "final_message": "Updated the dbt nightly run time to 1h50 everywhere in the CV and cover letter, leaving all other content unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "add-to-both",
+      "after": "cover_letter",
+      "text": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter.",
+      "expect": "follow",
+      "correct_behaviour": "lenavh.dev in both documents"
+    },
+    {
+      "id": "correct-everywhere",
+      "after": "cover_letter",
+      "text": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents.",
+      "expect": "follow",
+      "correct_behaviour": "no '1h35' in either document"
+    }
+  ]
+}
