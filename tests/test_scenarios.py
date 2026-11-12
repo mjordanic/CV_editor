@@ -89,6 +89,17 @@ def test_heading_checks_and_limits():
     assert not check({"type": "max_words", "doc": "cover_letter", "n": 4})
 
 
+def test_a_heading_in_the_users_own_spelling_counts_and_only_the_summary_paragraph_is_counted():
+    # smoke-run shapes: the app wrote "Technical Toolkit" as the user typed it; B2 put a Languages line under the summary
+    cv = CV.replace("TECHNICAL TOOLKIT", "Technical Toolkit").replace(
+        "14 minutes.\n", "14 minutes.\n\nLanguages: Polish (native), English (C1)\n")
+    s = session(final_cv=cv)
+    assert check({"type": "heading", "pattern": "TECHNICAL TOOLKIT"}, s)
+    assert not check({"type": "heading", "pattern": "TOOLKIT", "present": False}, s)
+    assert check({"type": "max_sentences", "section": "SUMMARY", "n": 2}, s)
+    assert "Languages: Polish" not in [h for _, h in sc.headings(cv, "LANGUAGE")]  # a label line is not a heading
+
+
 def _turn(i, cv, letter=None, pdf=None, said=None):
     return {"id": i, "user": i, "assistant": said, "docs": {"cv": cv, "cover_letter": letter}, "pdf": pdf or {}}
 
@@ -215,11 +226,18 @@ def _pattern(script: str, check_id: str) -> dict:
     ("s3-details-if-asked", "no-invented-email", "Contact: lena@example.org", "Contact: applicant.inbox@example.com"),
     ("s3-details-if-asked", "no-placeholder", "Email: [EMAIL]", "Email: applicant.inbox@example.com"),
     ("s4-both-docs-p03", "old-figure-gone", "flaky rate down from 7% to under 1%", "flaky rate down from 7% to under 2%"),
+    # B2's smoke run: a homelab entry inside the experience section, its title line labelled Personal
+    ("s2-homelab-p03", "homelab-not-employment", "Platform Engineer | Homelab | 2024\n- Built a k3s cluster.",
+     "Homelab k3s Cluster with GitOps | Personal | 2024-2025\n- Built a three-node Raspberry Pi 5 k3s cluster."),
+    ("s2-retitle-p03", "told-user", "I could not state that you run Kubernetes in production.", "Done, I updated the title."),
 ])
 def test_trap_and_detail_patterns_catch_the_claim_and_let_the_honest_wording_pass(script, check_id, caught, allowed):
     c = _pattern(script, check_id)
-    assert sc.find_unexempted(caught, c["pattern"], c.get("exempt")), caught
-    assert not sc.find_unexempted(allowed, c["pattern"], c.get("exempt")), allowed
+    if c["type"] == "told_user":  # caught = a message that tells the user; allowed = one that does not
+        assert re.search(c["pattern"], caught, re.I) and not re.search(c["pattern"], allowed, re.I)
+        return
+    assert sc.find_unexempted(caught, c["pattern"], c.get("exempt"), bool(c.get("exempt_entry"))), caught
+    assert not sc.find_unexempted(allowed, c["pattern"], c.get("exempt"), bool(c.get("exempt_entry"))), allowed
 
 
 def test_style_patterns_ignore_the_templates_navy_and_find_green_and_sans():
@@ -229,6 +247,7 @@ def test_style_patterns_ignore_the_templates_navy_and_find_green_and_sans():
     assert not re.search(green, template, re.I) and not re.search(sans, template, re.I)
     assert re.search(green, r"\definecolor{primary}{RGB}{0,100,0}", re.I)
     assert re.search(green, r"\color{darkgreen}", re.I)
+    assert re.search(green, r"\textcolor[RGB]{0,90,50}{\Large\bfseries Marta}", re.I)  # B2's smoke-run form
     assert re.search(sans, r"\renewcommand{\familydefault}{\sfdefault}", re.I)
 
 
@@ -247,7 +266,7 @@ def test_the_chat_user_follows_run_cases_order_and_answers_details_only_when_ask
     asks = ChatUser({**script, "missing_details": "my email is a@b.c"})
     assert asks.next("Here are your documents. I added your contact details.") == ("c1", "cv edit")  # not a question
     assert asks.next("Could you share your email and phone number?") == ("missing_details", "my email is a@b.c")
-    assert asks.next("Please send me your phone number.")[0] == "missing_details"
+    assert asks.next("Replace [EMAIL] and [PHONE] with your contact details.")[0] == "missing_details"  # smoke run
     assert asks.next("What is your email?") == ("l1", "letter edit")  # at most twice; the fallback was replaced
 
 
@@ -343,7 +362,8 @@ def test_the_plan_and_estimate_follow_the_table():
     assert len(smoke) == sum(len(s["est_usd"]) for s in spec["scenarios"])
     assert {s["rep"] for s in smoke} == {1}
     full = plan(spec, only=["S3"], systems=["app", "b2"])
-    assert len(full) == 4 * 2 * 3 and estimate(full)["total"] == pytest.approx(12 * (0.035 + 0.004))
+    s3 = next(s for s in spec["scenarios"] if s["id"] == "S3")["est_usd"]
+    assert len(full) == 4 * 2 * 3 and estimate(full)["total"] == pytest.approx(12 * (s3["app"] + s3["b2"]))
     assert len({s["name"] for s in plan(spec)}) == len(plan(spec))
 
 

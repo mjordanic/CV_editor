@@ -18,10 +18,11 @@ documents whose PDF was made in that turn.
 Check types (every check has "id", "type" and "what"; `docs` defaults to both documents):
     present / absent        {pattern, docs?, section?, exempt?}: the regex is found in every document (present) or
                             in none (absent); `section` limits a CV search to that section; for absent, a match
-                            whose sentence also matches `exempt` (e.g. a negation) does not count
+                            whose sentence also matches `exempt` (e.g. a negation) does not count, nor, with
+                            `exempt_entry`, one in an entry whose title line matches it
     heading                 {pattern, present?: true}: a section heading of the CV matches (or, false, none does)
     heading_order           {first, then, adjacent?}: the first heading comes before the second (right before it)
-    max_sentences           {section, n}: that CV section has at most n sentences
+    max_sentences           {section, n}: that CV section's first paragraph has at most n sentences
     max_bullets_per_entry   {section, n}: no entry of that CV section has more than n bullet points
     max_words               {doc, n}: the document has at most n words
     max_pages               {doc, n}: the final PDF has at most n pages
@@ -47,19 +48,22 @@ JOB_AD_TURN = "<path to job ad>"
 
 
 # ------------------------------------------------------------------------------------------- text helpers
-def headings(text: str) -> list[tuple[int, str]]:
-    """(line number, heading) for each section heading: a short all-caps line, without | or @ (not a contact line)."""
+def headings(text: str, also: str | None = None) -> list[tuple[int, str]]:
+    """(line number, heading) for each section heading: a short line without | or @ (not a contact line) that is all
+    caps, or, in any case, matches `also` (the heading a check asks about: a writer may keep the user's spelling)."""
     out = []
     for i, line in enumerate((text or "").splitlines()):
         s = line.strip().strip("#").strip().strip("*").strip().rstrip(":")
-        if s and len(s) < 45 and s.upper() == s and re.search("[A-Z]{3}", s) and "|" not in s and "@" not in s:
+        if not s or len(s) >= 45 or "|" in s or "@" in s or ":" in s or s.endswith((".", ",")):
+            continue
+        if (s.upper() == s and re.search("[A-Z]{3}", s)) or (also and re.search(also, s, re.I)):
             out.append((i, s))
     return out
 
 
 def section(text: str, pattern: str) -> str | None:
     """The body of the first section whose heading matches `pattern`, up to the next heading; None if no such heading."""
-    lines, hs = (text or "").splitlines(), headings(text)
+    lines, hs = (text or "").splitlines(), headings(text, pattern)
     for k, (i, s) in enumerate(hs):
         if re.search(pattern, s, re.I):
             end = hs[k + 1][0] if k + 1 < len(hs) else len(lines)
@@ -105,12 +109,23 @@ def _sentence_around(text: str, start: int, end: int) -> str:
     return text[left:right]
 
 
-def find_unexempted(text: str, pattern: str, exempt: str | None = None) -> list[str]:
-    """Matches of `pattern` (case-insensitive) whose sentence does not match `exempt`, each with a little context."""
+def _entry_header(text: str, pos: int) -> str:
+    """The non-bullet line(s) heading the entry that position `pos` is in (a job or project title line)."""
+    lines = text[:pos].split("\n")
+    i = len(lines) - 1
+    while i > 0 and BULLET.match(lines[i].strip()):
+        i -= 1
+    return lines[i]
+
+
+def find_unexempted(text: str, pattern: str, exempt: str | None = None, entry: bool = False) -> list[str]:
+    """Matches of `pattern` (case-insensitive) whose sentence does not match `exempt` (with `entry`, nor the title line
+    of the entry it is in, e.g. a project labelled "Personal"), each with a little context."""
     out = []
     for m in re.finditer(pattern, text or "", re.I | re.M):
         sentence = _sentence_around(text, m.start(), m.end())
-        if exempt and re.search(exempt, sentence, re.I):
+        if exempt and (re.search(exempt, sentence, re.I)
+                       or (entry and re.search(exempt, _entry_header(text, m.start()), re.I))):
             continue
         out.append(sentence.strip()[:160])
     return out
@@ -232,7 +247,8 @@ def run_check(check: dict, session: dict) -> tuple[bool, str]:
                     ok = False
                 details.append(f"{doc}: no {'section' if final.get(doc) is not None else 'document'}")
                 continue
-            hits = find_unexempted(text, check["pattern"], check.get("exempt") if kind == "absent" else None)
+            hits = find_unexempted(text, check["pattern"], check.get("exempt") if kind == "absent" else None,
+                                   bool(check.get("exempt_entry")))
             if kind == "present" and not hits:
                 ok = False
                 details.append(f"{doc}: not found")
@@ -241,18 +257,18 @@ def run_check(check: dict, session: dict) -> tuple[bool, str]:
                 details.append(f"{doc}: {hits[0]!r}")
         return ok, "; ".join(details)
     if kind == "heading":
-        hs = [s for _, s in headings(final.get("cv"))]
+        hs = [s for _, s in headings(final.get("cv"), check["pattern"])]
         found = any(re.search(check["pattern"], s, re.I) for s in hs)
         return found == check.get("present", True), f"headings: {hs}"
     if kind == "heading_order":
-        hs = [s for _, s in headings(final.get("cv"))]
+        hs = [s for _, s in headings(final.get("cv"), f"(?:{check['first']})|(?:{check['then']})")]
         a = next((i for i, s in enumerate(hs) if re.search(check["first"], s, re.I)), None)
         b = next((i for i, s in enumerate(hs) if re.search(check["then"], s, re.I)), None)
         ok = a is not None and b is not None and (b == a + 1 if check.get("adjacent") else a < b)
         return ok, f"headings: {hs}"
-    if kind == "max_sentences":
+    if kind == "max_sentences":  # the section's first paragraph (a line moved in below it is not the summary)
         body = section(final.get("cv"), check["section"])
-        n = len(sentences(body)) if body is not None else None
+        n = len(sentences(re.split(r"\n\s*\n", body)[0])) if body is not None else None
         return n is not None and n <= check["n"], f"{n} sentences"
     if kind == "max_bullets_per_entry":
         counts = bullets_per_entry(section(final.get("cv"), check["section"]) or "")
@@ -317,10 +333,12 @@ def score_session(session: dict, checks: list[dict]) -> dict:
             **turn_metrics(session), "turns": [t["id"] for t in session["turns"]], "checks": results}
 
 
-def score_run(run_dir: str | Path) -> dict:
-    """Score a run folder with its own script's checks; writes and returns checks.json."""
+def score_run(run_dir: str | Path, script_path: str | Path | None = None) -> dict:
+    """Score a run folder with its own script's checks (or those of `script_path`, e.g. a fixed check); writes and
+    returns checks.json."""
     session = load_session(run_dir)
-    result = score_session(session, session["script"].get("checks") or [])
+    script = json.loads(Path(script_path).read_text(encoding="utf-8")) if script_path else session["script"]
+    result = score_session(session, script.get("checks") or [])
     (Path(run_dir) / "checks.json").write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
     return result
 

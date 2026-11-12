@@ -16,7 +16,7 @@ Usage (from the repo root):
     .venv/bin/python -m evals.run_scenarios --out DIR --dry-run                  # plan and cost estimate, no call
     .venv/bin/python -m evals.run_scenarios --out DIR --smoke --env-file .env     # each scenario's first case once
     .venv/bin/python -m evals.run_scenarios --out DIR --env-file .env [--only S2,S3] [--systems app,b2] [--reps 3]
-    .venv/bin/python -m evals.run_scenarios --out DIR --report-only
+    .venv/bin/python -m evals.run_scenarios --out DIR --report-only   # or --rescore: re-score with today's checks
 """
 from __future__ import annotations
 
@@ -132,11 +132,25 @@ def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total
         list(pool.map(one, todo))
 
 
+def rescore(out: Path) -> None:
+    """Score every session with a manifest again, with its scenario script as it is now (a corrected check)."""
+    from evals.score_checks import score_run
+    for manifest in sorted((out / "runs").glob("*/manifest.json")):
+        if "." in manifest.parent.name:
+            continue
+        case = json.loads(manifest.read_text(encoding="utf-8")).get("labels", {}).get("case", "")
+        script = SCENARIO_DIR / f"{case.split('/', 1)[-1]}.json"
+        if script.is_file():
+            score_run(manifest.parent, script)
+
+
 # ------------------------------------------------------------------------------------------- report
 def collect(out: Path) -> list[dict]:
     """Every scored session in out/runs: its labels and checks.json."""
     rows = []
     for checks in sorted((out / "runs").glob("*/checks.json")):
+        if "." in checks.parent.name:  # an attempt set aside (".unfinished-...", or renamed by hand)
+            continue
         manifest = json.loads((checks.parent / "manifest.json").read_text(encoding="utf-8"))
         rows.append({**manifest.get("labels", {}), "name": checks.parent.name,
                      **json.loads(checks.read_text(encoding="utf-8"))})
@@ -243,6 +257,8 @@ def main(argv=None) -> int:
     parser.add_argument("--smoke", action="store_true", help="each scenario's first case, once per system")
     parser.add_argument("--dry-run", action="store_true", help="print the sessions and the cost estimate; run nothing")
     parser.add_argument("--report-only", action="store_true", help="only (re)write the report from scored sessions")
+    parser.add_argument("--rescore", action="store_true",
+                        help="score every finished session again with the current scenario scripts, then report")
     parser.add_argument("--model", help="model for every writer (default: the table's)")
     parser.add_argument("--env-file", help=".env file with API keys (read by each session, never copied)")
     parser.add_argument("--total-cap", type=float, help="USD for all sessions together (default: the table's)")
@@ -257,7 +273,9 @@ def main(argv=None) -> int:
             print(f"{s['name']}: ~${s['est_usd']}")
         print(json.dumps(estimate(sessions), indent=2))
         return 0
-    if not args.report_only:
+    if args.rescore:
+        rescore(out)
+    elif not args.report_only:
         if shutil.which("pdflatex") is None:
             sys.exit("pdflatex is not installed: every session needs it")
         run(sessions, out, args.model or spec["model"], args.env_file,

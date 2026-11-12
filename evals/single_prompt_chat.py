@@ -63,7 +63,9 @@ CHAT_RULES = (
 MESSAGE_FIELD = ("6. message_to_user: what you say to the candidate in this chat (what you did, anything you did not "
                  "do and why, and any question for them).")
 _ASKS_DETAILS = re.compile(r"e-?mail|phone|contact (details|information|info)", re.I)
-_IS_REQUEST = re.compile(r"\?|\b(please|could you|can you|let me know)\b", re.I)
+# A request for the details, or a pointer to them ("Replace [EMAIL] with your contact details"): a user would answer.
+_IS_REQUEST = re.compile(r"\?|\b(please|could you|can you|let me know|replace|provide|share|send)\b|\[[A-Z][A-Z _/-]{2,}\]",
+                         re.I)
 MAX_DETAIL_ANSWERS = 2
 
 
