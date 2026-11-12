@@ -197,10 +197,10 @@ uv run python langgraph_agent.py --trace-dir DIR # also record every step and mo
 ```
 
 - When the program waits for you ("Please paste the job description…", "Please provide your input:"), type or paste
-  your text and finish with `END` on its own line, two empty lines in a row, or `Ctrl+D`. For a long ad, save it to a
-  file (e.g. in `job_description/`) and paste the path instead.
-- The console shows the program's log: its questions appear as lines starting with `__main__ - INFO -` among other
-  log lines.
+  your text and finish with `END` on its own line, two empty lines in a row, or `Ctrl+D`. Empty lines inside pasted
+  text are kept. For a long ad, save it to a file (e.g. in `job_description/`) and paste the path instead.
+- The console shows the program's log: its questions appear as lines with a timestamp and `__main__ - INFO -` among
+  the program's other log lines. Other libraries show only warnings there; everything is in `logs/`.
 - One message can ask for several things, for both documents and for content and appearance at once:
 
   > Please create CV and cover letter. Add my research stay at Berkeley in 2021 to the CV. Also add MATLAB to my
@@ -251,13 +251,14 @@ Testing and evaluation
 Troubleshooting
 ---------------
 
-- **`openai.OpenAIError: The api_key client option must be set ...`** at startup, after a long traceback: there is no
-  `OPENAI_API_KEY`. Put it in `.env` (copied from `.env_sample`, in the `CV_editor` folder), or use a
-  [local model](#try-it-without-api-keys-local-model).
+- **`OPENAI_API_KEY is not set`** at startup: put the key in `.env` (copied from `.env_sample`, in the `CV_editor`
+  folder), or use a [local model](#try-it-without-api-keys-local-model).
 - **The program seems stuck:** it is probably waiting for you. Finish your input with `END` on its own line (or
   `Ctrl+D`).
-- **Feeding input from a file or pipe:** the program is meant to be typed into. If the input ends early (for example
-  `< /dev/null`), the job-ad question repeats endlessly; stop it with `Ctrl+C`.
+- **Stopping:** type `exit` at any question (then `END`), or press `Ctrl+C`. Drafts made so far stay in
+  `data/generated_CVs/`.
+- **Feeding input from a file or pipe:** the program is meant to be typed into. Piped input ends each answer with
+  `END` on its own line (empty lines are kept), and the session ends when the input runs out.
 - **Missing pdflatex:** make sure `pdflatex` is on your `PATH` (`which pdflatex`); install commands are in
   [Quick Start](#quick-start).
 - **LaTeX errors / no PDF:** the program repairs LaTeX errors automatically (two attempts), then tells you if it

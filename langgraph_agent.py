@@ -5,6 +5,7 @@ load_dotenv()
 
 import logging
 import os
+import sys
 from datetime import datetime
 
 from typing import Annotated, Literal
@@ -35,6 +36,21 @@ from agents.missing_details import make_ask_missing_details, route_after_ask, ro
 
 logger = logging.getLogger(__name__)
 
+# The project folder: the program reads templates/ and data/ and writes logs/, debug/ and the drafts relative to
+# the working folder, which the command-line entry point sets to this folder when started from elsewhere.
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Loggers of the program itself; other libraries reach the console only at WARNING and above (all go to the file).
+APP_LOGGERS = ("__main__", "langgraph_agent", "agents", "config", "provenance", "debug_utils")
+EXIT_WORDS = ("exit", "quit")
+
+
+class SessionEnded(Exception):
+    """The user ended the session at a prompt: 'exit' before the chat, Ctrl+C, or the end of the input."""
+
+
+def _console_filter(record: logging.LogRecord) -> bool:
+    return record.levelno >= logging.WARNING or record.name.split(".", 1)[0] in APP_LOGGERS
+
 
 def setup_logging(logs_dir: str = "logs") -> str:
     """
@@ -48,12 +64,14 @@ def setup_logging(logs_dir: str = "logs") -> str:
     """
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"cv_editor_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+    console = logging.StreamHandler()
+    console.addFilter(_console_filter)  # the program's own lines; other libraries only from WARNING up
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler(log_filename, encoding='utf-8'),
-            logging.StreamHandler(),  # Console output
+            console,
         ],
     )
     # Silence noisy libraries
@@ -156,53 +174,69 @@ class State(TypedDict, total=False):
     cover_letter_pdf_check: dict | None  # The same for the cover letter
 
 
+def _more_input_waiting(timeout: float = 0.05) -> bool:
+    """Whether more typed or pasted text is already waiting on a terminal's standard input (POSIX only)."""
+    try:
+        import select
+        return bool(select.select([sys.stdin], [], [], timeout)[0])
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def read_multiline_input(prompt: str = "You: ") -> str:
     """
     Read multi-line input from the user, handling long pasted text.
-    
-    This function allows users to paste long, multi-line text. It reads until:
-    - EOF (Ctrl+D on Unix/Mac, Ctrl+Z on Windows) - works great for pasted text
-    - Or two consecutive empty lines (press Enter twice)
-    - Or type "END" on its own line
-    
-    Args:
-        prompt: The prompt to display to the user
-        
-    Returns:
-        str: The complete input text
+
+    The reply ends at:
+    - "END" on its own line;
+    - EOF (Ctrl+D on Unix/Mac, Ctrl+Z on Windows) after some text;
+    - two empty lines in a row typed at a terminal (Enter twice). Within pasted text, where more lines are already
+      waiting, empty lines are kept, so an ad with a double blank line is read whole. From a pipe or file only
+      "END" and the end of the input end a reply.
+
+    Raises:
+        EOFError: the input ended before any text (Ctrl+D on an empty prompt, or piped input that has run out).
+        KeyboardInterrupt: Ctrl+C.
     """
     print(prompt, end="", flush=True)
     lines = []
     empty_line_count = 0
-    
-    try:
-        # Read line by line until EOF, two empty lines, or "END" marker
-        while True:
-            try:
-                line = input()
-                # Check if this is the "END" marker (must be on its own line, case-insensitive)
-                if line.strip().upper() == "END" and len(lines) > 0:
-                    break
-                # Track consecutive empty lines
-                if line.strip() == "":
-                    empty_line_count += 1
-                    if empty_line_count >= 2 and len(lines) > 0:
-                        # Two empty lines = end of input
-                        break
-                else:
-                    empty_line_count = 0
-                lines.append(line)
-            except EOFError:
-                # User pressed Ctrl+D (Unix/Mac) or Ctrl+Z (Windows)
-                # This is the normal way to finish pasting text
+    interactive = sys.stdin.isatty()
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            if not lines:
+                raise
+            break
+        # "END" marker: on its own line, case-insensitive
+        if line.strip().upper() == "END" and len(lines) > 0:
+            break
+        if line.strip() == "":
+            empty_line_count += 1
+            if empty_line_count >= 2 and lines and interactive and not _more_input_waiting():
                 break
-    except KeyboardInterrupt:
-        # User pressed Ctrl+C
-        print("\nInput cancelled.")
-        return ""
-    
-    result = '\n'.join(lines)
-    return result
+        else:
+            empty_line_count = 0
+        lines.append(line)
+    return '\n'.join(lines).strip("\n")
+
+
+def ask_user(question: dict | None) -> str:
+    """
+    Show an interrupt's question on the console and read the reply.
+
+    Raises SessionEnded when the user types 'exit' (or 'quit') at a question asked before the chat: the job ad, the
+    CV, the details questions. In the chat ('chat' in the question) 'exit' goes to the router, which ends the session
+    with its closing message.
+    """
+    question = question or {}
+    logger.info(f"\n\n{question.get('message') or 'Please provide your input:'}")
+    logger.info("(When done type 'END' on a new line or hit ENTER twice)")
+    reply = read_multiline_input()
+    if not question.get("chat") and reply.strip().lower() in EXIT_WORDS:
+        raise SessionEnded(f"you typed '{reply.strip()}'")
+    return reply
 
 
 
@@ -466,34 +500,31 @@ class MasterAgent:
 
         # This is a simplified version of the streaming loop that handles interrupt() calls
         # It uses the invoke() method to run the graph and handle interrupt() calls
-        if recorder is not None:
-            from provenance import stream_turn
-            try:
-                interrupt_value = stream_turn(self.graph, stream_input, config, recorder)
-                while interrupt_value:
-                    logger.info(f"\n\n{interrupt_value.get('message') or 'Please provide your input:'}")
-                    logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-                    human_input = read_multiline_input()
-                    recorder.event("user_reply", text=human_input)
-                    interrupt_value = stream_turn(self.graph, Command(resume=human_input), config, recorder)
-            except Exception as e:
-                recorder.record_error("session", e)
-                raise
-            finally:
-                recorder.write_json("final_state.json", self.graph.get_state(config).values)
-                recorder.write_summary()
-            return
+        try:
+            if recorder is not None:
+                from provenance import stream_turn
+                try:
+                    interrupt_value = stream_turn(self.graph, stream_input, config, recorder)
+                    while interrupt_value:
+                        human_input = ask_user(interrupt_value)
+                        recorder.event("user_reply", text=human_input)
+                        interrupt_value = stream_turn(self.graph, Command(resume=human_input), config, recorder)
+                except Exception as e:
+                    if not isinstance(e, (SessionEnded, EOFError)):
+                        recorder.record_error("session", e)
+                    raise
+                finally:
+                    recorder.write_json("final_state.json", self.graph.get_state(config).values)
+                    recorder.write_summary()
+                return
 
-        result = self.graph.invoke(stream_input, config)
-        while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
-            interrupt_data = result["__interrupt__"]    
-            interrupt_message = interrupt_data[0].value["message"] if interrupt_data and len(interrupt_data) > 0 else "Please provide your input:"
-            logger.info(f"\n\n{interrupt_message}")
-            logger.info("(When done type 'END' on a new line or hit ENTER twice)")
-            
-            human_input = read_multiline_input()
-            
-            result = self.graph.invoke(Command(resume=human_input), config=config)
+            result = self.graph.invoke(stream_input, config)
+            while result.get('__interrupt__') and result.get('__interrupt__')[0].value:
+                human_input = ask_user(result["__interrupt__"][0].value)
+                result = self.graph.invoke(Command(resume=human_input), config=config)
+        except (SessionEnded, EOFError, KeyboardInterrupt) as e:
+            reason = {EOFError: "the input ended", KeyboardInterrupt: "Ctrl+C"}.get(type(e)) or str(e)
+            logger.info(f"Session ended ({reason}). Documents made so far are in data/generated_CVs/.")
 
 
 
@@ -502,7 +533,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Tailor your CV and cover letter to a job ad and render them as PDFs. "
-        "Starting a run makes paid OpenAI and Tavily calls."
+        "Starting a run makes paid OpenAI calls (and Tavily calls if TAVILY_API_KEY is set); with a local model "
+        "(e.g. CV_EDITOR_MODEL=ollama:gemma4:e4b) it makes none."
     )
     parser.add_argument(
         "--draw-graph",
@@ -515,6 +547,25 @@ if __name__ == "__main__":
         help="record the session in DIR: every step, model call (prompt, response, tokens, cost) and reply",
     )
     args = parser.parse_args()
+
+    # Relative paths (templates/, data/, logs/, debug/) are the project folder's. Started from a folder that is not
+    # a working folder (no templates/), work in the project folder; a file path the user types is still found
+    # relative to the folder they started in.
+    if not os.path.isdir("templates"):
+        from agents.document_reader import add_user_dir
+        add_user_dir(os.getcwd())
+        os.chdir(PROJECT_DIR)
+        print(f"Working in the project folder {PROJECT_DIR} (data/, logs/ and the PDFs are there).")
+
+    from config.config_loader import ConfigError, missing_api_keys
+    try:
+        missing = missing_api_keys()
+    except ConfigError as e:
+        sys.exit(f"Configuration error: {e}")
+    if missing:
+        sys.exit(f"{' and '.join(missing)} {'is' if len(missing) == 1 else 'are'} not set. Put "
+                 f"{'it' if len(missing) == 1 else 'them'} in .env (see .env_sample), or run on a local model "
+                 "without API keys: CV_EDITOR_MODEL=ollama:gemma4:e4b (see README.md).")
 
     setup_logging()
     agent = MasterAgent(draw_graph=args.draw_graph)

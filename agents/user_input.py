@@ -44,12 +44,14 @@ class UserInputAgent:
         # here: sending it on to the router would cost a model call only to repeat the question.
         logger.info("Requesting user input via interrupt()")
         prompt = user_input_message or "Please provide your input:"
-        user_input = str(interrupt({"message": prompt, "required": True}) or "").strip()
+        # "chat": the console passes 'exit' through to the router here (before the chat it ends the session).
+        user_input = str(interrupt({"message": prompt, "required": True, "chat": True}) or "").strip()
         while not user_input:
             logger.info("UserInputAgent: empty reply - asking again")
             user_input = str(interrupt({
                 "message": f"I did not receive a message. {prompt}",
                 "required": True,
+                "chat": True,
             }) or "").strip()
         
         logger.info(f"UserInputAgent: Processing user input - length: {len(user_input)} characters")

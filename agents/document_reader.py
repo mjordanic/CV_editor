@@ -20,6 +20,28 @@ def read_document_file(path: str) -> str:
         return f.read()
 
 
+# Folders a relative file path typed by the user is also looked up in (the folder the program was started from,
+# when the command-line entry point switched to the project folder).
+_USER_DIRS: list[str] = []
+
+
+def add_user_dir(path: str) -> None:
+    if path not in _USER_DIRS:
+        _USER_DIRS.append(path)
+
+
+def _resolve_user_path(reply: str) -> str:
+    """The typed path, or the same relative path under a folder the user started in, if only that one exists."""
+    path = os.path.expanduser(reply.strip("'\""))
+    if os.path.isfile(path) or os.path.isabs(path):
+        return path
+    for folder in _USER_DIRS:
+        candidate = os.path.join(folder, path)
+        if os.path.isfile(candidate):
+            return candidate
+    return path
+
+
 def looks_like_path(text: str) -> bool:
     """Whether a one-line reply is meant as a file path rather than pasted document text."""
     if "\n" in text or len(text) > 400:
@@ -51,7 +73,7 @@ def ask_for_document(message: str, what: str) -> str:
         if not reply:
             message = f"I did not receive anything. {how}"
             continue
-        path = os.path.expanduser(reply.strip("'\""))
+        path = _resolve_user_path(reply)
         if os.path.isfile(path):
             try:
                 text = read_document_file(path).strip()

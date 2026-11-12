@@ -64,7 +64,9 @@ redrawn from the code with `--draw-graph`.
    - Its grounding check, a separate call (`grounding` in the config, also on a non-writer model), lists claims
      about you that your material does not support and claims about the employer that the ad and company research
      do not support.
-   - Every draft is saved with its quality score as a draft file, so earlier versions stay on disk.
+   - Every draft is saved as a text file (`data/generated_CVs/generated_CV_draft_N.txt` and the cover letter's
+     equivalent), so earlier versions stay on disk. Its quality score is kept in the session's draft history and
+     the log, not in the file.
    - If the draft has a real defect (a claim your material does not support, a critical issue, or a requirement of
      the ad you meet but the draft does not show), it is redrafted automatically, up to `workflow.max_refinements`
      times (1 in the shipped config). After that it gets another pass only while it still makes unsupported claims
@@ -171,13 +173,13 @@ agent is built.
 
 | variable | meaning |
 |---|---|
-| `OPENAI_API_KEY` | needed for the shipped OpenAI models. Without it, and without a local `CV_EDITOR_MODEL`, the program stops at startup with a Python traceback ending in `openai.OpenAIError: The api_key client option must be set ...` |
+| `OPENAI_API_KEY` | needed for the shipped OpenAI models. Without it, and without a local `CV_EDITOR_MODEL`, the program stops at startup with `OPENAI_API_KEY is not set` and how to set it |
 | `TAVILY_API_KEY` | optional; company research is skipped without it, and on a local model |
-| `ANTHROPIC_API_KEY` | only for the evaluation tools when a Claude model grades (`evals/README.md`) |
+| `ANTHROPIC_API_KEY` | for the evaluation tools when a Claude model grades (`evals/README.md`), and for the program when one of its models is an `anthropic:` model (checked at startup like `OPENAI_API_KEY`) |
 | `CV_EDITOR_MODEL=<provider:model>` | replaces the writer-side models for one run without editing the config, never the critic's |
 | `CV_EDITOR_CRITIC_MODEL=<provider:model>` | replaces the quality review's model (`critique`) |
 | `CV_EDITOR_GROUNDING_MODEL=<provider:model>` | replaces the fact check's model (`grounding`) |
-| `CV_EDITOR_TEMPERATURE` | a number, or `default` to send none; applies only to the agents whose model one of the three variables above replaced |
+| `CV_EDITOR_TEMPERATURE` | a number (with a decimal point, e.g. `0.2`), or `default` to send none; applies only to the agents whose model one of the three variables above replaced. Anything else stops the program at startup with a message |
 | `CV_EDITOR_OLLAMA_NUM_CTX` | context size for local Ollama models (default 16384) |
 | `CV_EDITOR_EMBEDDING_MODEL` | the Ollama embedding model for a large portfolio on a local run (default `nomic-embed-text`; hosted runs use OpenAI's `text-embedding-3-small`). If it is not pulled, indexing fails with a warning and RAG is skipped |
 | `CV_EDITOR_SEARCH_FIXTURE=file.json` | replays prepared company-search results instead of calling Tavily (testing mode) |
@@ -202,10 +204,11 @@ Tavily search, even when `TAVILY_API_KEY` is set.
 
 ## Logging and debugging
 
-- **Logs.** `logs/cv_editor_<timestamp>.log`. The console shows the same stream: the program's questions arrive as
-  `__main__ - INFO -` lines among other log lines.
+- **Logs.** `logs/cv_editor_<timestamp>.log` holds every line, including other libraries' debug output. The console
+  shows the program's own lines (its questions arrive as `<timestamp> - __main__ - INFO -` lines) and other
+  libraries' warnings and errors.
 - **Debug transcripts.** `debug/cv_editor_<timestamp>.log` holds prompts, state snapshots and generated text for
-  auditing. Running the tests or `--help` also creates files here.
+  auditing. Running the tests also creates files here.
 - **Recording a session.** `uv run python langgraph_agent.py --trace-dir DIR` writes every step (`events.jsonl`),
   every model call with prompt, response, tokens and cost (`llm_calls.jsonl`), `summary.json` and `final_state.json`
   to `DIR`. API keys are never written. The evaluation's testing mode uses the same recording

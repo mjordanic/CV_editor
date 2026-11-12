@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 _config_cache: Optional[Dict[str, Any]] = None
 
 
+class ConfigError(ValueError):
+    """A setting the user gave (e.g. an environment variable) cannot be used; startup stops with this message."""
+
+
 def get_config_path() -> str:
     """
     Get the path to the agent_models.yaml configuration file.
@@ -117,6 +121,8 @@ def get_agent_config(agent_name: str, default_model: Optional[str] = None,
         # Return complete config with all fields from YAML
         return agent_config
         
+    except ConfigError:
+        raise
     except Exception as e:
         logger.warning(f"Error loading configuration for '{agent_name}': {e}. Using defaults.")
         return {
@@ -191,9 +197,17 @@ def _apply_model_override(agent_name: str, agent_config: Dict[str, Any]) -> None
     # Some models accept only their default temperature: CV_EDITOR_TEMPERATURE=default leaves it unset.
     temperature = os.environ.get("CV_EDITOR_TEMPERATURE", "").strip()
     if temperature and agent_config.get("model"):
+        if temperature == "default":
+            value = None
+        else:
+            try:
+                value = float(temperature)
+            except ValueError:
+                raise ConfigError(f"CV_EDITOR_TEMPERATURE={temperature!r} is not a number: use e.g. 0.2 "
+                                  "(with a point), or 'default' for the model's own temperature") from None
         for key in ("temperature", "filter_temperature"):
             if key in agent_config:
-                agent_config[key] = None if temperature == "default" else float(temperature)
+                agent_config[key] = value
 
 
 def local_model_kwargs(model: Optional[str]) -> Dict[str, Any]:
@@ -209,16 +223,21 @@ def local_model_kwargs(model: Optional[str]) -> Dict[str, Any]:
     return {"num_ctx": int(os.environ.get("CV_EDITOR_OLLAMA_NUM_CTX", "16384")), "reasoning": False}
 
 
-def get_all_agents() -> Dict[str, Dict[str, Any]]:
+# The environment variable each hosted provider's API key is read from.
+PROVIDER_KEY_ENVS = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
+
+
+def missing_api_keys() -> list[str]:
     """
-    Get configuration for all agents.
-    
-    Returns:
-        dict: Dictionary mapping agent names to their configurations
+    The API key variables that the configured models (after the CV_EDITOR_* overrides) need and that are not set,
+    e.g. ["OPENAI_API_KEY"]; empty for a fully local run. Checked at startup so a missing key stops the program
+    with one clear line instead of a traceback from the first model client.
     """
-    try:
-        config = load_config()
-        return config.get('agents', {})
-    except Exception as e:
-        logger.error(f"Error loading all agent configurations: {e}")
-        return {}
+    needed = set()
+    for name in (load_config().get("agents") or {}):
+        cfg = get_agent_config(name)
+        for key in ("model", "filter_model"):
+            provider = str(cfg.get(key) or "").split(":", 1)[0].strip().lower()
+            if provider in PROVIDER_KEY_ENVS:
+                needed.add(PROVIDER_KEY_ENVS[provider])
+    return sorted(env for env in needed if not os.environ.get(env, "").strip())
