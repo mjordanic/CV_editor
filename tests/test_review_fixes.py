@@ -842,3 +842,36 @@ def test_shipped_config_has_no_score_threshold_left():
     assert "quality_improvement_threshold" not in config["workflow"]
     assert "quality_threshold" not in config["agents"]["critique"]
     assert json.dumps(config).count("grounding") >= 1
+
+
+def test_a_tex_left_by_an_earlier_session_is_not_reused_as_the_template(monkeypatch, tmp_path):
+    from agents import pdf_text_check
+    from agents.cv_pdf_generator import CVPDFGenerator
+
+    monkeypatch.setattr(pdf_text_check, "extract_pdf_text", lambda path: ("Ana Horvat", 1, None))
+    gen = CVPDFGenerator.__new__(CVPDFGenerator)
+    gen.output_folder, gen.temp_folder = str(tmp_path / "out"), str(tmp_path / "out" / "temp_latex")
+    gen.template_path, gen.max_latex_fix_iterations, gen._latex_fixer = str(REPO / "templates" / "cv_template.tex"), 0, None
+    os.makedirs(gen.temp_folder)
+    stale = os.path.join(gen.temp_folder, "generated_CV_draft_1.tex")
+    open(stale, "w", encoding="utf-8").write("EARLIER SESSION'S GREEN STYLE")
+    os.utime(stale, (1_000_000, 1_000_000))
+    gen.session_started = os.path.getmtime(stale) + 60
+    templates = []
+
+    def build(template, plain, style):
+        templates.append(template)
+        return "latex"
+
+    def compile_latex(latex, name, max_fix_iterations):
+        path = os.path.join(gen.temp_folder, f"{name}.pdf")
+        open(path, "w", encoding="utf-8").write(name)
+        return path, 0, None
+
+    gen._build_latex_document, gen._compile_latex = build, compile_latex
+    state = {"generated_cv": "Ana Horvat", "cv_history": [{"iteration": 1}], "messages": []}
+    gen.run(state)
+    assert "EARLIER SESSION" not in templates[-1]
+    os.utime(stale, None)  # rendered in this session: a style-only update reuses it
+    gen.run(state)
+    assert templates[-1] == "EARLIER SESSION'S GREEN STYLE"

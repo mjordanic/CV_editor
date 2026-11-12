@@ -142,3 +142,16 @@ def test_a_relative_path_is_also_found_in_the_folder_the_user_started_in(monkeyp
     assert document_reader._resolve_user_path("ad.txt") == "ad.txt"
     document_reader.add_user_dir(str(tmp_path))
     assert document_reader._resolve_user_path("'ad.txt'") == str(tmp_path / "ad.txt")
+
+
+def test_an_earlier_sessions_outputs_are_moved_aside_not_deleted(tmp_path):
+    out = tmp_path / "generated_CVs"
+    assert app.move_earlier_outputs(str(out)) is None
+    (out / "temp_latex").mkdir(parents=True)
+    (out / "temp_latex" / "generated_CV_draft_1.tex").write_text("old", encoding="utf-8")
+    (out / "generated_CV_draft_3.txt").write_text("old draft 3", encoding="utf-8")
+    moved = app.move_earlier_outputs(str(out))
+    assert sorted(p.name for p in out.iterdir()) == ["earlier"]
+    assert (tmp_path / moved / "generated_CV_draft_3.txt").read_text() == "old draft 3"
+    assert (tmp_path / moved / "temp_latex" / "generated_CV_draft_1.tex").is_file()
+    assert app.move_earlier_outputs(str(out)) is None  # only "earlier" is left

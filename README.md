@@ -142,7 +142,8 @@ uv run python langgraph_agent.py
   sample CV), then `END` on its own line. Then say what you want, e.g. "Please write my CV and cover letter.", and
   `END` again.
 - **Your results** are in `data/generated_CVs/`: `generated_CV.pdf` and `generated_cover_letter.pdf` are the latest,
-  and every draft is kept next to them.
+  and every draft is kept next to them. When you start a new session, the previous session's files move to
+  `data/generated_CVs/earlier/<date_time>/`.
 - Type `exit` (then `END`) when you are done.
 - On Windows the commands differ slightly (`copy` for `cp`, `mkdir data\CV`); these instructions assume macOS or
   Linux.

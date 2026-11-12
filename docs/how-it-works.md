@@ -136,7 +136,7 @@ extracted job and company information, generated documents, critique feedback an
 |---|---|
 | `data/CV/` | your CV, earlier cover letter and notes (`CV.*`, `cover_letter.*`, `notes.*`; `.txt`, `.md` or text `.pdf`) |
 | `data/portfolio/portfolio.txt` | your optional portfolio, one item per paragraph |
-| `data/generated_CVs/` | every draft (`generated_CV_draft_N.*`, the cover letter likewise) and the latest PDFs, `generated_CV.pdf` and `generated_cover_letter.pdf` |
+| `data/generated_CVs/` | every draft of the session (`generated_CV_draft_N.*`, the cover letter likewise) and the latest PDFs, `generated_CV.pdf` and `generated_cover_letter.pdf`. A new session started from the command line first moves the previous session's files to `earlier/<date_time>/` |
 | `job_description/` | job ads you saved as files; two made-up samples are tracked |
 | `logs/`, `debug/` | log files (see [Logging and debugging](#logging-and-debugging)) |
 

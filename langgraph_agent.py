@@ -5,6 +5,7 @@ load_dotenv()
 
 import logging
 import os
+import shutil
 import sys
 from datetime import datetime
 
@@ -46,6 +47,24 @@ EXIT_WORDS = ("exit", "quit")
 
 class SessionEnded(Exception):
     """The user ended the session at a prompt: 'exit' before the chat, Ctrl+C, or the end of the input."""
+
+
+def move_earlier_outputs(folder: str = os.path.join("data", "generated_CVs")) -> str | None:
+    """
+    Move the files an earlier session left in `folder` (drafts, notes, PDFs, temp_latex) to
+    `folder/earlier/<timestamp>/`, so a new session's drafts are not mixed with them (a new session numbers its drafts
+    from 1 again). Nothing is deleted. Returns the folder they were moved to, or None if there was nothing to move.
+    """
+    if not os.path.isdir(folder):
+        return None
+    entries = [e for e in os.listdir(folder) if e != "earlier" and not e.startswith(".")]
+    if not entries:
+        return None
+    target = os.path.join(folder, "earlier", datetime.now().strftime("%Y%m%d_%H%M%S"))
+    os.makedirs(target, exist_ok=True)
+    for entry in entries:
+        shutil.move(os.path.join(folder, entry), os.path.join(target, entry))
+    return target
 
 
 def _console_filter(record: logging.LogRecord) -> bool:
@@ -567,6 +586,9 @@ if __name__ == "__main__":
                  f"{'it' if len(missing) == 1 else 'them'} in .env (see .env_sample), or run on a local model "
                  "without API keys: CV_EDITOR_MODEL=ollama:gemma4:e4b (see README.md).")
 
+    earlier = move_earlier_outputs()
+    if earlier:
+        print(f"The previous session's drafts and PDFs were moved to {earlier}.")
     setup_logging()
     agent = MasterAgent(draw_graph=args.draw_graph)
     agent.run(trace_dir=args.trace_dir)
