@@ -106,25 +106,6 @@ class DocumentReaderAgent:
         self.cv_folder = cv_folder
         logger.debug("DocumentReaderAgent initialized")
     
-    def read_pdf(self, file_path: str) -> str:
-        """
-        Read text content from a PDF file.
-        
-        Args:
-            file_path: Path to the PDF file
-            
-        Returns:
-            str: Extracted text from all pages of the PDF
-        """
-        logger.debug(f"Reading PDF file: {file_path}")
-        reader = PdfReader(file_path)
-        text_parts = []
-        for page in reader.pages:
-            text_parts.append(page.extract_text())
-        text = "\n".join(text_parts)
-        logger.info(f"PDF read successfully - extracted {len(text)} characters from {len(text_parts)} pages")
-        return text
-    
     def fetch_document_text(self, document_name: str) -> Optional[str]:
         """
         Fetches document text from the CV folder.
@@ -141,10 +122,7 @@ class DocumentReaderAgent:
             if not os.path.exists(path):
                 continue
             logger.debug(f"Found {suffix} file: {path}")
-            if suffix == ".pdf":
-                return self.read_pdf(path)
-            with open(path, "r", encoding="utf-8", errors="replace") as f:
-                content = f.read()
+            content = read_document_file(path)
             logger.info(f"Document {document_name} read from {suffix} - {len(content)} characters")
             return content
 
@@ -261,7 +239,6 @@ class DocumentReaderAgent:
                 "content": "Documents read successfully."
             }],
             "candidate_text": documents,
-            "current_node": "document_reader"
         }
         
         return state_update

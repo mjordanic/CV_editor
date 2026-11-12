@@ -37,7 +37,7 @@ def make_ask_missing_details(kind: str):
         )
         reply = str(interrupt({"message": question, "required": False}) or "").strip()
         messages = list(state.get("messages", [])) + [{"role": "assistant", "content": question}]
-        update = {f"{kind}_placeholders_asked": True, "current_node": f"ask_{kind}_missing_details"}
+        update = {f"{kind}_placeholders_asked": True}
         if reply:
             messages.append({"role": "user", "content": reply})
             update[f"{kind}_content_feedback"] = (

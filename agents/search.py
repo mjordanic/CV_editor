@@ -358,5 +358,4 @@ class SearchAgent:
                 "role": "assistant",
                 "content": f"Company information retrieved. {summary}"
             }],
-            "current_node": "search"
         }

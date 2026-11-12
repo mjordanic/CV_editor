@@ -124,8 +124,6 @@ class State(TypedDict, total=False):
         cover_letter_needs_refinement: Whether the cover letter needs to be refined based on critique feedback.
         cv_critique_improvement_instructions: Improvement instructions from critique for CV refinement.
         cover_letter_critique_improvement_instructions: Improvement instructions from critique for cover letter refinement.
-        cv_needs_critique: Flag to indicate if CV needs critiquing (after generation or refinement).
-        cover_letter_needs_critique: Flag to indicate if cover letter needs critiquing (after generation or refinement).
         cv_refinement_count: Number of times CV has been refined based on critique (see agents/refinement.py).
         cover_letter_refinement_count: Number of times cover letter has been refined based on critique.
     """
@@ -135,7 +133,6 @@ class State(TypedDict, total=False):
     job_ad_extra_details: str | None  # The user's answer to that question, added to the ad and extracted again
     candidate_text: dict | None  # CV and cover letter text (keys: 'cv', 'cover_letter')
     company_info: dict | None  # Company information from search (keys: 'company_description', 'work_context', 'search_results', 'search_query', 'search_source')
-    current_node: str | None  # Current node in the graph
     next: Literal[
         "draft_cv",
         "draft_cover_letter",
@@ -161,8 +158,6 @@ class State(TypedDict, total=False):
     cover_letter_user_requests: list[str] | None  # The user's requests for the cover letter so far
     cv_request_notes: str | None  # The CV writer's notes on the user's latest request; the router tells the user what was not applied as asked, then clears them
     cover_letter_request_notes: str | None  # The same for the cover letter
-    cv_needs_critique: bool | None  # Flag to indicate if CV needs critiquing
-    cover_letter_needs_critique: bool | None  # Flag to indicate if cover letter needs critiquing
     cv_refinement_count: int | None  # Number of times CV has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cover_letter_refinement_count: int | None  # Number of times cover letter has been refined based on critique (see workflow settings in config/agent_models.yaml)
     cv_previous_defect_count: int | None  # Requirements the previous draft of this cycle did not show (None for the first draft)
@@ -287,7 +282,6 @@ class MasterAgent:
         workflow_config = full_config.get('workflow', {})
         self.max_refinements = workflow_config.get('max_refinements', 2)
         self.max_refinements_hard_cap = workflow_config.get('max_refinements_hard_cap', self.max_refinements)
-        self.max_latex_fix_iterations = workflow_config.get('max_latex_fix_iterations', 1)
         logger.debug(f"Workflow settings - max_refinements: {self.max_refinements}, max_refinements_hard_cap: {self.max_refinements_hard_cap}")
         
         # Load agent configurations

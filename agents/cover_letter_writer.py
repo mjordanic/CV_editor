@@ -129,11 +129,3 @@ class CoverLetterWriterAgent(DocumentWriterAgent):
 
     def _extra_prompt_inputs(self, state) -> dict:
         return {"tailored_cv": state.get("generated_cv") or "Not written yet."}
-
-    def save_cover_letter(self, cover_letter_text: str, filename: str = "generated_cover_letter.txt") -> str:
-        """Save cover letter text to the output folder."""
-        return self.save_document(cover_letter_text, filename)
-
-    def save_notes(self, notes: str, filename: str = "generated_cover_letter_notes.txt") -> str:
-        """Save the writer's notes to the output folder."""
-        return self.save_document(notes, filename)

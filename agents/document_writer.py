@@ -324,12 +324,10 @@ You can ONLY remove parts of the critique instructions that conflict with user p
                 logger.info("All critique suggestions filtered out due to user preferences - skipping refinement")
                 return {
                     f"generated_{kind}": generated,
-                    f"{kind}_needs_critique": False,
                     f"{kind}_needs_refinement": False,
                     # Count the skipped pass: the graph still goes on to critique the unchanged
                     # draft, and without this the critique -> redraft loop would never use up its budget.
                     f"{kind}_refinement_count": (state.get(f"{kind}_refinement_count") or 0) + 1,
-                    "current_node": f"{kind}_writer",
                     "messages": state.get("messages", []) + [{
                         "role": "assistant",
                         "content": f"{label[0].upper() + label[1:]} refinement skipped: All critique suggestions were filtered out based on your previous preferences."
@@ -390,10 +388,8 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         return {
             **updates,
             f"generated_{kind}": text,
-            f"{kind}_needs_critique": True,
             f"{kind}_needs_refinement": False,
             f"{kind}_refinement_count": refinement_count,
-            "current_node": f"{kind}_writer",
             "messages": state.get("messages", []) + [{"role": "assistant", "content": message}],
         }
 
@@ -424,7 +420,7 @@ You can ONLY remove parts of the critique instructions that conflict with user p
         history = list(state.get(f"{kind}_history", []) or [])
         if not history:
             logger.warning(f"No {label} history found. Cannot finalize best version.")
-            return {"current_node": f"finalize_{kind}"}
+            return {}
 
         # Pick the best draft of the current cycle only (drafts since the router last sent a
         # request here). An older draft from an earlier request must not win, or the user's latest
@@ -539,7 +535,6 @@ You can ONLY remove parts of the critique instructions that conflict with user p
             f"generated_{kind}": final_text,
             f"{kind}_final_iteration": best.get("iteration"),
             f"{kind}_placeholders": placeholders,
-            "current_node": f"finalize_{kind}",
             # Clear the request after finalization to prevent infinite loops
             f"{kind}_content_feedback": None,
             "messages": state.get("messages", []) + [{"role": "assistant", "content": message}],

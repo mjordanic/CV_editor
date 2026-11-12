@@ -64,6 +64,5 @@ class UserInputAgent:
         return {
             "messages": updated_messages,
             "user_input_message": None,  # Clear it
-            "current_node": "user_input"
         }
 

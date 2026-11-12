@@ -1,6 +1,5 @@
 from typing import Optional, Literal
 import logging
-import json
 from langchain.chat_models import init_chat_model
 from config.config_loader import local_model_kwargs
 from langchain_core.prompts import ChatPromptTemplate
@@ -242,7 +241,6 @@ class JobDescriptionAgent:
             # The ad's own text is added here, not echoed by the model (see JobDescriptionInfo).
             "job_description_info": {**extracted_info.model_dump(), "job_description": job_description_text},
             "job_ad_extra_details": None,
-            "current_node": "job_description"
         }
         
         return updated_state
@@ -294,7 +292,7 @@ def clarify_job_ad(state):
         ),
         "required": True,
     }) or "").strip()
-    update = {"job_ad_clarification_asked": True, "current_node": "clarify_job_ad"}
+    update = {"job_ad_clarification_asked": True}
     if reply.strip(" .!'\"").lower() in CONTINUE_REPLIES:
         # The offered "continue" adds nothing to the ad: go on with the extraction as it is.
         reply = ""
