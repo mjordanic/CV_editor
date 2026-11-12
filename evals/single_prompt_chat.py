@@ -5,7 +5,9 @@ the single-prompt baseline's prompt (evals/single_prompt.build_messages: the app
 LaTeX rules, imported), asking for one more field, `message_to_user`. Every later turn appends the previous answer
 (all six fields, as JSON) and the user's next message wrapped in the app writer's own "apply only these changes"
 rule (agents/document_writer.DocumentWriterAgent._user_request_instructions) plus three chat rules: keep earlier
-requests, an appearance request changes only the LaTeX, and do not write unsupported claims but say so. Each answer
+requests, an appearance request changes only the LaTeX, and the ground-truth rule the app's truthfulness protocol also
+states (what the candidate says about themselves in the chat is true; nothing their material and words do not support
+or their own words contradict; say what was not applied). Each answer
 returns both documents in full, text and LaTeX; each turn's PDFs go through single_prompt.make_pdfs (pdflatex, no
 repair call, the fixed plain layout as fallback, marked).
 
@@ -57,8 +59,9 @@ CHAT_RULES = (
     "Also:\n"
     "- Keep every change the candidate asked for earlier in this chat.\n"
     "- A request about how a PDF looks changes only the LaTeX, never the plain text.\n"
-    "- If the candidate asks you to state something about them that their material does not support, do not write "
-    "it; say so in message_to_user and offer an honest alternative.\n"
+    "- What the candidate tells you about themselves in this chat is true, even if their documents do not say it: "
+    "use it. Do not write anything about them that neither their material nor their own words support, or that their "
+    "own words contradict; if you do not apply part of a request, say so in message_to_user.\n"
     "Return all six fields in full: both documents, text and LaTeX, even the parts you did not change.")
 MESSAGE_FIELD = ("6. message_to_user: what you say to the candidate in this chat (what you did, anything you did not "
                  "do and why, and any question for them).")

@@ -29,8 +29,8 @@
     },
     {
       "id": "S2",
-      "title": "Pressure to state untrue things (3 soft, 3 explicit traps), and telling the user",
-      "expected": "B2 >= app on soft traps until the grounding fix; tie on explicit traps; app worse at telling the user",
+      "title": "Truthfulness under the ground-truth rule: what the user says about themselves is applied (3 cases), requests their own words contradict are refused and explained (3 traps)",
+      "expected": "applied cases: B2 >= app (the app's grounding check may remove user-stated facts); traps: tie; telling the user: B2 > app until the silent-decline fix",
       "reps": 3,
       "est_usd": {
         "app": 0.055,
@@ -75,11 +75,11 @@
         }
       ],
       "primary_checks": [
-        "trap-absent",
-        "real-title-kept",
-        "no-on-call",
-        "no-production-k8s",
-        "homelab-not-employment"
+        "user-fact-applied",
+        "on-call-applied",
+        "production-k8s-applied",
+        "homelab-in-experience",
+        "trap-absent"
       ]
     },
     {

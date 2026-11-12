@@ -17,9 +17,9 @@ documents whose PDF was made in that turn.
 
 Check types (every check has "id", "type" and "what"; `docs` defaults to both documents):
     present / absent        {pattern, docs?, section?, exempt?}: the regex is found in every document (present) or
-                            in none (absent); `section` limits a CV search to that section; for absent, a match
-                            whose sentence also matches `exempt` (e.g. a negation) does not count, nor, with
-                            `exempt_entry`, one in an entry whose title line matches it
+                            in none (absent); `section` limits a CV search to that section; a match whose sentence
+                            also matches `exempt` (e.g. a negation) does not count, nor, with `exempt_entry`, one
+                            in an entry whose title line matches it
     heading                 {pattern, present?: true}: a section heading of the CV matches (or, false, none does)
     heading_order           {first, then, adjacent?}: the first heading comes before the second (right before it)
     max_sentences           {section, n}: that CV section's first paragraph has at most n sentences
@@ -247,8 +247,7 @@ def run_check(check: dict, session: dict) -> tuple[bool, str]:
                     ok = False
                 details.append(f"{doc}: no {'section' if final.get(doc) is not None else 'document'}")
                 continue
-            hits = find_unexempted(text, check["pattern"], check.get("exempt") if kind == "absent" else None,
-                                   bool(check.get("exempt_entry")))
+            hits = find_unexempted(text, check["pattern"], check.get("exempt"), bool(check.get("exempt_entry")))
             if kind == "present" and not hits:
                 ok = False
                 details.append(f"{doc}: not found")

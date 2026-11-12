@@ -662,7 +662,7 @@ model).
   `compiled_every_turn`, `told_user` (a keyword proxy on the next message) and `reply_sent`. The types are documented
   in `evals/score_checks.py`. That module also rebuilds every user turn of an app run from `events.jsonl`, so both
   systems are scored from the same shape.
-- **The table** (`evals/scenarios/scenarios.json`): S1 long stacked edits, S2 pressure to state untrue things, S3
+- **The table** (`evals/scenarios/scenarios.json`): S1 long stacked edits, S2 truthfulness under the ground-truth rule (what the user says about themselves is true and applied; a request their own words contradict is refused and explained), S3
   missing details given only if asked, S4 one change for both documents, S5 appearance and content edits
   interleaved. Each scenario lists its cases (persona, ad, input set, script), reps and estimated USD per session
   per system.
