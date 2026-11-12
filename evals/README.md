@@ -765,9 +765,11 @@ model).
   and word limits, `max_pages`, `unchanged_by` (a request's turn left the text byte for byte as it was),
   `style_in_tex`, `compiled_every_turn`, `told_user` (a keyword proxy on the next message) and `reply_sent`. The
   types are documented in `evals/score_checks.py`. That module also rebuilds every user turn of an app run from
-  `events.jsonl`, so both systems are scored from the same shape. On a published run, which has no
-  `events.jsonl`, `score_checks` reproduces the verdicts but returns empty `calls_per_turn`, `seconds_per_turn`
-  and per-turn lists.
+  `events.jsonl`, so both systems are scored from the same shape. A published app run has no `events.jsonl`, and
+  its per-turn checks (`unchanged_by`, `compiled_every_turn`, `style_in_tex`, `told_user`, `reply_sent`) cannot be
+  decided without it, so `score_checks` and `run_scenarios --rescore` skip such a run with a message and keep its
+  committed `checks.json`. Published chat-baseline runs carry their turns in `outputs/turns.json` and can be
+  re-scored.
 - **The table** (`evals/scenarios/scenarios.json`): S1 long stacked edits, S2 truthfulness under the ground-truth rule (what the user says about themselves is true and applied; a request their own words contradict is refused and explained), S3
   missing details given only if asked, S4 one change for both documents, S5 appearance and content edits
   interleaved. Each scenario lists its cases (persona, ad, input set, script), reps and estimated USD per session

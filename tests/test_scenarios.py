@@ -172,6 +172,46 @@ def test_app_turns_are_rebuilt_from_the_event_log(tmp_path):
     assert letter["docs"] == {"cv": "final 1", "cover_letter": "letter"} and letter["pdf"] == {}
 
 
+
+def _published_app_run(root: Path) -> Path:
+    run = root / "S5-app-r1"
+    (run / "inputs").mkdir(parents=True)
+    (run / "outputs").mkdir()
+    (run / "manifest.json").write_text(json.dumps({"method": "multi_agent", "status": "completed",
+                                                    "labels": {"system": "app"}}), encoding="utf-8")
+    (run / "inputs" / "script.json").write_text(json.dumps({"checks": [{"id": "c", "type": "compiled_every_turn"}]}),
+                                                encoding="utf-8")
+    (run / "outputs" / "final_cv.txt").write_text(CV, encoding="utf-8")
+    (run / "checks.json").write_text('{"passed": 9, "total": 9}', encoding="utf-8")
+    return run
+
+
+def test_an_app_run_without_its_event_log_is_not_rescored_and_keeps_its_checks(tmp_path, capsys):
+    run = _published_app_run(tmp_path)
+    with pytest.raises(sc.NoTurnRecord):
+        sc.score_run(run)
+    assert sc.main([str(run)]) == 1
+    assert "events.jsonl" in capsys.readouterr().err
+    assert json.loads((run / "checks.json").read_text()) == {"passed": 9, "total": 9}
+    (run / "events.jsonl").write_text("", encoding="utf-8")
+    assert sc.score_run(run)["total"] == 1  # with the log present it is scored again
+
+
+def test_rescore_skips_published_app_runs(tmp_path, capsys):
+    from evals import run_scenarios as rs
+    run = _published_app_run(tmp_path / "runs")
+    manifest = json.loads((run / "manifest.json").read_text())
+    manifest["labels"]["case"] = "S5/s5-style-p03"
+    (run / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    rs.rescore(tmp_path)
+    assert json.loads((run / "checks.json").read_text()) == {"passed": 9, "total": 9}
+    assert "skipped" in capsys.readouterr().out
+
+
+def test_score_checks_help_prints_usage_and_scores_nothing(capsys):
+    assert sc.main(["--help"]) == 0
+    assert "RUN_DIR" in capsys.readouterr().out
+
 # --- the scenario fixtures ------------------------------------------------------------------------------
 def _scripts():
     return sorted(p for p in SCENARIO_DIR.glob("*.json") if p.name != "scenarios.json")

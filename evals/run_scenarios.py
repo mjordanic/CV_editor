@@ -144,15 +144,19 @@ def run(sessions: list[dict], out: Path, model: str, env_file: str | None, total
 
 
 def rescore(out: Path) -> None:
-    """Score every session with a manifest again, with its scenario script as it is now (a corrected check)."""
-    from evals.score_checks import score_run
+    """Score every session with a manifest again, with its scenario script as it is now (a corrected check). An app
+    session without events.jsonl (a published one) is skipped and keeps its checks.json."""
+    from evals.score_checks import NoTurnRecord, score_run
     for manifest in sorted((out / "runs").glob("*/manifest.json")):
         if "." in manifest.parent.name:
             continue
         case = json.loads(manifest.read_text(encoding="utf-8")).get("labels", {}).get("case", "")
         script = SCENARIO_DIR / f"{case.split('/', 1)[-1]}.json"
         if script.is_file():
-            score_run(manifest.parent, script)
+            try:
+                score_run(manifest.parent, script)
+            except NoTurnRecord as e:
+                print(f"skipped {e}", flush=True)
 
 
 # ------------------------------------------------------------------------------------------- report

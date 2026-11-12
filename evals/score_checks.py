@@ -33,6 +33,10 @@ Check types (every check has "id", "type" and "what"; `docs` defaults to both do
     told_user               {request, pattern}: the message the user saw after that request matches
     reply_sent              {reply}: the scripted user sent that reply (e.g. "missing_details": the system asked)
 
+An app run is scored only while its events.jsonl is there. A published app run leaves that log out (see
+run_scenarios' publish step), and without it the per-turn checks (unchanged_by, compiled_every_turn, style_in_tex,
+told_user, reply_sent) cannot be decided, so score_run refuses it and leaves its checks.json as it is.
+
 Usage: .venv/bin/python -m evals.score_checks RUN_DIR [RUN_DIR ...]   (prints a line per run, writes checks.json)
 """
 from __future__ import annotations
@@ -45,6 +49,10 @@ from pathlib import Path
 KINDS = ("cv", "cover_letter")
 APP_TEX = {"cv": "generated_CV", "cover_letter": "generated_cover_letter"}
 JOB_AD_TURN = "<path to job ad>"
+
+
+class NoTurnRecord(RuntimeError):
+    """An app run without events.jsonl: its turns cannot be rebuilt, so it is not scored."""
 
 
 # ------------------------------------------------------------------------------------------- text helpers
@@ -334,8 +342,11 @@ def score_session(session: dict, checks: list[dict]) -> dict:
 
 def score_run(run_dir: str | Path, script_path: str | Path | None = None) -> dict:
     """Score a run folder with its own script's checks (or those of `script_path`, e.g. a fixed check); writes and
-    returns checks.json."""
+    returns checks.json. Raises NoTurnRecord for an app run without events.jsonl (checks.json is not touched)."""
     session = load_session(run_dir)
+    if session["method"] != "single_prompt_chat" and not (Path(run_dir) / "events.jsonl").is_file():
+        raise NoTurnRecord(f"{run_dir}: app run without events.jsonl (a published run): its per-turn checks cannot "
+                           "be decided, so it is not scored and its checks.json is kept")
     script = json.loads(Path(script_path).read_text(encoding="utf-8")) if script_path else session["script"]
     result = score_session(session, script.get("checks") or [])
     (Path(run_dir) / "checks.json").write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -343,11 +354,21 @@ def score_run(run_dir: str | Path, script_path: str | Path | None = None) -> dic
 
 
 def main(argv=None) -> int:
-    for run_dir in (argv if argv is not None else sys.argv[1:]):
-        r = score_run(run_dir)
+    args = list(argv if argv is not None else sys.argv[1:])
+    if not args or any(a in ("-h", "--help") for a in args):
+        print(__doc__.split("Usage: ", 1)[1].strip() if args else __doc__)
+        return 0 if args else 2
+    rc = 0
+    for run_dir in args:
+        try:
+            r = score_run(run_dir)
+        except NoTurnRecord as e:
+            print(f"skipped {e}", file=sys.stderr)
+            rc = 1
+            continue
         failed = [c["id"] for c in r["checks"] if not c["pass"]]
         print(f"{run_dir}: {r['system']} {r['passed']}/{r['total']} status={r['status']} failed={failed}")
-    return 0
+    return rc
 
 
 if __name__ == "__main__":
