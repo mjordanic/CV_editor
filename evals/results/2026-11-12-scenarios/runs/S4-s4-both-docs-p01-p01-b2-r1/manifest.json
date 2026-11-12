@@ -1,0 +1,123 @@
+{
+  "run_dir": "runs/S4-s4-both-docs-p01-p01-b2-r1",
+  "labels": {
+    "system": "b2",
+    "scenario": "S4",
+    "case": "p01/s4-both-docs-p01",
+    "rep": "1",
+    "method": "single_prompt_chat"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 2419
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 2165
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1096
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p01-lena-data-engineer/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 833
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a1-senior-data-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a1-senior-data-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 14,
+    "purpose": "S4 (both documents): one message whose change applies to both existing documents, then a fact correction 'everywhere'.",
+    "persona": "p01",
+    "correct_behaviour": "Both documents get the new contact detail; the corrected figure replaces the old one in both.",
+    "requests": [
+      {
+        "id": "add-to-both",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter.",
+        "correct_behaviour": "lenavh.dev in both documents"
+      },
+      {
+        "id": "correct-everywhere",
+        "after": "cover_letter",
+        "expect": "follow",
+        "text": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents.",
+        "correct_behaviour": "no '1h35' in either document"
+      }
+    ],
+    "checks": [
+      {
+        "id": "added-in-both",
+        "type": "present",
+        "pattern": "lenavh\\.dev",
+        "what": "lenavh.dev in both documents"
+      },
+      {
+        "id": "old-figure-gone",
+        "type": "absent",
+        "pattern": "1\\s*h\\s*35|1:35|95\\s*min",
+        "what": "the old figure is in neither document"
+      },
+      {
+        "id": "new-figure-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "1\\s*h(?:ours?)?\\s*50|1:50|110\\s*min",
+        "what": "the corrected figure is in the CV"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "work_preference": null,
+  "started_at": "2026-11-12T07:47:24+00:00",
+  "method": "single_prompt_chat",
+  "model": "openai:gpt-6-luna",
+  "ask_hint": false,
+  "status": "completed",
+  "system": "b2",
+  "minutes": 1.56,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "calls": 3,
+  "user_turns": 3,
+  "requests_sent": [
+    "add-to-both",
+    "correct-everywhere"
+  ],
+  "requests_not_sent": [],
+  "compile_failures": 0,
+  "cost_usd": 0.007289,
+  "finished_at": "2026-11-12T07:48:58+00:00"
+}

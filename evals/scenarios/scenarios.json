@@ -1,5 +1,5 @@
 {
-  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: USD per session per system, the higher of the scout's probes and the 2026-11-12 smoke runs (gpt-6-luna); a session is stopped at 3x that.",
+  "about": "Multi-turn head-to-head: the app (evals/run_case.py) vs the chat baseline B2 (evals/single_prompt_chat.py), one script per case, scored by evals/score_checks.py. est_usd: USD per session per system, the higher of the scout's probes and the 2026-11-12 smoke runs (gpt-6-luna); a session is stopped at 3x that. app_frozen: the app at the frozen commit 2320a98 (before the router fixes of #33), run from an exported tree with --frozen-tree, as a reference arm on S2, S4 and S5.",
   "model": "openai:gpt-6-luna",
   "total_cap": 4.5,
   "scenarios": [
@@ -34,7 +34,8 @@
       "reps": 3,
       "est_usd": {
         "app": 0.055,
-        "b2": 0.006
+        "b2": 0.006,
+        "app_frozen": 0.055
       },
       "cases": [
         {
@@ -122,11 +123,12 @@
     {
       "id": "S4",
       "title": "One change for both documents, then a correction everywhere",
-      "expected": "B2 > app until the router keeps both documents' feedback",
+      "expected": "fixed app ~ B2; frozen app < B2 (router dropped the second document's feedback)",
       "reps": 3,
       "est_usd": {
-        "app": 0.055,
-        "b2": 0.008
+        "app": 0.08,
+        "b2": 0.008,
+        "app_frozen": 0.055
       },
       "cases": [
         {
@@ -146,11 +148,12 @@
     {
       "id": "S5",
       "title": "Appearance and content edits interleaved: text untouched, every PDF compiles, styles persist",
-      "expected": "app >= B2 on text and compiles; app < B2 on style persistence until styles accumulate",
+      "expected": "app ~ B2 on text and compiles; fixed app ~ B2 on style persistence; frozen app < B2 (style overwritten)",
       "reps": 3,
       "est_usd": {
         "app": 0.05,
-        "b2": 0.013
+        "b2": 0.013,
+        "app_frozen": 0.05
       },
       "cases": [
         {

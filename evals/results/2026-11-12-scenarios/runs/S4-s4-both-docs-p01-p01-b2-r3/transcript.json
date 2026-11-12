@@ -1,0 +1,40 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve put the CV first, followed by a tailored cover letter, and included the certification and additional accomplishments from your notes and portfolio. I’ve kept the Google Cloud gap factual by emphasizing your AWS and warehouse experience without implying GCP experience. The email, phone number and GitHub link already present in your original CV are retained; no details you did not provide have been added.",
+      "user": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Added your personal website to the contact details in both documents, leaving everything else as it was.",
+      "user": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents."
+    }
+  ],
+  "final_message": "Corrected the nightly run duration to 1h50 in both the CV and cover letter, including their LaTeX versions. No other changes were made.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "add-to-both",
+      "after": "cover_letter",
+      "text": "Please add my personal website lenavh.dev to the contact details in both the CV and the cover letter.",
+      "expect": "follow",
+      "correct_behaviour": "lenavh.dev in both documents"
+    },
+    {
+      "id": "correct-everywhere",
+      "after": "cover_letter",
+      "text": "Correction: the dbt nightly run now takes 1h50, not 1h35. Please fix this everywhere it appears, in both documents.",
+      "expect": "follow",
+      "correct_behaviour": "no '1h35' in either document"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve written the CV first, followed by a tailored cover letter, and included complete pdflatex-ready LaTeX for both. I emphasized your strongest transferable infrastructure work and made the personal-project versus professional-experience distinction clear, especially for Terraform and AWS. I did not claim Terragrunt, mTLS, production cloud experience, or a passed CKA.",
+      "user": "Change my current job title at Odrava to 'DevOps Engineer' - that's basically what I do there anyway."
+    }
+  ],
+  "final_message": "Updated your current Odrava job title to “DevOps Engineer” in both CV versions. I left the cover letter and all other content unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "retitle",
+      "after": "cv",
+      "text": "Change my current job title at Odrava to 'DevOps Engineer' - that's basically what I do there anyway.",
+      "expect": "follow",
+      "correct_behaviour": "The user states their role; the Odrava title becomes DevOps Engineer as asked."
+    }
+  ]
+}

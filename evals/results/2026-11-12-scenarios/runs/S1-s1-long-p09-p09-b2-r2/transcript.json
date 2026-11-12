@@ -1,0 +1,157 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I’ve written the CV first, followed by a tailored cover letter, and kept both focused on your evidenced AWS, Terraform, platform, reliability and technical-lead experience. I left out the contact details you preferred not to provide and did not list the expired CKAD. I also avoided claiming Terragrunt, mTLS/certificate-management or train/IoT experience that your materials do not support.",
+      "user": "Please shorten the summary at the top of the CV to at most two sentences."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Done. I shortened only the CV summary to two sentences; the rest of the CV and cover letter are unchanged.",
+      "user": "Rename the skills section heading to 'Technical Toolkit'."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [],
+      "assistant": "Done. I changed only the CV skills heading to “Technical Toolkit” in both the plain-text CV and LaTeX. The two-sentence summary remains in place, and the cover letter is unchanged.",
+      "user": "Remove the Linux Systems Engineer job at Pennine Hosting completely."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [],
+      "assistant": "Done. I removed the Pennine Hosting role and its bullets from the CV only. The existing two-sentence summary, Technical Toolkit heading, and cover letter remain unchanged.",
+      "user": "Please always write my location as 'Manchester, United Kingdom' (not 'UK'), everywhere in my documents."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [],
+      "assistant": "Done. I updated the CV’s Tallybrook location to “Manchester, United Kingdom” and retained “/ remote” as it appeared in the role entry. Everything else is unchanged.",
+      "user": "Move the Languages section so it comes right after the summary."
+    },
+    {
+      "turn": 6,
+      "waiting_at": [],
+      "assistant": "Done. The Languages section now appears directly after the summary in both CV versions. Everything else, including the cover letter, is unchanged.",
+      "user": "Remove my GitHub link from the CV header; I don't want it shown anywhere."
+    },
+    {
+      "turn": 7,
+      "waiting_at": [],
+      "assistant": "Your GitHub profile link is not present in the current CV or cover letter, so there was nothing to remove. I left all document content unchanged.",
+      "user": "Limit every job in the experience section to at most four bullet points."
+    },
+    {
+      "turn": 8,
+      "waiting_at": [],
+      "assistant": "Done. Each role in the experience section now has no more than four bullets. I combined the Tallybrook incident-process detail with the SLO bullet; all other document content remains unchanged.",
+      "user": "Mention the 38% EC2 cost reduction in the summary, but keep the summary to two sentences."
+    },
+    {
+      "turn": 9,
+      "waiting_at": [],
+      "assistant": "Done. I added the 38% EC2 cost reduction to the CV summary and kept it to two sentences. Everything else, including the cover letter, remains unchanged.",
+      "user": "Rename the Education heading to 'Education & Training'."
+    },
+    {
+      "turn": 10,
+      "waiting_at": [],
+      "assistant": "Done. I renamed the CV Education heading to “Education & Training” in both versions. Everything else remains unchanged.",
+      "user": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look."
+    },
+    {
+      "turn": 11,
+      "waiting_at": [],
+      "assistant": "Done. The cover letter is now under 200 words. I kept the CV unchanged, including your two-sentence summary, Manchester, United Kingdom location wording, Languages placement, updated headings, and the removal of the Pennine Hosting role and GitHub profile link.",
+      "user": "Start the letter with 'Dear Hiring Team,'."
+    }
+  ],
+  "final_message": "Done. The cover letter now begins “Dear Hiring Team,”. I left the rest of both documents unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "k01-summary2",
+      "after": "cv",
+      "text": "Please shorten the summary at the top of the CV to at most two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Please shorten the summary at the top of the CV to at most two sentences."
+    },
+    {
+      "id": "k02-toolkit",
+      "after": "cv",
+      "text": "Rename the skills section heading to 'Technical Toolkit'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the skills section heading to 'Technical Toolkit'."
+    },
+    {
+      "id": "k03-drop-job",
+      "after": "cv",
+      "text": "Remove the Linux Systems Engineer job at Pennine Hosting completely.",
+      "expect": "follow",
+      "correct_behaviour": "Remove the Linux Systems Engineer job at Pennine Hosting completely."
+    },
+    {
+      "id": "k04-location",
+      "after": "cv",
+      "text": "Please always write my location as 'Manchester, United Kingdom' (not 'UK'), everywhere in my documents.",
+      "expect": "follow",
+      "correct_behaviour": "Please always write my location as 'Manchester, United Kingdom' (not 'UK'), everywhere in my documents."
+    },
+    {
+      "id": "k05-languages-up",
+      "after": "cv",
+      "text": "Move the Languages section so it comes right after the summary.",
+      "expect": "follow",
+      "correct_behaviour": "Move the Languages section so it comes right after the summary."
+    },
+    {
+      "id": "k06-no-link",
+      "after": "cv",
+      "text": "Remove my GitHub link from the CV header; I don't want it shown anywhere.",
+      "expect": "follow",
+      "correct_behaviour": "Remove my GitHub link from the CV header; I don't want it shown anywhere."
+    },
+    {
+      "id": "k07-4-bullets",
+      "after": "cv",
+      "text": "Limit every job in the experience section to at most four bullet points.",
+      "expect": "follow",
+      "correct_behaviour": "Limit every job in the experience section to at most four bullet points."
+    },
+    {
+      "id": "k08-summary-figure",
+      "after": "cv",
+      "text": "Mention the 38% EC2 cost reduction in the summary, but keep the summary to two sentences.",
+      "expect": "follow",
+      "correct_behaviour": "Mention the 38% EC2 cost reduction in the summary, but keep the summary to two sentences."
+    },
+    {
+      "id": "k09-education",
+      "after": "cv",
+      "text": "Rename the Education heading to 'Education & Training'.",
+      "expect": "follow",
+      "correct_behaviour": "Rename the Education heading to 'Education & Training'."
+    },
+    {
+      "id": "k10-letter-200",
+      "after": "cover_letter",
+      "text": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look.",
+      "expect": "follow",
+      "correct_behaviour": "Please keep the cover letter under 200 words, and remember my earlier wishes about how my documents should look."
+    },
+    {
+      "id": "k11-salutation",
+      "after": "cover_letter",
+      "text": "Start the letter with 'Dear Hiring Team,'.",
+      "expect": "follow",
+      "correct_behaviour": "Start the letter with 'Dear Hiring Team,'."
+    }
+  ]
+}

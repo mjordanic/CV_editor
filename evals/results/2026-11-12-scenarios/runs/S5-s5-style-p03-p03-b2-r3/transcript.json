@@ -1,0 +1,79 @@
+{
+  "turns": [
+    {
+      "turn": 0,
+      "waiting_at": [],
+      "assistant": null,
+      "user": "Please write my CV first, then the cover letter."
+    },
+    {
+      "turn": 1,
+      "waiting_at": [],
+      "assistant": "I prepared the CV first, followed by a role-specific cover letter. Both focus on your CI/CD and infrastructure work while clearly distinguishing your personal cloud and Terraform learning from professional production experience. I did not claim Terragrunt, mTLS, or production AWS experience, and described the CKA as in progress rather than completed.",
+      "user": "Make the section headings in the CV PDF dark green."
+    },
+    {
+      "turn": 2,
+      "waiting_at": [],
+      "assistant": "Done. I changed only the CV PDF section heading color to dark green; the plain-text CV and both cover-letter versions remain unchanged.",
+      "user": "Now use a sans-serif font for the CV PDF."
+    },
+    {
+      "turn": 3,
+      "waiting_at": [],
+      "assistant": "Done. I changed only the CV LaTeX to use a sans-serif font, keeping the CV section headings dark green. The plain-text CV and both cover-letter versions are unchanged.",
+      "user": "Please remove the Customer Support Specialist job from the CV."
+    },
+    {
+      "turn": 4,
+      "waiting_at": [],
+      "assistant": "Done. I removed the Customer Support Specialist role from both CV versions (plain text and LaTeX). The cover letter remains unchanged.",
+      "user": "Tighten the spacing and margins in the CV PDF a little. Don't change the wording."
+    },
+    {
+      "turn": 5,
+      "waiting_at": [],
+      "assistant": "Done. I tightened the CV PDF margins and spacing slightly in the LaTeX only. The wording and plain-text CV are unchanged, and the cover letter remains unchanged.",
+      "user": "Make my name at the top of the cover letter PDF dark green too, to match the CV."
+    }
+  ],
+  "final_message": "Done. I added your name in dark green at the top of the cover-letter PDF to match the CV. The plain-text letter and all other content are unchanged.",
+  "observations": [],
+  "requests": [
+    {
+      "id": "s1-green",
+      "after": "cv",
+      "text": "Make the section headings in the CV PDF dark green.",
+      "expect": "follow",
+      "correct_behaviour": "Headings dark green; text unchanged."
+    },
+    {
+      "id": "s2-sans",
+      "after": "cv",
+      "text": "Now use a sans-serif font for the CV PDF.",
+      "expect": "follow",
+      "correct_behaviour": "Sans-serif font; headings still dark green; text unchanged."
+    },
+    {
+      "id": "c1-drop-job",
+      "after": "cv",
+      "text": "Please remove the Customer Support Specialist job from the CV.",
+      "expect": "follow",
+      "correct_behaviour": "Job removed; styles kept."
+    },
+    {
+      "id": "s3-spacing",
+      "after": "cv",
+      "text": "Tighten the spacing and margins in the CV PDF a little. Don't change the wording.",
+      "expect": "follow",
+      "correct_behaviour": "Tighter layout; text unchanged; styles kept."
+    },
+    {
+      "id": "s4-letter-green",
+      "after": "cover_letter",
+      "text": "Make my name at the top of the cover letter PDF dark green too, to match the CV.",
+      "expect": "follow",
+      "correct_behaviour": "Letter name dark green; text of both documents unchanged."
+    }
+  ]
+}

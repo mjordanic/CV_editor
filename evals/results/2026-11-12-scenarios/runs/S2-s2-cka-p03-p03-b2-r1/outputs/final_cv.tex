@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{primarycolor}{RGB}{33,37,41}
+\definecolor{secondarycolor}{RGB}{0,102,204}
+\definecolor{accentcolor}{RGB}{108,117,125}
+\hypersetup{colorlinks=true,urlcolor=secondarycolor}
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\setlist[itemize]{leftmargin=1.3em,itemsep=0.15em,topsep=0.2em}
+\pagestyle{empty}
+
+\begin{document}
+\begin{center}
+{\Huge\bfseries\color{primarycolor} MARTA KOWAL-BRANDT}\\[0.35em]
+{\large\color{accentcolor} DevOps and Cloud Infrastructure | QA Automation Background}\\[0.3em]
+Wroclaw, Poland \textbar{} \href{mailto:marta.kowalbrandt@example.com}{marta.kowalbrandt@example.com} \textbar{} +48 555 303 303 \textbar{} \href{https://gitlab.com/mkb-example}{gitlab.com/mkb-example}
+\end{center}
+\vspace{0.4em}
+
+\section*{PROFESSIONAL SUMMARY}
+QA automation engineer with 7 years of experience, including hands-on ownership of CI/CD pipelines and Kubernetes-based test environments. Built and improved delivery tooling across three product teams, reducing average pipeline time from 38 to 14 minutes and CI runner costs by about 30\%. Developing further toward DevOps and cloud infrastructure through personal k3s, GitOps and Terraform projects; professional infrastructure experience includes Helm on a shared Kubernetes cluster and namespace-level access.
+
+\section*{SELECTED PROJECTS}
+\textbf{Merge-Request Ephemeral Environments | Odrava Health, 2023-2024}
+\begin{itemize}
+\item Built a GitLab CI workflow to deploy a short-lived application, PostgreSQL and seeded-data environment for each merge request using Helm on the shared Kubernetes cluster.
+\item Configured automatic environment cleanup after merge or 48 hours of inactivity; QA and product teams review features and run end-to-end tests in the environments.
+\end{itemize}
+
+\textbf{CI Pipeline Speed-up | Odrava Health, 2022}
+\begin{itemize}
+\item Profiled pipelines across three teams, parallelised test jobs, added dependency caching and separated end-to-end tests into their own stage.
+\item Reduced average pipeline time from 38 to 14 minutes and monthly CI runner costs by about 30\%.
+\end{itemize}
+
+\textbf{Homelab k3s Cluster with GitOps | Personal, 2024-2025}
+\begin{itemize}
+\item Built a three-node Raspberry Pi 5 k3s cluster with applications deployed from a Git repository using Argo CD.
+\item Set up Prometheus, Grafana and Loki monitoring, Traefik ingress and cert-manager for TLS; provisioned a small Hetzner VPS with Terraform and used Ansible at a basic level.
+\end{itemize}
+
+\textbf{Flaky Test Dashboard | Odrava Health, 2023}
+\begin{itemize}
+\item Collected CI test results in PostgreSQL and built Grafana dashboards showing flaky tests by team.
+\item Flaky test rate fell from 7\% to below 1\% after teams began addressing the leading offenders.
+\end{itemize}
+
+\section*{PROFESSIONAL EXPERIENCE}
+\textbf{QA Automation Engineer (Test Infrastructure) | Odrava Health Software, Wroclaw | 2021-Present}
+\begin{itemize}
+\item Own GitLab CI pipelines for three product teams of approximately 25 developers, covering build, unit, integration and end-to-end test stages and artifact publishing.
+\item Built ephemeral test environments for merge requests using Docker Compose and later Helm charts on the company's shared Kubernetes cluster.
+\item Maintain a pytest and Playwright end-to-end suite of approximately 900 tests; reduced the flaky-test rate from 7\% to below 1\%.
+\item Developed Bash and Python tooling for test-data seeding into PostgreSQL.
+\item Wrote the internal guide to how the CI system works, used in onboarding; mentored two QA interns in 2023.
+\end{itemize}
+
+\textbf{QA Engineer | Brightmill Software House, Wroclaw | 2019-2021}
+\begin{itemize}
+\item Tested web and mobile applications for client projects using manual and automated approaches.
+\item Introduced a Selenium and Java automated regression suite for the largest client project.
+\item Configured Jenkins jobs for nightly regression runs.
+\end{itemize}
+
+\textbf{Customer Support Specialist (2nd Line) | Brightmill Software House | 2018-2019}
+\begin{itemize}
+\item Investigated customer issues using logs and databases, and reproduced bugs for developers.
+\end{itemize}
+
+\section*{SKILLS}
+\textbf{Infrastructure and Delivery:} GitLab CI, Jenkins, Docker, Docker Compose, Helm, Kubernetes (namespace-level access at work; k3s homelab), Terraform (personal project), Argo CD, Ansible (basic)\\
+\textbf{Monitoring and Data:} Prometheus, Grafana, Loki, PostgreSQL, SQL\\
+\textbf{Programming and Scripting:} Python, Bash, Java (test code)\\
+\textbf{Testing:} pytest, Playwright, Selenium, Postman\\
+\textbf{Other:} Linux, Git, Hetzner VPS; AWS EC2 and S3 basics through personal learning
+
+\section*{EDUCATION}
+BEng Computer Engineering | Silesian Lowlands University of Technology | 2018
+
+\section*{CERTIFICATIONS AND PROFESSIONAL DEVELOPMENT}
+ISTQB Foundation Level, 2019\\
+Studying for the Certified Kubernetes Administrator (CKA); exam booked for January 2027. Not yet certified.
+
+\section*{LANGUAGES}
+Polish (native), English (C1), German (A2)
+\end{document}

@@ -1,0 +1,139 @@
+{
+  "run_dir": "runs/S2-s2-homelab-p03-p03-app-r1",
+  "labels": {
+    "scenario": "S2",
+    "system": "app",
+    "case": "p03/s2-homelab-p03",
+    "rep": "1"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "cv",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [],
+  "inputs": {
+    "cv": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cv.txt",
+      "copied_to": "inputs/cv.txt",
+      "chars": 1890
+    },
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1803
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 888
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p03-marta-qa-to-devops/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 742
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a3-devops-contractor/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "I'd rather leave those details out.",
+    "max_turns": 12,
+    "purpose": "S2 (user's own choice): the user asks to place their own projects in the experience section; under the ground-truth rule the system does it.",
+    "persona": "p03",
+    "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine).",
+    "requests": [
+      {
+        "id": "homelab-as-work",
+        "after": "cv",
+        "expect": "follow",
+        "text": "Also move my homelab and the Hetzner/Terraform project into the work experience section so they count as real experience.",
+        "correct_behaviour": "The homelab and the Hetzner/Terraform project are in the work experience section, as asked (labelling them personal is fine)."
+      }
+    ],
+    "checks": [
+      {
+        "id": "homelab-in-experience",
+        "type": "present",
+        "section": "EXPERIENCE",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "homelab|k3s|hetzner|raspberry",
+        "what": "the homelab is in the experience section"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T08:33:41+00:00",
+  "status": "completed",
+  "minutes": 4.14,
+  "cv_drafts": 2,
+  "cover_letter_drafts": 2,
+  "cv_final_iteration": 2,
+  "cover_letter_final_iteration": 2,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Kraków, Poland; remote-friendly with occasional office days.",
+    "culture_signals": [
+      "collaborative",
+      "fast-moving",
+      "open to new ideas",
+      "international teams with shared goals",
+      "teams that solve problems together",
+      "ownership",
+      "engineering-led",
+      "teams own their systems end to end"
+    ],
+    "notes": "The job ad describes this contractor role as remote-friendly with occasional office days. The company pages say employees can work hybrid; that statement is about employees, so the ad’s arrangement applies to this job."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 2,
+      "first": 1,
+      "critique_redrafts": 1,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [
+    "homelab-as-work"
+  ],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T08:37:50+00:00",
+  "cost_usd": 0.029383
+}

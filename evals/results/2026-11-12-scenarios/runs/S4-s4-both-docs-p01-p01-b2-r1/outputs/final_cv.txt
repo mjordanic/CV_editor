@@ -1,0 +1,51 @@
+LENA VARGA-HOLM
+Senior Data Engineer | Data Platform
+lenavh.dev
+
+PROFESSIONAL SUMMARY
+Senior Data Engineer with 9 years of experience designing, building, and operating production data platforms for logistics, payments, and retail. Experienced with large-scale batch and streaming pipelines, cloud data warehouses, dimensional modelling, and query optimisation. Focused on reusable, well-tested data systems, clear data contracts, and trusted analytics.
+
+SKILLS
+Languages: Python, SQL, Bash
+Data platforms and engineering: Airflow, dbt, PySpark, Kafka, Kafka Connect, Debezium, Snowflake, Redshift, PostgreSQL, Great Expectations
+Cloud and infrastructure: AWS (S3, EMR, Glue, Lambda, IAM, MSK), Docker, Terraform (basic), GitHub Actions, CI/CD
+Data engineering practices: Data modelling, dimensional modelling, data quality, data contracts, CDC, orchestration, streaming, batch processing
+BI: Power BI, Looker (basic)
+
+PROFESSIONAL EXPERIENCE
+Senior Data Engineer | Lukovac Freight Hub d.o.o. | March 2022 - Present
+- Own ingestion and orchestration for the data platform, maintaining about 140 Airflow DAGs loading from PostgreSQL, MySQL, Salesforce, and third-party APIs into Snowflake.
+- Migrated more than 300 stored procedures to over 420 dbt models with tests and documentation; introduced incremental models and slim CI, reducing nightly warehouse build time from 5 hours 10 minutes to 1 hour 50 minutes.
+- Designed and built a Kafka-based shipment event pipeline using Kafka Connect and Snowpipe Streaming, processing about 30 million events per day with end-to-end latency under 2 minutes at p95.
+- Added a dead-letter topic and replay tooling to the streaming pipeline so failed events can be reprocessed without data loss.
+- Replaced hourly full-table extracts from the orders database with Debezium CDC into Kafka, reducing replica CPU during loads from about 70% to 25%.
+- Introduced JSON Schema data contracts and CI checks between product and data teams, reducing broken-pipeline incidents from about 9 per month to about 2 per month.
+- Optimised Snowflake warehouse sizing, auto-suspend, and unused-table usage, reducing monthly Snowflake spend from about 38k to 24k in 2024.
+- Participate in the data platform on-call rotation, one week in six; mentor two mid-level data engineers and run weekly platform office hours.
+
+Data Engineer | Kovalent Pay | September 2019 - February 2022
+- Built PySpark reconciliation jobs on AWS EMR, processing about 1.2 TB of raw S3 files daily to match bank settlement files against internal ledgers.
+- Reduced finance team's manual reconciliation work from about 3 days to about 4 hours per month-end.
+- Designed a Redshift star-schema warehouse with more than 30 fact and dimension tables for finance and risk teams.
+- Set up Great Expectations data quality checks on critical finance tables.
+- Built an internal Python library for S3 and Glue Data Catalog access, used by four teams.
+
+Junior Data Engineer / BI Developer | Adria Retail Group | June 2017 - August 2019
+- Maintained SSIS packages and T-SQL ETL into an on-premises SQL Server warehouse.
+- Migrated 60 nightly SSIS jobs to Python scripts scheduled with cron.
+- Built Power BI reports for store operations across more than 40 stores.
+
+EDUCATION
+MSc Computer Science, Data Science track | Northgate Technical University | 2017
+Thesis: Incremental materialized views for analytical queries
+
+CERTIFICATION
+AWS Certified Data Engineer - Associate | May 2024
+
+COMMUNITY AND OPEN-SOURCE
+- Contributed two merged pull requests fixing a pagination bug and adding tests to an open-source Airflow provider for a SaaS CRM API.
+- Presented “Data contracts without the hype” at a regional data meetup in 2024.
+- Teach SQL for beginners at a local women-in-tech meetup, about four evenings per year since 2021.
+
+LANGUAGES
+Croatian (native), English (C1), German (B1)

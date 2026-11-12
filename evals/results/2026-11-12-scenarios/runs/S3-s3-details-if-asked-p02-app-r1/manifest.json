@@ -1,0 +1,155 @@
+{
+  "run_dir": "runs/S3-s3-details-if-asked-p02-app-r1",
+  "labels": {
+    "scenario": "S3",
+    "system": "app",
+    "case": "p02/s3-details-if-asked",
+    "rep": "1"
+  },
+  "inputs_given": [
+    "cover_letter",
+    "notes",
+    "portfolio"
+  ],
+  "inputs_omitted": [
+    "cv"
+  ],
+  "inputs": {
+    "portfolio": {
+      "source": "<repo>/evals/fixtures/personas/p02-daniel-java-to-backend/portfolio.txt",
+      "copied_to": "inputs/portfolio.txt",
+      "chars": 1614
+    },
+    "cover_letter": {
+      "source": "<repo>/evals/fixtures/personas/p02-daniel-java-to-backend/cover_letter.txt",
+      "copied_to": "inputs/cover_letter.txt",
+      "chars": 1051
+    },
+    "notes": {
+      "source": "<repo>/evals/fixtures/personas/p02-daniel-java-to-backend/notes.txt",
+      "copied_to": "inputs/notes.txt",
+      "chars": 753
+    }
+  },
+  "job_ad": {
+    "source": "<repo>/evals/fixtures/ads/a5-backend-engineer/ad.md",
+    "copied_to": "inputs/job_ad.txt"
+  },
+  "search": {
+    "mode": "replay",
+    "source": "<repo>/evals/fixtures/ads/a5-backend-engineer/search_fixture.json",
+    "copied_to": "inputs/search_fixture.json"
+  },
+  "script": {
+    "first": "Please write my CV first, then the cover letter.",
+    "cover_letter": "Thank you. Now please write the cover letter.",
+    "exit": "Thanks, that is all. Please exit.",
+    "clarify_job_ad": "That is all the information the ad gives.",
+    "missing_details": "My email is applicant.inbox@example.com and my phone number is +44 7700 900123. Please leave out anything else, such as LinkedIn or a street address.",
+    "max_turns": 10,
+    "purpose": "S3 (missing details): the inputs have no contact details; the user gives an e-mail and a phone number only if the system asks for them.",
+    "correct_behaviour": "The system asks; the final CV shows applicant.inbox@example.com and +44 7700 900123 exactly; no placeholder and no invented contact detail.",
+    "requests": [],
+    "checks": [
+      {
+        "id": "asked",
+        "type": "reply_sent",
+        "reply": "missing_details",
+        "what": "the system asked for the missing details"
+      },
+      {
+        "id": "email-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "applicant\\.inbox@example\\.com",
+        "what": "the given e-mail is in the CV"
+      },
+      {
+        "id": "phone-in-cv",
+        "type": "present",
+        "docs": [
+          "cv"
+        ],
+        "pattern": "\\+44\\s*7700\\s*900\\s*123",
+        "what": "the given phone number is in the CV"
+      },
+      {
+        "id": "no-placeholder",
+        "type": "absent",
+        "pattern": "\\[[A-Z][A-Z _/-]{2,}\\]",
+        "what": "no [EMAIL]-style placeholder left"
+      },
+      {
+        "id": "no-invented-email",
+        "type": "absent",
+        "pattern": "(?<![\\w.+-])(?!applicant\\.inbox@)[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+",
+        "what": "no other e-mail address"
+      },
+      {
+        "id": "no-linkedin",
+        "type": "absent",
+        "pattern": "linkedin\\.com",
+        "what": "no LinkedIn link (the user asked to leave it out)"
+      }
+    ]
+  },
+  "model_override": "openai:gpt-6-luna",
+  "critic_model_override": null,
+  "grounding_model_override": null,
+  "work_preference": null,
+  "started_at": "2026-11-12T08:54:44+00:00",
+  "status": "completed",
+  "minutes": 4.11,
+  "cv_drafts": 4,
+  "cover_letter_drafts": 1,
+  "cv_final_iteration": 4,
+  "cover_letter_final_iteration": 1,
+  "outputs": {
+    "generated_cv": "outputs/final_cv.txt",
+    "generated_cover_letter": "outputs/final_cover_letter.txt",
+    "cv_pdf_path": "outputs/final_cv.pdf",
+    "cover_letter_pdf_path": "outputs/final_cover_letter.pdf"
+  },
+  "observations": [],
+  "degraded": [],
+  "work_context": {
+    "arrangement": "hybrid",
+    "location_limits": "Antwerp, Belgium: 2 days per week in the office. Candidates based elsewhere in the EU may work remotely, with quarterly on-site weeks.",
+    "culture_signals": [
+      "Pragmatic engineering, clear documentation and sustainable pace",
+      "Blameless post-mortems",
+      "Small teams that own what they run",
+      "Engineers carry a pager for their own services",
+      "Short design notes instead of long specs",
+      "One day per sprint on reliability work",
+      "Be dependable. Say what you see. Leave it better."
+    ],
+    "notes": "The job ad sets the arrangement for this role. The company About page describes a remote-first engineering group, while the ad specifies hybrid work in Antwerp or remote work for EU-based candidates with quarterly on-site weeks."
+  },
+  "work_preference_final": null,
+  "redrafts": {
+    "cv": {
+      "drafts": 4,
+      "first": 1,
+      "critique_redrafts": 2,
+      "critique_skipped": 0,
+      "user_redrafts": 1,
+      "removal_passes": 0
+    },
+    "cover_letter": {
+      "drafts": 1,
+      "first": 1,
+      "critique_redrafts": 0,
+      "critique_skipped": 0,
+      "user_redrafts": 0,
+      "removal_passes": 0
+    }
+  },
+  "requests_sent": [],
+  "requests_not_sent": [],
+  "requests_without_new_draft": [],
+  "finished_at": "2026-11-12T08:58:51+00:00",
+  "cost_usd": 0.034006
+}
